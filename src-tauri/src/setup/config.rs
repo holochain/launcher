@@ -21,6 +21,10 @@ pub fn logs_path() -> PathBuf {
   logs_folder_path().join("launcher.log")
 }
 
+pub fn plugins_folder_path() -> PathBuf {
+  logs_folder_path().join("plugins")
+}
+
 pub fn logs_folder_path() -> PathBuf {
   data_dir()
     .expect("Could not get config dir")
@@ -52,6 +56,7 @@ pub fn setup_config(admin_port: u16) -> () {
   create_dir_if_necessary(keystore_data_path());
   create_dir_if_necessary(uis_data_path());
   create_dir_if_necessary(logs_folder_path());
+  create_dir_if_necessary(plugins_folder_path());
 
   setup_conductor_config(admin_port);
 }
