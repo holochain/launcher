@@ -1,0 +1,70 @@
+name: 'release-holochain-binaries'
+on:
+  push:
+    tags:
+      - 'holochain-binaries-v*'
+
+jobs:
+  publish-holochain-binaries:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-2019, macos-11, ubuntu-20.04]
+    permissions:
+      contents: write
+    runs-on: ${{ matrix.platform }}
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checks out a copy of your repository on the ubuntu-latest machine
+      - uses: actions/checkout@v3
+
+      - id: create-release
+        uses: ncipollo/release-action@v1
+        with:
+          body: 'Holochain binaries for Linux/Windows/macOS.'
+          prerelease: true
+          skipIfReleaseExists: true
+
+      - name: install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          toolchain: stable
+
+      - name: install Go stable
+        uses: actions/setup-go@v4
+        with:
+          go-version: 'stable'
+
+      - name: setup binaries (Windows only)
+        if: matrix.platform == 'windows-2019'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cargo install holochain --version 0.2.3 --locked --features sqlite-encrypted
+          $HcPath = Get-Command holochain | Select-Object -ExpandProperty Definition
+          Copy-Item $HcPath -Destination holochain-v0.2.3-x86_64-pc-windows-msvc.exe
+
+          gh release upload "$($env:GITHUB_REF -replace "refs/tags/")" "holochain-v0.2.3-x86_64-pc-windows-msvc.exe"
+
+      - name: setup binaries (macos only)
+        if: matrix.platform == 'macos-11'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cargo install holochain --version 0.2.3 --locked --features sqlite-encrypted
+          HOLOCHAIN_PATH=$(which holochain)
+          cp $HOLOCHAIN_PATH holochain-v0.2.3-x86_64-apple-darwin
+
+          gh release upload "${GITHUB_REF#refs/tags/}" "holochain-v0.2.3-x86_64-apple-darwin"
+
+      - name: setup binaries (ubuntu only)
+        if: matrix.platform == 'ubuntu-20.04'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cargo install holochain --version 0.2.3 --locked --features sqlite-encrypted
+          HOLOCHAIN_PATH=$(which holochain)
+          cp $HOLOCHAIN_PATH holochain-v0.2.3-x86_64-unknown-linux-gnu
+
+          gh release upload "${GITHUB_REF#refs/tags/}" "holochain-v0.2.3-x86_64-unknown-linux-gnu"
