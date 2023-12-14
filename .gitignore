@@ -1,0 +1,10 @@
+resources
+!resources/icons
+!resources/icon.png
+node_modules
+dist
+out
+*.log*
+.DS_Store
+
+.env
