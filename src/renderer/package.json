@@ -23,11 +23,13 @@
 		"autoprefixer": "10.4.16",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-svelte": "^2.30.0",
+		"i18next": "^23.7.11",
 		"postcss": "8.4.32",
 		"prettier-plugin-svelte": "^3.1.2",
 		"prettier-plugin-tailwindcss": "^0.5.9",
 		"svelte": "^4.2.8",
 		"svelte-check": "^3.4.3",
+		"svelte-i18next": "^2.2.2",
 		"tailwindcss": "3.3.6",
 		"tslib": "^2.4.1",
 		"vite-plugin-tailwind-purgecss": "0.1.4"

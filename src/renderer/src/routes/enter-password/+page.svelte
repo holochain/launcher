@@ -1,16 +1,17 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { trpc } from '$services';
+	import { Error } from '$components';
+	import { i18n, trpc } from '$services';
 
 	let passwordInput = '';
 	let setupProgress = '';
 
 	const client = trpc();
 
-	const lairSetupRequired = client.launch.createMutation();
+	const launch = client.launch.createMutation();
 
 	const setupAndLaunch = () => {
-		$lairSetupRequired.mutate(
+		$launch.mutate(
 			{ password: passwordInput },
 			{
 				onSuccess: () => {
@@ -28,25 +29,23 @@
 </script>
 
 <div class="column center-content">
-	<h3 class="header">Enter Password:</h3>
+	<h3 class="header">{$i18n.t('enterPassword')}</h3>
 	<!-- svelte-ignore a11y-autofocus -->
 	<input autofocus bind:value={passwordInput} id="password-input" type="password" class="input" />
 	<button
 		on:click={setupAndLaunch}
 		tabindex="0"
 		class="button"
-		disabled={!passwordInput || $lairSetupRequired.isPending}
+		disabled={!passwordInput || $launch.isPending}
 	>
-		{$lairSetupRequired.isPending ? 'Loading...' : 'Launch'}
+		{$i18n.t($launch.isPending ? 'loading' : 'launch')}
 	</button>
 	{#if setupProgress}
 		<div class="setup-progress">
-			{setupProgress}
+			{$i18n.t(setupProgress)}
 		</div>
 	{/if}
-	{#if $lairSetupRequired.isError}
-		<div class="input-error">
-			{$lairSetupRequired.error.message}
-		</div>
+	{#if $launch.isError}
+		<Error text={$launch.error.message} />
 	{/if}
 </div>

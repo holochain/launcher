@@ -3,7 +3,7 @@ import { resolve } from 'path';
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin({ exclude: ['@holochain/client'] })],
+    plugins: [externalizeDepsPlugin({ exclude: ['@holochain/client', 'nanoid'] })],
   },
   preload: {
     plugins: [

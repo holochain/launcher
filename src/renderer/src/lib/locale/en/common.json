@@ -1,0 +1,16 @@
+{
+	"app": "Application",
+	"launcher": "Launcher",
+	"enterPassword": "Enter Password",
+	"setupLair": "Setup Lair",
+	"loading": "Loading...",
+	"launch": "Launch",
+	"passwordsDontMatch": "Passwords don't match!",
+	"setupHolochainLauncher": "Setup Holochain Launcher",
+	"choosePassword": "Choose a password to encrypt your data and private keys. You will always need this password to start Launcher.",
+	"selectPassword": "Select Password:",
+	"confirmPassword": "Confirm Password:",
+	"setupProgress": "Setup Progress",
+	"startingLairKeystore": "Starting Lair Keystore...",
+	"startingHolochain": "Starting Holochain..."
+}

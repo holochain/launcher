@@ -238,27 +238,16 @@ app.on('quit', () => {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
 
-async function handleLaunch(password: string) {
+async function handleSetupAndLaunch(password: string) {
   if (!MAIN_WINDOW) throw new Error('Main window needs to exist before launching.');
 
-  // const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-  // await delay(5000);
-
-  // Initialize lair if necessary
   const lairHandleTemp = childProcess.spawnSync(LAIR_BINARY, ['--version']);
   if (!lairHandleTemp.stdout) {
     console.error(`Failed to run lair-keystore binary:\n${lairHandleTemp}`);
   }
   console.log(`Got lair version ${lairHandleTemp.stdout.toString()}`);
   if (!LAUNCHER_FILE_SYSTEM.keystoreInitialized()) {
-    LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'Starting lair keystore...');
-    // TODO: https://github.com/holochain/launcher/issues/144
-    // const lairHandle = childProcess.spawn(lairBinary, ["init", "-p"], { cwd: launcherFileSystem.keystoreDir });
-    // lairHandle.stdin.write(password);
-    // lairHandle.stdin.end();
-    // lairHandle.stdout.pipe(split()).on("data", (line: string) => {
-    //   console.log("[LAIR INIT]: ", line);
-    // })
+    LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingLairKeystore');
     await initializeLairKeystore(
       LAIR_BINARY,
       LAUNCHER_FILE_SYSTEM.keystoreDir,
@@ -266,24 +255,29 @@ async function handleLaunch(password: string) {
       password,
     );
   }
-  LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'Starting lair keystore...');
 
-  // launch lair keystore
+  await handleLaunch(password);
+}
+
+async function handleLaunch(password: string) {
+  LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingLairKeystore');
+
   const [lairHandle, lairUrl] = await launchLairKeystore(
     LAIR_BINARY,
     LAUNCHER_FILE_SYSTEM.keystoreDir,
     LAUNCHER_EMITTER,
     password,
   );
+
   LAIR_HANDLE = lairHandle;
-  // create zome call signer
+
+  if (!MAIN_WINDOW) throw new Error('Main window needs to exist before launching.');
   ZOME_CALL_SIGNER = await rustUtils.ZomeCallSigner.connect(lairUrl, password);
 
-  LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'Starting Holochain...');
+  LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingHolochain');
 
   const adminPort = await getPort();
 
-  // launch holochain
   const holochainManager = await HolochainManager.launch(
     LAUNCHER_EMITTER,
     LAUNCHER_FILE_SYSTEM,
@@ -298,8 +292,6 @@ async function handleLaunch(password: string) {
     undefined,
     undefined,
   );
-  // ADMIN_PORT = holochainManager.adminPort;
-  // ADMIN_WEBSOCKET = holochainManager.adminWebsocket;
   HOLOCHAIN_MANAGERS['0.2.x'] = holochainManager;
 
   emitToWindow<RunningHolochain[]>(MAIN_WINDOW, 'holochain-ready', [
@@ -312,13 +304,17 @@ async function handleLaunch(password: string) {
   return;
 }
 
-const router = t.router({
-  launch: t.procedure.input(z.object({ password: z.string() })).mutation((req) => {
+const handlePasswordInput = (handler: (password: string) => Promise<void>) =>
+  t.procedure.input(z.object({ password: z.string() })).mutation((req) => {
     const {
       input: { password },
     } = req;
-    return handleLaunch(password);
-  }),
+    return handler(password);
+  });
+
+const router = t.router({
+  handleSetupAndLaunch: handlePasswordInput(handleSetupAndLaunch),
+  launch: handlePasswordInput(handleLaunch),
   lairSetupRequired: t.procedure.query(() => {
     const isInitialized = LAUNCHER_FILE_SYSTEM.keystoreInitialized();
     if (!z.boolean().safeParse(isInitialized).success) {
