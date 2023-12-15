@@ -4,6 +4,7 @@ import { createIPCHandler } from 'electron-trpc/main';
 import path from 'path';
 import url from 'url';
 
+import { ExtendedAppInfo } from '../types';
 import type { AppRouter } from '.';
 import { LauncherFileSystem } from './filesystem';
 import { setLinkOpenHandlers } from './utils';
@@ -44,7 +45,9 @@ export const createOrShowMainWindow = (
   mainWindow.once('ready-to-show', () => {
     mainWindow!.show();
     // Open the DevTools.
-    mainWindow!.webContents.openDevTools();
+    if (is.dev) {
+      mainWindow!.webContents.openDevTools();
+    }
   });
 
   setLinkOpenHandlers(mainWindow);
@@ -58,13 +61,15 @@ export const createOrShowMainWindow = (
 };
 
 export const createHappWindow = (
-  appId: string,
+  extendedAppInfo: ExtendedAppInfo,
   launcherFileSystem: LauncherFileSystem,
   appPort: number | undefined,
 ) => {
   // TODO create mapping between installed-app-id's and window ids
   if (!appPort) throw new Error('App port not defined.');
-  const partition = `persist:${appId}`;
+  const appId = extendedAppInfo.appInfo.installed_app_id;
+  const holochainPartition = extendedAppInfo.partition;
+  const partition = `persist:${holochainPartition}#${appId}`;
   const ses = session.fromPartition(partition);
   ses.protocol.handle('file', async (request) => {
     // console.log("### Got file request: ", request);
@@ -72,7 +77,11 @@ export const createHappWindow = (
     console.log('filePath: ', filePath);
     if (!filePath.endsWith('index.html')) {
       return net.fetch(
-        url.pathToFileURL(path.join(launcherFileSystem.appUiDir(appId), filePath)).toString(),
+        url
+          .pathToFileURL(
+            path.join(launcherFileSystem.happUiDir(appId, holochainPartition), filePath),
+          )
+          .toString(),
       );
     } else {
       const indexHtmlResponse = await net.fetch(request.url);
@@ -114,7 +123,9 @@ export const createHappWindow = (
     // happWindow = null;
   });
   console.log('Loading happ window file');
-  happWindow.loadFile(path.join(launcherFileSystem.appUiDir(appId), 'index.html'));
+  happWindow.loadFile(
+    path.join(launcherFileSystem.happUiDir(appId, holochainPartition), 'index.html'),
+  );
 };
 
 // // Currently unused
