@@ -64,29 +64,29 @@ export const createHappWindow = (
   extendedAppInfo: ExtendedAppInfo,
   launcherFileSystem: LauncherFileSystem,
   appPort: number | undefined,
-) => {
+): BrowserWindow => {
   // TODO create mapping between installed-app-id's and window ids
   if (!appPort) throw new Error('App port not defined.');
   const appId = extendedAppInfo.appInfo.installed_app_id;
   const holochainPartition = extendedAppInfo.partition;
   const partition = `persist:${holochainPartition}#${appId}`;
   const ses = session.fromPartition(partition);
-  ses.protocol.handle('file', async (request) => {
+  ses.protocol.handle('webhapp', async (request) => {
     // console.log("### Got file request: ", request);
-    const filePath = request.url.slice('file://'.length);
-    console.log('filePath: ', filePath);
+    const uriWithoutProtocol = request.url.slice('webhapp://'.length);
+    const filePathComponents = uriWithoutProtocol.split('/').slice(1);
+    const filePath = path.join(...filePathComponents);
+    const resource = net.fetch(
+      url
+        .pathToFileURL(path.join(launcherFileSystem.happUiDir(appId, holochainPartition), filePath))
+        .toString(),
+    );
     if (!filePath.endsWith('index.html')) {
-      return net.fetch(
-        url
-          .pathToFileURL(
-            path.join(launcherFileSystem.happUiDir(appId, holochainPartition), filePath),
-          )
-          .toString(),
-      );
+      return resource;
     } else {
-      const indexHtmlResponse = await net.fetch(request.url);
-      const content = await indexHtmlResponse.text();
-      let modifiedContent = content.replace(
+      const indexHtmlResponse = await resource;
+      const indexHtml = await indexHtmlResponse.text();
+      let modifiedContent = indexHtml.replace(
         '<head>',
         `<head><script type="module">window.__HC_LAUNCHER_ENV__ = { APP_INTERFACE_PORT: ${appPort}, INSTALLED_APP_ID: "${appId}", FRAMEWORK: "electron" };</script>`,
       );
@@ -117,55 +117,11 @@ export const createHappWindow = (
   });
 
   happWindow.on('closed', () => {
-    console.log(`Happ window with frame id ${happWindow.id} closed.`);
     // remove protocol handler
-    ses.protocol.unhandle('file');
+    ses.protocol.unhandle('webhapp');
     // happWindow = null;
   });
   console.log('Loading happ window file');
-  happWindow.loadFile(
-    path.join(launcherFileSystem.happUiDir(appId, holochainPartition), 'index.html'),
-  );
+  happWindow.loadURL(`webhapp://webhappwindow/index.html`);
+  return happWindow;
 };
-
-// // Currently unused
-// const createSplashscreenWindow = (): BrowserWindow => {
-//   // Create the browser window.
-//   const splashWindow = new BrowserWindow({
-//     height: 450,
-//     width: 800,
-//     center: true,
-//     resizable: false,
-//     frame: false,
-//     show: false,
-//     backgroundColor: '#331ead',
-//     // use these settings so that the ui
-//     // can listen for status change events
-//     webPreferences: {
-//       preload: path.resolve(__dirname, '../preload/splashscreen.js'),
-//     },
-//   });
-
-//   // // and load the splashscreen.html of the app.
-//   // if (app.isPackaged) {
-//   //   splashWindow.loadFile(SPLASH_FILE);
-//   // } else {
-//   //   // development
-//   //   splashWindow.loadURL(`${DEVELOPMENT_UI_URL}/splashscreen.html`);
-//   // }
-
-//   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-//     splashWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/splashscreen.html`);
-//   } else {
-//     splashWindow.loadFile(path.join(__dirname, '../renderer/splashscreen.html'));
-//   }
-
-//   // once its ready to show, show
-//   splashWindow.once('ready-to-show', () => {
-//     splashWindow.show();
-//   });
-
-//   // Open the DevTools.
-//   // mainWindow.webContents.openDevTools();
-//   return splashWindow;
-// };

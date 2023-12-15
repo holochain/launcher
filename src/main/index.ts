@@ -1,9 +1,19 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+import { AgentPubKey } from '@holochain/client';
 import { initTRPC } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
 import { ArgumentParser } from 'argparse';
 import * as childProcess from 'child_process';
-import { app, BrowserWindow, ipcMain, IpcMainInvokeEvent, Menu, nativeImage, Tray } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  IpcMainInvokeEvent,
+  Menu,
+  nativeImage,
+  protocol,
+  Tray,
+} from 'electron';
 import getPort from 'get-port';
 import { ZomeCallSigner, ZomeCallUnsignedNapi } from 'hc-launcher-rust-utils';
 import path from 'path';
@@ -66,6 +76,13 @@ app.on('second-instance', () => {
   MAIN_WINDOW = createOrShowMainWindow(MAIN_WINDOW, router);
 });
 
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'webhapp',
+    privileges: { standard: true },
+  },
+]);
+
 const LAUNCHER_FILE_SYSTEM = LauncherFileSystem.connect(app, args.profile);
 const LAUNCHER_EMITTER = new LauncherEmitter();
 
@@ -77,8 +94,11 @@ let ZOME_CALL_SIGNER: ZomeCallSigner | undefined;
 const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by partition
 let LAIR_HANDLE: childProcess.ChildProcessWithoutNullStreams | undefined;
 let MAIN_WINDOW: BrowserWindow | undefined | null;
+const AGENT_KEY_WINDOW_MAP: Record<number, AgentPubKey> = {}; // AgentPubKey by webContents.id - used to verify origin of zome call requests
 
-const handleSignZomeCall = (_e: IpcMainInvokeEvent, zomeCall: ZomeCallUnsignedNapi) => {
+const handleSignZomeCall = (e: IpcMainInvokeEvent, zomeCall: ZomeCallUnsignedNapi) => {
+  if (zomeCall.provenance.toString() !== Array.from(AGENT_KEY_WINDOW_MAP[e.sender.id]).toString())
+    return Promise.reject('Agent public key unauthorized.');
   if (!ZOME_CALL_SIGNER) throw Error('Lair signer is not ready');
   return ZOME_CALL_SIGNER.signZomeCall(zomeCall);
 };
@@ -124,7 +144,15 @@ app.whenReady().then(async () => {
     const holochainManager = HOLOCHAIN_MANAGERS[extendedAppInfo.partition];
     if (!holochainManager)
       throw new Error('Responsible Holochain Manager seems not to be running.');
-    createHappWindow(extendedAppInfo, LAUNCHER_FILE_SYSTEM, holochainManager.appPort);
+    const happWindow = createHappWindow(
+      extendedAppInfo,
+      LAUNCHER_FILE_SYSTEM,
+      holochainManager.appPort,
+    );
+    AGENT_KEY_WINDOW_MAP[happWindow.webContents.id] = extendedAppInfo.appInfo.agent_pub_key;
+    happWindow.on('close', () => {
+      delete AGENT_KEY_WINDOW_MAP[happWindow.webContents.id];
+    });
   });
   ipcMain.handle(
     'install-app',
