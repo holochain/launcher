@@ -1,3 +1,4 @@
+import { TRPCError } from '@trpc/server';
 import * as childProcess from 'child_process';
 import fs from 'fs';
 import { nanoid } from 'nanoid';
@@ -5,7 +6,14 @@ import os from 'os';
 import path from 'path';
 import split from 'split';
 
-import { LAIR_ERROR, LAIR_LOG, LAIR_READY, WRONG_PASSWORD } from '../types';
+import {
+  INITIALIZE_LAIR_KEYSTORE_ERROR,
+  LAIR_ERROR,
+  LAIR_LOG,
+  LAIR_READY,
+  LAUNCH_LAIR_KEYSTORE_ERROR,
+  WRONG_PASSWORD,
+} from '../types';
 import { LauncherEmitter } from './launcherEmitter';
 
 export async function initializeLairKeystore(
@@ -14,22 +22,31 @@ export async function initializeLairKeystore(
   launcherEmitter: LauncherEmitter,
   password: string,
 ): Promise<void> {
-  const lairHandle = childProcess.spawn(lairBinary, ['init', '-p'], { cwd: keystoreDir });
-  lairHandle.stdin.write(password);
-  lairHandle.stdin.end();
-  return new Promise((resolve) => {
-    let killAfterNextLine = false;
-    lairHandle.stdout.pipe(split()).on('data', (line: string) => {
-      launcherEmitter.emit(LAIR_LOG, line);
-      if (killAfterNextLine) {
-        lairHandle.kill();
-        resolve();
-      }
-      if (line.includes('# lair-keystore init config')) {
-        killAfterNextLine = true;
-      }
+  try {
+    const lairHandle = childProcess.spawn(lairBinary, ['init', '-p'], { cwd: keystoreDir });
+    lairHandle.stdin.write(password);
+    lairHandle.stdin.end();
+    return new Promise((resolve) => {
+      let killAfterNextLine = false;
+      lairHandle.stdout.pipe(split()).on('data', (line: string) => {
+        launcherEmitter.emit(LAIR_LOG, line);
+        if (killAfterNextLine) {
+          lairHandle.kill();
+          resolve();
+        }
+        if (line.includes('# lair-keystore init config')) {
+          killAfterNextLine = true;
+        }
+      });
     });
-  });
+  } catch (error) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: INITIALIZE_LAIR_KEYSTORE_ERROR,
+      // optional: pass the original error to retain stack trace
+      cause: error,
+    });
+  }
 }
 
 export async function launchLairKeystore(
@@ -40,6 +57,7 @@ export async function launchLairKeystore(
 ): Promise<[childProcess.ChildProcessWithoutNullStreams, string]> {
   // On Unix systems, there is a limit to the path length of a domain socket. Create a symlink to the lair directory
   // from the tempdir instead and overwrite the connectionUrl in the lair-keystore-config.yaml
+
   if (os.platform() === 'linux' || os.platform() === 'darwin') {
     try {
       const uid = nanoid(13);
@@ -62,26 +80,35 @@ export async function launchLairKeystore(
       return Promise.reject(`Failed to create symlinked lair directory: ${e}`);
     }
   }
-  const lairHandle = childProcess.spawn(lairBinary, ['server', '-p'], { cwd: keystoreDir });
-  lairHandle.stdin.write(password);
-  lairHandle.stdin.end();
-  // Wait for connection url or internal sodium error and return error or EventEmitter
-  lairHandle.stderr.pipe(split()).on('data', (line: string) => {
-    launcherEmitter.emit(LAIR_ERROR, line);
-    if (line.includes('InternalSodium')) {
-      launcherEmitter.emit(WRONG_PASSWORD);
-    }
-  });
-  lairHandle.stdout.pipe(split()).on('data', (line: string) => {
-    launcherEmitter.emit(LAIR_LOG, line);
-    if (line.includes('# lair-keystore connection_url #')) {
-      const connectionUrl = line.split('#')[2].trim();
-      launcherEmitter.emit(LAIR_READY, connectionUrl);
-    }
-  });
+  try {
+    const lairHandle = childProcess.spawn(lairBinary, ['server', '-p'], { cwd: keystoreDir });
+    lairHandle.stdin.write(password);
+    lairHandle.stdin.end();
+    // Wait for connection url or internal sodium error and return error or EventEmitter
+    lairHandle.stderr.pipe(split()).on('data', (line: string) => {
+      launcherEmitter.emit(LAIR_ERROR, line);
+      if (line.includes('InternalSodium')) {
+        launcherEmitter.emit(WRONG_PASSWORD);
+      }
+    });
+    lairHandle.stdout.pipe(split()).on('data', (line: string) => {
+      launcherEmitter.emit(LAIR_LOG, line);
+      if (line.includes('# lair-keystore connection_url #')) {
+        const connectionUrl = line.split('#')[2].trim();
+        launcherEmitter.emit(LAIR_READY, connectionUrl);
+      }
+    });
 
-  return new Promise((resolve, reject) => {
-    launcherEmitter.on('wrong-password', () => reject('Wrong password.'));
-    launcherEmitter.on('lair-ready', (url) => resolve([lairHandle, url as string]));
-  });
+    return new Promise((resolve, reject) => {
+      launcherEmitter.on('wrong-password', () => reject('Wrong password.'));
+      launcherEmitter.on('lair-ready', (url) => resolve([lairHandle, url as string]));
+    });
+  } catch (error) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: LAUNCH_LAIR_KEYSTORE_ERROR,
+      // optional: pass the original error to retain stack trace
+      cause: error,
+    });
+  }
 }

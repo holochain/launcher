@@ -4,6 +4,8 @@
 	import { AppBar, AppShell } from '@skeletonlabs/skeleton';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 
+	import { i18n } from '$services';
+
 	const queryClient = new QueryClient();
 </script>
 
@@ -13,7 +15,7 @@
 			<!-- App Bar -->
 			<AppBar>
 				<svelte:fragment slot="lead">
-					<strong class="text-xl uppercase">Launcher</strong>
+					<strong class="text-xl uppercase">{$i18n.t('launcher')}</strong>
 				</svelte:fragment>
 			</AppBar>
 		</svelte:fragment>

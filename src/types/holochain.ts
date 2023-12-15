@@ -35,4 +35,4 @@ export type RunningHolochain = {
   appPort: number;
 };
 
-export type LoadingProgressUpdate = 'Starting lair keystore...' | 'Starting Holochain...';
+export type LoadingProgressUpdate = 'startingLairKeystore' | 'startingHolochain';
