@@ -2,20 +2,23 @@ import { App } from 'electron';
 import fs from 'fs';
 import path from 'path';
 
+import { breakingVersion } from './utils';
+
 export type Profile = string;
 
-class LauncherFileSystem {
-  public appDataDir: string;
-  public appConfigDir: string;
-  public appLogsDir: string;
+export class LauncherFileSystem {
+  public profileDataDir: string;
+  public profileLogsDir: string;
+  public profile: string;
 
-  constructor(appDataDir: string, appConfigDir: string, appLogsDir: string) {
-    this.appDataDir = appDataDir;
-    this.appConfigDir = appConfigDir;
-    this.appLogsDir = appLogsDir;
+  constructor(profileDataDir: string, profileLogsDir: string, profile: string) {
+    this.profileDataDir = profileDataDir;
+    this.profileLogsDir = profileLogsDir;
+    this.profile = profile;
   }
 
   static connect(app: App, profile?: Profile) {
+    const breakingAppVersion = breakingVersion(app.getVersion());
     profile = profile ? profile : 'default';
 
     const defaultLogsPath = app.getPath('logs');
@@ -26,28 +29,20 @@ class LauncherFileSystem {
     // check whether userData path has already been modified, otherwise, set paths to point
     // to the profile-specific paths
     if (!defaultUserDataPath.endsWith(profile)) {
-      app.setPath('logs', path.join(defaultUserDataPath, profile, 'logs'));
-      app.setAppLogsPath(path.join(defaultUserDataPath, profile, 'logs'));
-      app.setPath('userData', path.join(defaultUserDataPath, profile));
-      app.setPath('sessionData', path.join(defaultUserDataPath, profile, 'chromium'));
+      app.setPath('logs', path.join(defaultUserDataPath, breakingAppVersion, profile, 'logs'));
+      app.setAppLogsPath(path.join(defaultUserDataPath, breakingAppVersion, profile, 'logs'));
+      app.setPath('userData', path.join(defaultUserDataPath, breakingAppVersion, profile));
+      app.setPath(
+        'sessionData',
+        path.join(defaultUserDataPath, breakingAppVersion, profile, 'chromium'),
+      );
       fs.rmdirSync(defaultLogsPath);
     }
 
-    // app.setPath()
-    // app.setAppLogsPath([path])
-    // const
+    const profileDataDir = app.getPath('userData');
+    const profileLogsDir = app.getPath('logs');
 
-    const logsDir = app.getPath('logs');
-    const configDir = path.join(app.getPath('userData'), 'config');
-    const dataDir = path.join(app.getPath('userData'), 'data');
-
-    console.log('Got logsDir, configDir and dataDir: ', logsDir, configDir, dataDir);
-
-    createDirIfNotExists(logsDir);
-    createDirIfNotExists(configDir);
-    createDirIfNotExists(dataDir);
-
-    const launcherFileSystem = new LauncherFileSystem(dataDir, configDir, logsDir);
+    const launcherFileSystem = new LauncherFileSystem(profileDataDir, profileLogsDir, profile);
 
     launcherFileSystem.createInitialDirectoryStructure();
     return launcherFileSystem;
@@ -55,40 +50,47 @@ class LauncherFileSystem {
 
   createInitialDirectoryStructure = () => {
     createDirIfNotExists(this.keystoreDir);
-    createDirIfNotExists(path.join(this.appDataDir, 'holochain'));
-    createDirIfNotExists(path.join(this.appDataDir, 'uis'));
-    createDirIfNotExists(path.join(this.appConfigDir, 'holochain'));
+    createDirIfNotExists(this.holochainDir);
   };
 
   get keystoreDir() {
-    return path.join(this.appDataDir, 'lair');
+    return path.join(this.profileDataDir, 'lair');
   }
 
   get holochainDir() {
-    return path.join(this.appDataDir, 'holochain');
+    return path.join(this.profileDataDir, 'holochain');
   }
 
-  get uisDir() {
-    return path.join(this.appDataDir, 'uis');
+  holochainPartitionDir(partition: string) {
+    return path.join(this.holochainDir, partition);
   }
 
-  get conductorConfigPath() {
-    return path.join(this.appConfigDir, 'holochain', 'conductor-config.yaml');
+  conductorConfigPath(partition: string) {
+    return path.join(this.holochainDir, partition, 'conductor-config.yaml');
   }
 
-  appUiDir(appId: string) {
-    return path.join(this.uisDir, appId);
+  conductorEnvironmentDir(partition: string) {
+    return path.join(this.holochainDir, partition, 'dbs');
+  }
+
+  happUiDir(appId: string, partition: string) {
+    return path.join(this.holochainPartitionDir(partition), 'apps', appId, 'ui');
+  }
+
+  happConfigPath(appId: string, partition: string) {
+    return path.join(this.holochainPartitionDir(partition), 'apps', appId, 'app-config.json');
   }
 
   keystoreInitialized = () => {
     return fs.existsSync(path.join(this.keystoreDir, 'lair-keystore-config.yaml'));
   };
+
+  // TODO
+  // factoryReset = (deleteLogs: boolean) => {};
 }
 
-function createDirIfNotExists(path: fs.PathLike) {
+export function createDirIfNotExists(path: fs.PathLike) {
   if (!fs.existsSync(path)) {
     fs.mkdirSync(path, { recursive: true });
   }
 }
-
-export { LauncherFileSystem };

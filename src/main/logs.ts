@@ -5,7 +5,6 @@ import {
   HOLOCHAIN_ERROR,
   HOLOCHAIN_LOG,
   HolochainData,
-  HolochainVersion,
   LAIR_ERROR,
   LAIR_LOG,
   WASM_LOG,
@@ -15,7 +14,7 @@ import { LauncherEmitter } from './launcherEmitter';
 
 const { combine, timestamp } = format;
 
-const HOLOCHAIN_LOGGERS: Record<HolochainVersion, winston.Logger> = {};
+const HOLOCHAIN_LOGGERS: Record<string, winston.Logger> = {}; // loggers by holochain partition
 
 // TODO define class LauncherLogger that can log all lair, holochain and launcher-specific stuff
 // with methods logLair, logHolochain, logLauncher, logHapp, ...
@@ -24,7 +23,7 @@ export function setupLogs(
   launcherEmitter: LauncherEmitter,
   launcherFileSystem: LauncherFileSystem,
 ) {
-  const logFilePath = path.join(launcherFileSystem.appLogsDir, 'launcher.log');
+  const logFilePath = path.join(launcherFileSystem.profileLogsDir, 'launcher.log');
   // with file rotation set maxsize. But then we require logic to garbage collect old files...
   // const logFileTransport = new transports.File({ filename: logFilePath, maxsize: 50_000_000, maxfiles: 5 });
   const logFileTransport = new transports.File({ filename: logFilePath });
@@ -55,22 +54,23 @@ function logHolochain(
   holochainData: HolochainData,
   logFileTransport: winston.transports.FileTransportInstance,
 ) {
-  const holochainVersion = (holochainData as HolochainData).version;
+  const holochainPartition = holochainData.partition;
+  const identifier = identifierFromHolochainData(holochainData);
   const line = (holochainData as HolochainData).data;
-  const logLine = `[HOLOCHAIN ${holochainVersion}]: ${line}`;
+  const logLine = `[${identifier}]: ${line}`;
   console.log(logLine);
-  let logger = HOLOCHAIN_LOGGERS[holochainVersion];
+  let logger = HOLOCHAIN_LOGGERS[holochainPartition];
   if (logger) {
     logger.log('info', line);
   } else {
-    logger = createHolochainLogger(holochainVersion, logFileTransport);
-    HOLOCHAIN_LOGGERS[holochainVersion] = logger;
+    logger = createHolochainLogger(identifier, logFileTransport);
+    HOLOCHAIN_LOGGERS[holochainPartition] = logger;
     logger.log('info', line);
   }
 }
 
 function createHolochainLogger(
-  holochainVersion: HolochainVersion,
+  label: string,
   logFileTransport: winston.transports.FileTransportInstance,
 ): winston.Logger {
   return createLogger({
@@ -80,7 +80,7 @@ function createHolochainLogger(
       format.printf(({ level, message, timestamp }) => {
         return JSON.stringify({
           timestamp,
-          label: `HOLOCHAIN ${holochainVersion}`,
+          label,
           level,
           message,
         });
@@ -106,4 +106,16 @@ function createLairLogger(
       }),
     ),
   });
+}
+
+function identifierFromHolochainData(holochainData: HolochainData): string {
+  if (holochainData.version.type === 'built-in') {
+    return `HOLOCHAIN ${holochainData.version.version} @ partition ${holochainData.partition}`;
+  } else if (holochainData.version.type === 'custom-path') {
+    return `HOLOCHAIN CUSTOM BINARY @ partition ${holochainData.partition}`;
+  } else if (holochainData.version.type === 'running-external') {
+    return `HOLOCHAIN EXTERNAL BINARY @ partition ${holochainData.partition}`;
+  } else {
+    return `HOLOCHAIN unknown`;
+  }
 }

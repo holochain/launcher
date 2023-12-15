@@ -1,4 +1,5 @@
 import { BrowserWindow, shell } from 'electron';
+import semver from 'semver';
 
 export function setLinkOpenHandlers(browserWindow: BrowserWindow): void {
   // links in happ windows should open in the system default application
@@ -28,4 +29,20 @@ export function setLinkOpenHandlers(browserWindow: BrowserWindow): void {
     }
     return { action: 'deny' };
   });
+}
+
+export function breakingVersion(version) {
+  if (!semver.valid(version)) {
+    throw new Error('Version is not valid semver.');
+  }
+
+  if (semver.prerelease(version)) {
+    return version;
+  }
+
+  const major = semver.major(version);
+  const minor = semver.minor(version);
+  const patch = semver.patch(version);
+
+  return major === 0 ? (minor === 0 ? `0.0.${patch}` : `0.${minor}.x`) : `${major}.x.x`;
 }
