@@ -109,15 +109,13 @@ function createLairLogger(
 }
 
 function identifierFromHolochainData(holochainData: HolochainData): string {
-  let identifier: string;
   if (holochainData.version.type === 'built-in') {
-    identifier = `HOLOCHAIN ${holochainData.version.version} @ partition ${holochainData.partition}`;
+    return `HOLOCHAIN ${holochainData.version.version} @ partition ${holochainData.partition}`;
   } else if (holochainData.version.type === 'custom-path') {
-    identifier = `HOLOCHAIN CUSTOM BINARY @ partition ${holochainData.partition}`;
+    return `HOLOCHAIN CUSTOM BINARY @ partition ${holochainData.partition}`;
   } else if (holochainData.version.type === 'running-external') {
-    identifier = `HOLOCHAIN EXTERNAL BINARY @ partition ${holochainData.partition}`;
+    return `HOLOCHAIN EXTERNAL BINARY @ partition ${holochainData.partition}`;
   } else {
-    identifier = `HOLOCHAIN unknown`;
+    return `HOLOCHAIN unknown`;
   }
-  return identifier;
 }

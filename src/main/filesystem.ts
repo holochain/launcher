@@ -1,7 +1,8 @@
 import { App } from 'electron';
 import fs from 'fs';
 import path from 'path';
-import semver from 'semver';
+
+import { breakingVersion } from './utils';
 
 export type Profile = string;
 
@@ -91,25 +92,5 @@ export class LauncherFileSystem {
 export function createDirIfNotExists(path: fs.PathLike) {
   if (!fs.existsSync(path)) {
     fs.mkdirSync(path, { recursive: true });
-  }
-}
-
-function breakingVersion(version: string): string {
-  if (!semver.valid(version)) {
-    throw new Error('Version is not valid semver.');
-  }
-  if (semver.prerelease(version)) {
-    return version;
-  }
-  switch (semver.major(version)) {
-    case 0:
-      switch (semver.minor(version)) {
-        case 0:
-          return `0.0.${semver.patch(version)}`;
-        default:
-          return `0.${semver.minor(version)}.x`;
-      }
-    default:
-      return `${semver.major(version)}.x.x`;
   }
 }

@@ -7,11 +7,11 @@ export type HolochainData = {
   data: any;
 };
 
-export interface ExtendedAppInfo {
+export type ExtendedAppInfo = {
   appInfo: AppInfo;
   version: HolochainVersion;
   partition: string;
-}
+};
 
 export type HolochainVersion =
   | {
@@ -29,10 +29,10 @@ export type HolochainVersion =
       type: 'running-external';
     };
 
-export interface RunningHolochain {
+export type RunningHolochain = {
   version: HolochainVersion;
   partition: string;
   appPort: number;
-}
+};
 
 export type LoadingProgressUpdate = 'Starting lair keystore...' | 'Starting Holochain...';

@@ -3,13 +3,13 @@ import { AdminWebsocket, AppInfo } from '@holochain/client';
 import * as childProcess from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import semver from 'semver';
 import split from 'split';
 
 import { APP_INSTALLED, HOLOCHAIN_ERROR, HOLOCHAIN_LOG, HolochainVersion } from '../types';
 import { HOLOCHAIN_BINARIES } from './binaries';
 import { createDirIfNotExists, LauncherFileSystem } from './filesystem';
 import { LauncherEmitter } from './launcherEmitter';
+import { breakingVersion } from './utils';
 
 const rustUtils = require('hc-launcher-rust-utils');
 
@@ -66,7 +66,7 @@ export class HolochainManager {
     const partition = nonDefaultPartition
       ? `partition#${nonDefaultPartition}`
       : version.type === 'built-in'
-        ? breakingHolochainVersion(version.version)
+        ? breakingVersion(version.version)
         : undefined;
 
     if (!partition)
@@ -232,22 +232,5 @@ export class HolochainManager {
     const installedApps = await this.adminWebsocket.listApps({});
     console.log('Installed apps: ', installedApps);
     this.installedApps = installedApps;
-  }
-}
-
-function breakingHolochainVersion(version: string): string {
-  if (!semver.valid(version)) {
-    throw new Error('Version is not valid semver.');
-  }
-  switch (semver.major(version)) {
-    case 0:
-      switch (semver.minor(version)) {
-        case 0:
-          return `0.0.${semver.patch(version)}`;
-        default:
-          return `0.${semver.minor(version)}.x`;
-      }
-    default:
-      return `${semver.major(version)}.x.x`;
   }
 }
