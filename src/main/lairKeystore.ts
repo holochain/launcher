@@ -1,4 +1,8 @@
 import * as childProcess from 'child_process';
+import fs from 'fs';
+import { nanoid } from 'nanoid';
+import os from 'os';
+import path from 'path';
 import split from 'split';
 
 import { LAIR_ERROR, LAIR_LOG, LAIR_READY, WRONG_PASSWORD } from '../types';
@@ -34,6 +38,30 @@ export async function launchLairKeystore(
   launcherEmitter: LauncherEmitter,
   password: string,
 ): Promise<[childProcess.ChildProcessWithoutNullStreams, string]> {
+  // On Unix systems, there is a limit to the path length of a domain socket. Create a symlink to the lair directory
+  // from the tempdir instead and overwrite the connectionUrl in the lair-keystore-config.yaml
+  if (os.platform() === 'linux' || os.platform() === 'darwin') {
+    try {
+      const uid = nanoid(13);
+      const srcPath = path.join(os.tmpdir(), `lair.${uid}`);
+      fs.symlinkSync(keystoreDir, srcPath);
+      keystoreDir = srcPath;
+      const lairConfigPath = path.join(keystoreDir, 'lair-keystore-config.yaml');
+      const lairConfigString = fs.readFileSync(lairConfigPath, 'utf-8');
+      const lines = lairConfigString.split('\n');
+      const idx = lines.findIndex((line) => line.includes('connectionUrl:'));
+      if (idx === -1)
+        throw new Error('Failed to find connectionUrl line in lair-keystore-config.yaml.');
+      const connectionUrlLine = lines[idx];
+      const socket = connectionUrlLine.split('socket?')[1];
+      const tmpDirConnectionUrl = `unix://${keystoreDir}/socket?${socket}`;
+      lines[idx] = `connectionUrl: ${tmpDirConnectionUrl}`;
+      const newLairConfigString = lines.join('\n');
+      fs.writeFileSync(lairConfigPath, newLairConfigString);
+    } catch (e) {
+      return Promise.reject(`Failed to create symlinked lair directory: ${e}`);
+    }
+  }
   const lairHandle = childProcess.spawn(lairBinary, ['server', '-p'], { cwd: keystoreDir });
   lairHandle.stdin.write(password);
   lairHandle.stdin.end();
