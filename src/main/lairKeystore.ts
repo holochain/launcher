@@ -1,4 +1,3 @@
-import { TRPCError } from '@trpc/server';
 import * as childProcess from 'child_process';
 import fs from 'fs';
 import { nanoid } from 'nanoid';
@@ -7,6 +6,7 @@ import path from 'path';
 import split from 'split';
 
 import {
+  FAILED_TO_CREATE_SYMLINKED_LAIR_DIRECTORY_ERROR,
   INITIALIZE_LAIR_KEYSTORE_ERROR,
   LAIR_ERROR,
   LAIR_LOG,
@@ -15,6 +15,19 @@ import {
   WRONG_PASSWORD,
 } from '../types';
 import { LauncherEmitter } from './launcherEmitter';
+import { getErrorMessage, throwTRPCErrorError } from './utils';
+
+function waitForLairKeystore(
+  launcherEmitter: LauncherEmitter,
+  lairHandle: childProcess.ChildProcessWithoutNullStreams,
+): Promise<[childProcess.ChildProcessWithoutNullStreams, string]> {
+  return new Promise((resolve, reject) => {
+    launcherEmitter.on(LAIR_READY, (url) => resolve([lairHandle, url as string]));
+    launcherEmitter.on(LAIR_ERROR, (err) => {
+      reject(new Error(err));
+    });
+  });
+}
 
 export async function initializeLairKeystore(
   lairBinary: string,
@@ -40,10 +53,8 @@ export async function initializeLairKeystore(
       });
     });
   } catch (error) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
+    throwTRPCErrorError({
       message: INITIALIZE_LAIR_KEYSTORE_ERROR,
-      // optional: pass the original error to retain stack trace
       cause: error,
     });
   }
@@ -58,8 +69,8 @@ export async function launchLairKeystore(
   // On Unix systems, there is a limit to the path length of a domain socket. Create a symlink to the lair directory
   // from the tempdir instead and overwrite the connectionUrl in the lair-keystore-config.yaml
 
-  if (os.platform() === 'linux' || os.platform() === 'darwin') {
-    try {
+  try {
+    if (os.platform() === 'linux' || os.platform() === 'darwin') {
       const uid = nanoid(13);
       const srcPath = path.join(os.tmpdir(), `lair.${uid}`);
       fs.symlinkSync(keystoreDir, srcPath);
@@ -69,27 +80,24 @@ export async function launchLairKeystore(
       const lines = lairConfigString.split('\n');
       const idx = lines.findIndex((line) => line.includes('connectionUrl:'));
       if (idx === -1)
-        throw new Error('Failed to find connectionUrl line in lair-keystore-config.yaml.');
+        throwTRPCErrorError({
+          message: FAILED_TO_CREATE_SYMLINKED_LAIR_DIRECTORY_ERROR,
+          cause: new Error('Failed to find connectionUrl line in lair-keystore-config.yaml.'),
+        });
       const connectionUrlLine = lines[idx];
       const socket = connectionUrlLine.split('socket?')[1];
       const tmpDirConnectionUrl = `unix://${keystoreDir}/socket?${socket}`;
       lines[idx] = `connectionUrl: ${tmpDirConnectionUrl}`;
       const newLairConfigString = lines.join('\n');
       fs.writeFileSync(lairConfigPath, newLairConfigString);
-    } catch (e) {
-      return Promise.reject(`Failed to create symlinked lair directory: ${e}`);
     }
-  }
-  try {
+
     const lairHandle = childProcess.spawn(lairBinary, ['server', '-p'], { cwd: keystoreDir });
     lairHandle.stdin.write(password);
     lairHandle.stdin.end();
     // Wait for connection url or internal sodium error and return error or EventEmitter
     lairHandle.stderr.pipe(split()).on('data', (line: string) => {
       launcherEmitter.emit(LAIR_ERROR, line);
-      if (line.includes('InternalSodium')) {
-        launcherEmitter.emit(WRONG_PASSWORD);
-      }
     });
     lairHandle.stdout.pipe(split()).on('data', (line: string) => {
       launcherEmitter.emit(LAIR_LOG, line);
@@ -99,16 +107,12 @@ export async function launchLairKeystore(
       }
     });
 
-    return new Promise((resolve, reject) => {
-      launcherEmitter.on('wrong-password', () => reject('Wrong password.'));
-      launcherEmitter.on('lair-ready', (url) => resolve([lairHandle, url as string]));
-    });
+    return await waitForLairKeystore(launcherEmitter, lairHandle);
   } catch (error) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: LAUNCH_LAIR_KEYSTORE_ERROR,
-      // optional: pass the original error to retain stack trace
-      cause: error,
-    });
+    const errorMessage = getErrorMessage(error);
+    if (errorMessage.includes('InternalSodium')) {
+      return throwTRPCErrorError({ message: WRONG_PASSWORD, cause: error });
+    }
+    throwTRPCErrorError({ message: LAUNCH_LAIR_KEYSTORE_ERROR, cause: error });
   }
 }

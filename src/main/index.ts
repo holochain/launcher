@@ -268,6 +268,7 @@ async function handleLaunch(password: string) {
     LAUNCHER_EMITTER,
     password,
   );
+
   LAIR_HANDLE = lairHandle;
 
   if (!MAIN_WINDOW) throw new Error('Main window needs to exist before launching.');

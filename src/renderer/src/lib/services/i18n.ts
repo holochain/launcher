@@ -2,12 +2,13 @@ import i18next from 'i18next';
 import { createI18nStore } from 'svelte-i18next';
 
 import common from '$locale/en/common.json';
+import errors from '$locale/en/errors.json';
 
 i18next.init({
 	lng: 'en',
 	resources: {
 		en: {
-			translation: common
+			translation: {...common, ...errors}
 		}
 	},
 	interpolation: {

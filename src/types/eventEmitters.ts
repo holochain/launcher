@@ -10,7 +10,6 @@ export const HOLOCHAIN_ERROR = 'holochain-error';
 export const HOLOCHAIN_FATAL_PANIC = 'holochain-fatal-panic';
 export const HOLOCHAIN_LOG = 'holochain-log';
 export const WASM_LOG = 'wasm-log';
-export const WRONG_PASSWORD = 'wrong-password';
 
 export type EventMap = {
   [LOADING_PROGRESS_UPDATE]: LoadingProgressUpdate;
@@ -23,5 +22,4 @@ export type EventMap = {
   [HOLOCHAIN_FATAL_PANIC]: HolochainData;
   [HOLOCHAIN_LOG]: HolochainData;
   [WASM_LOG]: HolochainData;
-  [WRONG_PASSWORD]: undefined;
 };
