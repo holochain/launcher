@@ -3,5 +3,7 @@
 	"initializeLairKeystoreError": "Error initializing lair keystore",
 	"launchLairKeystoreError": "Error launching lair keystore",
 	"wrongPassword": "Wrong password",
+	"wrongInstalledAppStructure": "Wrong installed app structure",
+	"checkInitializedKeystoreError": "Error checking initialized keystore",
 	"unknownError": "Unknown error"
 }

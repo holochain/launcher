@@ -7,8 +7,8 @@
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
-		"sourceMap": true, 
-		"strict": true, 
+		"sourceMap": true,
+		"strict": true,
 		"typeRoots": ["./node_modules/@types", "src/types"]
 	}
 	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias

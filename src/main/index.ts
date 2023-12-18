@@ -17,13 +17,16 @@ import {
 import getPort from 'get-port';
 import { ZomeCallSigner, ZomeCallUnsignedNapi } from 'hc-launcher-rust-utils';
 import path from 'path';
-import z from 'zod';
+import z, { ZodSchema } from 'zod';
 
 import {
+  CHECK_INITIALIZED_KEYSTORE_ERROR,
   ExtendedAppInfo,
+  ExtendedAppInfoSchema,
   LOADING_PROGRESS_UPDATE,
   LoadingProgressUpdate,
   RunningHolochain,
+  WRONG_INSTALLED_APP_STRUCTURE,
 } from '../types';
 import { LAIR_BINARY } from './binaries';
 import { LauncherFileSystem } from './filesystem';
@@ -33,6 +36,7 @@ import { initializeLairKeystore, launchLairKeystore } from './lairKeystore';
 import { LauncherEmitter } from './launcherEmitter';
 import { setupLogs } from './logs';
 import { DEFAULT_APPS_DIRECTORY, ICONS_DIRECTORY } from './paths';
+import { throwTRPCErrorError } from './utils';
 import { createHappWindow, createOrShowMainWindow } from './windows';
 
 const t = initTRPC.create({ isServer: true });
@@ -149,7 +153,7 @@ app.whenReady().then(async () => {
       LAUNCHER_FILE_SYSTEM,
       holochainManager.appPort,
     );
-    AGENT_KEY_WINDOW_MAP[happWindow.webContents.id] = extendedAppInfo.appInfo.agent_pub_key;
+    AGENT_KEY_WINDOW_MAP[happWindow.webContents.id] = extendedAppInfo.agent_pub_key;
     happWindow.on('close', () => {
       delete AGENT_KEY_WINDOW_MAP[happWindow.webContents.id];
     });
@@ -182,19 +186,6 @@ app.whenReady().then(async () => {
       );
     }
     await holochainManager.uninstallApp(appId);
-  });
-  ipcMain.handle('get-installed-apps', async () => {
-    return Object.values(HOLOCHAIN_MANAGERS)
-      .map((manager) =>
-        manager.installedApps.map((app) => {
-          return {
-            appInfo: app,
-            version: manager.version,
-            partition: manager.partition,
-          };
-        }),
-      )
-      .flat();
   });
 
   ipcMain.handle('ipc-handlers-ready', () => true);
@@ -312,16 +303,54 @@ const handlePasswordInput = (handler: (password: string) => Promise<void>) =>
     return handler(password);
   });
 
+const validateWithZod = <T>({
+  schema,
+  data,
+  errorType,
+}: {
+  schema: ZodSchema<T>;
+  data: unknown;
+  errorType: string;
+}): T => {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    return throwTRPCErrorError({
+      message: errorType,
+      cause: result.error,
+    });
+  }
+  return result.data;
+};
+
 const router = t.router({
-  handleSetupAndLaunch: handlePasswordInput(handleSetupAndLaunch),
-  launch: handlePasswordInput(handleLaunch),
   lairSetupRequired: t.procedure.query(() => {
     const isInitialized = LAUNCHER_FILE_SYSTEM.keystoreInitialized();
-    if (!z.boolean().safeParse(isInitialized).success) {
-      throw new Error('Expected boolean value for keystore initialization status');
-    }
-    return !isInitialized;
+    const isInitializedValidated = validateWithZod({
+      schema: z.boolean(),
+      data: isInitialized,
+      errorType: CHECK_INITIALIZED_KEYSTORE_ERROR,
+    });
+    return !isInitializedValidated;
   }),
+  getInstalledApps: t.procedure.query(() => {
+    const installedApps = Object.values(HOLOCHAIN_MANAGERS).flatMap((manager) =>
+      manager.installedApps.map((app) => ({
+        installed_app_id: app.installed_app_id,
+        version: manager.version,
+        partition: manager.partition,
+        agent_pub_key: app.agent_pub_key,
+      })),
+    );
+
+    const installedAppsValidated = validateWithZod({
+      schema: z.array(ExtendedAppInfoSchema),
+      data: installedApps,
+      errorType: WRONG_INSTALLED_APP_STRUCTURE,
+    });
+    return installedAppsValidated;
+  }),
+  handleSetupAndLaunch: handlePasswordInput(handleSetupAndLaunch),
+  launch: handlePasswordInput(handleLaunch),
   onSetupProgressUpdate: t.procedure.subscription(() => {
     return observable<LoadingProgressUpdate>((emit) => {
       function onProgressUpdate(text: LoadingProgressUpdate) {

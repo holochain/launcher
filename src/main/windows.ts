@@ -67,7 +67,7 @@ export const createHappWindow = (
 ): BrowserWindow => {
   // TODO create mapping between installed-app-id's and window ids
   if (!appPort) throw new Error('App port not defined.');
-  const appId = extendedAppInfo.appInfo.installed_app_id;
+  const appId = extendedAppInfo.installed_app_id;
   const holochainPartition = extendedAppInfo.partition;
   const partition = `persist:${holochainPartition}#${appId}`;
   const ses = session.fromPartition(partition);

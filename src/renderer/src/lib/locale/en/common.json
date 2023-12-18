@@ -1,9 +1,8 @@
 {
-	"app": "Application",
+	"noAppsInstalled": "No apps installed.",
 	"launcher": "Launcher",
 	"enterPassword": "Enter Password",
 	"setupLair": "Setup Lair",
-	"loading": "Loading...",
 	"launch": "Launch",
 	"passwordsDontMatch": "Passwords don't match!",
 	"setupHolochainLauncher": "Setup Holochain Launcher",

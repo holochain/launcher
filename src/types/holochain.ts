@@ -1,33 +1,35 @@
-import { AppInfo } from '@holochain/client';
+import { z } from 'zod';
+
+export const HolochainVersionSchema = z.union([
+  z.object({
+    type: z.literal('built-in'),
+    version: z.string(),
+  }),
+  z.object({
+    type: z.literal('custom-path'),
+    path: z.string(),
+  }),
+  z.object({
+    type: z.literal('running-external'),
+  }),
+]);
+
+export type HolochainVersion = z.infer<typeof HolochainVersionSchema>;
+
+export const ExtendedAppInfoSchema = z.object({
+  installed_app_id: z.string(),
+  agent_pub_key: z.instanceof(Uint8Array),
+  version: HolochainVersionSchema,
+  partition: z.string(),
+});
+
+export type ExtendedAppInfo = z.infer<typeof ExtendedAppInfoSchema>;
 
 export type HolochainData = {
   version: HolochainVersion;
   partition: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any;
+  data: unknown;
 };
-
-export type ExtendedAppInfo = {
-  appInfo: AppInfo;
-  version: HolochainVersion;
-  partition: string;
-};
-
-export type HolochainVersion =
-  | {
-      // holochain binary that has been shipped with the launcher
-      type: 'built-in';
-      version: string;
-    }
-  | {
-      // Custom holochain binary from a path
-      type: 'custom-path';
-      path: string;
-    }
-  | {
-      // Externally running holochain binary. E.g. started via a terminal.
-      type: 'running-external';
-    };
 
 export type RunningHolochain = {
   version: HolochainVersion;
