@@ -2,3 +2,8 @@ node_modules
 dist
 out
 .gitignore
+
+rust-utils/
+.svelte-kit/
+.github/
+/.vscode

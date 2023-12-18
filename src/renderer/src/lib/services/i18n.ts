@@ -8,7 +8,7 @@ i18next.init({
 	lng: 'en',
 	resources: {
 		en: {
-			translation: {...common, ...errors}
+			translation: { ...common, ...errors }
 		}
 	},
 	interpolation: {
