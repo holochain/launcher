@@ -1,6 +1,6 @@
 {
-    "failedToCreateSymlinkedLairDirectoryError": "Failed to create symlinked lair directory",
-    "initializeLairKeystoreError": "Error initializing lair keystore",
+	"failedToCreateSymlinkedLairDirectoryError": "Failed to create symlinked lair directory",
+	"initializeLairKeystoreError": "Error initializing lair keystore",
 	"launchLairKeystoreError": "Error launching lair keystore",
 	"wrongPassword": "Wrong password",
 	"unknownError": "Unknown error"

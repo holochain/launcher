@@ -4,3 +4,8 @@ pnpm-lock.yaml
 LICENSE.md
 tsconfig.json
 tsconfig.*.json
+
+rust-utils/
+.svelte-kit/
+.github/
+/.vscode
