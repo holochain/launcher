@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Error, Input } from '$components';
+	import { Button, Error, Input } from '$components';
 	import { i18n, trpc } from '$services';
 
 	let passwordInput = '';
@@ -39,14 +39,14 @@
 			required: true
 		}}
 	/>
-	<button
-		on:click={setupAndLaunch}
-		tabindex="0"
-		class="btn variant-filled mx-2"
-		disabled={!passwordInput || $launch.isPending}
+	<Button
+		props={{
+			disabled: !passwordInput || $launch.isPending,
+			onClick: setupAndLaunch
+		}}
 	>
 		{$i18n.t($launch.isPending ? 'loading' : 'launch')}
-	</button>
+	</Button>
 	{#if setupProgress}
 		<div class="setup-progress mb-2">
 			{$i18n.t(setupProgress)}

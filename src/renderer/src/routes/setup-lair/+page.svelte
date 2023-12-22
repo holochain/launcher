@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Error, Input } from '$components';
+	import { Button, Error, Input } from '$components';
 	import { i18n, trpc } from '$services';
 
 	const client = trpc();
@@ -53,22 +53,22 @@
 	<div class={passwordsDontMatch ? 'input-error mb-2' : 'color-transparent'}>
 		{$i18n.t('passwordsDontMatch')}
 	</div>
-	<button
-		on:click={() =>
-			$setupAndLaunch.mutate(
-				{ password: passwordInput },
-				{
-					onSuccess: () => {
-						goto('/app');
+	<Button
+		props={{
+			disabled: !passwordInput || passwordsDontMatch || $setupAndLaunch.isPending,
+			onClick: () =>
+				$setupAndLaunch.mutate(
+					{ password: passwordInput },
+					{
+						onSuccess: () => {
+							goto('/app');
+						}
 					}
-				}
-			)}
-		tabindex="0"
-		class="btn variant-filled mb-2"
-		disabled={!passwordInput || passwordsDontMatch || $setupAndLaunch.isPending}
+				)
+		}}
 	>
 		{$i18n.t($setupAndLaunch.isPending ? 'loading' : 'launch')}
-	</button>
+	</Button>
 	{#if setupProgress}
 		<div class="setup-progress mb-2">
 			{$i18n.t(setupProgress)}

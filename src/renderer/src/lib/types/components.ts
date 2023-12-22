@@ -1,4 +1,4 @@
-type CommonProps = {
+type CommonInputProps = {
 	id: string;
 };
 
@@ -13,6 +13,19 @@ type TextProps = {
 };
 
 export type InputProps =
-	| (CommonProps & TextProps & { type: 'text' })
-	| (CommonProps & FileProps & { type: 'file' })
-	| (CommonProps & TextProps & { type: 'password' });
+	| (CommonInputProps & TextProps & { type: 'text' })
+	| (CommonInputProps & FileProps & { type: 'file' })
+	| (CommonInputProps & TextProps & { type: 'password' });
+
+type CommonButtonProps = {
+	onClick?: (event: MouseEvent) => void;
+};
+
+export type ButtonProps =
+	| (CommonButtonProps & {
+			disabled: boolean;
+	  })
+	| (CommonButtonProps & {
+			type: 'submit';
+	  })
+	| CommonButtonProps;

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Tab, TabGroup } from '@skeletonlabs/skeleton';
 
-	import { Input } from '$components';
+	import { Button, Input } from '$components';
 	import { i18n, trpc } from '$services';
 
 	const client = trpc();
@@ -92,10 +92,13 @@
 						placeholder: $i18n.t('enterNetworkSeed')
 					}}
 				/>
-
-				<button type="submit" class="btn variant-filled mb-2"
-					>{$i18n.t(tabsBasic === 0 ? 'installHapp' : 'installKanDo')}</button
+				<Button
+					props={{
+						type: 'submit'
+					}}
 				>
+					{$i18n.t(tabsBasic === 0 ? 'installHapp' : 'installKanDo')}
+				</Button>
 			</form>
 		{/if}
 	</svelte:fragment>
