@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Error } from '$components';
+	import { Error, Input } from '$components';
 	import { i18n, trpc } from '$services';
 
 	let passwordInput = '';
@@ -30,8 +30,15 @@
 
 <div class="col center-content mx-auto max-w-xs space-y-2 text-center">
 	<h3 class="header mb-2">{$i18n.t('enterPassword')}</h3>
-	<!-- svelte-ignore a11y-autofocus -->
-	<input autofocus bind:value={passwordInput} id="password-input" type="password" class="input" />
+	<Input
+		bind:value={passwordInput}
+		props={{
+			id: 'password-input',
+			type: 'password',
+			placeholder: $i18n.t('passwordPlaceholder'),
+			required: true
+		}}
+	/>
 	<button
 		on:click={setupAndLaunch}
 		tabindex="0"

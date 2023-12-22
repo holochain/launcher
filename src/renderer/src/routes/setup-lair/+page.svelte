@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Error } from '$components';
+	import { Error, Input } from '$components';
 	import { i18n, trpc } from '$services';
 
 	const client = trpc();
@@ -29,22 +29,26 @@
 		{$i18n.t('choosePassword')}
 	</div>
 	<h3 class="header mb-2">{$i18n.t('selectPassword')}:</h3>
-	<!-- svelte-ignore a11y-autofocus -->
-	<input
-		autofocus
-		bind:value={passwordInput}
+	<Input
 		on:input={checkPasswords}
-		id="password-input"
-		type="password"
-		class="input mb-2"
+		bind:value={passwordInput}
+		props={{
+			id: 'password-input',
+			type: 'password',
+			placeholder: $i18n.t('passwordPlaceholder'),
+			required: true
+		}}
 	/>
 	<h3 class="header mb-2">{$i18n.t('confirmPassword')}:</h3>
-	<input
+	<Input
 		bind:value={confirmPasswordInput}
 		on:input={checkPasswords}
-		id="confirm-password-input"
-		type="password"
-		class="input mb-2"
+		props={{
+			id: 'confirm-password-input',
+			type: 'password',
+			placeholder: $i18n.t('confirmPasswordPlaceholder'),
+			required: true
+		}}
 	/>
 	<div class={passwordsDontMatch ? 'input-error mb-2' : 'color-transparent'}>
 		{$i18n.t('passwordsDontMatch')}
