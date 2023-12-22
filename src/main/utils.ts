@@ -39,7 +39,7 @@ export function throwTRPCErrorError({
   cause,
 }: {
   message: string;
-  cause: unknown;
+  cause?: unknown;
 }): never {
   throw new TRPCError({
     code: 'INTERNAL_SERVER_ERROR',

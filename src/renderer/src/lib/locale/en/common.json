@@ -1,6 +1,13 @@
 {
 	"noAppsInstalled": "No apps installed.",
+	"electronLauncherPrototype": "Electron Launcher Prototype",
+	"customAppName": "Custom App Name",
+	"chooseNetworkSeed": "Choose a network seed (Optional)",
+	"installKanDo": "Install KanDo",
+	"enterAppName": "Enter app name",
+	"enterNetworkSeed": "Enter network seed",
 	"launcher": "Launcher",
+	"open": "Open",
 	"enterPassword": "Enter Password",
 	"setupLair": "Setup Lair",
 	"launch": "Launch",
@@ -11,5 +18,8 @@
 	"confirmPassword": "Confirm Password:",
 	"setupProgress": "Setup Progress",
 	"startingLairKeystore": "Starting Lair Keystore...",
-	"startingHolochain": "Starting Holochain..."
+	"startingHolochain": "Starting Holochain...",
+	"installNewApp": "Install new app",
+	"selectAppFromFilesystem": "Select app from filesystem",
+	"installHapp": "Install Happ"
 }

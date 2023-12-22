@@ -23,7 +23,8 @@ const config = {
 		alias: {
 			$components: path.resolve('./src/lib/components'),
 			$services: path.resolve('./src/lib/services'),
-			$locale: path.resolve('./src/lib/locale')
+			$locale: path.resolve('./src/lib/locale'),
+			$helpers: path.resolve('./src/lib/helpers')
 		}
 	}
 };

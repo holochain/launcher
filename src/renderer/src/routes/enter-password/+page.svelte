@@ -28,20 +28,20 @@
 	});
 </script>
 
-<div class="column center-content">
-	<h3 class="header">{$i18n.t('enterPassword')}</h3>
+<div class="col center-content mx-auto max-w-xs space-y-2 text-center">
+	<h3 class="header mb-2">{$i18n.t('enterPassword')}</h3>
 	<!-- svelte-ignore a11y-autofocus -->
 	<input autofocus bind:value={passwordInput} id="password-input" type="password" class="input" />
 	<button
 		on:click={setupAndLaunch}
 		tabindex="0"
-		class="button"
+		class="btn variant-filled mx-2"
 		disabled={!passwordInput || $launch.isPending}
 	>
 		{$i18n.t($launch.isPending ? 'loading' : 'launch')}
 	</button>
 	{#if setupProgress}
-		<div class="setup-progress">
+		<div class="setup-progress mb-2">
 			{$i18n.t(setupProgress)}
 		</div>
 	{/if}
