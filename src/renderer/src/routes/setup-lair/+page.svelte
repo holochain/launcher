@@ -23,30 +23,30 @@
 	});
 </script>
 
-<div class="column center-content">
-	<h2>{$i18n.t('setupHolochainLauncher')}</h2>
-	<div class="max-w-500 text-center text-lg">
+<div class="col center-content mx-auto max-w-xs space-y-2 text-center">
+	<h2 class="header mb-2">{$i18n.t('setupHolochainLauncher')}</h2>
+	<div class="max-w-500 mb-2 text-center text-lg">
 		{$i18n.t('choosePassword')}
 	</div>
-	<h3>{$i18n.t('selectPassword')}:</h3>
+	<h3 class="header mb-2">{$i18n.t('selectPassword')}:</h3>
 	<!-- svelte-ignore a11y-autofocus -->
 	<input
-		bind:value={passwordInput}
 		autofocus
+		bind:value={passwordInput}
 		on:input={checkPasswords}
 		id="password-input"
 		type="password"
-		class="input"
+		class="input mb-2"
 	/>
-	<h3>{$i18n.t('confirmPassword')}:</h3>
+	<h3 class="header mb-2">{$i18n.t('confirmPassword')}:</h3>
 	<input
 		bind:value={confirmPasswordInput}
 		on:input={checkPasswords}
 		id="confirm-password-input"
 		type="password"
-		class="input"
+		class="input mb-2"
 	/>
-	<div class={passwordsDontMatch ? 'input-error' : 'color-transparent'}>
+	<div class={passwordsDontMatch ? 'input-error mb-2' : 'color-transparent'}>
 		{$i18n.t('passwordsDontMatch')}
 	</div>
 	<button
@@ -60,13 +60,13 @@
 				}
 			)}
 		tabindex="0"
-		class="mb-8 mt-2"
+		class="btn variant-filled mb-2"
 		disabled={!passwordInput || passwordsDontMatch || $setupAndLaunch.isPending}
 	>
 		{$i18n.t($setupAndLaunch.isPending ? 'loading' : 'launch')}
 	</button>
 	{#if setupProgress}
-		<div class="setup-progress">
+		<div class="setup-progress mb-2">
 			{$i18n.t(setupProgress)}
 		</div>
 	{/if}

@@ -21,10 +21,13 @@ import z, { ZodSchema } from 'zod';
 
 import {
   CHECK_INITIALIZED_KEYSTORE_ERROR,
-  ExtendedAppInfo,
   ExtendedAppInfoSchema,
+  FILE_UNDEFINED_ERROR,
+  InstallHappInputSchema,
+  InstallKandoSchema,
   LOADING_PROGRESS_UPDATE,
   LoadingProgressUpdate,
+  NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
   RunningHolochain,
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '../types';
@@ -144,53 +147,6 @@ app.whenReady().then(async () => {
   tray.setContextMenu(contextMenu);
 
   ipcMain.handle('sign-zome-call', handleSignZomeCall);
-  ipcMain.handle('open-app', async (_e, extendedAppInfo: ExtendedAppInfo) => {
-    const holochainManager = HOLOCHAIN_MANAGERS[extendedAppInfo.partition];
-    if (!holochainManager)
-      throw new Error('Responsible Holochain Manager seems not to be running.');
-    const happWindow = createHappWindow(
-      extendedAppInfo,
-      LAUNCHER_FILE_SYSTEM,
-      holochainManager.appPort,
-    );
-    AGENT_KEY_WINDOW_MAP[happWindow.webContents.id] = extendedAppInfo.agent_pub_key;
-    happWindow.on('close', () => {
-      delete AGENT_KEY_WINDOW_MAP[happWindow.webContents.id];
-    });
-  });
-  ipcMain.handle(
-    'install-app',
-    async (_e, filePath: string, appId: string, partition: string, networkSeed: string) => {
-      if (filePath === '#####REQUESTED_KANDO_INSTALLATION#####') {
-        console.log('Got request to install KanDo.');
-        filePath = path.join(DEFAULT_APPS_DIRECTORY, 'kando.webhapp');
-      }
-      if (!appId || appId === '') {
-        throw new Error('No app id provided.');
-      }
-
-      const holochainManager = HOLOCHAIN_MANAGERS[partition];
-      if (!holochainManager) {
-        throw new Error(
-          `No running Holochain Manager found for the specified partition: '${partition}'`,
-        );
-      }
-      await holochainManager.installWebHapp(filePath, appId, networkSeed);
-    },
-  );
-  ipcMain.handle('uninstall-app', async (_e, appId: string, partition: string) => {
-    const holochainManager = HOLOCHAIN_MANAGERS[partition];
-    if (!holochainManager) {
-      throw new Error(
-        `No running Holochain Manager found for the specified partition: ${partition}`,
-      );
-    }
-    await holochainManager.uninstallApp(appId);
-  });
-
-  ipcMain.handle('ipc-handlers-ready', () => true);
-
-  MAIN_WINDOW!.webContents.send('ipc-handlers-ready');
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -322,7 +278,51 @@ const validateWithZod = <T>({
   return result.data;
 };
 
+const getHolochainManager = (partition: string) => {
+  const holochainManager = HOLOCHAIN_MANAGERS[partition];
+  if (!holochainManager) {
+    return throwTRPCErrorError({
+      message: NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
+      cause: `No running Holochain Manager found for the specified partition: '${partition}'`,
+    });
+  }
+  return holochainManager;
+};
+
 const router = t.router({
+  openApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
+    const { partition, agent_pub_key } = opts.input;
+    const holochainManager = getHolochainManager(partition);
+    const happWindow = createHappWindow(opts.input, LAUNCHER_FILE_SYSTEM, holochainManager.appPort);
+    AGENT_KEY_WINDOW_MAP[happWindow.webContents.id] = agent_pub_key;
+    happWindow.on('close', () => {
+      delete AGENT_KEY_WINDOW_MAP[happWindow.webContents.id];
+    });
+  }),
+  uninstallApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
+    const { installed_app_id, partition } = opts.input;
+    const holochainManager = getHolochainManager(partition);
+    await holochainManager.uninstallApp(installed_app_id);
+  }),
+  installHapp: t.procedure.input(InstallHappInputSchema).mutation(async (opts) => {
+    const { filePath, appId, partition, networkSeed } = opts.input;
+
+    const holochainManager = getHolochainManager(partition);
+    if (!filePath) {
+      throwTRPCErrorError({
+        message: FILE_UNDEFINED_ERROR,
+      });
+    }
+    await holochainManager.installWebHapp(filePath, appId, networkSeed);
+  }),
+  installKando: t.procedure.input(InstallKandoSchema).mutation(async (opts) => {
+    let { appId, partition, networkSeed } = opts.input;
+
+    const filePath = path.join(DEFAULT_APPS_DIRECTORY, 'kando.webhapp');
+
+    const holochainManager = getHolochainManager(partition);
+    await holochainManager.installWebHapp(filePath, appId, networkSeed);
+  }),
   lairSetupRequired: t.procedure.query(() => {
     const isInitialized = LAUNCHER_FILE_SYSTEM.keystoreInitialized();
     const isInitializedValidated = validateWithZod({
