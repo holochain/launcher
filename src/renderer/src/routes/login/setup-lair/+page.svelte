@@ -23,12 +23,9 @@
 	});
 </script>
 
-<div class="col center-content mx-auto max-w-xs space-y-2 text-center">
-	<h2 class="header mb-2">{$i18n.t('setupHolochainLauncher')}</h2>
-	<div class="max-w-500 mb-2 text-center text-lg">
-		{$i18n.t('choosePassword')}
-	</div>
-	<h3 class="header mb-2">{$i18n.t('selectPassword')}:</h3>
+<div class="p-20">
+	<h2 class="header mb-4">{$i18n.t('setupHolochainLauncher')}</h2>
+	<h3 class="header mb-4">{$i18n.t('selectPassword')}:</h3>
 	<Input
 		on:input={checkPasswords}
 		bind:value={passwordInput}
@@ -50,7 +47,7 @@
 			required: true
 		}}
 	/>
-	<div class={passwordsDontMatch ? 'input-error mb-2' : 'color-transparent'}>
+	<div class={passwordsDontMatch ? 'input-error mb-4' : 'color-transparent'}>
 		{$i18n.t('passwordsDontMatch')}
 	</div>
 	<Button
@@ -69,6 +66,9 @@
 	>
 		{$i18n.t($setupAndLaunch.isPending ? 'loading' : 'launch')}
 	</Button>
+	<div class="mb-2 max-w-xs text-center">
+		<p class="mb-2">{$i18n.t('choosePassword')}</p>
+	</div>
 	{#if setupProgress}
 		<div class="setup-progress mb-2">
 			{$i18n.t(setupProgress)}

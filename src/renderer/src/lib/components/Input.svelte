@@ -5,4 +5,4 @@
 	export let value: string | null = null;
 </script>
 
-<input bind:value {...props} class="input mb-2" />
+<input bind:value {...props} class="input mb-4 max-w-xs" />

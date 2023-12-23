@@ -28,8 +28,8 @@
 	});
 </script>
 
-<div class="col center-content mx-auto max-w-xs space-y-2 text-center">
-	<h3 class="header mb-2">{$i18n.t('enterPassword')}</h3>
+<div class="p-40">
+	<h3 class="header mb-4">{$i18n.t('enterPassword')}</h3>
 	<Input
 		bind:value={passwordInput}
 		props={{

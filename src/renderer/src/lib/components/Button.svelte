@@ -3,7 +3,7 @@
 
 	export let props: ButtonProps;
 
-	const { onClick, ...rest } = props;
+	$: ({ onClick, ...rest } = props);
 </script>
 
 <button on:click={onClick} {...rest} class="btn variant-filled mb-2">

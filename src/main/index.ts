@@ -17,7 +17,7 @@ import {
 import getPort from 'get-port';
 import { ZomeCallSigner, ZomeCallUnsignedNapi } from 'hc-launcher-rust-utils';
 import path from 'path';
-import z, { ZodSchema } from 'zod';
+import z from 'zod';
 
 import {
   CHECK_INITIALIZED_KEYSTORE_ERROR,
@@ -39,6 +39,7 @@ import { initializeLairKeystore, launchLairKeystore } from './lairKeystore';
 import { LauncherEmitter } from './launcherEmitter';
 import { setupLogs } from './logs';
 import { DEFAULT_APPS_DIRECTORY, ICONS_DIRECTORY } from './paths';
+import { validateWithZod } from './trpcHelpers';
 import { throwTRPCErrorError } from './utils';
 import { createHappWindow, createOrShowMainWindow } from './windows';
 
@@ -258,25 +259,6 @@ const handlePasswordInput = (handler: (password: string) => Promise<void>) =>
     } = req;
     return handler(password);
   });
-
-const validateWithZod = <T>({
-  schema,
-  data,
-  errorType,
-}: {
-  schema: ZodSchema<T>;
-  data: unknown;
-  errorType: string;
-}): T => {
-  const result = schema.safeParse(data);
-  if (!result.success) {
-    return throwTRPCErrorError({
-      message: errorType,
-      cause: result.error,
-    });
-  }
-  return result.data;
-};
 
 const getHolochainManager = (partition: string) => {
   const holochainManager = HOLOCHAIN_MANAGERS[partition];
