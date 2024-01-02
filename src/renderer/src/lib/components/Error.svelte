@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { i18n } from '$services';
 
 	export let text = '';

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 
-	import { Error, InstallAppForm } from '$components';
+	import { Button, Error, InstallAppForm } from '$components';
 	import { validateApp } from '$helpers';
 	import { i18n, trpc } from '$services';
 
@@ -24,32 +24,32 @@
 			<div class="flex items-center justify-between rounded border p-2">
 				<h2 class="header mb-2">{app.installed_app_id}</h2>
 				<div class="flex items-center space-x-2">
-					<button
-						class="btn variant-filled mx-2"
-						on:click={() => {
-							if (validateApp(app)) {
-								$openApp.mutate(app, {
-									onSuccess: () => {
-										$installedApps.refetch();
-									}
-								});
+					<Button
+						props={{
+							onClick: () => {
+								if (validateApp(app)) {
+									$openApp.mutate(app);
+								}
 							}
 						}}
 					>
 						{$i18n.t('Open')}
-					</button>
-					<button
-						class="btn variant-filled-error mx-2"
-						on:click={() => {
-							if (validateApp(app)) {
-								$uninstallApp.mutate(app, {
-									onSuccess: () => {
-										$installedApps.refetch();
-									}
-								});
+					</Button>
+					<Button
+						props={{
+							onClick: () => {
+								if (validateApp(app)) {
+									$uninstallApp.mutate(app, {
+										onSuccess: () => {
+											$installedApps.refetch();
+										}
+									});
+								}
 							}
-						}}>{$i18n.t('Uninstall')}</button
+						}}
 					>
+						{$i18n.t('Uninstall')}
+					</Button>
 				</div>
 			</div>
 		{/each}

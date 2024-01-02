@@ -12,6 +12,8 @@
 	"setupLair": "Setup Lair",
 	"launch": "Launch",
 	"passwordsDontMatch": "Passwords don't match!",
+	"passwordPlaceholder": "Enter your password",
+	"confirmPasswordPlaceholder": "Confirm your password",
 	"setupHolochainLauncher": "Setup Holochain Launcher",
 	"choosePassword": "Choose a password to encrypt your data and private keys. You will always need this password to start Launcher.",
 	"selectPassword": "Select Password:",

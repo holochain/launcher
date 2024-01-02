@@ -24,7 +24,8 @@ const config = {
 			$components: path.resolve('./src/lib/components'),
 			$services: path.resolve('./src/lib/services'),
 			$locale: path.resolve('./src/lib/locale'),
-			$helpers: path.resolve('./src/lib/helpers')
+			$helpers: path.resolve('./src/lib/helpers'),
+			$types: path.resolve('./src/lib/types')
 		}
 	}
 };

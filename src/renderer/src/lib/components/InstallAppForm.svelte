@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Tab, TabGroup } from '@skeletonlabs/skeleton';
 
+	import { Button, Input } from '$components';
 	import { i18n, trpc } from '$services';
 
 	const client = trpc();
@@ -68,38 +69,36 @@
 				<h2 class="header mb-2">{$i18n.t('installNewApp')}</h2>
 				<p class="mb-2">{tabsBasic === 0 ? $i18n.t('selectAppFromFilesystem') : ''}</p>
 				{#if tabsBasic === 0}
-					<input
-						bind:files
-						type="file"
-						id="appFile"
-						name="appFile"
-						accept=".webhapp"
-						class="input mb-2"
-					/>
+					<Input props={{ files, type: 'file', id: 'appFile', accept: '.webhapp' }} />
 				{/if}
 
 				<label for="appName" class="header mb-2">{$i18n.t('customAppName')}</label>
-				<input
-					id="appName"
+				<Input
 					bind:value={appId}
-					type="text"
-					placeholder={$i18n.t('enterAppName')}
-					required
-					class="input mb-2"
+					props={{
+						id: 'appName',
+						type: 'text',
+						placeholder: $i18n.t('enterAppName'),
+						required: true
+					}}
 				/>
 
 				<label for="networkSeed" class="header mb-2">{$i18n.t('chooseNetworkSeed')}</label>
-				<input
-					id="networkSeed"
+				<Input
 					bind:value={networkSeed}
-					type="text"
-					placeholder={$i18n.t('enterNetworkSeed')}
-					class="input mb-2"
+					props={{
+						id: 'networkSeed',
+						type: 'text',
+						placeholder: $i18n.t('enterNetworkSeed')
+					}}
 				/>
-
-				<button type="submit" class="btn variant-filled mb-2"
-					>{$i18n.t(tabsBasic === 0 ? 'installHapp' : 'installKanDo')}</button
+				<Button
+					props={{
+						type: 'submit'
+					}}
 				>
+					{$i18n.t(tabsBasic === 0 ? 'installHapp' : 'installKanDo')}
+				</Button>
 			</form>
 		{/if}
 	</svelte:fragment>

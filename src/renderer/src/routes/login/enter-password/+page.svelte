@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Error } from '$components';
+	import { Button, Error, Input } from '$components';
 	import { i18n, trpc } from '$services';
 
 	let passwordInput = '';
@@ -28,18 +28,25 @@
 	});
 </script>
 
-<div class="col center-content mx-auto max-w-xs space-y-2 text-center">
-	<h3 class="header mb-2">{$i18n.t('enterPassword')}</h3>
-	<!-- svelte-ignore a11y-autofocus -->
-	<input autofocus bind:value={passwordInput} id="password-input" type="password" class="input" />
-	<button
-		on:click={setupAndLaunch}
-		tabindex="0"
-		class="btn variant-filled mx-2"
-		disabled={!passwordInput || $launch.isPending}
+<div class="p-40">
+	<h3 class="header mb-4">{$i18n.t('enterPassword')}</h3>
+	<Input
+		bind:value={passwordInput}
+		props={{
+			id: 'password-input',
+			type: 'password',
+			placeholder: $i18n.t('passwordPlaceholder'),
+			required: true
+		}}
+	/>
+	<Button
+		props={{
+			disabled: !passwordInput || $launch.isPending,
+			onClick: setupAndLaunch
+		}}
 	>
 		{$i18n.t($launch.isPending ? 'loading' : 'launch')}
-	</button>
+	</Button>
 	{#if setupProgress}
 		<div class="setup-progress mb-2">
 			{$i18n.t(setupProgress)}

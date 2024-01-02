@@ -12,7 +12,11 @@ export default {
 		join(require.resolve('@skeletonlabs/skeleton'), '../**/*.{html,js,svelte,ts}')
 	],
 	theme: {
-		extend: {}
+		extend: {
+			backgroundImage: {
+				'login-background': "url('/images/login-background.png')"
+			}
+		}
 	},
 	plugins: [
 		skeleton({
