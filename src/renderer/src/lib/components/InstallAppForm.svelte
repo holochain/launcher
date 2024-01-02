@@ -69,7 +69,7 @@
 				<h2 class="header mb-2">{$i18n.t('installNewApp')}</h2>
 				<p class="mb-2">{tabsBasic === 0 ? $i18n.t('selectAppFromFilesystem') : ''}</p>
 				{#if tabsBasic === 0}
-					<Input props={{ files, type: 'file', id: 'appFile', accept: '.webhapp' }} />
+					<Input bind:files props={{ type: 'file', id: 'appFile', accept: '.webhapp' }} />
 				{/if}
 
 				<label for="appName" class="header mb-2">{$i18n.t('customAppName')}</label>

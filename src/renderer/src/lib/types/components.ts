@@ -4,7 +4,6 @@ type CommonInputProps = {
 
 type FileProps = {
 	accept: '.webhapp';
-	files?: FileList;
 };
 
 type TextProps = {
