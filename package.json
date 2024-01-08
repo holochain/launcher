@@ -25,6 +25,7 @@
     "build:sveltekit": "cd src/renderer; yarn build"
   },
   "dependencies": {
+    "@electron/notarize": "2.2.0",
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^2.0.0",
     "@holochain/client": "^0.16.3",
