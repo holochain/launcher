@@ -1,13 +1,27 @@
 import { is } from '@electron-toolkit/utils';
 import { BrowserWindow, net, session } from 'electron';
+import serve from 'electron-serve';
 import { createIPCHandler } from 'electron-trpc/main';
-import path from 'path';
+import { join, resolve } from 'path';
 import url from 'url';
 
 import { ExtendedAppInfo } from '../types';
 import type { AppRouter } from '.';
 import { LauncherFileSystem } from './filesystem';
 import { setLinkOpenHandlers } from './utils';
+
+const serveURL = serve({ directory: join(__dirname, '..', 'renderer') });
+
+// this is needed to prevent blank screen when dev electron loads
+const loadVite = (mainWindow: BrowserWindow | undefined | null): void => {
+  if (!mainWindow) return;
+  mainWindow.loadURL(`http://localhost:5173`).catch((e) => {
+    console.log('Error loading URL, retrying', e);
+    setTimeout(() => {
+      loadVite(mainWindow);
+    }, 200);
+  });
+};
 
 export const createOrShowMainWindow = (
   mainWindow: BrowserWindow | undefined | null,
@@ -24,7 +38,7 @@ export const createOrShowMainWindow = (
     title: 'Holochain Launcher',
     show: false,
     webPreferences: {
-      preload: path.resolve(__dirname, '../preload/admin.js'),
+      preload: resolve(__dirname, '../preload/admin.js'),
     },
   });
 
@@ -36,9 +50,9 @@ export const createOrShowMainWindow = (
   // Load the remote URL for development or the local html file for production.
 
   if (is.dev) {
-    mainWindow.loadURL(`http://localhost:5173`);
+    loadVite(mainWindow);
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    serveURL(mainWindow);
   }
 
   // once its ready to show, show
@@ -75,10 +89,10 @@ export const createHappWindow = (
     // console.log("### Got file request: ", request);
     const uriWithoutProtocol = request.url.slice('webhapp://'.length);
     const filePathComponents = uriWithoutProtocol.split('/').slice(1);
-    const filePath = path.join(...filePathComponents);
+    const filePath = join(...filePathComponents);
     const resource = net.fetch(
       url
-        .pathToFileURL(path.join(launcherFileSystem.happUiDir(appId, holochainPartition), filePath))
+        .pathToFileURL(join(launcherFileSystem.happUiDir(appId, holochainPartition), filePath))
         .toString(),
     );
     if (!filePath.endsWith('index.html')) {
@@ -100,7 +114,7 @@ export const createHappWindow = (
     width: 1200,
     height: 800,
     webPreferences: {
-      preload: path.resolve(__dirname, '../preload/happs.js'),
+      preload: resolve(__dirname, '../preload/happs.js'),
       partition,
     },
   });

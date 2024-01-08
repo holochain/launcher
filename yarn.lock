@@ -1768,6 +1768,11 @@ electron-publish@24.8.1:
     lazy-val "^1.0.5"
     mime "^2.5.2"
 
+electron-serve@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/electron-serve/-/electron-serve-1.2.0.tgz#c2aa17017d89483c935f725ed70f8a63845c0091"
+  integrity sha512-zJG3wisMrDn2G/gnjrhyB074COvly1FnS0U7Edm8bfXLB8MYX7UtwR9/y2LkFreYjzQHm9nEbAfgCmF+9M9LHQ==
+
 electron-squirrel-startup@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/electron-squirrel-startup/-/electron-squirrel-startup-1.0.0.tgz#19b4e55933fa0ef8f556784b9c660f772546a0b8"
