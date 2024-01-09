@@ -122,14 +122,14 @@ jobs:
 
           # NEW_VERSION: install new holochain version and copy its binary to the tauri path
 
-      - id: create-release
-        uses: ncipollo/release-action@v1
-        with:
-          body: 'See assets below to download and install this version.'
-          name: Holochain Launcher Electron (Prototype) v${{ steps.version.outputs.APP_VERSION }}
-          tag: launcher-prototype-v${{ steps.version.outputs.APP_VERSION }}
-          prerelease: true
-          skipIfReleaseExists: true
+      # - id: create-release
+      #   uses: ncipollo/release-action@v1
+      #   with:
+      #     body: 'See assets below to download and install this version.'
+      #     name: Holochain Launcher Electron (Prototype) v${{ steps.version.outputs.APP_VERSION }}
+      #     tag: launcher-prototype-v${{ steps.version.outputs.APP_VERSION }}
+      #     prerelease: true
+      #     skipIfReleaseExists: true
 
       - name: build and upload the app (macOS)
         if: matrix.platform == 'macos-11'
@@ -143,7 +143,7 @@ jobs:
         run: |
           yarn build:mac
           ls dist
-          gh release upload "launcher-prototype-v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}.dmg" --clobber
+          # gh release upload "launcher-prototype-v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}.dmg" --clobber
 
       - name: build and upload the app (Linux)
         if: matrix.platform == 'ubuntu-20.04'
@@ -152,7 +152,7 @@ jobs:
         run: |
           yarn build:linux
           ls dist
-          gh release upload "launcher-prototype-v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}.AppImage" --clobber
+          # gh release upload "launcher-prototype-v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}.AppImage" --clobber
 
       - name: build, sign and upload the app (Windows)
         if: matrix.platform == 'windows-2019'
@@ -167,4 +167,4 @@ jobs:
 
           AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe"
 
-          gh release upload "launcher-prototype-v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" --clobber
+          # gh release upload "launcher-prototype-v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" --clobber
