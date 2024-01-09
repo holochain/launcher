@@ -165,6 +165,12 @@ jobs:
 
           dotnet tool install --global AzureSignTool
 
+          echo "sha256 before code signing"
+          CertUtil -hashfile "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" SHA256
+
           AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe"
 
-          # gh release upload "launcher-prototype-v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" --clobber
+          echo "sha256 after code signing"
+          CertUtil -hashfile "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" SHA256
+
+          gh release upload "launcher-prototype-v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" --clobber
