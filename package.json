@@ -26,12 +26,13 @@
   },
   "dependencies": {
     "@electron/notarize": "2.2.0",
-    "@electron-toolkit/preload": "^2.0.0",
-    "@electron-toolkit/utils": "^2.0.0",
+    "@electron-toolkit/preload": "^3.0.0 ",
+    "@electron-toolkit/utils": "^3.0.0",
     "@holochain/client": "^0.16.3",
     "@trpc/client": "^10.44.1",
     "@trpc/server": "^10.44.1",
     "bufferutil": "4.0.8",
+    "electron-serve": "^1.2.0",
     "electron-trpc": "^0.5.2",
     "hc-launcher-rust-utils": "file:./rust-utils/dist",
     "nanoid": "5.0.4",
@@ -40,22 +41,22 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@electron-toolkit/eslint-config-prettier": "^1.0.1",
+    "@electron-toolkit/eslint-config-prettier": "^2.0.0",
     "@electron-toolkit/eslint-config-ts": "^1.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@napi-rs/cli": "^2.16.3",
     "@types/node": "^20.10.5",
     "concurrently": "^8.2.2",
-    "electron": "^28.0.0",
+    "electron": "^28.1.1",
     "electron-builder": "^24.9.1",
     "electron-squirrel-startup": "^1.0.0",
-    "electron-vite": "^1.0.27",
+    "electron-vite": "^2.0.0",
     "eslint": "^8.56.0",
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "get-port": "7.0.0",
     "prettier": "^3.1.1",
     "typescript": "^5.3.3",
     "utf-8-validate": "^6.0.3",
-    "vite": "^4.5.1"
+    "vite": "^5.0.11"
   }
 }
