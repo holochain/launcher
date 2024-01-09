@@ -9,8 +9,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [windows-2019, macos-11, ubuntu-20.04]
-        # platform: [windows-2019, macos-11]
+        # platform: [windows-2019, macos-11, ubuntu-20.04]
+        platform: [windows-2019]
     env:
       MACOSX_DEPLOYMENT_TARGET: 10.13
 
@@ -173,4 +173,4 @@ jobs:
           echo "sha256 after code signing"
           CertUtil -hashfile "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" SHA256
 
-          gh release upload "launcher-prototype-v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" --clobber
+          gh release upload "v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" --clobber
