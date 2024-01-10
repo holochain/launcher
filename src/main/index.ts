@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-import { AgentPubKey } from '@holochain/client';
 import { initTRPC } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
 import { ArgumentParser } from 'argparse';
@@ -14,13 +12,13 @@ import {
   protocol,
   Tray,
 } from 'electron';
-import getPort from 'get-port';
 import { ZomeCallSigner, ZomeCallUnsignedNapi } from 'hc-launcher-rust-utils';
 import path from 'path';
 import z from 'zod';
 
 import {
   CHECK_INITIALIZED_KEYSTORE_ERROR,
+  ExtendedAppInfo,
   ExtendedAppInfoSchema,
   FILE_UNDEFINED_ERROR,
   InstallHappInputSchema,
@@ -29,6 +27,7 @@ import {
   LoadingProgressUpdate,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
   RunningHolochain,
+  WindowInfo,
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '../types';
 import { LAIR_BINARY } from './binaries';
@@ -96,19 +95,27 @@ const LAUNCHER_EMITTER = new LauncherEmitter();
 
 setupLogs(LAUNCHER_EMITTER, LAUNCHER_FILE_SYSTEM);
 
-let ZOME_CALL_SIGNER: ZomeCallSigner | undefined;
+let DEFAULT_ZOME_CALL_SIGNER: ZomeCallSigner | undefined;
+// Zome call signers for external binaries (admin ports used as keys)
+const CUSTOM_ZOME_CALL_SIGNERS: Record<number, ZomeCallSigner> = {};
 // let ADMIN_WEBSOCKET: AdminWebsocket | undefined;
 // let ADMIN_PORT: number | undefined;
-const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by partition
+let HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
 let LAIR_HANDLE: childProcess.ChildProcessWithoutNullStreams | undefined;
 let MAIN_WINDOW: BrowserWindow | undefined | null;
-const AGENT_KEY_WINDOW_MAP: Record<number, AgentPubKey> = {}; // AgentPubKey by webContents.id - used to verify origin of zome call requests
+const WINDOW_INFO_MAP: Record<number, WindowInfo> = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
 
 const handleSignZomeCall = (e: IpcMainInvokeEvent, zomeCall: ZomeCallUnsignedNapi) => {
-  if (zomeCall.provenance.toString() !== Array.from(AGENT_KEY_WINDOW_MAP[e.sender.id]).toString())
+  const windowInfo = WINDOW_INFO_MAP[e.sender.id];
+  if (zomeCall.provenance.toString() !== Array.from(windowInfo.agentPubKey).toString())
     return Promise.reject('Agent public key unauthorized.');
-  if (!ZOME_CALL_SIGNER) throw Error('Lair signer is not ready');
-  return ZOME_CALL_SIGNER.signZomeCall(zomeCall);
+  if (windowInfo.adminPort) {
+    // In case of externally running binaries we need to use a custom zome call signer
+    const zomeCallSigner = CUSTOM_ZOME_CALL_SIGNERS[windowInfo.adminPort];
+    return zomeCallSigner.signZomeCall(zomeCall);
+  }
+  if (!DEFAULT_ZOME_CALL_SIGNER) throw Error('Lair signer is not ready');
+  return DEFAULT_ZOME_CALL_SIGNER.signZomeCall(zomeCall);
 };
 
 // // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -220,11 +227,9 @@ async function handleLaunch(password: string) {
   LAIR_HANDLE = lairHandle;
 
   if (!MAIN_WINDOW) throw new Error('Main window needs to exist before launching.');
-  ZOME_CALL_SIGNER = await rustUtils.ZomeCallSigner.connect(lairUrl, password);
+  DEFAULT_ZOME_CALL_SIGNER = await rustUtils.ZomeCallSigner.connect(lairUrl, password);
 
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingHolochain');
-
-  const adminPort = await getPort();
 
   const holochainManager = await HolochainManager.launch(
     LAUNCHER_EMITTER,
@@ -234,7 +239,6 @@ async function handleLaunch(password: string) {
       type: 'built-in',
       version: '0.2.3',
     },
-    adminPort,
     lairUrl,
     undefined,
     undefined,
@@ -245,7 +249,7 @@ async function handleLaunch(password: string) {
   emitToWindow<RunningHolochain[]>(MAIN_WINDOW, 'holochain-ready', [
     {
       version: holochainManager.version,
-      partition: holochainManager.partition,
+      holochainDataRoot: holochainManager.holochainDataRoot,
       appPort: holochainManager.appPort,
     },
   ]);
@@ -260,12 +264,12 @@ const handlePasswordInput = (handler: (password: string) => Promise<void>) =>
     return handler(password);
   });
 
-const getHolochainManager = (partition: string) => {
-  const holochainManager = HOLOCHAIN_MANAGERS[partition];
+const getHolochainManager = (dataRootName: string) => {
+  const holochainManager = HOLOCHAIN_MANAGERS[dataRootName];
   if (!holochainManager) {
     return throwTRPCErrorError({
       message: NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
-      cause: `No running Holochain Manager found for the specified partition: '${partition}'`,
+      cause: `No running Holochain Manager found for the specified partition: '${dataRootName}'`,
     });
   }
   return holochainManager;
@@ -273,18 +277,24 @@ const getHolochainManager = (partition: string) => {
 
 const router = t.router({
   openApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
-    const { partition, agent_pub_key } = opts.input;
-    const holochainManager = getHolochainManager(partition);
-    const happWindow = createHappWindow(opts.input, LAUNCHER_FILE_SYSTEM, holochainManager.appPort);
-    AGENT_KEY_WINDOW_MAP[happWindow.webContents.id] = agent_pub_key;
+    const { appInfo, holochainDataRoot } = opts.input;
+    const holochainManager = getHolochainManager(holochainDataRoot.name);
+    const happWindow = createHappWindow(
+      opts.input as ExtendedAppInfo,
+      LAUNCHER_FILE_SYSTEM,
+      holochainManager.appPort,
+    );
+    WINDOW_INFO_MAP[happWindow.webContents.id] = {
+      agentPubKey: appInfo.agent_pub_key,
+    };
     happWindow.on('close', () => {
-      delete AGENT_KEY_WINDOW_MAP[happWindow.webContents.id];
+      delete WINDOW_INFO_MAP[happWindow.webContents.id];
     });
   }),
   uninstallApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
-    const { installed_app_id, partition } = opts.input;
-    const holochainManager = getHolochainManager(partition);
-    await holochainManager.uninstallApp(installed_app_id);
+    const { appInfo, holochainDataRoot } = opts.input;
+    const holochainManager = getHolochainManager(holochainDataRoot.name);
+    await holochainManager.uninstallApp(appInfo.installed_app_id);
   }),
   installHapp: t.procedure.input(InstallHappInputSchema).mutation(async (opts) => {
     const { filePath, appId, partition, networkSeed } = opts.input;
@@ -317,10 +327,9 @@ const router = t.router({
   getInstalledApps: t.procedure.query(() => {
     const installedApps = Object.values(HOLOCHAIN_MANAGERS).flatMap((manager) =>
       manager.installedApps.map((app) => ({
-        installed_app_id: app.installed_app_id,
+        appInfo: app,
         version: manager.version,
-        partition: manager.partition,
-        agent_pub_key: app.agent_pub_key,
+        holochainDataRoot: manager.holochainDataRoot,
       })),
     );
 

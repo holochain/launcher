@@ -22,7 +22,7 @@
 	{:else if $installedApps.isSuccess}
 		{#each $installedApps.data as app}
 			<div class="flex items-center justify-between rounded border p-2">
-				<h2 class="header mb-2">{app.installed_app_id}</h2>
+				<h2 class="header mb-2">{app.appInfo.installed_app_id}</h2>
 				<div class="flex items-center space-x-2">
 					<Button
 						props={{

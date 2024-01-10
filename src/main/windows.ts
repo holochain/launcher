@@ -81,9 +81,9 @@ export const createHappWindow = (
 ): BrowserWindow => {
   // TODO create mapping between installed-app-id's and window ids
   if (!appPort) throw new Error('App port not defined.');
-  const appId = extendedAppInfo.installed_app_id;
-  const holochainPartition = extendedAppInfo.partition;
-  const partition = `persist:${holochainPartition}#${appId}`;
+  const appId = extendedAppInfo.appInfo.installed_app_id;
+  const holochainDataRoot = extendedAppInfo.holochainDataRoot;
+  const partition = `persist:${holochainDataRoot.name}#${appId}`;
   const ses = session.fromPartition(partition);
   ses.protocol.handle('webhapp', async (request) => {
     // console.log("### Got file request: ", request);
@@ -92,7 +92,7 @@ export const createHappWindow = (
     const filePath = join(...filePathComponents);
     const resource = net.fetch(
       url
-        .pathToFileURL(join(launcherFileSystem.happUiDir(appId, holochainPartition), filePath))
+        .pathToFileURL(join(launcherFileSystem.happUiDir(appId, holochainDataRoot), filePath))
         .toString(),
     );
     if (!filePath.endsWith('index.html')) {
