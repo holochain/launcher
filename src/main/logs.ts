@@ -54,7 +54,7 @@ function logHolochain(
   holochainData: HolochainData,
   logFileTransport: winston.transports.FileTransportInstance,
 ) {
-  const holochainPartition = holochainData.partition;
+  const holochainPartition = holochainData.holochainDataRoot.name;
   const identifier = identifierFromHolochainData(holochainData);
   const line = (holochainData as HolochainData).data;
   const logLine = `[${identifier}]: ${line}`;
@@ -110,11 +110,11 @@ function createLairLogger(
 
 function identifierFromHolochainData(holochainData: HolochainData): string {
   if (holochainData.version.type === 'built-in') {
-    return `HOLOCHAIN ${holochainData.version.version} @ partition ${holochainData.partition}`;
+    return `HOLOCHAIN ${holochainData.version.version} @ partition ${holochainData.holochainDataRoot.name}`;
   } else if (holochainData.version.type === 'custom-path') {
-    return `HOLOCHAIN CUSTOM BINARY @ partition ${holochainData.partition}`;
+    return `HOLOCHAIN CUSTOM BINARY @ partition ${holochainData.holochainDataRoot.name}`;
   } else if (holochainData.version.type === 'running-external') {
-    return `HOLOCHAIN EXTERNAL BINARY @ partition ${holochainData.partition}`;
+    return `HOLOCHAIN EXTERNAL BINARY @ partition ${holochainData.holochainDataRoot.name}`;
   } else {
     return `HOLOCHAIN unknown`;
   }

@@ -9,7 +9,7 @@ export function setLinkOpenHandlers(browserWindow: BrowserWindow): void {
   // instead of the webview
   browserWindow.webContents.on('will-navigate', (e) => {
     console.log('GOT WILL-NAVIGATE EVENT: ', e);
-    if (e.url === 'http://localhost:5173/') {
+    if (e.url.startsWith('http://localhost:5173')) {
       // ignore vite routing in dev mode
       return;
     }
