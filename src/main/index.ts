@@ -100,7 +100,7 @@ let DEFAULT_ZOME_CALL_SIGNER: ZomeCallSigner | undefined;
 const CUSTOM_ZOME_CALL_SIGNERS: Record<number, ZomeCallSigner> = {};
 // let ADMIN_WEBSOCKET: AdminWebsocket | undefined;
 // let ADMIN_PORT: number | undefined;
-let HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
+const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
 let LAIR_HANDLE: childProcess.ChildProcessWithoutNullStreams | undefined;
 let MAIN_WINDOW: BrowserWindow | undefined | null;
 const WINDOW_INFO_MAP: Record<number, WindowInfo> = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
