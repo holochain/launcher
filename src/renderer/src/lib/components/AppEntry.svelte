@@ -22,6 +22,7 @@
 		<div class="flex items-center space-x-2">
 			<Button
 				props={{
+					disabled: 'disabled' in app.appInfo.status,
 					onClick: () => {
 						$openApp.mutate(app);
 					}
