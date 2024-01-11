@@ -9,7 +9,7 @@
 </script>
 
 {#if type === 'file'}
-	<input type="file" bind:files {...rest} class="input mb-4 max-w-xs" />
+	<input type="file" bind:files {...rest} class="input mb-4 max-w-56 rounded" />
 {:else}
-	<input bind:value {...props} class="input mb-4 max-w-xs" />
+	<input bind:value {...props} class="input mb-4 max-w-56 rounded" />
 {/if}
