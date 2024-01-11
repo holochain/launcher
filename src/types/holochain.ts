@@ -42,7 +42,7 @@ export const InstallHappInputSchema = InstallKandoSchema.extend({
 
 export type InstallHappInput = z.infer<typeof InstallHappInputSchema>;
 
-export const HolochainDataRootSchema = z.union([
+const HolochainDataRootSchema = z.union([
   z.object({
     type: z.literal('partition'),
     name: z.string(),

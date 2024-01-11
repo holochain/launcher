@@ -12,7 +12,6 @@ import {
   HOLOCHAIN_LOG,
   HolochainDataRoot,
   HolochainPartition,
-  HolochainPartitionSchema,
   HolochainVersion,
 } from '../types';
 import { HOLOCHAIN_BINARIES } from './binaries';
@@ -71,23 +70,8 @@ export class HolochainManager {
     signalingUrl?: string,
     nonDefaultPartition?: HolochainPartition, // launch with data from a non-default partition
   ): Promise<HolochainManager> {
-    const partition = HolochainPartitionSchema.safeParse(nonDefaultPartition);
-
-    if (!partition.success) {
-      throw new Error(`Invalid partition: ${JSON.stringify(nonDefaultPartition)}`);
-    }
-
     let holochainDataRoot: HolochainDataRoot;
     switch (nonDefaultPartition?.type) {
-      case undefined:
-      case 'default':
-        if (version.type !== 'built-in')
-          throw new Error('Only built-in holochain binaries can be used in the default partition.');
-        holochainDataRoot = {
-          type: 'partition',
-          name: breakingVersion(version.version),
-        };
-        break;
       case 'custom':
         holochainDataRoot = {
           type: 'partition',
@@ -99,6 +83,14 @@ export class HolochainManager {
           type: 'external',
           name: `external#${nonDefaultPartition.name}`,
           path: nonDefaultPartition.path,
+        };
+        break;
+      default:
+        if (version.type !== 'built-in')
+          throw new Error('Only built-in holochain binaries can be used in the default partition.');
+        holochainDataRoot = {
+          type: 'partition',
+          name: breakingVersion(version.version),
         };
         break;
     }

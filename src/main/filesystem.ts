@@ -2,7 +2,7 @@ import { App } from 'electron';
 import fs from 'fs';
 import path from 'path';
 
-import { HolochainDataRoot, HolochainDataRootSchema } from '../types';
+import { HolochainDataRoot } from '../types';
 import { breakingVersion } from './utils';
 
 export type Profile = string;
@@ -75,16 +75,11 @@ export class LauncherFileSystem {
   }
 
   happUiDir(appId: string, holochainDataRoot: HolochainDataRoot) {
-    const holochainDataRootParsed = HolochainDataRootSchema.safeParse(holochainDataRoot);
-
-    if (!holochainDataRootParsed.success) {
-      throw new Error(`Got invalid holochainDataRoot: ${holochainDataRoot}`);
-    }
-
-    if (holochainDataRoot.type === 'partition') {
-      return path.join(this.holochainPartitionDir(holochainDataRoot.name), 'apps', appId, 'ui');
-    }
-    return path.join(holochainDataRoot.path, 'apps', 'ui');
+    const baseDir =
+      holochainDataRoot.type === 'partition'
+        ? this.holochainPartitionDir(holochainDataRoot.name)
+        : holochainDataRoot.path;
+    return path.join(baseDir, 'apps', appId, 'ui');
   }
 
   keystoreInitialized = () => {
