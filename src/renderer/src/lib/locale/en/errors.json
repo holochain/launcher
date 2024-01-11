@@ -1,11 +1,11 @@
 {
+	"checkInitializedKeystoreError": "Error checking initialized keystore",
 	"failedToCreateSymlinkedLairDirectoryError": "Failed to create symlinked lair directory",
+	"fileUndefinedError": "File undefined",
 	"initializeLairKeystoreError": "Error initializing lair keystore",
 	"launchLairKeystoreError": "Error launching lair keystore",
-	"wrongPassword": "Wrong password",
-	"wrongInstalledAppStructure": "Wrong installed app structure",
-	"checkInitializedKeystoreError": "Error checking initialized keystore",
-	"unknownError": "Unknown error",
 	"noRunningHolochainManagerError": "No running Holochain manager",
-	"fileUndefinedError": "File undefined"
+	"unknownError": "Unknown error",
+	"wrongInstalledAppStructure": "Wrong installed app structure",
+	"wrongPassword": "Wrong password"
 }
