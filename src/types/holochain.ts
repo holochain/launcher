@@ -41,10 +41,25 @@ export type CellInfo = z.infer<typeof CellInfoSchema>;
 
 export type HolochainVersion = z.infer<typeof HolochainVersionSchema>;
 
+export const InstalledAppInfoStatusSchema = z.union([
+  z.object({
+    paused: z.object({}),
+  }),
+  z.object({
+    disabled: z.object({}),
+  }),
+  z.object({
+    running: z.null(),
+  }),
+]);
+
+export type InstalledAppInfoStatus = z.infer<typeof InstalledAppInfoStatusSchema>;
+
 export const AppInfoSchema = z.object({
   agent_pub_key: z.instanceof(Uint8Array),
   installed_app_id: z.string(),
   cell_info: z.record(z.string(), z.array(CellInfoSchema)),
+  status: InstalledAppInfoStatusSchema,
 });
 
 export const CommonAppSchema = z.object({
