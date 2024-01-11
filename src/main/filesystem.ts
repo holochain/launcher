@@ -75,11 +75,10 @@ export class LauncherFileSystem {
   }
 
   happUiDir(appId: string, holochainDataRoot: HolochainDataRoot) {
-    const baseDir =
-      holochainDataRoot.type === 'partition'
-        ? this.holochainPartitionDir(holochainDataRoot.name)
-        : holochainDataRoot.path;
-    return path.join(baseDir, 'apps', appId, 'ui');
+    if (holochainDataRoot.type === 'partition') {
+      return path.join(this.holochainPartitionDir(holochainDataRoot.name), 'apps', appId, 'ui');
+    }
+    return path.join(holochainDataRoot.path, 'apps', 'ui');
   }
 
   keystoreInitialized = () => {
