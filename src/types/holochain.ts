@@ -42,7 +42,7 @@ export const InstallHappInputSchema = InstallKandoSchema.extend({
 
 export type InstallHappInput = z.infer<typeof InstallHappInputSchema>;
 
-export const HolochainDataRootSchema = z.union([
+const HolochainDataRootSchema = z.union([
   z.object({
     type: z.literal('partition'),
     name: z.string(),
@@ -54,58 +54,24 @@ export const HolochainDataRootSchema = z.union([
   }),
 ]);
 
-export type HolochainDataRoot =
-  | {
-      type: 'partition';
-      /**
-       * If it's a custom partition, it will start with 'partition#'
-       */
-      name: string;
-    }
-  | {
-      /**
-       * A partition that's not under control of the launcher but provided externally. Used when the launcher
-       * connects to an externally running holochain binary
-       */
-      type: 'external';
-      /**
-       * The name is used to determine the storage location of localStorage and other browser-related data.
-       * It will start with 'external#'.
-       */
-      name: string;
-      /**
-       * Path to use as data root
-       */
-      path: string;
-    };
+export type HolochainDataRoot = z.infer<typeof HolochainDataRootSchema>;
 
-export type HolochainPartition =
-  | {
-      /**
-       * The default partition. Its folder name is based on the holochain version, e.g. 0.2.x
-       * for all holochain versions semver compatible with holochain 0.2.0
-       */
-      type: 'default';
-    }
-  | {
-      /**
-       * A custom partition with a custom name. Its folder name will be named partition#[cusom name here]
-       */
-      type: 'custom';
-      name: string;
-    }
-  | {
-      /**
-       * A partition that's not under control of the launcher but provided externally. Used when the launcher
-       * connects to an externally running holochain binary
-       */
-      type: 'external';
-      /**
-       * The name is used to determine the storage location of localStorage and other browser-related data
-       */
-      name: string;
-      path: string;
-    };
+export const HolochainPartitionSchema = z.union([
+  z.object({
+    type: z.literal('default'),
+  }),
+  z.object({
+    type: z.literal('custom'),
+    name: z.string(),
+  }),
+  z.object({
+    type: z.literal('external'),
+    name: z.string(),
+    path: z.string(),
+  }),
+]);
+
+export type HolochainPartition = z.infer<typeof HolochainPartitionSchema>;
 
 export const ExtendedAppInfoSchema = z.object({
   appInfo: AppInfoSchema,

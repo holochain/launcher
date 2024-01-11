@@ -6,6 +6,6 @@
 	$: ({ onClick, ...rest } = props);
 </script>
 
-<button on:click={onClick} {...rest} class="variant-filled btn mb-2">
+<button on:click={onClick} {...rest} class="btn-primary">
 	<slot />
 </button>

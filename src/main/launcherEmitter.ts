@@ -8,7 +8,7 @@ export class LauncherEmitter extends EventEmitter {
     event: K,
     listener: EventMap[K] extends undefined ? () => void : (arg: EventMap[K]) => void,
   ): this {
-    return super.on(event, listener as any);
+    return super.on(event, listener);
   }
 
   // Override 'emit' method for type safety

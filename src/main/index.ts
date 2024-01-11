@@ -26,7 +26,6 @@ import {
   LOADING_PROGRESS_UPDATE,
   LoadingProgressUpdate,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
-  RunningHolochain,
   WindowInfo,
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '../types';
@@ -245,14 +244,6 @@ async function handleLaunch(password: string) {
     undefined,
   );
   HOLOCHAIN_MANAGERS['0.2.x'] = holochainManager;
-
-  emitToWindow<RunningHolochain[]>(MAIN_WINDOW, 'holochain-ready', [
-    {
-      version: holochainManager.version,
-      holochainDataRoot: holochainManager.holochainDataRoot,
-      appPort: holochainManager.appPort,
-    },
-  ]);
   return;
 }
 
@@ -308,7 +299,7 @@ const router = t.router({
     await holochainManager.installWebHapp(filePath, appId, networkSeed);
   }),
   installKando: t.procedure.input(InstallKandoSchema).mutation(async (opts) => {
-    let { appId, partition, networkSeed } = opts.input;
+    const { appId, partition, networkSeed } = opts.input;
 
     const filePath = path.join(DEFAULT_APPS_DIRECTORY, 'kando.webhapp');
 
@@ -356,9 +347,5 @@ const router = t.router({
     });
   }),
 });
-
-function emitToWindow<T>(targetWindow: BrowserWindow, channel: string, payload: T): void {
-  targetWindow.webContents.send(channel, payload);
-}
 
 export type AppRouter = typeof router;

@@ -33,8 +33,10 @@ export const createOrShowMainWindow = (
   }
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    titleBarStyle: 'hidden',
+    width: is.dev ? 1200 : 500,
+    height: 600,
+    resizable: false,
     title: 'Holochain Launcher',
     show: false,
     webPreferences: {
@@ -110,7 +112,7 @@ export const createHappWindow = (
     }
   });
   // Create the browser window.
-  let happWindow = new BrowserWindow({
+  const happWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     webPreferences: {

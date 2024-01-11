@@ -14,7 +14,9 @@ export default {
 	theme: {
 		extend: {
 			backgroundImage: {
-				'login-background': "url('/images/login-background.png')"
+				'login-background': "url('/images/login-background.png')",
+				'custom-gradient':
+					'linear-gradient(to top right, rgba(0, 212, 225, 1) 15%, rgba(175, 0, 236, 1) 70%)'
 			}
 		}
 	},

@@ -75,14 +75,10 @@ export class LauncherFileSystem {
   }
 
   happUiDir(appId: string, holochainDataRoot: HolochainDataRoot) {
-    switch (holochainDataRoot.type) {
-      case 'partition':
-        return path.join(this.holochainPartitionDir(holochainDataRoot.name), 'apps', appId, 'ui');
-      case 'external':
-        return path.join(holochainDataRoot.path, 'apps', 'ui');
-      default:
-        throw new Error('Got invalid data root type: ', (holochainDataRoot as any).type);
+    if (holochainDataRoot.type === 'partition') {
+      return path.join(this.holochainPartitionDir(holochainDataRoot.name), 'apps', appId, 'ui');
     }
+    return path.join(holochainDataRoot.path, 'apps', 'ui');
   }
 
   keystoreInitialized = () => {

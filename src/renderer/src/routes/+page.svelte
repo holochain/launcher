@@ -12,7 +12,7 @@
 
 	const unsubscribe = lairSetupRequired.subscribe((setupData) => {
 		if (setupData.isSuccess) {
-			return goto(setupData.data ? '/login/setup-lair' : '/login/enter-password');
+			return goto(setupData.data ? '/splash/welcome' : '/splash/enter-password');
 		}
 	});
 	onDestroy(() => {

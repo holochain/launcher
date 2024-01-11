@@ -72,22 +72,6 @@ export class HolochainManager {
   ): Promise<HolochainManager> {
     let holochainDataRoot: HolochainDataRoot;
     switch (nonDefaultPartition?.type) {
-      case undefined:
-        if (version.type !== 'built-in')
-          throw new Error('Only built-in holochain binaries can be used in the default partition.');
-        holochainDataRoot = {
-          type: 'partition',
-          name: breakingVersion(version.version),
-        };
-        break;
-      case 'default':
-        if (version.type !== 'built-in')
-          throw new Error('Only built-in holochain binaries can be used in the default partition.');
-        holochainDataRoot = {
-          type: 'partition',
-          name: breakingVersion(version.version),
-        };
-        break;
       case 'custom':
         holochainDataRoot = {
           type: 'partition',
@@ -102,7 +86,13 @@ export class HolochainManager {
         };
         break;
       default:
-        throw new Error(`Unknown partition type: ${(nonDefaultPartition as any).type}`);
+        if (version.type !== 'built-in')
+          throw new Error('Only built-in holochain binaries can be used in the default partition.');
+        holochainDataRoot = {
+          type: 'partition',
+          name: breakingVersion(version.version),
+        };
+        break;
     }
 
     if (version.type === 'running-external') {

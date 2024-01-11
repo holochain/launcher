@@ -6,11 +6,20 @@
 html,
 body {
 	@apply h-full overflow-hidden;
+	overflow-y: auto;
 }
 
-/* modern theme */
 @font-face {
-	font-family: 'Quicksand';
-	src: url('/fonts/Quicksand.ttf');
-	font-display: swap;
+	font-family: 'Figtree';
+	src: url('/fonts/Figtree-VariableFont_wght.ttf');
+}
+
+.h1 {
+	@apply text-4xl font-semibold;
+}
+.h3 {
+	@apply pb-8 text-base;
+}
+.btn-primary {
+	@apply bg-custom-gradient btn mb-2 rounded font-semibold;
 }
