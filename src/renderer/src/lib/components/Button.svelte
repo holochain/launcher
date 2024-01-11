@@ -6,6 +6,6 @@
 	$: ({ onClick, ...rest } = props);
 </script>
 
-<button on:click={onClick} {...rest} class="btn bg-custom-gradient mb-2 rounded font-semibold">
+<button on:click={onClick} {...rest} class="btn-primary">
 	<slot />
 </button>

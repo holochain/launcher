@@ -5,8 +5,8 @@
 </script>
 
 <div class="pb-16">
-	<h1 class="text-4xl font-semibold">{$i18n.t('holochainLauncher')}</h1>
-	<p class="pb-8 text-base">{$i18n.t('discoverInstallAndManageYourApps')}</p>
+	<h1 class="h1">{$i18n.t('holochainLauncher')}</h1>
+	<h3 class="h3">{$i18n.t('discoverInstallAndManageYourApps')}</h3>
 	<Button
 		props={{
 			onClick: () => goto('setup-lair')
