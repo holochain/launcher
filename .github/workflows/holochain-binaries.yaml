@@ -59,7 +59,7 @@ jobs:
           gh release upload "${GITHUB_REF#refs/tags/}" "holochain-v0.3.0-beta-dev.32-x86_64-apple-darwin"
 
       - name: setup binaries (ubuntu only)
-        if: matrix.platform == 'ubuntu-20.04'
+        if: matrix.platform == 'ubuntu-22.04'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
