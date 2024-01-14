@@ -35,7 +35,7 @@ export const createOrShowMainWindow = (
   mainWindow = new BrowserWindow({
     titleBarStyle: 'hidden',
     width: is.dev ? 1200 : 500,
-    height: 600,
+    height: 520,
     resizable: false,
     title: 'Holochain Launcher',
     show: false,
