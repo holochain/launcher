@@ -15,7 +15,7 @@
 	bind:value={$appPassword}
 	placeholderText={$i18n.t('chooseAPassword')}
 	buttonAction={() => goto('confirm-password')}
-	isDisabled={$appPassword.length < 8}
+	isDisabled={$appPassword.length < 1}
 />
 <p class="text-xs font-semibold leading-[0.5] opacity-50">
 	{$i18n.t('password').toUpperCase()}

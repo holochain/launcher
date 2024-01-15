@@ -2,7 +2,7 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
-	import { PasswordForm } from '$components';
+	import { PasswordForm, SetupProgressWrapper } from '$components';
 	import { showModalError } from '$helpers';
 	import { Warning } from '$icons';
 	import { i18n, trpc } from '$services';
@@ -15,7 +15,6 @@
 	const setupAndLaunch = client.handleSetupAndLaunch.createMutation();
 
 	let confirmPasswordInput = '';
-	let setupProgress = '';
 
 	const signupAndLaunch = () => {
 		if ($appPassword !== confirmPasswordInput) {
@@ -39,20 +38,10 @@
 			errorTitle: $i18n.t('setupError'),
 			errorMessage: errorMessage
 		});
-
-		setupProgress = '';
 	}
-
-	client.onSetupProgressUpdate.createSubscription(undefined, {
-		onData: (data) => {
-			setupProgress = data;
-		}
-	});
 </script>
 
-{#if setupProgress}
-	<h2 class="h2">{$i18n.t(setupProgress)}</h2>
-{:else}
+<SetupProgressWrapper>
 	<p class="text-base font-semibold leading-[0.5] opacity-50">2 {$i18n.t('of')} 2</p>
 	<h2 class="h2">{$i18n.t('confirmYourPassword')}</h2>
 	<div class="py-2">
@@ -70,4 +59,4 @@
 	<p class="pb-10 text-xs font-semibold leading-[0.5] opacity-50">
 		{$i18n.t('password').toUpperCase()}
 	</p>
-{/if}
+</SetupProgressWrapper>
