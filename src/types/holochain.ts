@@ -135,4 +135,4 @@ export type WindowInfo = {
   adminPort?: number;
 };
 
-export type LoadingProgressUpdate = 'startingLairKeystore' | 'startingHolochain';
+export type LoadingProgressUpdate = 'startingLairKeystore' | 'startingHolochain' | '';

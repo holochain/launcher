@@ -1,56 +1,44 @@
 <script lang="ts">
+	import { getModalStore } from '@skeletonlabs/skeleton';
+
 	import { goto } from '$app/navigation';
-	import { Button, Error, Input } from '$components';
+	import { PasswordForm, SetupProgressWrapper } from '$components';
+	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
 
+	const modalStore = getModalStore();
+
 	let passwordInput = '';
-	let setupProgress = '';
 
 	const client = trpc();
 
 	const launch = client.launch.createMutation();
 
-	const setupAndLaunch = () => {
+	const loginAndLaunch = () => {
 		$launch.mutate(
 			{ password: passwordInput },
 			{
 				onSuccess: () => {
 					goto('/app');
+				},
+				onError: (error) => {
+					showModalError({
+						modalStore,
+						errorTitle: $i18n.t('loginError'),
+						errorMessage: $i18n.t(error.message || 'unknownError')
+					});
 				}
 			}
 		);
 	};
-
-	client.onSetupProgressUpdate.createSubscription(undefined, {
-		onData: (data) => {
-			setupProgress = data;
-		}
-	});
 </script>
 
-<h3 class="header mb-4">{$i18n.t('enterPassword')}</h3>
-<Input
-	bind:value={passwordInput}
-	props={{
-		id: 'password-input',
-		type: 'password',
-		placeholder: $i18n.t('passwordPlaceholder'),
-		required: true
-	}}
-/>
-<Button
-	props={{
-		disabled: !passwordInput || $launch.isPending,
-		onClick: setupAndLaunch
-	}}
->
-	{$i18n.t($launch.isPending ? 'loading' : 'launch')}
-</Button>
-{#if setupProgress}
-	<div class="setup-progress mb-2">
-		{$i18n.t(setupProgress)}
-	</div>
-{/if}
-{#if $launch.isError}
-	<Error text={$launch.error.message} />
-{/if}
+<SetupProgressWrapper>
+	<h3 class="h3 max-w-56 font-semibold">{$i18n.t('manageAndLaunchApps')}</h3>
+	<PasswordForm
+		placeholderText={$i18n.t('passwordPlaceholder')}
+		buttonAction={loginAndLaunch}
+		isDisabled={passwordInput.length < 1 || $launch.isPending}
+		bind:value={passwordInput}
+	/>
+</SetupProgressWrapper>

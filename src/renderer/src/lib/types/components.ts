@@ -1,5 +1,6 @@
 type CommonInputProps = {
 	id: string;
+	class?: string;
 };
 
 type FileProps = {
@@ -18,6 +19,7 @@ export type InputProps =
 
 type CommonButtonProps = {
 	onClick?: (event: MouseEvent) => void;
+	class?: string;
 };
 
 export type ButtonProps =

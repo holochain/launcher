@@ -75,27 +75,27 @@ export const appTheme: CustomThemeConfig = {
 		'--color-warning-700': '20 74 83', // #144a53
 		'--color-warning-800': '16 59 66', // #103b42
 		'--color-warning-900': '13 48 54', // #0d3036
-		// error | #277077
-		'--color-error-50': '223 234 235', // #dfeaeb
-		'--color-error-100': '212 226 228', // #d4e2e4
-		'--color-error-200': '201 219 221', // #c9dbdd
-		'--color-error-300': '169 198 201', // #a9c6c9
-		'--color-error-400': '104 155 160', // #689ba0
-		'--color-error-500': '39 112 119', // #277077
-		'--color-error-600': '35 101 107', // #23656b
-		'--color-error-700': '29 84 89', // #1d5459
-		'--color-error-800': '23 67 71', // #174347
-		'--color-error-900': '19 55 58', // #13373a
-		// surface | #38343C
-		'--color-surface-50': '225 225 226', // #e1e1e2
-		'--color-surface-100': '215 214 216', // #d7d6d8
-		'--color-surface-200': '205 204 206', // #cdccce
-		'--color-surface-300': '175 174 177', // #afaeb1
-		'--color-surface-400': '116 113 119', // #747177
-		'--color-surface-500': '56 52 60', // #38343C
-		'--color-surface-600': '50 47 54', // #322f36
-		'--color-surface-700': '42 39 45', // #2a272d
-		'--color-surface-800': '34 31 36', // #221f24
-		'--color-surface-900': '27 25 29' // #1b191d
+		// error | #FF3A69
+		'--color-error-50': '255 225 233', // #ffe1e9
+		'--color-error-100': '255 216 225', // #ffd8e1
+		'--color-error-200': '255 206 218', // #ffceda
+		'--color-error-300': '255 176 195', // #ffb0c3
+		'--color-error-400': '255 117 150', // #ff7596
+		'--color-error-500': '255 58 105', // #FF3A69
+		'--color-error-600': '230 52 95', // #e6345f
+		'--color-error-700': '191 44 79', // #bf2c4f
+		'--color-error-800': '153 35 63', // #99233f
+		'--color-error-900': '125 28 51', // #7d1c33
+		// surface | #202122
+		'--color-surface-50': '222 222 222', // #dedede
+		'--color-surface-100': '210 211 211', // #d2d3d3
+		'--color-surface-200': '199 200 200', // #c7c8c8
+		'--color-surface-300': '166 166 167', // #a6a6a7
+		'--color-surface-400': '99 100 100', // #636464
+		'--color-surface-500': '32 33 34', // #202122
+		'--color-surface-600': '29 30 31', // #1d1e1f
+		'--color-surface-700': '24 25 26', // #18191a
+		'--color-surface-800': '19 20 20', // #131414
+		'--color-surface-900': '16 16 17' // #101011
 	}
 };

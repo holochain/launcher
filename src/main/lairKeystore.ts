@@ -12,6 +12,7 @@ import {
   LAIR_LOG,
   LAIR_READY,
   LAUNCH_LAIR_KEYSTORE_ERROR,
+  LOADING_PROGRESS_UPDATE,
   WRONG_PASSWORD,
 } from '../types';
 import { LauncherEmitter } from './launcherEmitter';
@@ -53,6 +54,7 @@ export async function initializeLairKeystore(
       });
     });
   } catch (error) {
+    launcherEmitter.emit(LOADING_PROGRESS_UPDATE, '');
     throwTRPCErrorError({
       message: INITIALIZE_LAIR_KEYSTORE_ERROR,
       cause: error,
@@ -110,6 +112,7 @@ export async function launchLairKeystore(
     return await waitForLairKeystore(launcherEmitter, lairHandle);
   } catch (error) {
     const errorMessage = getErrorMessage(error);
+    launcherEmitter.emit(LOADING_PROGRESS_UPDATE, '');
     if (errorMessage.includes('InternalSodium')) {
       return throwTRPCErrorError({ message: WRONG_PASSWORD, cause: error });
     }

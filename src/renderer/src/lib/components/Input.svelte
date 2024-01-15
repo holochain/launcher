@@ -5,11 +5,11 @@
 	export let value: string | null = null;
 	export let files: FileList | null = null;
 
-	$: ({ type, ...rest } = props);
+	$: ({ type, class: iptClass = 'input', ...rest } = props);
 </script>
 
 {#if type === 'file'}
-	<input type="file" bind:files {...rest} class="input" />
+	<input type="file" bind:files {...rest} class={iptClass} />
 {:else}
-	<input bind:value {...props} class="input" />
+	<input bind:value {...props} class={iptClass} />
 {/if}

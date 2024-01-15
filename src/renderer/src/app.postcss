@@ -17,12 +17,27 @@ body {
 .h1 {
 	@apply text-4xl font-semibold;
 }
+.h2 {
+	@apply text-2xl font-semibold;
+}
 .h3 {
 	@apply pb-8 text-base;
 }
+.btn {
+	@apply mb-2 rounded font-semibold;
+}
 .btn-primary {
-	@apply btn mb-2 rounded bg-custom-gradient font-semibold;
+	@apply btn bg-custom-gradient;
+}
+.btn-secondary {
+	@apply btn border border-surface-400 bg-transparent pl-2 pr-4 text-sm;
+}
+.btn-next {
+	@apply btn ml-2 h-10 rounded bg-custom-gradient p-2 leading-4;
 }
 .input {
-	@apply mb-4 max-w-56 rounded;
+	@apply mb-2 max-w-56 rounded py-2.5 text-sm leading-[18px];
+}
+.dark .input {
+	@apply border-surface-400 bg-black placeholder-white;
 }
