@@ -12,7 +12,7 @@ export const HolochainVersionSchema = z.union([
   }),
   z.object({
     type: z.literal('running-external'),
-    configPath: z.string(),
+    lairUrl: z.string(),
     appsDataDir: z.string(),
     adminPort: z.number(),
   }),
@@ -64,7 +64,6 @@ export const AppInfoSchema = z.object({
 
 export const CommonAppSchema = z.object({
   appId: z.string().min(1),
-  partition: z.string(),
 });
 
 export const InstallKandoSchema = CommonAppSchema.extend({
@@ -135,4 +134,8 @@ export type WindowInfo = {
   adminPort?: number;
 };
 
-export type LoadingProgressUpdate = 'startingLairKeystore' | 'startingHolochain' | '';
+export type LoadingProgressUpdate =
+  | 'initializingLairKeystore'
+  | 'startingLairKeystore'
+  | 'startingHolochain'
+  | '';

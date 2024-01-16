@@ -1,7 +1,7 @@
 import { initTRPC } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
-import { ArgumentParser } from 'argparse';
 import * as childProcess from 'child_process';
+import { Command, Option } from 'commander';
 import {
   app,
   BrowserWindow,
@@ -21,6 +21,8 @@ import {
   ExtendedAppInfo,
   ExtendedAppInfoSchema,
   FILE_UNDEFINED_ERROR,
+  HolochainDataRoot,
+  HolochainPartition,
   InstallHappInputSchema,
   InstallKandoSchema,
   LOADING_PROGRESS_UPDATE,
@@ -30,6 +32,7 @@ import {
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '../types';
 import { LAIR_BINARY } from './binaries';
+import { validateArgs } from './cli';
 import { LauncherFileSystem } from './filesystem';
 import { HolochainManager } from './holochainManager';
 // import { AdminWebsocket } from '@holochain/client';
@@ -44,7 +47,51 @@ import { createHappWindow, createOrShowMainWindow } from './windows';
 const t = initTRPC.create({ isServer: true });
 
 const rustUtils = require('hc-launcher-rust-utils');
-// import * as rustUtils from 'hc-launcher-rust-utils';
+
+const cli = new Command();
+
+cli
+  .name('Holochain Launcher')
+  .description('Running Holochain Launcher via the command line.')
+  .version(app.getVersion())
+  .option(
+    '-p, --profile <string>',
+    'Runs the Launcher with a custom profile with its own dedicated data store.',
+  )
+  .option(
+    '--holochain-path <string>',
+    'Runs the Holochain Launcher with the holochain binary at the provided path. This creates an independent conductor from when running the Launcher with the built-in binary.',
+  )
+  .addOption(
+    new Option(
+      '--admin-port <number>',
+      'If specified, the Launcher expectes an external holochain binary to run at this port. Requires the --config-path and --apps-data-dir options to be specified as well.',
+    ).argParser(parseInt),
+  )
+  .option(
+    '--lair-url <string>',
+    'URL of the lair keystore server associated to the externally running holochain binary.',
+  )
+  .option(
+    '--apps-data-dir <string>',
+    'Path where the Launcher can store app UI assets and other metadata when running an external holochain binary.',
+  )
+  .option(
+    '-b, --bootstrap-url <url>',
+    'URL of the bootstrap server to use. Must be provided if running in applet dev mode with the --dev-config argument.',
+  )
+  .option(
+    '-s, --signaling-url <url>',
+    'URL of the signaling server to use. Must be provided if running in applet dev mode with the --dev-config argument.',
+  );
+
+cli.parse();
+
+console.log('GOT CLI ARGS: ', cli.opts());
+
+const [PROFILE, HOLOCHAIN_VERSION, BOOTSTRAP_URL, SIGNALING_URL] = validateArgs(cli.opts());
+
+console.log('VALIDATED CLI ARGS: ', PROFILE, HOLOCHAIN_VERSION, BOOTSTRAP_URL, SIGNALING_URL);
 
 const appName = app.getName();
 
@@ -55,22 +102,6 @@ if (process.env.NODE_ENV === 'development') {
 
 console.log('APP PATH: ', app.getAppPath());
 console.log('RUNNING ON PLATFORM: ', process.platform);
-
-const parser = new ArgumentParser({
-  description: 'Holochain Launcher',
-});
-parser.add_argument('-p', '--profile', {
-  help: 'Opens the launcher with a custom profile instead of the default profile.',
-  type: 'string',
-});
-
-const allowedProfilePattern = /^[0-9a-zA-Z-]+$/;
-const args = parser.parse_args();
-if (args.profile && !allowedProfilePattern.test(args.profile)) {
-  throw new Error(
-    'The --profile argument may only contain digits (0-9), letters (a-z,A-Z) and dashes (-)',
-  );
-}
 
 const isFirstInstance = app.requestSingleInstanceLock();
 
@@ -89,7 +120,7 @@ protocol.registerSchemesAsPrivileged([
   },
 ]);
 
-const LAUNCHER_FILE_SYSTEM = LauncherFileSystem.connect(app, args.profile);
+const LAUNCHER_FILE_SYSTEM = LauncherFileSystem.connect(app, PROFILE);
 const LAUNCHER_EMITTER = new LauncherEmitter();
 
 setupLogs(LAUNCHER_EMITTER, LAUNCHER_FILE_SYSTEM);
@@ -97,8 +128,9 @@ setupLogs(LAUNCHER_EMITTER, LAUNCHER_FILE_SYSTEM);
 let DEFAULT_ZOME_CALL_SIGNER: ZomeCallSigner | undefined;
 // Zome call signers for external binaries (admin ports used as keys)
 const CUSTOM_ZOME_CALL_SIGNERS: Record<number, ZomeCallSigner> = {};
-// let ADMIN_WEBSOCKET: AdminWebsocket | undefined;
-// let ADMIN_PORT: number | undefined;
+
+// For now there is only one holochain data root at a time for the sake of simplicity.
+let HOLOCHAIN_DATA_ROOT: HolochainDataRoot | undefined;
 const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
 let LAIR_HANDLE: childProcess.ChildProcessWithoutNullStreams | undefined;
 let MAIN_WINDOW: BrowserWindow | undefined | null;
@@ -195,19 +227,21 @@ app.on('quit', () => {
 async function handleSetupAndLaunch(password: string) {
   if (!MAIN_WINDOW) throw new Error('Main window needs to exist before launching.');
 
-  const lairHandleTemp = childProcess.spawnSync(LAIR_BINARY, ['--version']);
-  if (!lairHandleTemp.stdout) {
-    console.error(`Failed to run lair-keystore binary:\n${lairHandleTemp}`);
-  }
-  console.log(`Got lair version ${lairHandleTemp.stdout.toString()}`);
-  if (!LAUNCHER_FILE_SYSTEM.keystoreInitialized()) {
-    LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingLairKeystore');
-    await initializeLairKeystore(
-      LAIR_BINARY,
-      LAUNCHER_FILE_SYSTEM.keystoreDir,
-      LAUNCHER_EMITTER,
-      password,
-    );
+  if (HOLOCHAIN_VERSION.type !== 'running-external') {
+    const lairHandleTemp = childProcess.spawnSync(LAIR_BINARY, ['--version']);
+    if (!lairHandleTemp.stdout) {
+      console.error(`Failed to run lair-keystore binary:\n${lairHandleTemp}`);
+    }
+    console.log(`Got lair version ${lairHandleTemp.stdout.toString()}`);
+    if (!LAUNCHER_FILE_SYSTEM.keystoreInitialized()) {
+      LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'initializingLairKeystore');
+      await initializeLairKeystore(
+        LAIR_BINARY,
+        LAUNCHER_FILE_SYSTEM.keystoreDir,
+        LAUNCHER_EMITTER,
+        password,
+      );
+    }
   }
 
   await handleLaunch(password);
@@ -215,35 +249,52 @@ async function handleSetupAndLaunch(password: string) {
 
 async function handleLaunch(password: string) {
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingLairKeystore');
+  let lairUrl: string;
 
-  const [lairHandle, lairUrl] = await launchLairKeystore(
-    LAIR_BINARY,
-    LAUNCHER_FILE_SYSTEM.keystoreDir,
-    LAUNCHER_EMITTER,
-    password,
-  );
+  if (HOLOCHAIN_VERSION.type === 'running-external') {
+    lairUrl = HOLOCHAIN_VERSION.lairUrl;
+    const externalZomeCallSigner = await rustUtils.ZomeCallSigner.connect(lairUrl, password);
+    CUSTOM_ZOME_CALL_SIGNERS[HOLOCHAIN_VERSION.adminPort] = externalZomeCallSigner;
+  } else {
+    const [lairHandle, lairUrl2] = await launchLairKeystore(
+      LAIR_BINARY,
+      LAUNCHER_FILE_SYSTEM.keystoreDir,
+      LAUNCHER_EMITTER,
+      password,
+    );
 
-  LAIR_HANDLE = lairHandle;
+    lairUrl = lairUrl2;
 
-  if (!MAIN_WINDOW) throw new Error('Main window needs to exist before launching.');
-  DEFAULT_ZOME_CALL_SIGNER = await rustUtils.ZomeCallSigner.connect(lairUrl, password);
+    LAIR_HANDLE = lairHandle;
+
+    DEFAULT_ZOME_CALL_SIGNER = await rustUtils.ZomeCallSigner.connect(lairUrl, password);
+  }
 
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingHolochain');
 
-  const holochainManager = await HolochainManager.launch(
+  if (!MAIN_WINDOW) throw new Error('Main window needs to exist before launching.');
+
+  const nonDefaultPartition: HolochainPartition =
+    HOLOCHAIN_VERSION.type === 'running-external'
+      ? { type: 'external', name: 'unknown', path: HOLOCHAIN_VERSION.appsDataDir }
+      : HOLOCHAIN_VERSION.type === 'custom-path'
+        ? { type: 'custom', name: 'unknown' }
+        : { type: 'default' };
+
+  console.log('HOLOCHAIN_VERSION: ', HOLOCHAIN_VERSION);
+
+  const [holochainManager, holochainDataRoot] = await HolochainManager.launch(
     LAUNCHER_EMITTER,
     LAUNCHER_FILE_SYSTEM,
     password,
-    {
-      type: 'built-in',
-      version: '0.2.3',
-    },
+    HOLOCHAIN_VERSION,
     lairUrl,
-    undefined,
-    undefined,
-    undefined,
+    BOOTSTRAP_URL,
+    SIGNALING_URL,
+    nonDefaultPartition,
   );
-  HOLOCHAIN_MANAGERS['0.2.x'] = holochainManager;
+  HOLOCHAIN_DATA_ROOT = holochainDataRoot;
+  HOLOCHAIN_MANAGERS[holochainDataRoot.name] = holochainManager;
   return;
 }
 
@@ -277,6 +328,8 @@ const router = t.router({
     );
     WINDOW_INFO_MAP[happWindow.webContents.id] = {
       agentPubKey: appInfo.agent_pub_key,
+      adminPort:
+        HOLOCHAIN_VERSION.type === 'running-external' ? HOLOCHAIN_VERSION.adminPort : undefined,
     };
     happWindow.on('close', () => {
       delete WINDOW_INFO_MAP[happWindow.webContents.id];
@@ -288,9 +341,9 @@ const router = t.router({
     await holochainManager.uninstallApp(appInfo.installed_app_id);
   }),
   installHapp: t.procedure.input(InstallHappInputSchema).mutation(async (opts) => {
-    const { filePath, appId, partition, networkSeed } = opts.input;
+    const { filePath, appId, networkSeed } = opts.input;
 
-    const holochainManager = getHolochainManager(partition);
+    const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
     if (!filePath) {
       throwTRPCErrorError({
         message: FILE_UNDEFINED_ERROR,
@@ -299,15 +352,16 @@ const router = t.router({
     await holochainManager.installWebHapp(filePath, appId, networkSeed);
   }),
   installKando: t.procedure.input(InstallKandoSchema).mutation(async (opts) => {
-    const { appId, partition, networkSeed } = opts.input;
+    const { appId, networkSeed } = opts.input;
 
     const filePath = path.join(DEFAULT_APPS_DIRECTORY, 'kando.webhapp');
 
-    const holochainManager = getHolochainManager(partition);
+    const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
     await holochainManager.installWebHapp(filePath, appId, networkSeed);
   }),
   lairSetupRequired: t.procedure.query(() => {
-    const isInitialized = LAUNCHER_FILE_SYSTEM.keystoreInitialized();
+    const isInitialized =
+      LAUNCHER_FILE_SYSTEM.keystoreInitialized() || HOLOCHAIN_VERSION.type === 'running-external';
     const isInitializedValidated = validateWithZod({
       schema: z.boolean(),
       data: isInitialized,

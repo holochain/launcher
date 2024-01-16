@@ -33,6 +33,7 @@
     "@trpc/client": "^10.44.1",
     "@trpc/server": "^10.44.1",
     "bufferutil": "4.0.8",
+    "commander": "11.1.0",
     "electron-serve": "^1.2.0",
     "electron-trpc": "^0.5.2",
     "hc-launcher-rust-utils": "file:./rust-utils/dist",
