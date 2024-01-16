@@ -65,7 +65,7 @@ cli
   .addOption(
     new Option(
       '--admin-port <number>',
-      'If specified, the Launcher expectes an external holochain binary to run at this port. Requires the --config-path and --apps-data-dir options to be specified as well.',
+      'If specified, the Launcher expectes an external holochain binary to run at this port. Requires the --lair-url and --apps-data-dir options to be specified as well.',
     ).argParser(parseInt),
   )
   .option(
@@ -78,11 +78,11 @@ cli
   )
   .option(
     '-b, --bootstrap-url <url>',
-    'URL of the bootstrap server to use. Must be provided if running in applet dev mode with the --dev-config argument.',
+    'URL of the bootstrap server to use. Is ignored if an external holochain binary is being used.',
   )
   .option(
     '-s, --signaling-url <url>',
-    'URL of the signaling server to use. Must be provided if running in applet dev mode with the --dev-config argument.',
+    'URL of the signaling server to use. Is ignored if an external holochain binary is being used.',
   );
 
 cli.parse();
