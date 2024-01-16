@@ -69,7 +69,7 @@ export class HolochainManager {
     bootstrapUrl?: string,
     signalingUrl?: string,
     nonDefaultPartition?: HolochainPartition, // launch with data from a non-default partition
-  ): Promise<HolochainManager> {
+  ): Promise<[HolochainManager, HolochainDataRoot]> {
     let holochainDataRoot: HolochainDataRoot;
     switch (nonDefaultPartition?.type) {
       case 'custom':
@@ -106,8 +106,11 @@ export class HolochainManager {
         const adminWebsocket = await AdminWebsocket.connect(
           new URL(`ws://127.0.0.1:${version.adminPort}`),
         );
-        console.log('Connected to admin websocket of externally running conductor.');
+        console.log(
+          `Connected to admin websocket of externally running conductor (port ${version.adminPort}).`,
+        );
         const installedApps = await adminWebsocket.listApps({});
+        console.log('Installed apps: ', installedApps);
         const appInterfaces = await adminWebsocket.listAppInterfaces();
         console.log('Got appInterfaces: ', appInterfaces);
         let appPort;
@@ -118,17 +121,20 @@ export class HolochainManager {
           console.log('Attached app interface port: ', attachAppInterfaceResponse);
           appPort = attachAppInterfaceResponse.port;
         }
-        return new HolochainManager(
-          undefined,
-          launcherEmitter,
-          launcherFileSystem,
-          version.adminPort,
-          appPort,
-          adminWebsocket,
-          installedApps,
-          version,
+        return [
+          new HolochainManager(
+            undefined,
+            launcherEmitter,
+            launcherFileSystem,
+            version.adminPort,
+            appPort,
+            adminWebsocket,
+            installedApps,
+            version,
+            holochainDataRoot,
+          ),
           holochainDataRoot,
-        );
+        ];
       } catch (e) {
         throw new Error(`Failed to connect to external holochain binary: ${JSON.stringify(e)}`);
       }
@@ -217,7 +223,7 @@ export class HolochainManager {
             console.log('Attached app interface port: ', attachAppInterfaceResponse);
             appPort = attachAppInterfaceResponse.port;
           }
-          resolve(
+          resolve([
             new HolochainManager(
               conductorHandle,
               launcherEmitter,
@@ -229,7 +235,8 @@ export class HolochainManager {
               version,
               holochainDataRoot,
             ),
-          );
+            holochainDataRoot,
+          ]);
         }
       });
     });

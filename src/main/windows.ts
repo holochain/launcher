@@ -36,7 +36,7 @@ export const createOrShowMainWindow = (
     titleBarStyle: 'hidden',
     width: is.dev ? 1200 : 500,
     height: 520,
-    resizable: false,
+    resizable: true,
     title: 'Holochain Launcher',
     show: false,
     webPreferences: {
