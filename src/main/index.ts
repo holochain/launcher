@@ -296,10 +296,6 @@ const router = t.router({
     LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'settings');
     LAUNCHER_WINDOWS[settingsScreen].show();
   }),
-  openMainScreen: t.procedure.mutation(() => {
-    LAUNCHER_WINDOWS[settingsScreen].hide();
-    LAUNCHER_WINDOWS[mainScreen].show();
-  }),
   openApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
     const { appInfo, holochainDataRoot } = opts.input;
     const holochainManager = getHolochainManager(holochainDataRoot.name);
