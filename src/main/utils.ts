@@ -1,6 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { BrowserWindow, shell } from 'electron';
 import semver from 'semver';
+import { ZodSchema } from 'zod';
 
 import { ErrorWithMessage } from '../types';
 
@@ -47,6 +48,25 @@ export function throwTRPCErrorError({
     cause,
   });
 }
+
+export const validateWithZod = <T>({
+  schema,
+  data,
+  errorType,
+}: {
+  schema: ZodSchema<T>;
+  data: unknown;
+  errorType: string;
+}): T => {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    return throwTRPCErrorError({
+      message: errorType,
+      cause: result.error,
+    });
+  }
+  return result.data;
+};
 
 export function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
   return (

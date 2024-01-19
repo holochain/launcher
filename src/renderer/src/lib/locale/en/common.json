@@ -31,5 +31,6 @@
 	"setupError": "Setup Error",
 	"setupProgress": "Setup Progress",
 	"startingHolochain": "Starting Holochain...",
-	"startingLairKeystore": "Starting Lair Keystore..."
+	"startingLairKeystore": "Starting Lair Keystore...",
+	"whatDoYouWantToLaunch": "What do you want to launch?"
 }

@@ -1,17 +1,10 @@
+import { optimizer } from '@electron-toolkit/utils';
 import { initTRPC } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
 import * as childProcess from 'child_process';
 import { Command, Option } from 'commander';
-import {
-  app,
-  BrowserWindow,
-  ipcMain,
-  IpcMainInvokeEvent,
-  Menu,
-  nativeImage,
-  protocol,
-  Tray,
-} from 'electron';
+import { app, BrowserWindow, ipcMain, IpcMainInvokeEvent, protocol } from 'electron';
+import { createIPCHandler } from 'electron-trpc/main';
 import { ZomeCallSigner, ZomeCallUnsignedNapi } from 'hc-launcher-rust-utils';
 import path from 'path';
 import z from 'zod';
@@ -27,7 +20,10 @@ import {
   InstallKandoSchema,
   LOADING_PROGRESS_UPDATE,
   LoadingProgressUpdate,
+  mainScreen,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
+  Screen,
+  settingsScreen,
   WindowInfo,
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '../types';
@@ -39,10 +35,9 @@ import { HolochainManager } from './holochainManager';
 import { initializeLairKeystore, launchLairKeystore } from './lairKeystore';
 import { LauncherEmitter } from './launcherEmitter';
 import { setupLogs } from './logs';
-import { DEFAULT_APPS_DIRECTORY, ICONS_DIRECTORY } from './paths';
-import { validateWithZod } from './trpcHelpers';
-import { throwTRPCErrorError } from './utils';
-import { createHappWindow, createOrShowMainWindow } from './windows';
+import { DEFAULT_APPS_DIRECTORY } from './paths';
+import { throwTRPCErrorError, validateWithZod } from './utils';
+import { createHappWindow, setupAppWindows } from './windows';
 
 const t = initTRPC.create({ isServer: true });
 
@@ -110,7 +105,7 @@ if (!isFirstInstance) {
 }
 
 app.on('second-instance', () => {
-  MAIN_WINDOW = createOrShowMainWindow(MAIN_WINDOW, router);
+  LAUNCHER_WINDOWS[mainScreen].show();
 });
 
 protocol.registerSchemesAsPrivileged([
@@ -133,7 +128,7 @@ const CUSTOM_ZOME_CALL_SIGNERS: Record<number, ZomeCallSigner> = {};
 let HOLOCHAIN_DATA_ROOT: HolochainDataRoot | undefined;
 const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
 let LAIR_HANDLE: childProcess.ChildProcessWithoutNullStreams | undefined;
-let MAIN_WINDOW: BrowserWindow | undefined | null;
+let LAUNCHER_WINDOWS: Record<Screen, BrowserWindow>;
 const WINDOW_INFO_MAP: Record<number, WindowInfo> = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
 
 const handleSignZomeCall = (e: IpcMainInvokeEvent, zomeCall: ZomeCallUnsignedNapi) => {
@@ -154,36 +149,20 @@ const handleSignZomeCall = (e: IpcMainInvokeEvent, zomeCall: ZomeCallUnsignedNap
 //   app.quit();
 // }
 
-let tray;
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
+  app.on('browser-window-created', (_, window) => {
+    optimizer.watchWindowShortcuts(window);
+    // Default open or close DevTools by F12 in development and ignore CommandOrControl + R in production.
+  });
+
   console.log('BEING RUN IN __dirnmane: ', __dirname);
-  const icon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '16x16.png'));
-  tray = new Tray(icon);
 
-  MAIN_WINDOW = createOrShowMainWindow(MAIN_WINDOW, router);
+  LAUNCHER_WINDOWS = setupAppWindows();
 
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Open',
-      type: 'normal',
-      click() {
-        MAIN_WINDOW = createOrShowMainWindow(MAIN_WINDOW, router);
-      },
-    },
-    {
-      label: 'Quit',
-      type: 'normal',
-      click() {
-        app.quit();
-      },
-    },
-  ]);
-
-  tray.setToolTip('Holochain Launcher');
-  tray.setContextMenu(contextMenu);
+  createIPCHandler({ router, windows: Object.values(LAUNCHER_WINDOWS) });
 
   ipcMain.handle('sign-zome-call', handleSignZomeCall);
 });
@@ -197,14 +176,6 @@ app.on('window-all-closed', () => {
   // }
 });
 
-app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createOrShowMainWindow(MAIN_WINDOW, router);
-  }
-});
-
 // app.on('will-quit', (e: Event) => {
 //   // let the launcher run in the background (systray)
 //   // e.preventDefault();
@@ -213,6 +184,7 @@ app.on('activate', () => {
 app.on('quit', () => {
   if (LAIR_HANDLE) {
     LAIR_HANDLE.kill();
+    LAIR_HANDLE = undefined;
   }
   Object.values(HOLOCHAIN_MANAGERS).forEach((manager) => {
     if (manager.processHandle) {
@@ -225,7 +197,7 @@ app.on('quit', () => {
 // code. You can also put them in separate files and import them here.
 
 async function handleSetupAndLaunch(password: string) {
-  if (!MAIN_WINDOW) throw new Error('Main window needs to exist before launching.');
+  if (!LAUNCHER_WINDOWS) throw new Error('Main window needs to exist before launching.');
 
   if (HOLOCHAIN_VERSION.type !== 'running-external') {
     const lairHandleTemp = childProcess.spawnSync(LAIR_BINARY, ['--version']);
@@ -272,7 +244,7 @@ async function handleLaunch(password: string) {
 
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingHolochain');
 
-  if (!MAIN_WINDOW) throw new Error('Main window needs to exist before launching.');
+  if (!LAUNCHER_WINDOWS) throw new Error('Main window needs to exist before launching.');
 
   const nonDefaultPartition: HolochainPartition =
     HOLOCHAIN_VERSION.type === 'running-external'
@@ -295,6 +267,7 @@ async function handleLaunch(password: string) {
   );
   HOLOCHAIN_DATA_ROOT = holochainDataRoot;
   HOLOCHAIN_MANAGERS[holochainDataRoot.name] = holochainManager;
+  LAUNCHER_WINDOWS[mainScreen].setSize(600, 170, true);
   return;
 }
 
@@ -318,6 +291,15 @@ const getHolochainManager = (dataRootName: string) => {
 };
 
 const router = t.router({
+  openSettings: t.procedure.mutation(() => {
+    LAUNCHER_WINDOWS[mainScreen].hide();
+    LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'settings');
+    LAUNCHER_WINDOWS[settingsScreen].show();
+  }),
+  openMainScreen: t.procedure.mutation(() => {
+    LAUNCHER_WINDOWS[settingsScreen].hide();
+    LAUNCHER_WINDOWS[mainScreen].show();
+  }),
   openApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
     const { appInfo, holochainDataRoot } = opts.input;
     const holochainManager = getHolochainManager(holochainDataRoot.name);

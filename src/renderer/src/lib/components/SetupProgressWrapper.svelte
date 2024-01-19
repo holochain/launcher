@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { i18n, trpc } from '$services';
 
 	let setupProgress = '';
@@ -7,6 +8,9 @@
 
 	client.onSetupProgressUpdate.createSubscription(undefined, {
 		onData: (data) => {
+			if (data === 'settings') {
+				goto('/settings');
+			}
 			setupProgress = data;
 		}
 	});
