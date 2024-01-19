@@ -3,28 +3,31 @@ import { initTRPC } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
 import * as childProcess from 'child_process';
 import { Command, Option } from 'commander';
-import { app, BrowserWindow, ipcMain, IpcMainInvokeEvent, protocol } from 'electron';
+import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
+import { app, ipcMain, protocol } from 'electron';
 import { createIPCHandler } from 'electron-trpc/main';
-import { ZomeCallSigner, ZomeCallUnsignedNapi } from 'hc-launcher-rust-utils';
+import type { ZomeCallSigner, ZomeCallUnsignedNapi } from 'hc-launcher-rust-utils';
 import path from 'path';
 import z from 'zod';
 
-import {
-  CHECK_INITIALIZED_KEYSTORE_ERROR,
+import type {
   ExtendedAppInfo,
-  ExtendedAppInfoSchema,
-  FILE_UNDEFINED_ERROR,
   HolochainDataRoot,
   HolochainPartition,
+  LoadingProgressUpdate,
+  Screen,
+  WindowInfo,
+} from '../types';
+import {
+  CHECK_INITIALIZED_KEYSTORE_ERROR,
+  ExtendedAppInfoSchema,
+  FILE_UNDEFINED_ERROR,
   InstallHappInputSchema,
   InstallKandoSchema,
   LOADING_PROGRESS_UPDATE,
-  LoadingProgressUpdate,
   mainScreen,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
-  Screen,
   settingsScreen,
-  WindowInfo,
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '../types';
 import { LAIR_BINARY } from './binaries';

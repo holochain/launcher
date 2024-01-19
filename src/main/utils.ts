@@ -1,9 +1,10 @@
 import { TRPCError } from '@trpc/server';
-import { BrowserWindow, shell } from 'electron';
+import type { BrowserWindow } from 'electron';
+import { shell } from 'electron';
 import semver from 'semver';
-import { ZodSchema } from 'zod';
+import type { ZodSchema } from 'zod';
 
-import { ErrorWithMessage } from '../types';
+import type { ErrorWithMessage } from '../types';
 
 export function setLinkOpenHandlers(browserWindow: BrowserWindow): void {
   // links in happ windows should open in the system default application

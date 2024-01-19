@@ -15,7 +15,7 @@ import {
   LOADING_PROGRESS_UPDATE,
   WRONG_PASSWORD,
 } from '../types';
-import { LauncherEmitter } from './launcherEmitter';
+import type { LauncherEmitter } from './launcherEmitter';
 import { getErrorMessage, throwTRPCErrorError } from './utils';
 
 function waitForLairKeystore(

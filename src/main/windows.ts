@@ -4,8 +4,9 @@ import serve from 'electron-serve';
 import path, { join, resolve } from 'path';
 import url from 'url';
 
-import { ExtendedAppInfo, mainScreen, Screen, settingsScreen } from '../types';
-import { LauncherFileSystem } from './filesystem';
+import type { ExtendedAppInfo, Screen } from '../types';
+import { mainScreen, settingsScreen } from '../types';
+import type { LauncherFileSystem } from './filesystem';
 import { ICONS_DIRECTORY } from './paths';
 import { setLinkOpenHandlers } from './utils';
 

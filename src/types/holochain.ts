@@ -1,4 +1,4 @@
-import { AgentPubKey } from '@holochain/client';
+import type { AgentPubKey } from '@holochain/client';
 import { z } from 'zod';
 
 export const HolochainVersionSchema = z.union([

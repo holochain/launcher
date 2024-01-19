@@ -1,16 +1,11 @@
 import path from 'path';
-import winston, { createLogger, format, transports } from 'winston';
+import type winston from 'winston';
+import { createLogger, format, transports } from 'winston';
 
-import {
-  HOLOCHAIN_ERROR,
-  HOLOCHAIN_LOG,
-  HolochainData,
-  LAIR_ERROR,
-  LAIR_LOG,
-  WASM_LOG,
-} from '../types';
-import { LauncherFileSystem } from './filesystem';
-import { LauncherEmitter } from './launcherEmitter';
+import type { HolochainData } from '../types';
+import { HOLOCHAIN_ERROR, HOLOCHAIN_LOG, LAIR_ERROR, LAIR_LOG, WASM_LOG } from '../types';
+import type { LauncherFileSystem } from './filesystem';
+import type { LauncherEmitter } from './launcherEmitter';
 
 const { combine, timestamp } = format;
 

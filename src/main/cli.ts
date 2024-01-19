@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import { HolochainVersion } from '../types';
+import type { HolochainVersion } from '../types';
 import { DEFAULT_HOLOCHAIN_VERSION } from './binaries';
 
 export interface CliArgs {
