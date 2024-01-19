@@ -17,7 +17,7 @@
 	const installHappMutation = client.installHapp.createMutation();
 </script>
 
-<TabGroup class="col center-content mx-auto mb-2 max-w-xs space-y-2 text-center">
+<TabGroup class="center-content mx-auto mb-2 max-w-xs space-y-2 text-center">
 	<Tab bind:group={tabsBasic} name="installNewApp" value={0} class="button"
 		>{$i18n.t('installNewApp')}</Tab
 	>

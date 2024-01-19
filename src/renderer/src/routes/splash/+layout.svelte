@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { Button } from '$components';
 	import { ArrowLeft } from '$icons';
@@ -8,7 +8,7 @@
 </script>
 
 <div class="relative flex h-screen flex-col bg-login-background bg-fixed bg-top bg-no-repeat">
-	<div class="absolute inset-0 bg-tertiary-900 opacity-50" />
+	<div class="absolute inset-0 bg-tertiary-900 opacity-30" />
 	<!-- White overlay div -->
 	<p class="z-10 p-1 text-center text-xs opacity-30">Holochain Beta 0.1</p>
 	{#if $page.url.pathname.includes('confirm-password')}

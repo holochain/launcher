@@ -1,5 +1,5 @@
 type CommonInputProps = {
-	id: string;
+	id?: string;
 	class?: string;
 };
 
@@ -28,5 +28,8 @@ export type ButtonProps =
 	  })
 	| (CommonButtonProps & {
 			type: 'submit';
+	  })
+	| (CommonButtonProps & {
+			type: 'button';
 	  })
 	| CommonButtonProps;

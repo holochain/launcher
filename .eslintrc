@@ -20,6 +20,7 @@
   "plugins": ["@typescript-eslint", "prettier", "simple-import-sort"],
   "rules": {
     "prettier/prettier": "error",
+    "@typescript-eslint/consistent-type-imports": "error",
     "vue/attribute-hyphenation": "off",
     "vue/no-multiple-template-root": "off",
     "vue/multi-word-component-names": "off",

@@ -12,13 +12,12 @@
 	const toggleInputType = () => (showPassword = !showPassword);
 </script>
 
-<div class="flex">
+<form on:submit|preventDefault={buttonAction} class="flex">
 	<div class="relative">
 		<Input
 			bind:value
 			props={{
-				class: 'input relative pr-8',
-				id: 'password-input',
+				class: 'input relative pr-8 max-w-56 text-sm placeholder-white',
 				type: showPassword ? 'text' : 'password',
 				placeholder: placeholderText,
 				required: true
@@ -26,6 +25,7 @@
 		/>
 		<Button
 			props={{
+				type: 'button',
 				class: 'absolute right-2 top-3',
 				onClick: toggleInputType
 			}}
@@ -36,10 +36,9 @@
 	<Button
 		props={{
 			class: 'btn-next',
-			disabled: isDisabled,
-			onClick: buttonAction
+			disabled: isDisabled
 		}}
 	>
 		<ArrowRight />
 	</Button>
-</div>
+</form>

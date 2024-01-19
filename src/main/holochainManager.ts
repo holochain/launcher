@@ -1,22 +1,18 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { AdminWebsocket, AppInfo } from '@holochain/client';
+import type { AppInfo } from '@holochain/client';
+import { AdminWebsocket } from '@holochain/client';
 import * as childProcess from 'child_process';
 import fs from 'fs';
 import getPort from 'get-port';
 import path from 'path';
 import split from 'split';
 
-import {
-  APP_INSTALLED,
-  HOLOCHAIN_ERROR,
-  HOLOCHAIN_LOG,
-  HolochainDataRoot,
-  HolochainPartition,
-  HolochainVersion,
-} from '../types';
+import type { HolochainDataRoot, HolochainPartition, HolochainVersion } from '../types';
+import { APP_INSTALLED, HOLOCHAIN_ERROR, HOLOCHAIN_LOG } from '../types';
 import { HOLOCHAIN_BINARIES } from './binaries';
-import { createDirIfNotExists, LauncherFileSystem } from './filesystem';
-import { LauncherEmitter } from './launcherEmitter';
+import type { LauncherFileSystem } from './filesystem';
+import { createDirIfNotExists } from './filesystem';
+import type { LauncherEmitter } from './launcherEmitter';
 import { breakingVersion } from './utils';
 
 const rustUtils = require('hc-launcher-rust-utils');

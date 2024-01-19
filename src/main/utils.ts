@@ -1,8 +1,10 @@
 import { TRPCError } from '@trpc/server';
-import { BrowserWindow, shell } from 'electron';
+import type { BrowserWindow } from 'electron';
+import { shell } from 'electron';
 import semver from 'semver';
+import type { ZodSchema } from 'zod';
 
-import { ErrorWithMessage } from '../types';
+import type { ErrorWithMessage } from '../types';
 
 export function setLinkOpenHandlers(browserWindow: BrowserWindow): void {
   // links in happ windows should open in the system default application
@@ -47,6 +49,25 @@ export function throwTRPCErrorError({
     cause,
   });
 }
+
+export const validateWithZod = <T>({
+  schema,
+  data,
+  errorType,
+}: {
+  schema: ZodSchema<T>;
+  data: unknown;
+  errorType: string;
+}): T => {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    return throwTRPCErrorError({
+      message: errorType,
+      cause: result.error,
+    });
+  }
+  return result.data;
+};
 
 export function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
   return (

@@ -14,7 +14,7 @@ export const appTheme: CustomThemeConfig = {
 		// =~= Theme On-X Colors =~=
 		'--on-primary': '255 255 255',
 		'--on-secondary': '255 255 255',
-		'--on-tertiary': '255 255 255',
+		'--on-tertiary': '0 0 0',
 		'--on-success': '255 255 255',
 		'--on-warning': '255 255 255',
 		'--on-error': '255 255 255',
@@ -42,17 +42,17 @@ export const appTheme: CustomThemeConfig = {
 		'--color-secondary-700': '0 64 68', // #004044
 		'--color-secondary-800': '0 51 54', // #003336
 		'--color-secondary-900': '0 42 44', // #002a2c
-		// tertiary | #38343C
-		'--color-tertiary-50': '225 225 226', // #e1e1e2
-		'--color-tertiary-100': '215 214 216', // #d7d6d8
-		'--color-tertiary-200': '205 204 206', // #cdccce
-		'--color-tertiary-300': '175 174 177', // #afaeb1
-		'--color-tertiary-400': '116 113 119', // #747177
-		'--color-tertiary-500': '56 52 60', // #38343C
-		'--color-tertiary-600': '50 47 54', // #322f36
-		'--color-tertiary-700': '42 39 45', // #2a272d
-		'--color-tertiary-800': '34 31 36', // #221f24
-		'--color-tertiary-900': '27 25 29', // #1b191d
+		// tertiary | #6c6c6c
+		'--color-tertiary-50': '233 233 233', // #e9e9e9
+		'--color-tertiary-100': '226 226 226', // #e2e2e2
+		'--color-tertiary-200': '218 218 218', // #dadada
+		'--color-tertiary-300': '196 196 196', // #c4c4c4
+		'--color-tertiary-400': '152 152 152', // #989898
+		'--color-tertiary-500': '108 108 108', // #6c6c6c
+		'--color-tertiary-600': '97 97 97', // #616161
+		'--color-tertiary-700': '81 81 81', // #515151
+		'--color-tertiary-800': '65 65 65', // #414141
+		'--color-tertiary-900': '53 53 53', // #353535
 		// success | #15171E
 		'--color-success-50': '220 220 221', // #dcdcdd
 		'--color-success-100': '208 209 210', // #d0d1d2

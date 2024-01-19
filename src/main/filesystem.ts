@@ -1,8 +1,8 @@
-import { App } from 'electron';
+import type { App } from 'electron';
 import fs from 'fs';
 import path from 'path';
 
-import { HolochainDataRoot } from '../types';
+import type { HolochainDataRoot } from '../types';
 import { breakingVersion } from './utils';
 
 export type Profile = string;
