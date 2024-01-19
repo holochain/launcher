@@ -1,77 +1,101 @@
 import { is } from '@electron-toolkit/utils';
-import { BrowserWindow, net, session } from 'electron';
+import { app, BrowserWindow, Menu, nativeImage, net, session, Tray } from 'electron';
 import serve from 'electron-serve';
-import { createIPCHandler } from 'electron-trpc/main';
-import { join, resolve } from 'path';
+import path, { join, resolve } from 'path';
 import url from 'url';
 
-import { ExtendedAppInfo } from '../types';
-import type { AppRouter } from '.';
-import { LauncherFileSystem } from './filesystem';
+import type { ExtendedAppInfo, Screen } from '../types';
+import { mainScreen, settingsScreen } from '../types';
+import type { LauncherFileSystem } from './filesystem';
+import { ICONS_DIRECTORY } from './paths';
 import { setLinkOpenHandlers } from './utils';
 
 const serveURL = serve({ directory: join(__dirname, '..', 'renderer') });
 
 // this is needed to prevent blank screen when dev electron loads
-const loadVite = (mainWindow: BrowserWindow | undefined | null): void => {
-  if (!mainWindow) return;
-  mainWindow.loadURL(`http://localhost:5173`).catch((e) => {
+const loadVite = (window: BrowserWindow): void => {
+  if (!window) return;
+  window.loadURL(`http://localhost:5173`).catch((e) => {
     console.log('Error loading URL, retrying', e);
     setTimeout(() => {
-      loadVite(mainWindow);
+      loadVite(window);
     }, 200);
   });
 };
 
-export const createOrShowMainWindow = (
-  mainWindow: BrowserWindow | undefined | null,
-  router: AppRouter,
-) => {
-  if (mainWindow) {
-    mainWindow.show();
-    return;
-  }
-  // Create the browser window.
-  mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    title: 'Holochain Launcher',
+const createBrowserWindow = (title: string, frame = false) =>
+  new BrowserWindow({
+    frame,
+    width: 500,
+    height: 520,
+    resizable: true,
+    title: title,
     show: false,
     webPreferences: {
       preload: resolve(__dirname, '../preload/admin.js'),
     },
   });
 
-  createIPCHandler({ router, windows: [mainWindow] });
+export const setupAppWindows = () => {
+  let isQuitting = false;
+  // Create the browser window.
+  const mainWindow = createBrowserWindow('Holochain Launcher');
 
-  console.log('Creating main window');
+  const settingsWindow = createBrowserWindow('Holochain Launcher Settings', true);
 
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
+  const icon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '16x16.png'));
+  const tray = new Tray(icon);
 
-  if (is.dev) {
-    loadVite(mainWindow);
-  } else {
-    serveURL(mainWindow);
-  }
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Open',
+      type: 'normal',
+      click() {
+        mainWindow.show();
+      },
+    },
+    {
+      label: 'Quit',
+      type: 'normal',
+      click() {
+        app.quit();
+      },
+    },
+  ]);
 
-  // once its ready to show, show
-  mainWindow.once('ready-to-show', () => {
-    mainWindow!.show();
-    // Open the DevTools.
+  tray.setToolTip('Holochain Launcher');
+  tray.setContextMenu(contextMenu);
+
+  const windows: Record<Screen, BrowserWindow> = {
+    [mainScreen]: mainWindow,
+    [settingsScreen]: settingsWindow,
+  };
+
+  Object.values(windows).map((window) => {
     if (is.dev) {
-      mainWindow!.webContents.openDevTools();
+      loadVite(window);
+    } else {
+      serveURL(window);
     }
   });
 
-  setLinkOpenHandlers(mainWindow);
-
-  console.log('Content loaded into main window.');
-
-  mainWindow.on('closed', () => {
-    mainWindow = null;
+  app.on('before-quit', () => {
+    isQuitting = true;
   });
-  return mainWindow;
+
+  settingsWindow.on('close', (e) => {
+    if (!isQuitting) {
+      e.preventDefault();
+      settingsWindow.hide();
+      mainWindow.show();
+    }
+  });
+
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
+
+  return windows;
 };
 
 export const createHappWindow = (
@@ -81,9 +105,9 @@ export const createHappWindow = (
 ): BrowserWindow => {
   // TODO create mapping between installed-app-id's and window ids
   if (!appPort) throw new Error('App port not defined.');
-  const appId = extendedAppInfo.installed_app_id;
-  const holochainPartition = extendedAppInfo.partition;
-  const partition = `persist:${holochainPartition}#${appId}`;
+  const appId = extendedAppInfo.appInfo.installed_app_id;
+  const holochainDataRoot = extendedAppInfo.holochainDataRoot;
+  const partition = `persist:${holochainDataRoot.name}#${appId}`;
   const ses = session.fromPartition(partition);
   ses.protocol.handle('webhapp', async (request) => {
     // console.log("### Got file request: ", request);
@@ -92,7 +116,7 @@ export const createHappWindow = (
     const filePath = join(...filePathComponents);
     const resource = net.fetch(
       url
-        .pathToFileURL(join(launcherFileSystem.happUiDir(appId, holochainPartition), filePath))
+        .pathToFileURL(join(launcherFileSystem.happUiDir(appId, holochainDataRoot), filePath))
         .toString(),
     );
     if (!filePath.endsWith('index.html')) {
@@ -110,7 +134,7 @@ export const createHappWindow = (
     }
   });
   // Create the browser window.
-  let happWindow = new BrowserWindow({
+  const happWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     webPreferences: {

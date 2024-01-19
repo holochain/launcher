@@ -1,6 +1,6 @@
 {
   "name": "holochain-launcher-electron",
-  "version": "0.0.3",
+  "version": "0.0.8",
   "private": true,
   "description": "Holochain Launcher Electron (Prototype)",
   "main": "./out/main/index.js",
@@ -8,8 +8,9 @@
     "src/renderer"
   ],
   "scripts": {
-    "format": "prettier --write .",
+    "format": "prettier . \"!src/renderer\" --write",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
+    "lintAndFormatAll": "yarn lint && yarn format && cd src/renderer && yarn lint && yarn format && cd ../..",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "typecheck": "npm run typecheck:node",
     "start": "electron-vite preview",
@@ -32,6 +33,7 @@
     "@trpc/client": "^10.44.1",
     "@trpc/server": "^10.44.1",
     "bufferutil": "4.0.8",
+    "commander": "11.1.0",
     "electron-serve": "^1.2.0",
     "electron-trpc": "^0.5.2",
     "hc-launcher-rust-utils": "file:./rust-utils/dist",

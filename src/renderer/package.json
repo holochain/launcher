@@ -8,8 +8,8 @@
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"lint": "prettier --check 'src/**/*.{js,ts,svelte,json}' && eslint 'src/**/*.{js,ts,svelte}' --fix",
-		"format": "prettier --write 'src/**/*.{js,ts,svelte,json}'"
+		"lint": "prettier --check 'src/**/*.{js,ts,svelte,json,postcss}' && eslint 'src/**/*.{js,ts,svelte}' --fix",
+		"format": "prettier --write 'src/**/*.{js,ts,svelte,json,postcss}'"
 	},
 	"devDependencies": {
 		"@skeletonlabs/skeleton": "2.7.0",
@@ -26,6 +26,7 @@
 		"eslint-plugin-svelte": "^2.30.0",
 		"i18next": "^23.7.11",
 		"postcss": "8.4.33",
+		"prettier-plugin-sort-json": "^3.1.0",
 		"prettier-plugin-svelte": "^3.1.2",
 		"prettier-plugin-tailwindcss": "^0.5.9",
 		"svelte": "^4.2.8",

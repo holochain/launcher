@@ -1,4 +1,4 @@
-import { HolochainData, LoadingProgressUpdate } from './holochain';
+import type { HolochainData, LoadingProgressUpdate } from './holochain';
 
 export const LOADING_PROGRESS_UPDATE = 'loading-progress-update';
 export const APP_INSTALLED = 'app-installed';

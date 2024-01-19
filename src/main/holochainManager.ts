@@ -1,14 +1,18 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { AdminWebsocket, AppInfo } from '@holochain/client';
+import type { AppInfo } from '@holochain/client';
+import { AdminWebsocket } from '@holochain/client';
 import * as childProcess from 'child_process';
 import fs from 'fs';
+import getPort from 'get-port';
 import path from 'path';
 import split from 'split';
 
-import { APP_INSTALLED, HOLOCHAIN_ERROR, HOLOCHAIN_LOG, HolochainVersion } from '../types';
+import type { HolochainDataRoot, HolochainPartition, HolochainVersion } from '../types';
+import { APP_INSTALLED, HOLOCHAIN_ERROR, HOLOCHAIN_LOG } from '../types';
 import { HOLOCHAIN_BINARIES } from './binaries';
-import { createDirIfNotExists, LauncherFileSystem } from './filesystem';
-import { LauncherEmitter } from './launcherEmitter';
+import type { LauncherFileSystem } from './filesystem';
+import { createDirIfNotExists } from './filesystem';
+import type { LauncherEmitter } from './launcherEmitter';
 import { breakingVersion } from './utils';
 
 const rustUtils = require('hc-launcher-rust-utils');
@@ -28,7 +32,7 @@ export class HolochainManager {
   installedApps: AppInfo[];
   launcherEmitter: LauncherEmitter;
   version: HolochainVersion;
-  partition: string;
+  holochainDataRoot: HolochainDataRoot;
 
   constructor(
     processHandle: childProcess.ChildProcessWithoutNullStreams | undefined,
@@ -39,7 +43,7 @@ export class HolochainManager {
     adminWebsocket: AdminWebsocket,
     installedApps: AppInfo[],
     version: HolochainVersion,
-    partition: string,
+    holochainDataRoot: HolochainDataRoot,
   ) {
     this.processHandle = processHandle;
     this.launcherEmitter = launcherEmitter;
@@ -49,7 +53,7 @@ export class HolochainManager {
     this.fs = launcherFileSystem;
     this.installedApps = installedApps;
     this.version = version;
-    this.partition = partition;
+    this.holochainDataRoot = holochainDataRoot;
   }
 
   static async launch(
@@ -57,55 +61,52 @@ export class HolochainManager {
     launcherFileSystem: LauncherFileSystem,
     password: string,
     version: HolochainVersion,
-    adminPort: number,
     lairUrl: string,
     bootstrapUrl?: string,
     signalingUrl?: string,
-    nonDefaultPartition?: string, // launch with data from a non-default partition
-  ): Promise<HolochainManager> {
-    const partition = nonDefaultPartition
-      ? `partition#${nonDefaultPartition}`
-      : version.type === 'built-in'
-        ? breakingVersion(version.version)
-        : undefined;
-
-    if (!partition)
-      throw new Error('Only built-in holochain binaries can be used in the default partition.');
-
-    createDirIfNotExists(path.join(launcherFileSystem.holochainDir, partition));
-
-    const conductorEnvironmentPath = launcherFileSystem.conductorEnvironmentDir(partition);
-    const configPath = launcherFileSystem.conductorConfigPath(partition);
-
-    // TODO accept external conductor config
-    if (fs.existsSync(configPath)) {
-      // TODO Reuse existing config and only overwrite chosen values if necessary
-      const conductorConfigNew = rustUtils.defaultConductorConfig(
-        adminPort,
-        conductorEnvironmentPath,
-        lairUrl,
-        bootstrapUrl ? bootstrapUrl : DEFAULT_BOOTSTRAP_SERVER,
-        signalingUrl ? signalingUrl : DEFAULT_SIGNALING_SERVER,
-      );
-      console.log('Overwriting existing conductor-config.yaml...');
-      fs.writeFileSync(configPath, conductorConfigNew);
-    } else {
-      const conductorConfig = rustUtils.defaultConductorConfig(
-        adminPort,
-        conductorEnvironmentPath,
-        lairUrl,
-        bootstrapUrl ? bootstrapUrl : DEFAULT_BOOTSTRAP_SERVER,
-        signalingUrl ? signalingUrl : DEFAULT_SIGNALING_SERVER,
-      );
-      console.log('Writing new conductor-config.yaml...');
-      fs.writeFileSync(configPath, conductorConfig);
+    nonDefaultPartition?: HolochainPartition, // launch with data from a non-default partition
+  ): Promise<[HolochainManager, HolochainDataRoot]> {
+    let holochainDataRoot: HolochainDataRoot;
+    switch (nonDefaultPartition?.type) {
+      case 'custom':
+        holochainDataRoot = {
+          type: 'partition',
+          name: `partition#${nonDefaultPartition.name}`,
+        };
+        break;
+      case 'external':
+        holochainDataRoot = {
+          type: 'external',
+          name: `external#${nonDefaultPartition.name}`,
+          path: nonDefaultPartition.path,
+        };
+        break;
+      default:
+        if (version.type !== 'built-in')
+          throw new Error('Only built-in holochain binaries can be used in the default partition.');
+        holochainDataRoot = {
+          type: 'partition',
+          name: breakingVersion(version.version),
+        };
+        break;
     }
 
     if (version.type === 'running-external') {
       try {
-        const adminWebsocket = await AdminWebsocket.connect(new URL(`ws://127.0.0.1:${adminPort}`));
-        console.log('Connected to admin websocket of externally running conductor.');
+        // TODO move this logic to where the zome call signer needs to connect.
+        // const conductorConfigString = fs.readFileSync(version.configPath, 'utf-8');
+        // const lairUrl = conductorConfigString
+        //   .replace('connectionUrl:', '')
+        //   .trim()
+        //   .replaceAll('"', '');
+        const adminWebsocket = await AdminWebsocket.connect(
+          new URL(`ws://127.0.0.1:${version.adminPort}`),
+        );
+        console.log(
+          `Connected to admin websocket of externally running conductor (port ${version.adminPort}).`,
+        );
         const installedApps = await adminWebsocket.listApps({});
+        console.log('Installed apps: ', installedApps);
         const appInterfaces = await adminWebsocket.listAppInterfaces();
         console.log('Got appInterfaces: ', appInterfaces);
         let appPort;
@@ -116,44 +117,82 @@ export class HolochainManager {
           console.log('Attached app interface port: ', attachAppInterfaceResponse);
           appPort = attachAppInterfaceResponse.port;
         }
-        return new HolochainManager(
-          undefined,
-          launcherEmitter,
-          launcherFileSystem,
-          adminPort,
-          appPort,
-          adminWebsocket,
-          installedApps,
-          version,
-          partition,
-        );
+        return [
+          new HolochainManager(
+            undefined,
+            launcherEmitter,
+            launcherFileSystem,
+            version.adminPort,
+            appPort,
+            adminWebsocket,
+            installedApps,
+            version,
+            holochainDataRoot,
+          ),
+          holochainDataRoot,
+        ];
       } catch (e) {
         throw new Error(`Failed to connect to external holochain binary: ${JSON.stringify(e)}`);
       }
     }
+    const partitionName = holochainDataRoot.name;
+
+    createDirIfNotExists(path.join(launcherFileSystem.holochainDir, partitionName));
+
+    const adminPort = await getPort();
+
+    const conductorEnvironmentPath = launcherFileSystem.conductorEnvironmentDir(partitionName);
+    const configPath = launcherFileSystem.conductorConfigPath(partitionName);
+    console.log('configPath: ', configPath);
+
+    if (fs.existsSync(configPath)) {
+      // TODO Reuse existing config and only overwrite chosen values if necessary
+      const conductorConfigNew = rustUtils.defaultConductorConfig(
+        adminPort,
+        conductorEnvironmentPath,
+        lairUrl,
+        bootstrapUrl ? bootstrapUrl : DEFAULT_BOOTSTRAP_SERVER,
+        signalingUrl ? signalingUrl : DEFAULT_SIGNALING_SERVER,
+      );
+      console.log('Overwriting new conductor-config.yaml...');
+      fs.writeFileSync(configPath, conductorConfigNew);
+    } else {
+      const conductorConfig = rustUtils.defaultConductorConfig(
+        adminPort,
+        conductorEnvironmentPath,
+        lairUrl,
+        bootstrapUrl ? bootstrapUrl : DEFAULT_BOOTSTRAP_SERVER,
+        signalingUrl ? signalingUrl : DEFAULT_SIGNALING_SERVER,
+      );
+      console.log(typeof conductorConfig);
+      console.log('Writing new conductor-config.yaml...');
+      fs.writeFileSync(configPath, conductorConfig);
+    }
 
     const binary = version.type === 'built-in' ? HOLOCHAIN_BINARIES[version.version] : version.path;
-    if (!binary) throw new Error('Binary path undefined for the specified holochain version.');
-    const conductorHandle = childProcess.spawn(binary, ['-c', configPath, '-p']);
+    console.log('HOLOCHAIN_BINARIES: ', HOLOCHAIN_BINARIES);
+    console.log('HOLOCHAIN BINARY: ', binary);
+    const conductorHandle = childProcess.spawn(binary, ['-c', configPath, '-p'], {
+      env: {
+        RUST_LOG: 'info',
+      },
+    });
     conductorHandle.stdin.write(password);
     conductorHandle.stdin.end();
-
     conductorHandle.stdout.pipe(split()).on('data', async (line: string) => {
       launcherEmitter.emit(HOLOCHAIN_LOG, {
         version,
-        partition,
+        holochainDataRoot,
         data: line,
       });
     });
     conductorHandle.stderr.pipe(split()).on('data', (line: string) => {
       launcherEmitter.emit(HOLOCHAIN_ERROR, {
         version,
-        partition,
+        holochainDataRoot,
         data: line,
       });
     });
-
-    console.log('holochain binary spawned...');
 
     return new Promise((resolve, reject) => {
       conductorHandle.stdout.pipe(split()).on('data', async (line: string) => {
@@ -180,7 +219,7 @@ export class HolochainManager {
             console.log('Attached app interface port: ', attachAppInterfaceResponse);
             appPort = attachAppInterfaceResponse.port;
           }
-          resolve(
+          resolve([
             new HolochainManager(
               conductorHandle,
               launcherEmitter,
@@ -190,9 +229,10 @@ export class HolochainManager {
               adminWebsocket,
               installedApps,
               version,
-              partition,
+              holochainDataRoot,
             ),
-          );
+            holochainDataRoot,
+          ]);
         }
       });
     });
@@ -200,7 +240,7 @@ export class HolochainManager {
 
   // TODO Add option to install happ without UI
   async installWebHapp(webHappPath: string, appId: string, networkSeed?: string) {
-    const uiTargetDir = this.fs.happUiDir(appId, this.partition);
+    const uiTargetDir = this.fs.happUiDir(appId, this.holochainDataRoot);
     console.log('uiTargetDir: ', uiTargetDir);
     console.log('Installing app...');
     const tempHappPath = await rustUtils.saveWebhapp(webHappPath, uiTargetDir);
@@ -220,14 +260,14 @@ export class HolochainManager {
     this.installedApps = installedApps;
     this.launcherEmitter.emit(APP_INSTALLED, {
       version: this.version,
-      partition: this.partition,
+      holochainDataRoot: this.holochainDataRoot,
       data: appInfo,
     });
   }
 
   async uninstallApp(appId: string) {
     await this.adminWebsocket.uninstallApp({ installed_app_id: appId });
-    fs.rmSync(this.fs.happUiDir(appId, this.partition), { recursive: true });
+    fs.rmSync(this.fs.happUiDir(appId, this.holochainDataRoot), { recursive: true });
     console.log('Uninstalled app.');
     const installedApps = await this.adminWebsocket.listApps({});
     console.log('Installed apps: ', installedApps);

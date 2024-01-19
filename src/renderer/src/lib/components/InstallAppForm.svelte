@@ -12,14 +12,12 @@
 	let tabsBasic = 0;
 	let files: FileList;
 
-	const DEFAULT_PARTITION = '0.2.x';
-
 	const installedApps = client.getInstalledApps.createQuery();
 	const installKandoMutation = client.installKando.createMutation();
 	const installHappMutation = client.installHapp.createMutation();
 </script>
 
-<TabGroup class="col center-content mx-auto mb-2 max-w-xs space-y-2 text-center">
+<TabGroup class="center-content mx-auto mb-2 max-w-xs space-y-2 text-center">
 	<Tab bind:group={tabsBasic} name="installNewApp" value={0} class="button"
 		>{$i18n.t('installNewApp')}</Tab
 	>
@@ -34,7 +32,6 @@
 					if (tabsBasic === 0) {
 						return $installHappMutation.mutate(
 							{
-								partition: DEFAULT_PARTITION,
 								appId,
 								networkSeed,
 								filePath: files[0].path
@@ -51,7 +48,6 @@
 					}
 					return $installKandoMutation.mutate(
 						{
-							partition: DEFAULT_PARTITION,
 							appId,
 							networkSeed
 						},

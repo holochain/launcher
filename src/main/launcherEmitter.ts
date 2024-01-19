@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 
-import { EventMap } from '../types';
+import type { EventMap } from '../types';
 
 export class LauncherEmitter extends EventEmitter {
   // Override 'on' method for type safety
@@ -8,7 +8,7 @@ export class LauncherEmitter extends EventEmitter {
     event: K,
     listener: EventMap[K] extends undefined ? () => void : (arg: EventMap[K]) => void,
   ): this {
-    return super.on(event, listener as any);
+    return super.on(event, listener);
   }
 
   // Override 'emit' method for type safety

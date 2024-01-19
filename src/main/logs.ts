@@ -1,16 +1,11 @@
 import path from 'path';
-import winston, { createLogger, format, transports } from 'winston';
+import type winston from 'winston';
+import { createLogger, format, transports } from 'winston';
 
-import {
-  HOLOCHAIN_ERROR,
-  HOLOCHAIN_LOG,
-  HolochainData,
-  LAIR_ERROR,
-  LAIR_LOG,
-  WASM_LOG,
-} from '../types';
-import { LauncherFileSystem } from './filesystem';
-import { LauncherEmitter } from './launcherEmitter';
+import type { HolochainData } from '../types';
+import { HOLOCHAIN_ERROR, HOLOCHAIN_LOG, LAIR_ERROR, LAIR_LOG, WASM_LOG } from '../types';
+import type { LauncherFileSystem } from './filesystem';
+import type { LauncherEmitter } from './launcherEmitter';
 
 const { combine, timestamp } = format;
 
@@ -54,7 +49,7 @@ function logHolochain(
   holochainData: HolochainData,
   logFileTransport: winston.transports.FileTransportInstance,
 ) {
-  const holochainPartition = holochainData.partition;
+  const holochainPartition = holochainData.holochainDataRoot.name;
   const identifier = identifierFromHolochainData(holochainData);
   const line = (holochainData as HolochainData).data;
   const logLine = `[${identifier}]: ${line}`;
@@ -110,11 +105,11 @@ function createLairLogger(
 
 function identifierFromHolochainData(holochainData: HolochainData): string {
   if (holochainData.version.type === 'built-in') {
-    return `HOLOCHAIN ${holochainData.version.version} @ partition ${holochainData.partition}`;
+    return `HOLOCHAIN ${holochainData.version.version} @ partition ${holochainData.holochainDataRoot.name}`;
   } else if (holochainData.version.type === 'custom-path') {
-    return `HOLOCHAIN CUSTOM BINARY @ partition ${holochainData.partition}`;
+    return `HOLOCHAIN CUSTOM BINARY @ partition ${holochainData.holochainDataRoot.name}`;
   } else if (holochainData.version.type === 'running-external') {
-    return `HOLOCHAIN EXTERNAL BINARY @ partition ${holochainData.partition}`;
+    return `HOLOCHAIN EXTERNAL BINARY @ partition ${holochainData.holochainDataRoot.name}`;
   } else {
     return `HOLOCHAIN unknown`;
   }

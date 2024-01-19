@@ -11,15 +11,22 @@
     "es2017": true,
     "node": true
   },
-  "extends": ["eslint:recommended", "prettier"],
+  "extends": [
+    "eslint:recommended",
+    "prettier",
+    "@electron-toolkit/eslint-config-ts/recommended",
+    "@electron-toolkit/eslint-config-prettier"
+  ],
   "plugins": ["@typescript-eslint", "prettier", "simple-import-sort"],
   "rules": {
     "prettier/prettier": "error",
+    "@typescript-eslint/consistent-type-imports": "error",
     "vue/attribute-hyphenation": "off",
     "vue/no-multiple-template-root": "off",
     "vue/multi-word-component-names": "off",
     "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
     "simple-import-sort/imports": "error",
-    "simple-import-sort/exports": "error"
+    "simple-import-sort/exports": "error",
+    "@typescript-eslint/explicit-function-return-type": "off"
   }
 }

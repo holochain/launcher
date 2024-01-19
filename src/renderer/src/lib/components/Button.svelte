@@ -3,9 +3,9 @@
 
 	export let props: ButtonProps;
 
-	$: ({ onClick, ...rest } = props);
+	$: ({ onClick, class: btnClass = 'btn-primary', ...rest } = props);
 </script>
 
-<button on:click={onClick} {...rest} class="variant-filled btn mb-2">
+<button on:click={onClick} class={btnClass} {...rest}>
 	<slot />
 </button>
