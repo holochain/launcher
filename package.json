@@ -3,6 +3,8 @@
   "version": "0.0.9",
   "private": true,
   "description": "Holochain Launcher Electron (Prototype)",
+  "author": "Holochain Foundation <info@holochain.org> (http://holochain.org)",
+  "license": "CAL-1.0",
   "main": "./out/main/index.js",
   "workspaces": [
     "src/renderer"
