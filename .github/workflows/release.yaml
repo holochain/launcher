@@ -17,8 +17,9 @@ jobs:
         with:
           node-version: '18'
       - name: Get version
+        id: packagejson
         run: |
-          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
       - name: Create Draft Release
         uses: ncipollo/release-action@v1
         with:
