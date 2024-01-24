@@ -7,6 +7,8 @@ on:
 jobs:
   create-draft-release:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.packagejson.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -15,9 +17,8 @@ jobs:
         with:
           node-version: '18'
       - name: Get version
-        id: packagejson
         run: |
-          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
       - name: Create Draft Release
         uses: ncipollo/release-action@v1
         with:
@@ -192,10 +193,9 @@ jobs:
       - name: Update Draft Release
         uses: ncipollo/release-action@v1
         with:
-          tag: v${{ steps.packagejson.outputs.version }}
-          name: v${{ steps.packagejson.outputs.version }}
+          tag: v{{ needs.create-draft-release.outputs.version }}
+          name: v{{ needs.create-draft-release.outputs.version }}
           prerelease: true
-          draft: false
           allowUpdates: false
 
           
