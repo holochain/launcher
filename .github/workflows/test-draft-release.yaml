@@ -25,3 +25,14 @@ jobs:
           name: v${{ steps.packagejson.outputs.version }}
           draft: true
           generateReleaseNotes: true
+  mark-as-prerelease:
+    needs: create-draft-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Draft Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ steps.packagejson.outputs.version }}
+          name: v${{ steps.packagejson.outputs.version }}
+          prerelease: true
+          allowUpdates: false

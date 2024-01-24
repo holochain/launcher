@@ -25,7 +25,9 @@ jobs:
           name: v${{ steps.packagejson.outputs.version }}
           draft: true
           generateReleaseNotes: true
+          allowUpdates: true
   publish:
+    needs: create-draft-release
     strategy:
       fail-fast: false
       matrix:
@@ -183,3 +185,16 @@ jobs:
           CertUtil -hashfile "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" SHA512
 
           gh release upload "v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" --clobber
+  mark-as-prerelease:
+    needs: create-draft-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Draft Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ steps.packagejson.outputs.version }}
+          name: v${{ steps.packagejson.outputs.version }}
+          prerelease: true
+          allowUpdates: false
+
+          
