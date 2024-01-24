@@ -194,8 +194,8 @@ jobs:
       - name: Update Draft Release
         uses: ncipollo/release-action@v1
         with:
-          tag: v{{ needs.create-draft-release.outputs.version }}
-          name: v{{ needs.create-draft-release.outputs.version }}
+          tag: v${{ needs.create-draft-release.outputs.version }}
+          name: v${{ needs.create-draft-release.outputs.version }}
           prerelease: true
           allowUpdates: false
 
