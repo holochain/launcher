@@ -8,7 +8,7 @@ jobs:
   create-draft-release:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.packagejson.outputs.version }}
+      release_id: ${{ steps.create_release.outputs.id }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -21,6 +21,7 @@ jobs:
         run: |
           echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
       - name: Create Draft Release
+        id: create_release
         uses: ncipollo/release-action@v1
         with:
           tag: v${{ steps.packagejson.outputs.version }}
@@ -33,10 +34,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Update Draft Release
-        uses: ncipollo/release-action@v1
+        uses: irongut/EditRelease@v1.2.0
         with:
-          tag: v${{ needs.create-draft-release.outputs.version }}
-          name: v${{ needs.create-draft-release.outputs.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          id: ${{ needs.create-draft-release.outputs.id }}
           prerelease: true
-          omitDraftDuringUpdate: true
-          allowUpdates: false
