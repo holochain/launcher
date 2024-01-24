@@ -5,7 +5,7 @@ on:
       - release
 
 jobs:
-  createDraftRelease:
+  create-draft-release:
     needs: publish
     runs-on: ubuntu-latest
     steps:
