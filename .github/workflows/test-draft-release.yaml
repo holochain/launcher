@@ -1,4 +1,4 @@
-name: 'test-draft-release'
+name: 'test-draft-releas'
 on:
   push:
     branches:
