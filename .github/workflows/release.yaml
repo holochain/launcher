@@ -198,5 +198,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           id: ${{ needs.create-draft-release.outputs.release_id }}
           prerelease: true
+          draft: false
 
           
