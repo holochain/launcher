@@ -47,7 +47,7 @@
 	<div class="py-2">
 		<Warning />
 	</div>
-	<p class="text-error-500 mb-4 max-w-72 font-[450]">
+	<p class="mb-4 max-w-72 font-[450] text-error-500">
 		{$i18n.t('passwordWarning')}
 	</p>
 	<PasswordForm

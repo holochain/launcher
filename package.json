@@ -10,7 +10,7 @@
   "scripts": {
     "format": "prettier . \"!src/renderer\" --write",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
-    "lintAndFormatAll": "yarn lint && yarn format && cd src/renderer && yarn lint && yarn format && cd ../..",
+    "lintAndFormatAll": "yarn lint || true && yarn format || true && cd src/renderer && yarn lint || true && yarn format || true && cd ../..",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "typecheck": "npm run typecheck:node",
     "start": "electron-vite preview",

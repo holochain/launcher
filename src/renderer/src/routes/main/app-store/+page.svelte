@@ -28,6 +28,6 @@
 		<Rocket />
 	</Button>
 </MainHeader>
-<div class="align-center bg-apps-list-dark-gradient flex grow justify-center bg-fixed">
+<div class="align-center flex grow justify-center bg-apps-list-dark-gradient bg-fixed">
 	<span class="pt-4">App Store Placeholder</span>
 </div>

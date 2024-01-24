@@ -8,7 +8,7 @@
 	const openSettings = client.openSettings.createMutation();
 </script>
 
-<div class="bg-apps-input-dark-gradient flex p-3">
+<div class="flex bg-apps-input-dark-gradient p-3">
 	<div class="row flex flex-grow"><slot /></div>
 	<Button
 		props={{
