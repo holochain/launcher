@@ -196,7 +196,7 @@ jobs:
         uses: irongut/EditRelease@v1.2.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          id: ${{ needs.create-draft-release.outputs.id }}
+          id: ${{ needs.create-draft-release.outputs.release_id }}
           prerelease: true
 
           
