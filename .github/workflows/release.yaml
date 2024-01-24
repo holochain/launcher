@@ -196,6 +196,7 @@ jobs:
         with:
           tag: v${{ needs.create-draft-release.outputs.version }}
           name: v${{ needs.create-draft-release.outputs.version }}
+          omitDraftDuringUpdate: true
           prerelease: true
           allowUpdates: false
 

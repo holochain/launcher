@@ -38,4 +38,5 @@ jobs:
           tag: v${{ needs.create-draft-release.outputs.version }}
           name: v${{ needs.create-draft-release.outputs.version }}
           prerelease: true
+          omitDraftDuringUpdate: true
           allowUpdates: false
