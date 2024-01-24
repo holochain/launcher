@@ -186,7 +186,7 @@ jobs:
 
           gh release upload "v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" --clobber
   mark-as-prerelease:
-    needs: create-draft-release
+    needs: publish
     runs-on: ubuntu-latest
     steps:
       - name: Update Draft Release
@@ -195,6 +195,7 @@ jobs:
           tag: v${{ steps.packagejson.outputs.version }}
           name: v${{ steps.packagejson.outputs.version }}
           prerelease: true
+          draft: false
           allowUpdates: false
 
           

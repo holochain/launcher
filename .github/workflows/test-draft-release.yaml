@@ -34,5 +34,6 @@ jobs:
         with:
           tag: v${{ steps.packagejson.outputs.version }}
           name: v${{ steps.packagejson.outputs.version }}
+          draft: false
           prerelease: true
           allowUpdates: false
