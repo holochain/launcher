@@ -27,6 +27,7 @@ jobs:
           name: v${{ steps.packagejson.outputs.version }}
           draft: true
           generateReleaseNotes: true
+          allowUpdates: true
   mark-as-prerelease:
     needs: create-draft-release
     runs-on: ubuntu-latest
