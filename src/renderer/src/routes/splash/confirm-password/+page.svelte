@@ -25,7 +25,7 @@
 			{ password: $appPassword },
 			{
 				onSuccess: () => {
-					goto('/app');
+					goto('/main/app-store');
 				},
 				onError: (error) => handleError($i18n.t(error.message || 'unknownError'))
 			}
