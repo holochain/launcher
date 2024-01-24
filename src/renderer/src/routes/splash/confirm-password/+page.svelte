@@ -25,7 +25,7 @@
 			{ password: $appPassword },
 			{
 				onSuccess: () => {
-					goto('/app');
+					goto('/main/app-store');
 				},
 				onError: (error) => handleError($i18n.t(error.message || 'unknownError'))
 			}
@@ -47,7 +47,7 @@
 	<div class="py-2">
 		<Warning />
 	</div>
-	<p class="mb-4 max-w-72 font-[450] text-error-500">
+	<p class="text-error-500 mb-4 max-w-72 font-[450]">
 		{$i18n.t('passwordWarning')}
 	</p>
 	<PasswordForm

@@ -19,7 +19,7 @@
 			{ password: passwordInput },
 			{
 				onSuccess: () => {
-					goto('/app');
+					goto('/main/app-store');
 				},
 				onError: (error) => {
 					showModalError({

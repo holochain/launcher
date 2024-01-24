@@ -1,14 +1,25 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { Button } from '$components';
 	import { ArrowLeft } from '$icons';
-	import { i18n } from '$services';
+	import { i18n, trpc } from '$services';
 
 	const goBack = () => window?.history.back();
+
+	const client = trpc();
+
+	client.onSetupProgressUpdate.createSubscription(undefined, {
+		onData: (data) => {
+			if (data === 'settings') {
+				goto('/settings');
+			}
+		}
+	});
 </script>
 
-<div class="relative flex h-screen flex-col bg-login-background bg-fixed bg-top bg-no-repeat">
-	<div class="absolute inset-0 bg-tertiary-900 opacity-30" />
+<div class="bg-login-background relative flex h-screen flex-col bg-fixed bg-top bg-no-repeat">
+	<div class="bg-tertiary-900 absolute inset-0 opacity-30" />
 	<!-- White overlay div -->
 	<p class="z-10 p-1 text-center text-xs opacity-30">Holochain Beta 0.1</p>
 	{#if $page.url.pathname.includes('confirm-password')}

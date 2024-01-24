@@ -5,7 +5,7 @@
 	export let value: string | null = null;
 	export let files: FileList | null = null;
 
-	$: ({ type, class: iptClass = 'input placeholder-white text-sm', ...rest } = props);
+	$: ({ type, class: iptClass = 'input placeholder-white text-sm mb-2', ...rest } = props);
 </script>
 
 {#if type === 'file'}
