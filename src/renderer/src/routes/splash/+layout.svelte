@@ -1,10 +1,21 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { Button } from '$components';
 	import { ArrowLeft } from '$icons';
-	import { i18n } from '$services';
+	import { i18n, trpc } from '$services';
 
 	const goBack = () => window?.history.back();
+
+	const client = trpc();
+
+	client.onSetupProgressUpdate.createSubscription(undefined, {
+		onData: (data) => {
+			if (data === 'settings') {
+				goto('/settings');
+			}
+		}
+	});
 </script>
 
 <div class="relative flex h-screen flex-col bg-login-background bg-fixed bg-top bg-no-repeat">
