@@ -11,12 +11,11 @@ import path from 'path';
 import z from 'zod';
 
 import type {
-  ExtendedAppInfo,
   HolochainDataRoot,
   HolochainPartition,
   LoadingProgressUpdate,
   Screen,
-  WindowInfo,
+  WindowInfoRecord,
 } from '../types';
 import {
   CHECK_INITIALIZED_KEYSTORE_ERROR,
@@ -39,7 +38,7 @@ import { initializeLairKeystore, launchLairKeystore } from './lairKeystore';
 import { LauncherEmitter } from './launcherEmitter';
 import { setupLogs } from './logs';
 import { DEFAULT_APPS_DIRECTORY } from './paths';
-import { throwTRPCErrorError, validateWithZod } from './utils';
+import { isHappAlreadyOpened, throwTRPCErrorError, validateWithZod } from './utils';
 import { createHappWindow, setupAppWindows } from './windows';
 
 const t = initTRPC.create({ isServer: true });
@@ -111,6 +110,10 @@ app.on('second-instance', () => {
   LAUNCHER_WINDOWS[mainScreen].show();
 });
 
+app.on('activate', () => {
+  LAUNCHER_WINDOWS[mainScreen].show();
+});
+
 protocol.registerSchemesAsPrivileged([
   {
     scheme: 'webhapp',
@@ -132,7 +135,7 @@ let HOLOCHAIN_DATA_ROOT: HolochainDataRoot | undefined;
 const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
 let LAIR_HANDLE: childProcess.ChildProcessWithoutNullStreams | undefined;
 let LAUNCHER_WINDOWS: Record<Screen, BrowserWindow>;
-const WINDOW_INFO_MAP: Record<number, WindowInfo> = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
+const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
 
 const handleSignZomeCall = (e: IpcMainInvokeEvent, zomeCall: ZomeCallUnsignedNapi) => {
   const windowInfo = WINDOW_INFO_MAP[e.sender.id];
@@ -270,7 +273,7 @@ async function handleLaunch(password: string) {
   );
   HOLOCHAIN_DATA_ROOT = holochainDataRoot;
   HOLOCHAIN_MANAGERS[holochainDataRoot.name] = holochainManager;
-  LAUNCHER_WINDOWS[mainScreen].setSize(600, 170, true);
+  LAUNCHER_WINDOWS[mainScreen].setSize(600, 200, true);
   return;
 }
 
@@ -299,15 +302,20 @@ const router = t.router({
     LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'settings');
     LAUNCHER_WINDOWS[settingsScreen].show();
   }),
+  hideApp: t.procedure.mutation(() => {
+    LAUNCHER_WINDOWS[mainScreen].hide();
+  }),
   openApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
     const { appInfo, holochainDataRoot } = opts.input;
     const holochainManager = getHolochainManager(holochainDataRoot.name);
-    const happWindow = createHappWindow(
-      opts.input as ExtendedAppInfo,
-      LAUNCHER_FILE_SYSTEM,
-      holochainManager.appPort,
-    );
+
+    if (isHappAlreadyOpened({ installed_app_id: appInfo.installed_app_id, WINDOW_INFO_MAP })) {
+      return;
+    }
+
+    const happWindow = createHappWindow(opts.input, LAUNCHER_FILE_SYSTEM, holochainManager.appPort);
     WINDOW_INFO_MAP[happWindow.webContents.id] = {
+      installedAppId: appInfo.installed_app_id,
       agentPubKey: appInfo.agent_pub_key,
       adminPort:
         HOLOCHAIN_VERSION.type === 'running-external' ? HOLOCHAIN_VERSION.adminPort : undefined,

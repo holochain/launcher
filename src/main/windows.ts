@@ -1,5 +1,14 @@
 import { is } from '@electron-toolkit/utils';
-import { app, BrowserWindow, Menu, nativeImage, net, session, Tray } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  globalShortcut,
+  Menu,
+  nativeImage,
+  net,
+  session,
+  Tray,
+} from 'electron';
 import serve from 'electron-serve';
 import path, { join, resolve } from 'path';
 import url from 'url';
@@ -77,6 +86,15 @@ export const setupAppWindows = () => {
     } else {
       serveURL(window);
     }
+  });
+
+  globalShortcut.register('CommandOrControl+Shift+I', () => {
+    mainWindow.show();
+  });
+
+  app.on('will-quit', () => {
+    // Unregister all shortcuts.
+    globalShortcut.unregisterAll();
   });
 
   app.on('before-quit', () => {
