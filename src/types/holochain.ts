@@ -1,4 +1,3 @@
-import type { AgentPubKey } from '@holochain/client';
 import { z } from 'zod';
 
 export const HolochainVersionSchema = z.union([
@@ -127,11 +126,6 @@ export type HolochainData = {
   version: HolochainVersion;
   holochainDataRoot: HolochainDataRoot;
   data: unknown;
-};
-
-export type WindowInfo = {
-  agentPubKey: AgentPubKey;
-  adminPort?: number;
 };
 
 export type LoadingProgressUpdate =

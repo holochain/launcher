@@ -1,10 +1,10 @@
 import { TRPCError } from '@trpc/server';
-import type { BrowserWindow } from 'electron';
+import { BrowserWindow } from 'electron';
 import { shell } from 'electron';
 import semver from 'semver';
 import type { ZodSchema } from 'zod';
 
-import type { ErrorWithMessage } from '../types';
+import type { ErrorWithMessage, WindowInfoRecord } from '../types';
 
 export function setLinkOpenHandlers(browserWindow: BrowserWindow): void {
   // links in happ windows should open in the system default application
@@ -92,6 +92,28 @@ function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
 
 export function getErrorMessage(error: unknown) {
   return toErrorWithMessage(error).message;
+}
+
+export function isHappAlreadyOpened({
+  installed_app_id,
+  WINDOW_INFO_MAP,
+}: {
+  installed_app_id: string;
+  WINDOW_INFO_MAP: WindowInfoRecord;
+}) {
+  const windowEntry = Object.entries(WINDOW_INFO_MAP).find(
+    ([, value]) => value.installedAppId === installed_app_id,
+  );
+  if (!windowEntry) return false;
+
+  const [windowId] = windowEntry;
+  const window = BrowserWindow.fromId(parseInt(windowId));
+  if (!window) return false;
+
+  if (window.isMinimized()) window.restore();
+  window.focus();
+
+  return true;
 }
 
 export function breakingVersion(version) {

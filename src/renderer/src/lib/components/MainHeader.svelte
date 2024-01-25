@@ -6,6 +6,8 @@
 	const client = trpc();
 
 	const openSettings = client.openSettings.createMutation();
+
+	export let openSettingsCallback: () => void = () => {};
 </script>
 
 <div class="flex bg-apps-input-dark-gradient p-3">
@@ -14,7 +16,12 @@
 		props={{
 			type: 'button',
 			class: '',
-			onClick: () => $openSettings.mutate()
+			onClick: () =>
+				$openSettings.mutate(undefined, {
+					onSuccess: () => {
+						openSettingsCallback();
+					}
+				})
 		}}
 	>
 		<Gear />
