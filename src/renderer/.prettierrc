@@ -3,6 +3,7 @@
 	"plugins": ["prettier-plugin-sort-json", "prettier-plugin-svelte", "prettier-plugin-tailwindcss"],
 	"printWidth": 100,
 	"singleQuote": true,
+	"tailwindAttributes": ["iptClass", "btnClass"],
 	"trailingComma": "none",
 	"useTabs": true
 }

@@ -1,6 +1,7 @@
 type CommonInputProps = {
 	id?: string;
 	class?: string;
+	autofocus?: boolean;
 };
 
 type FileProps = {

@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { ProgressRadial } from '@skeletonlabs/skeleton';
-
-	import { Error, InstallAppForm } from '$components';
+	import { CenterProgressRadial, Error, InstallAppForm } from '$components';
 	import AppEntry from '$components/AppEntry.svelte';
 	import { validateApp } from '$helpers';
 	import { i18n, trpc } from '$services';
@@ -15,7 +13,7 @@
 
 <div class="center-content mx-auto max-w-xs space-y-2 text-center">
 	{#if $installedApps.isLoading}
-		<ProgressRadial />
+		<CenterProgressRadial />
 	{:else if $installedApps.error}
 		<Error text={$installedApps.error.message} />
 	{:else if $installedApps.isSuccess}
