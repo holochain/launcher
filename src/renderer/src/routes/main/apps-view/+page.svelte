@@ -57,6 +57,7 @@
 	<div class="relative mx-2 flex-grow">
 		<Input
 			bind:value={searchInput}
+			bind:autocomplete
 			on:keydown={handlePress}
 			props={{
 				class: 'pl-10 input rounded placeholder-tertiary-500 text-base font-medium',
