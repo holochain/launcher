@@ -88,7 +88,7 @@ export const setupAppWindows = () => {
     }
   });
 
-  globalShortcut.register('CommandOrControl+Shift+I', () => {
+  globalShortcut.register('CommandOrControl+Shift+L', () => {
     mainWindow.show();
   });
 

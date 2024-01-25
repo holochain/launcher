@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 
 	import type { InputProps } from '$types';
 
 	const dispatch = createEventDispatcher();
+
+	let inputElement: HTMLElement;
 
 	export let props: InputProps;
 	export let value: string | null = null;
@@ -14,15 +16,38 @@
 		dispatch('keydown', event);
 	}
 
+	function focusInput() {
+		if (inputElement) {
+			inputElement.focus();
+		}
+	}
+
+	onMount(() => {
+		if (props.autofocus) {
+			window.addEventListener('focus', focusInput);
+			return () => {
+				window.removeEventListener('focus', focusInput);
+			};
+		}
+	});
+
 	$: ({ type, class: iptClass = 'input placeholder-white text-sm mb-2', ...rest } = props);
 </script>
 
 {#if type === 'file'}
 	<input type="file" bind:files {...rest} class={iptClass} />
 {:else}
-	<input on:keydown={handleKeydown} bind:value {...props} class={iptClass} />
+	<input
+		bind:this={inputElement}
+		on:keydown={handleKeydown}
+		bind:value
+		{...props}
+		class={iptClass}
+	/>
 	{#if autocomplete && value}
-		<span style="left: {43 + value.length * 7}px" class="absolute top-[9px] opacity-50"
+		<span
+			style="left: {43 + value.length * 7}px"
+			class="pointer-events-none absolute top-[9px] opacity-50"
 			>{autocomplete.slice(value.length)}</span
 		>
 	{/if}

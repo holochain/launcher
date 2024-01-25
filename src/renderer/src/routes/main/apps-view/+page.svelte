@@ -20,13 +20,18 @@
 	$: autocomplete =
 		filteredInstalledApps.length > 0 ? filteredInstalledApps[0].appInfo.installed_app_id : '';
 
-	function handleEnterPress(event: CustomEvent) {
-		if (
-			event.detail instanceof KeyboardEvent &&
-			event.detail.key === 'Enter' &&
-			filteredInstalledApps.length > 0
-		) {
+	function handlePress(event: CustomEvent) {
+		if (!(event.detail instanceof KeyboardEvent)) return;
+
+		const { key } = event.detail;
+
+		if (key === 'Enter' && filteredInstalledApps.length > 0) {
 			$openApp.mutate(filteredInstalledApps[0]);
+		}
+
+		if (key === 'Tab') {
+			event.detail.preventDefault();
+			searchInput = autocomplete;
 		}
 	}
 
@@ -52,8 +57,7 @@
 	<div class="relative mx-2 flex-grow">
 		<Input
 			bind:value={searchInput}
-			bind:autocomplete
-			on:keydown={handleEnterPress}
+			on:keydown={handlePress}
 			props={{
 				class: 'pl-10 input rounded placeholder-tertiary-500 text-base font-medium',
 				type: 'text',
@@ -67,5 +71,10 @@
 	</div>
 </MainHeader>
 {#if $installedApps.isSuccess}
-	<ListOfApps installedApps={filteredInstalledApps} />
+	<ListOfApps
+		installedApps={filteredInstalledApps}
+		openAppCallback={() => {
+			searchInput = '';
+		}}
+	/>
 {/if}

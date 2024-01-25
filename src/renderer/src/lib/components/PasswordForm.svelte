@@ -17,6 +17,7 @@
 		<Input
 			bind:value
 			props={{
+				autofocus: true,
 				class: 'input relative pr-8 max-w-56 text-sm placeholder-white',
 				type: showPassword ? 'text' : 'password',
 				placeholder: placeholderText,

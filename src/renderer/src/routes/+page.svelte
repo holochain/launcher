@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import { onDestroy } from 'svelte';
 
 	import { goto } from '$app/navigation';
-	import { Error } from '$components';
+	import { CenterProgressRadial, Error } from '$components';
 	import { trpc } from '$services';
 
 	const client = trpc();
@@ -21,7 +20,7 @@
 </script>
 
 {#if $lairSetupRequired.isLoading}
-	<ProgressRadial />
+	<CenterProgressRadial />
 {:else if $lairSetupRequired.error}
 	<Error text="Error loading lair setup status" />
 {/if}

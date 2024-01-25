@@ -1,6 +1,7 @@
 type CommonInputProps = {
 	id?: string;
 	class?: string;
+	autofocus?: boolean;
 };
 
 type FileProps = {
@@ -10,7 +11,6 @@ type FileProps = {
 type TextProps = {
 	placeholder: string;
 	required?: boolean;
-	autofocus?: boolean;
 };
 
 export type InputProps =
