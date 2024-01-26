@@ -41,30 +41,30 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cargo install holochain --version 0.3.0-beta-dev.32 --locked --features sqlite-encrypted
+          cargo install holochain --version 0.2.5-rc.1 --locked --features sqlite-encrypted
           $HcPath = Get-Command holochain | Select-Object -ExpandProperty Definition
-          Copy-Item $HcPath -Destination holochain-v0.3.0-beta-dev.32-x86_64-pc-windows-msvc.exe
+          Copy-Item $HcPath -Destination holochain-v0.2.5-rc.1-x86_64-pc-windows-msvc.exe
 
-          gh release upload "$($env:GITHUB_REF -replace "refs/tags/")" "holochain-v0.3.0-beta-dev.32-x86_64-pc-windows-msvc.exe"
+          gh release upload "$($env:GITHUB_REF -replace "refs/tags/")" "holochain-v0.2.5-rc.1-x86_64-pc-windows-msvc.exe"
 
       - name: setup binaries (macos only)
         if: matrix.platform == 'macos-11'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cargo install holochain --version 0.3.0-beta-dev.32 --locked --features sqlite-encrypted
+          cargo install holochain --version 0.2.5-rc.1 --locked --features sqlite-encrypted
           HOLOCHAIN_PATH=$(which holochain)
-          cp $HOLOCHAIN_PATH holochain-v0.3.0-beta-dev.32-x86_64-apple-darwin
+          cp $HOLOCHAIN_PATH holochain-v0.2.5-rc.1-x86_64-apple-darwin
 
-          gh release upload "${GITHUB_REF#refs/tags/}" "holochain-v0.3.0-beta-dev.32-x86_64-apple-darwin"
+          gh release upload "${GITHUB_REF#refs/tags/}" "holochain-v0.2.5-rc.1-x86_64-apple-darwin"
 
       - name: setup binaries (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cargo install holochain --version 0.3.0-beta-dev.32 --locked --features sqlite-encrypted
+          cargo install holochain --version 0.2.5-rc.1 --locked --features sqlite-encrypted
           HOLOCHAIN_PATH=$(which holochain)
-          cp $HOLOCHAIN_PATH holochain-v0.3.0-beta-dev.32-x86_64-unknown-linux-gnu
+          cp $HOLOCHAIN_PATH holochain-v0.2.5-rc.1-x86_64-unknown-linux-gnu
 
-          gh release upload "${GITHUB_REF#refs/tags/}" "holochain-v0.3.0-beta-dev.32-x86_64-unknown-linux-gnu"
+          gh release upload "${GITHUB_REF#refs/tags/}" "holochain-v0.2.5-rc.1-x86_64-unknown-linux-gnu"
