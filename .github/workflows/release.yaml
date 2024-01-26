@@ -76,7 +76,7 @@ jobs:
           # $HcPath = Get-Command holochain | Select-Object -ExpandProperty Definition
           # Copy-Item $HcPath -Destination resources/bins/holochain-v0.2.5-rc.1.exe
 
-          curl -L --output resources/bins/holochain-v0.2.5-rc.1.exe https://github.com/matthme/launcher-electron/releases/download/holochain-binaries-v0.2.5-rc.1/holochain-v0.2.5-rc.1-x86_64-pc-windows-msvc.exe
+          curl -L --output resources/bins/holochain-v0.2.5-rc.1.exe https://github.com/holochain/launcher-electron/releases/download/holochain-binaries-v0.2.5-rc.1/holochain-v0.2.5-rc.1-x86_64-pc-windows-msvc.exe
 
           # NEW_VERSION: install new holochain version and copy its binary to the tauri path
 
@@ -96,7 +96,7 @@ jobs:
           # HOLOCHAIN_PATH=$(which holochain)
           # cp $HOLOCHAIN_PATH resources/bins/holochain-v0.2.5-rc.1
 
-          curl -L --output resources/bins/holochain-v0.2.5-rc.1 https://github.com/matthme/launcher-electron/releases/download/holochain-binaries-v0.2.5-rc.1/holochain-v0.2.5-rc.1-x86_64-apple-darwin
+          curl -L --output resources/bins/holochain-v0.2.5-rc.1 https://github.com/holochain/launcher-electron/releases/download/holochain-binaries-v0.2.5-rc.1/holochain-v0.2.5-rc.1-x86_64-apple-darwin
           chmod +x ./resources/bins/holochain-v0.2.5-rc.1
 
           # NEW_VERSION: install new holochain version and copy its binary to the tauri path
@@ -117,7 +117,7 @@ jobs:
           # HOLOCHAIN_PATH=$(which holochain)
           # cp $HOLOCHAIN_PATH resources/bins/holochain-v0.2.5-rc.1
 
-          curl -L --output resources/bins/holochain-v0.2.5-rc.1 https://github.com/matthme/launcher-electron/releases/download/holochain-binaries-v0.2.5-rc.1/holochain-v0.2.5-rc.1-x86_64-unknown-linux-gnu
+          curl -L --output resources/bins/holochain-v0.2.5-rc.1 https://github.com/holochain/launcher-electron/releases/download/holochain-binaries-v0.2.5-rc.1/holochain-v0.2.5-rc.1-x86_64-unknown-linux-gnu
           chmod +x ./resources/bins/holochain-v0.2.5-rc.1
 
           # NEW_VERSION: install new holochain version and copy its binary to the tauri path
