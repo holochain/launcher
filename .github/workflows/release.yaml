@@ -10,10 +10,8 @@ jobs:
     outputs:
       release_id: ${{ steps.create_release.outputs.id }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
         with:
           node-version: '18'
       - name: Get version
@@ -192,12 +190,19 @@ jobs:
     needs: publish
     runs-on: ubuntu-latest
     steps:
-      - name: Update Draft Release
-        uses: irongut/EditRelease@v1.2.0
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          id: ${{ needs.create-draft-release.outputs.release_id }}
-          prerelease: true
-          draft: false
+          node-version: '18'
+      - name: Mark release as pre-release
+        run: |
+          curl \
+            -X PATCH \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/releases/${{ needs.create-draft-release.outputs.release_id }} \
+            -d '{
+              "prerelease": true
+            }'
 
           
