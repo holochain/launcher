@@ -2,7 +2,7 @@ name: 'publish'
 on:
   push:
     branches:
-      - release
+      - feat/gh-action-enhancement
 
 jobs:
   create-draft-release:
