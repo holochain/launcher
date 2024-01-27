@@ -1,4 +1,4 @@
-name: 'publish'
+name: 'test-draft-release'
 on:
   push:
     branches:
