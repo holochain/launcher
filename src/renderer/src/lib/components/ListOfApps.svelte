@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Avatar } from '@skeletonlabs/skeleton';
 
+	import { TooltipForTruncate } from '$components';
 	import { i18n, trpc } from '$services';
 
 	import type { ExtendedAppInfo } from '../../../../types';
@@ -39,7 +40,7 @@
 					rounded="rounded-2xl"
 					background="bg-icon-gradient"
 				/>
-				<span class="pt-2 text-xs">{app.appInfo.installed_app_id}</span>
+				<TooltipForTruncate text={app.appInfo.installed_app_id} />
 			</button>
 		{/each}
 		<button

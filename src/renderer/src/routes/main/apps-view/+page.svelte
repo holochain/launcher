@@ -24,14 +24,22 @@
 		if (!(event.detail instanceof KeyboardEvent)) return;
 
 		const { key } = event.detail;
+		const hasApps = filteredInstalledApps.length > 0;
 
-		if (key === 'Enter' && filteredInstalledApps.length > 0) {
+		if (key === 'Enter' && hasApps) {
 			$openApp.mutate(filteredInstalledApps[0]);
+			return;
 		}
 
 		if (key === 'Tab') {
 			event.detail.preventDefault();
 			searchInput = autocomplete;
+			return;
+		}
+
+		if (key === 'Escape' && searchInput !== '') {
+			event.detail.stopPropagation();
+			searchInput = '';
 		}
 	}
 
