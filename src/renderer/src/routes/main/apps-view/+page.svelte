@@ -81,6 +81,7 @@
 </MainHeader>
 {#if $installedApps.isSuccess}
 	<ListOfApps
+		isSearchInputFilled={searchInput !== ''}
 		installedApps={filteredInstalledApps}
 		openAppCallback={() => {
 			searchInput = '';

@@ -9,6 +9,7 @@
 	const client = trpc();
 
 	export let installedApps: ExtendedAppInfo[];
+	export let isSearchInputFilled = false;
 	export let openAppCallback: () => void;
 
 	const openSettings = client.openSettings.createMutation();
@@ -19,12 +20,13 @@
 	<div
 		class="flex snap-x snap-mandatory scroll-px-4 gap-4 self-center overflow-x-auto scroll-smooth px-4 pt-4"
 	>
-		{#each installedApps as app}
+		{#each installedApps as app, index}
 			{@const isDisabled = 'disabled' in app.appInfo.status}
+			{@const shouldGreyOut = isSearchInputFilled && index !== 0}
 			<button
 				type="button"
 				class:cursor-not-allowed={isDisabled}
-				class:opacity-50={isDisabled}
+				class:opacity-50={isDisabled || shouldGreyOut}
 				class="flex shrink-0 snap-start flex-col items-center"
 				on:click={() => {
 					if (!isDisabled)
