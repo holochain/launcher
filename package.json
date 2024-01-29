@@ -28,9 +28,9 @@
     "build:sveltekit": "cd src/renderer && yarn build"
   },
   "dependencies": {
-    "@electron/notarize": "2.2.0",
     "@electron-toolkit/preload": "^3.0.0 ",
     "@electron-toolkit/utils": "^3.0.0",
+    "@electron/notarize": "2.2.0",
     "@holochain/client": "^0.16.3",
     "@trpc/client": "^10.44.1",
     "@trpc/server": "^10.44.1",

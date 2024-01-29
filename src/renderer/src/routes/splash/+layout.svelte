@@ -7,14 +7,20 @@
 
 	const goBack = () => window?.history.back();
 
+	$: setupProgress = '';
+	$: displayBackButton = $page.url.pathname.includes('confirm-password') && !setupProgress;
+
 	const client = trpc();
 
-	client.onSetupProgressUpdate.createSubscription(undefined, {
-		onData: (data) => {
-			if (data === 'settings') {
-				goto('/settings');
-			}
+	const handleSetupProgress = (data: string) => {
+		setupProgress = data;
+		if (data === 'settings') {
+			goto('/settings');
 		}
+	};
+
+	client.onSetupProgressUpdate.createSubscription(undefined, {
+		onData: handleSetupProgress
 	});
 </script>
 
@@ -22,7 +28,7 @@
 	<div class="absolute inset-0 bg-tertiary-900 opacity-30" />
 	<!-- White overlay div -->
 	<p class="z-10 p-1 text-center text-xs opacity-30">Holochain Beta 0.1</p>
-	{#if $page.url.pathname.includes('confirm-password')}
+	{#if displayBackButton}
 		<Button
 			props={{
 				class: 'btn-secondary z-10 self-start m-4',

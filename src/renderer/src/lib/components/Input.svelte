@@ -45,10 +45,7 @@
 		class={iptClass}
 	/>
 	{#if autocomplete && value}
-		<span
-			style="left: {43 + value.length * 7}px"
-			class="pointer-events-none absolute top-[9px] opacity-50"
-			>{autocomplete.slice(value.length)}</span
+		<span class="pointer-events-none absolute left-[42px] top-[9px] opacity-50">{autocomplete}</span
 		>
 	{/if}
 {/if}
