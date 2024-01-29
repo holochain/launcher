@@ -80,15 +80,17 @@ cli
   .option(
     '-s, --signaling-url <url>',
     'URL of the signaling server to use. Is ignored if an external holochain binary is being used.',
-  );
+  )
+  .option('--rust-log <string>', 'Set the RUST_LOG to be used.')
+  .option('--wasm-log <string>', 'Set the WASM_LOG to be used.');
 
 cli.parse();
 
 console.log('GOT CLI ARGS: ', cli.opts());
 
-const [PROFILE, HOLOCHAIN_VERSION, BOOTSTRAP_URL, SIGNALING_URL] = validateArgs(cli.opts());
+const VALIDATED_CLI_ARGS = validateArgs(cli.opts());
 
-console.log('VALIDATED CLI ARGS: ', PROFILE, HOLOCHAIN_VERSION, BOOTSTRAP_URL, SIGNALING_URL);
+console.log('VALIDATED CLI ARGS: ', VALIDATED_CLI_ARGS);
 
 const appName = app.getName();
 
@@ -121,7 +123,7 @@ protocol.registerSchemesAsPrivileged([
   },
 ]);
 
-const LAUNCHER_FILE_SYSTEM = LauncherFileSystem.connect(app, PROFILE);
+const LAUNCHER_FILE_SYSTEM = LauncherFileSystem.connect(app, VALIDATED_CLI_ARGS.profile);
 const LAUNCHER_EMITTER = new LauncherEmitter();
 
 setupLogs(LAUNCHER_EMITTER, LAUNCHER_FILE_SYSTEM);
@@ -205,7 +207,7 @@ app.on('quit', () => {
 async function handleSetupAndLaunch(password: string) {
   if (!LAUNCHER_WINDOWS) throw new Error('Main window needs to exist before launching.');
 
-  if (HOLOCHAIN_VERSION.type !== 'running-external') {
+  if (VALIDATED_CLI_ARGS.holochainVersion.type !== 'running-external') {
     const lairHandleTemp = childProcess.spawnSync(LAIR_BINARY, ['--version']);
     if (!lairHandleTemp.stdout) {
       console.error(`Failed to run lair-keystore binary:\n${lairHandleTemp}`);
@@ -229,10 +231,11 @@ async function handleLaunch(password: string) {
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingLairKeystore');
   let lairUrl: string;
 
-  if (HOLOCHAIN_VERSION.type === 'running-external') {
-    lairUrl = HOLOCHAIN_VERSION.lairUrl;
+  if (VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external') {
+    lairUrl = VALIDATED_CLI_ARGS.holochainVersion.lairUrl;
     const externalZomeCallSigner = await rustUtils.ZomeCallSigner.connect(lairUrl, password);
-    CUSTOM_ZOME_CALL_SIGNERS[HOLOCHAIN_VERSION.adminPort] = externalZomeCallSigner;
+    CUSTOM_ZOME_CALL_SIGNERS[VALIDATED_CLI_ARGS.holochainVersion.adminPort] =
+      externalZomeCallSigner;
   } else {
     const [lairHandle, lairUrl2] = await launchLairKeystore(
       LAIR_BINARY,
@@ -253,22 +256,24 @@ async function handleLaunch(password: string) {
   if (!LAUNCHER_WINDOWS) throw new Error('Main window needs to exist before launching.');
 
   const nonDefaultPartition: HolochainPartition =
-    HOLOCHAIN_VERSION.type === 'running-external'
-      ? { type: 'external', name: 'unknown', path: HOLOCHAIN_VERSION.appsDataDir }
-      : HOLOCHAIN_VERSION.type === 'custom-path'
+    VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external'
+      ? { type: 'external', name: 'unknown', path: VALIDATED_CLI_ARGS.holochainVersion.appsDataDir }
+      : VALIDATED_CLI_ARGS.holochainVersion.type === 'custom-path'
         ? { type: 'custom', name: 'unknown' }
         : { type: 'default' };
 
-  console.log('HOLOCHAIN_VERSION: ', HOLOCHAIN_VERSION);
+  console.log('VALIDATED_CLI_ARGS.holochainVersion: ', VALIDATED_CLI_ARGS.holochainVersion);
 
   const [holochainManager, holochainDataRoot] = await HolochainManager.launch(
     LAUNCHER_EMITTER,
     LAUNCHER_FILE_SYSTEM,
     password,
-    HOLOCHAIN_VERSION,
+    VALIDATED_CLI_ARGS.holochainVersion,
     lairUrl,
-    BOOTSTRAP_URL,
-    SIGNALING_URL,
+    VALIDATED_CLI_ARGS.bootstrapUrl,
+    VALIDATED_CLI_ARGS.signalingUrl,
+    VALIDATED_CLI_ARGS.rustLog,
+    VALIDATED_CLI_ARGS.wasmLog,
     nonDefaultPartition,
   );
   HOLOCHAIN_DATA_ROOT = holochainDataRoot;
@@ -318,7 +323,9 @@ const router = t.router({
       installedAppId: appInfo.installed_app_id,
       agentPubKey: appInfo.agent_pub_key,
       adminPort:
-        HOLOCHAIN_VERSION.type === 'running-external' ? HOLOCHAIN_VERSION.adminPort : undefined,
+        VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external'
+          ? VALIDATED_CLI_ARGS.holochainVersion.adminPort
+          : undefined,
     };
     happWindow.on('close', () => {
       delete WINDOW_INFO_MAP[happWindow.webContents.id];
@@ -350,7 +357,8 @@ const router = t.router({
   }),
   lairSetupRequired: t.procedure.query(() => {
     const isInitialized =
-      LAUNCHER_FILE_SYSTEM.keystoreInitialized() || HOLOCHAIN_VERSION.type === 'running-external';
+      LAUNCHER_FILE_SYSTEM.keystoreInitialized() ||
+      VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external';
     const isInitializedValidated = validateWithZod({
       schema: z.boolean(),
       data: isInitialized,

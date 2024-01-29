@@ -3,7 +3,7 @@ import fs from 'fs';
 import type { HolochainVersion } from '../types';
 import { DEFAULT_HOLOCHAIN_VERSION } from './binaries';
 
-export interface CliArgs {
+export type CliArgs = {
   profile?: string;
   holochainPath?: string;
   adminPort?: number;
@@ -11,11 +11,20 @@ export interface CliArgs {
   appsDataDir?: string;
   bootstrapUrl?: string;
   signalingUrl?: string;
-}
+  rustLog?: string;
+  wasmLog?: string;
+};
 
-export function validateArgs(
-  args: CliArgs,
-): [string | undefined, HolochainVersion, string | undefined, string | undefined] {
+export type ValidatedCliArgs = {
+  profile: string | undefined;
+  holochainVersion: HolochainVersion;
+  bootstrapUrl: string | undefined;
+  signalingUrl: string | undefined;
+  rustLog: string | undefined;
+  wasmLog: string | undefined;
+};
+
+export function validateArgs(args: CliArgs): ValidatedCliArgs {
   const allowedProfilePattern = /^[0-9a-zA-Z-]+$/;
   if (args.profile && !allowedProfilePattern.test(args.profile)) {
     throw new Error(
@@ -90,7 +99,14 @@ export function validateArgs(
   const profile = args.profile ? args.profile : undefined;
 
   const bootstrapUrl = args.bootstrapUrl && !args.adminPort ? args.bootstrapUrl : undefined;
-  const singalingUrl = args.signalingUrl && !args.adminPort ? args.signalingUrl : undefined;
+  const signalingUrl = args.signalingUrl && !args.adminPort ? args.signalingUrl : undefined;
 
-  return [profile, holochainVersion, bootstrapUrl, singalingUrl];
+  return {
+    profile,
+    holochainVersion,
+    bootstrapUrl,
+    signalingUrl,
+    rustLog: args.rustLog ? args.rustLog : undefined,
+    wasmLog: args.wasmLog ? args.wasmLog : undefined,
+  };
 }
