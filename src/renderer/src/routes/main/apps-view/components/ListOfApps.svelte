@@ -16,7 +16,7 @@
 	const openApp = client.openApp.createMutation();
 </script>
 
-<div class="align-center bg-apps-list-dark-gradient flex grow justify-center bg-fixed">
+<div class="align-center flex grow justify-center bg-apps-list-dark-gradient bg-fixed">
 	<div
 		class="flex snap-x snap-mandatory scroll-px-4 gap-4 self-center overflow-x-auto scroll-smooth px-4 pt-4"
 	>

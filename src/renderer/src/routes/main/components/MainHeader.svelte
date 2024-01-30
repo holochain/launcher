@@ -32,7 +32,7 @@
 	};
 </script>
 
-<div class="bg-apps-input-dark-gradient flex justify-between p-3">
+<div class="flex justify-between bg-apps-input-dark-gradient p-3">
 	{#if type == AppsView}
 		<Button
 			props={{
