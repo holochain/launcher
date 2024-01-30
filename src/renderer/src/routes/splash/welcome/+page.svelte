@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Button, TitleSubtitle } from '$components';
+	import { Button } from '$components';
 	import { ArrowRight } from '$icons';
 	import { i18n } from '$services';
+
+	import TitleSubtitle from '../components/TitleSubtitle.svelte';
 </script>
 
 <TitleSubtitle

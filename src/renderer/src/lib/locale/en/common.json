@@ -28,6 +28,7 @@
 	"passwordPlaceholder": "Enter your password",
 	"passwordWarning": "Your password can not be reset, recovered or changed. Write it down and store it in a secure location.",
 	"passwordsDontMatch": "Passwords don't match!",
+	"searchForApps": "Search for apps",
 	"secureYourAccount": "Secure your account",
 	"selectAppFromFilesystem": "Select app from filesystem",
 	"setupError": "Setup Error",

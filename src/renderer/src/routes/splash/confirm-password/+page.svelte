@@ -2,11 +2,12 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
-	import { PasswordForm, SetupProgressWrapper } from '$components';
 	import { showModalError } from '$helpers';
 	import { Warning } from '$icons';
 	import { i18n, trpc } from '$services';
 	import { appPassword } from '$stores';
+
+	import { PasswordForm, SetupProgressWrapper } from '../components';
 
 	const modalStore = getModalStore();
 
@@ -47,7 +48,7 @@
 	<div class="py-2">
 		<Warning />
 	</div>
-	<p class="mb-4 max-w-72 font-[450] text-error-500">
+	<p class="text-error-500 mb-4 max-w-72 font-[450]">
 		{$i18n.t('passwordWarning')}
 	</p>
 	<PasswordForm

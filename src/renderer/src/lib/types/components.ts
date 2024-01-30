@@ -23,6 +23,11 @@ type CommonButtonProps = {
 	class?: string;
 };
 
+export const AppStore = 'app-store';
+export const AppsView = 'apps-view';
+
+export type AppHeader = typeof AppStore | typeof AppsView;
+
 export type ButtonProps =
 	| (CommonButtonProps & {
 			disabled: boolean;

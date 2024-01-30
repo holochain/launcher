@@ -5,7 +5,7 @@
 	import { getCellId } from '$helpers';
 	import { i18n, trpc } from '$services';
 
-	import type { ExtendedAppInfo } from '../../../../types';
+	import type { ExtendedAppInfo } from '../../../../../types';
 
 	const client = trpc();
 

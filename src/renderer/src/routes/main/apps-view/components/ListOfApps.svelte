@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { Avatar } from '@skeletonlabs/skeleton';
 
-	import { TooltipForTruncate } from '$components';
 	import { i18n, trpc } from '$services';
 
-	import type { ExtendedAppInfo } from '../../../../types';
+	import type { ExtendedAppInfo } from '../../../../../../types';
+	import TooltipForTruncate from './TooltipForTruncate.svelte';
 
 	const client = trpc();
 
@@ -27,7 +27,7 @@
 				type="button"
 				class:cursor-not-allowed={isDisabled}
 				class:opacity-50={isDisabled || shouldGreyOut}
-				class="flex shrink-0 snap-start flex-col items-center"
+				class="flex w-20 snap-start flex-col items-center"
 				on:click={() => {
 					if (!isDisabled)
 						$openApp.mutate(app, {
@@ -47,7 +47,7 @@
 		{/each}
 		<button
 			type="button"
-			class="flex shrink-0 snap-start flex-col items-center"
+			class="flex w-20 shrink-0 snap-start flex-col items-center"
 			on:click={() => $openSettings.mutate()}
 		>
 			<Avatar
