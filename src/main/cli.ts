@@ -75,7 +75,7 @@ export function validateArgs(args: CliArgs): ValidatedCliArgs {
     }
     if (args.adminPort) {
       throw new Error(
-        'If you specify an external binary (--admin-port) the --lair-binary-path option is invalid as you have to provide your own lair instance via and pass its url via --lair-url',
+        'If you specify an external binary (--admin-port) the --lair-binary-path option is invalid as you have to provide your own lair instance and pass its url via --lair-url',
       );
     }
   }
