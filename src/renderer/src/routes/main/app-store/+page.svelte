@@ -39,7 +39,7 @@
 
 <MainHeader {handlePress} bind:searchInput type={AppStore} />
 
-<div class="bg-apps-list-dark-gradient grow">
+<div class="grow bg-apps-list-dark-gradient">
 	<div class=" text-token grid w-full gap-4 md:grid-cols-2">
 		<div class="card variant-soft-warning m-4 flex items-center p-4">
 			<Avatar initials={'kn'} rounded="rounded-2xl" background="bg-app-gradient" />
