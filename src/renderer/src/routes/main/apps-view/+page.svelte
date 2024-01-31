@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
+	import { page } from '$app/stores';
 	import { validateApp } from '$helpers';
 	import { trpc } from '$services';
 	import { AppsView } from '$types';
@@ -10,6 +13,12 @@
 
 	const installedApps = client.getInstalledApps.createQuery();
 	const openApp = client.openApp.createMutation();
+
+	let searchInput = '';
+
+	onMount(() => {
+		searchInput = $page.url.searchParams.get('presearch') || '';
+	});
 
 	$: filteredInstalledApps =
 		$installedApps?.data
@@ -43,8 +52,6 @@
 			searchInput = '';
 		}
 	}
-
-	let searchInput = '';
 </script>
 
 <MainHeader {handlePress} bind:searchInput type={AppsView} bind:autocomplete />

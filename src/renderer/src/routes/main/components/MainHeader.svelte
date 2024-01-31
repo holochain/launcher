@@ -32,11 +32,10 @@
 	};
 </script>
 
-<div class="flex justify-between bg-apps-input-dark-gradient p-3">
+<div class="bg-apps-input-dark-gradient flex justify-between p-3">
 	{#if type == AppsView}
 		<Button
 			props={{
-				type: 'button',
 				class: 'p-2',
 				onClick: handleNavigationWithAnimationDelay('app-store')
 			}}
@@ -56,7 +55,7 @@
 			bind:autocomplete
 			on:keydown={handlePress}
 			props={{
-				class: 'pl-10 input rounded placeholder-tertiary-500 text-base font-medium',
+				class: 'pl-10 input rounded text-base font-medium',
 				type: 'text',
 				placeholder:
 					type === AppStore ? $i18n.t('whatDoYouWantToLaunch') : $i18n.t('searchForApps'),
@@ -74,7 +73,6 @@
 	{#if type == AppStore}
 		<Button
 			props={{
-				type: 'button',
 				class: 'p-2 mr-2 ml-auto',
 				onClick: handleNavigationWithAnimationDelay('apps-view')
 			}}
@@ -84,7 +82,6 @@
 	{/if}
 	<Button
 		props={{
-			type: 'button',
 			class: '',
 			onClick: () =>
 				$openSettings.mutate(undefined, {

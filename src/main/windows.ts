@@ -37,7 +37,6 @@ const createBrowserWindow = (title: string, frame = false) =>
     frame,
     width: 500,
     height: 520,
-    resizable: true,
     title: title,
     show: false,
     webPreferences: {

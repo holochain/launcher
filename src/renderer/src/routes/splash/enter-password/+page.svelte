@@ -35,7 +35,7 @@
 </script>
 
 <SetupProgressWrapper>
-	<h3 class="h3 max-w-56 font-semibold">{$i18n.t('manageAndLaunchApps')}</h3>
+	<h4 class="h4 max-w-56 font-semibold">{$i18n.t('manageAndLaunchApps')}</h4>
 	<PasswordForm
 		placeholderText={$i18n.t('passwordPlaceholder')}
 		buttonAction={loginAndLaunch}
