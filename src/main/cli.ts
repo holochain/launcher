@@ -45,6 +45,11 @@ export function validateArgs(args: CliArgs): ValidatedCliArgs {
       'WARN: The --lair-url option is only taken into accound when using an external binary (--admin-port).',
     );
   }
+  if (args.useDefaultPartition && !args.holochainPath) {
+    throw new Error(
+      'The --use-default-partition flag is only valid in combination with the --holochain-path option.',
+    );
+  }
 
   let holochainVersion: HolochainVersion = {
     type: 'built-in',
