@@ -1,11 +1,13 @@
 import fs from 'fs';
 
 import type { HolochainVersion } from '../types';
-import { DEFAULT_HOLOCHAIN_VERSION } from './binaries';
+import { DEFAULT_HOLOCHAIN_VERSION, LAIR_BINARY } from './binaries';
 
 export type CliArgs = {
   profile?: string;
   holochainPath?: string;
+  lairBinaryPath?: string;
+  useDefaultPartition?: boolean;
   adminPort?: number;
   lairUrl?: string;
   appsDataDir?: string;
@@ -18,6 +20,8 @@ export type CliArgs = {
 export type ValidatedCliArgs = {
   profile: string | undefined;
   holochainVersion: HolochainVersion;
+  lairBinaryPath: string;
+  useDefaultPartition: boolean;
   bootstrapUrl: string | undefined;
   signalingUrl: string | undefined;
   rustLog: string | undefined;
@@ -41,6 +45,11 @@ export function validateArgs(args: CliArgs): ValidatedCliArgs {
       'WARN: The --lair-url option is only taken into accound when using an external binary (--admin-port).',
     );
   }
+  if (args.useDefaultPartition && !args.holochainPath) {
+    throw new Error(
+      'The --use-default-partition flag is only valid in combination with the --holochain-path option.',
+    );
+  }
 
   let holochainVersion: HolochainVersion = {
     type: 'built-in',
@@ -59,6 +68,16 @@ export function validateArgs(args: CliArgs): ValidatedCliArgs {
       type: 'custom-path',
       path: args.holochainPath,
     };
+  }
+  if (args.lairBinaryPath) {
+    if (!fs.existsSync(args.lairBinaryPath)) {
+      throw new Error('No file found at the path provided via --lair-binary-path');
+    }
+    if (args.adminPort) {
+      throw new Error(
+        'If you specify an external binary (--admin-port) the --lair-binary-path option is invalid as you have to provide your own lair instance and pass its url via --lair-url',
+      );
+    }
   }
   if (args.adminPort) {
     if (typeof args.adminPort !== 'number') {
@@ -104,6 +123,8 @@ export function validateArgs(args: CliArgs): ValidatedCliArgs {
   return {
     profile,
     holochainVersion,
+    lairBinaryPath: args.lairBinaryPath ? args.lairBinaryPath : LAIR_BINARY,
+    useDefaultPartition: args.useDefaultPartition ? true : false,
     bootstrapUrl,
     signalingUrl,
     rustLog: args.rustLog ? args.rustLog : undefined,

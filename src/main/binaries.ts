@@ -16,7 +16,7 @@ const HOLOCHAIN_BINARIES = {
 
 const LAIR_BINARY = path.join(
   BINARIES_DIRECTORY,
-  `lair-keystore-v0.4.1${process.platform === 'win32' ? '.exe' : ''}`,
+  `lair-keystore-v0.4.2${process.platform === 'win32' ? '.exe' : ''}`,
 );
 
 export { HOLOCHAIN_BINARIES, LAIR_BINARY };

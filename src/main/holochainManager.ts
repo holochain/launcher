@@ -9,7 +9,7 @@ import split from 'split';
 
 import type { HolochainDataRoot, HolochainPartition, HolochainVersion } from '../types';
 import { APP_INSTALLED, HOLOCHAIN_ERROR, HOLOCHAIN_LOG } from '../types';
-import { HOLOCHAIN_BINARIES } from './binaries';
+import { DEFAULT_HOLOCHAIN_VERSION, HOLOCHAIN_BINARIES } from './binaries';
 import type { LauncherFileSystem } from './filesystem';
 import { createDirIfNotExists } from './filesystem';
 import type { LauncherEmitter } from './launcherEmitter';
@@ -93,11 +93,13 @@ export class HolochainManager {
         };
         break;
       default:
-        if (version.type !== 'built-in')
+        if (version.type !== 'built-in' && !nonDefaultPartition)
           throw new Error('Only built-in holochain binaries can be used in the default partition.');
         holochainDataRoot = {
           type: 'partition',
-          name: breakingVersion(version.version),
+          name: breakingVersion(
+            version.type === 'built-in' ? version.version : DEFAULT_HOLOCHAIN_VERSION,
+          ),
         };
         break;
     }

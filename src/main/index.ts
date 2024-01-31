@@ -29,7 +29,6 @@ import {
   settingsScreen,
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '../types';
-import { LAIR_BINARY } from './binaries';
 import { validateArgs } from './cli';
 import { LauncherFileSystem } from './filesystem';
 import { HolochainManager } from './holochainManager';
@@ -58,6 +57,14 @@ cli
   .option(
     '--holochain-path <string>',
     'Runs the Holochain Launcher with the holochain binary at the provided path. This creates an independent conductor from when running the Launcher with the built-in binary.',
+  )
+  .option(
+    '--lair-binary-path <string>',
+    "Runs the Holochain Launcher with the lair binary at the provided path. Make sure to use a lair binary that's compatible with the existing keystore.",
+  )
+  .option(
+    '--use-default-partition',
+    'If this flag is set together with the --holochain-path option, the default partition is used instead of a dedicated partition for custom holochain binaries',
   )
   .addOption(
     new Option(
@@ -208,7 +215,7 @@ async function handleSetupAndLaunch(password: string) {
   if (!LAUNCHER_WINDOWS) throw new Error('Main window needs to exist before launching.');
 
   if (VALIDATED_CLI_ARGS.holochainVersion.type !== 'running-external') {
-    const lairHandleTemp = childProcess.spawnSync(LAIR_BINARY, ['--version']);
+    const lairHandleTemp = childProcess.spawnSync(VALIDATED_CLI_ARGS.lairBinaryPath, ['--version']);
     if (!lairHandleTemp.stdout) {
       console.error(`Failed to run lair-keystore binary:\n${lairHandleTemp}`);
     }
@@ -216,7 +223,7 @@ async function handleSetupAndLaunch(password: string) {
     if (!LAUNCHER_FILE_SYSTEM.keystoreInitialized()) {
       LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'initializingLairKeystore');
       await initializeLairKeystore(
-        LAIR_BINARY,
+        VALIDATED_CLI_ARGS.lairBinaryPath,
         LAUNCHER_FILE_SYSTEM.keystoreDir,
         LAUNCHER_EMITTER,
         password,
@@ -238,7 +245,7 @@ async function handleLaunch(password: string) {
       externalZomeCallSigner;
   } else {
     const [lairHandle, lairUrl2] = await launchLairKeystore(
-      LAIR_BINARY,
+      VALIDATED_CLI_ARGS.lairBinaryPath,
       LAUNCHER_FILE_SYSTEM.keystoreDir,
       LAUNCHER_EMITTER,
       password,
@@ -258,7 +265,8 @@ async function handleLaunch(password: string) {
   const nonDefaultPartition: HolochainPartition =
     VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external'
       ? { type: 'external', name: 'unknown', path: VALIDATED_CLI_ARGS.holochainVersion.appsDataDir }
-      : VALIDATED_CLI_ARGS.holochainVersion.type === 'custom-path'
+      : VALIDATED_CLI_ARGS.holochainVersion.type === 'custom-path' &&
+          !VALIDATED_CLI_ARGS.useDefaultPartition
         ? { type: 'custom', name: 'unknown' }
         : { type: 'default' };
 
