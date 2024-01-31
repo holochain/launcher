@@ -7,6 +7,7 @@ export type CliArgs = {
   profile?: string;
   holochainPath?: string;
   lairBinaryPath?: string;
+  useDefaultPartition?: boolean;
   adminPort?: number;
   lairUrl?: string;
   appsDataDir?: string;
@@ -20,6 +21,7 @@ export type ValidatedCliArgs = {
   profile: string | undefined;
   holochainVersion: HolochainVersion;
   lairBinaryPath: string;
+  useDefaultPartition: boolean;
   bootstrapUrl: string | undefined;
   signalingUrl: string | undefined;
   rustLog: string | undefined;
@@ -117,6 +119,7 @@ export function validateArgs(args: CliArgs): ValidatedCliArgs {
     profile,
     holochainVersion,
     lairBinaryPath: args.lairBinaryPath ? args.lairBinaryPath : LAIR_BINARY,
+    useDefaultPartition: args.useDefaultPartition ? true : false,
     bootstrapUrl,
     signalingUrl,
     rustLog: args.rustLog ? args.rustLog : undefined,

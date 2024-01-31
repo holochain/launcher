@@ -62,6 +62,10 @@ cli
     '--lair-binary-path <string>',
     "Runs the Holochain Launcher with the lair binary at the provided path. Make sure to use a lair binary that's compatible with the existing keystore.",
   )
+  .option(
+    '--use-default-partition',
+    'If this flag is set together with the --holochain-path option, the default partition is used instead of a dedicated partition for custom holochain binaries',
+  )
   .addOption(
     new Option(
       '--admin-port <number>',
@@ -261,7 +265,8 @@ async function handleLaunch(password: string) {
   const nonDefaultPartition: HolochainPartition =
     VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external'
       ? { type: 'external', name: 'unknown', path: VALIDATED_CLI_ARGS.holochainVersion.appsDataDir }
-      : VALIDATED_CLI_ARGS.holochainVersion.type === 'custom-path'
+      : VALIDATED_CLI_ARGS.holochainVersion.type === 'custom-path' &&
+          !VALIDATED_CLI_ARGS.useDefaultPartition
         ? { type: 'custom', name: 'unknown' }
         : { type: 'default' };
 
