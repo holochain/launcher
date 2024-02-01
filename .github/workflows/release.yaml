@@ -28,6 +28,7 @@ jobs:
           allowUpdates: true
   publish:
     needs: create-draft-release
+    needs: extract-versions
     strategy:
       fail-fast: false
       matrix:
