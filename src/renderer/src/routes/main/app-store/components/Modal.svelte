@@ -3,6 +3,7 @@
 
 	import { goto } from '$app/navigation';
 	import { Button } from '$components';
+	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
 
 	import InputModal from './InputModal.svelte';
@@ -38,6 +39,14 @@
 							$installedApps.refetch();
 							goto(`apps-view?presearch=${formData.appId}`);
 							modalStore.close();
+						},
+						onError: (error) => {
+							modalStore.close();
+							showModalError({
+								modalStore,
+								errorTitle: $i18n.t('appError'),
+								errorMessage: $i18n.t(error.message)
+							});
 						}
 					}
 				)}
