@@ -23,12 +23,11 @@ const BINARIES_DIRECTORY = getFilePath(
   app.isPackaged ? '../app.asar.unpacked/resources/bins' : './resources/bins',
 );
 
-const HOLOCHAIN_BINARIES = {
-  DEFAULT_HOLOCHAIN_VERSION: path.join(
-    BINARIES_DIRECTORY,
-    `holochain-v${DEFAULT_HOLOCHAIN_VERSION}${process.platform === 'win32' ? '.exe' : ''}`,
-  ),
-};
+const HOLOCHAIN_BINARIES: Record<string, string> = {};
+HOLOCHAIN_BINARIES[DEFAULT_HOLOCHAIN_VERSION] = path.join(
+  BINARIES_DIRECTORY,
+  `holochain-v${DEFAULT_HOLOCHAIN_VERSION}${process.platform === 'win32' ? '.exe' : ''}`,
+);
 
 const LAIR_BINARY = path.join(
   BINARIES_DIRECTORY,
