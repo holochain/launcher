@@ -24,7 +24,7 @@ const BINARIES_DIRECTORY = getFilePath(
 );
 
 const HOLOCHAIN_BINARIES = {
-  DEFAULT_HOLOCHAIN_VERSION: path.join(
+  [DEFAULT_HOLOCHAIN_VERSION]: path.join(
     BINARIES_DIRECTORY,
     `holochain-v${DEFAULT_HOLOCHAIN_VERSION}${process.platform === 'win32' ? '.exe' : ''}`,
   ),
