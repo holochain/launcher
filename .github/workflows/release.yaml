@@ -6,7 +6,7 @@ on:
 
 jobs:
   extract-versions:
-    uses: ./get-versions.yaml
+    uses: ./.github/workflows/get-versions.yaml
   create-draft-release:
     runs-on: ubuntu-latest
     outputs:
