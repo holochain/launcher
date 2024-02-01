@@ -9,7 +9,7 @@ type FileProps = {
 };
 
 type TextProps = {
-	placeholder: string;
+	placeholder?: string;
 	required?: boolean;
 };
 
@@ -18,19 +18,14 @@ export type InputProps =
 	| (CommonInputProps & FileProps & { type: 'file' })
 	| (CommonInputProps & TextProps & { type: 'password' });
 
-type CommonButtonProps = {
+export type ButtonProps = {
 	onClick?: (event: MouseEvent) => void;
 	class?: string;
+	disabled?: boolean;
+	type?: 'submit' | 'button' | 'reset';
 };
 
-export type ButtonProps =
-	| (CommonButtonProps & {
-			disabled: boolean;
-	  })
-	| (CommonButtonProps & {
-			type: 'submit';
-	  })
-	| (CommonButtonProps & {
-			type: 'button';
-	  })
-	| CommonButtonProps;
+export const AppStore = 'app-store';
+export const AppsView = 'apps-view';
+
+export type AppHeader = typeof AppStore | typeof AppsView;

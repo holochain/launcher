@@ -9,7 +9,9 @@
 	initializeStores();
 </script>
 
-<Modal />
 <QueryClientProvider client={queryClient}>
-	<slot />
+	<Modal />
+	<div class="flex h-full min-w-80 flex-col">
+		<slot />
+	</div>
 </QueryClientProvider>

@@ -1,14 +1,24 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { Button, Input, ListOfApps, MainHeader } from '$components';
+	import { onMount } from 'svelte';
+
+	import { page } from '$app/stores';
 	import { validateApp } from '$helpers';
-	import { Home, Rocket } from '$icons';
-	import { i18n, trpc } from '$services';
+	import { trpc } from '$services';
+	import { AppsView } from '$types';
+
+	import MainHeader from '../components/MainHeader.svelte';
+	import ListOfApps from './components/ListOfApps.svelte';
 
 	const client = trpc();
 
 	const installedApps = client.getInstalledApps.createQuery();
 	const openApp = client.openApp.createMutation();
+
+	let searchInput = '';
+
+	onMount(() => {
+		searchInput = $page.url.searchParams.get('presearch') || '';
+	});
 
 	$: filteredInstalledApps =
 		$installedApps?.data
@@ -42,43 +52,9 @@
 			searchInput = '';
 		}
 	}
-
-	let searchInput = '';
 </script>
 
-<MainHeader
-	openSettingsCallback={() => {
-		searchInput = '';
-	}}
->
-	<Button
-		props={{
-			type: 'button',
-			class: 'p-2',
-			onClick: () => {
-				goto('/main/app-store');
-			}
-		}}
-	>
-		<Home fillColor="white" />
-	</Button>
-	<div class="relative mx-2 flex-grow">
-		<Input
-			bind:value={searchInput}
-			bind:autocomplete
-			on:keydown={handlePress}
-			props={{
-				class: 'pl-10 input rounded placeholder-tertiary-500 text-base font-medium',
-				type: 'text',
-				placeholder: $i18n.t('whatDoYouWantToLaunch'),
-				autofocus: true
-			}}
-		/>
-		<div class="absolute left-2 top-2 z-10">
-			<Rocket />
-		</div>
-	</div>
-</MainHeader>
+<MainHeader {handlePress} bind:searchInput type={AppsView} bind:autocomplete />
 {#if $installedApps.isSuccess}
 	<ListOfApps
 		isSearchInputFilled={searchInput !== ''}

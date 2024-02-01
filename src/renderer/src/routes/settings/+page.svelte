@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { CenterProgressRadial, Error, InstallAppForm } from '$components';
-	import AppEntry from '$components/AppEntry.svelte';
+	import { CenterProgressRadial, Error } from '$components';
 	import { validateApp } from '$helpers';
 	import { i18n, trpc } from '$services';
+
+	import { AppEntry, InstallAppForm } from './components';
 
 	const client = trpc();
 

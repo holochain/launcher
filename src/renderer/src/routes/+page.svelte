@@ -18,7 +18,7 @@
 			return showModalError({
 				modalStore,
 				errorTitle: $i18n.t('appError'),
-				errorMessage: setupData.error.message
+				errorMessage: $i18n.t(setupData.error.message)
 			});
 		}
 

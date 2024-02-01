@@ -2,11 +2,12 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
-	import { PasswordForm, SetupProgressWrapper } from '$components';
 	import { showModalError } from '$helpers';
 	import { Warning } from '$icons';
 	import { i18n, trpc } from '$services';
 	import { appPassword } from '$stores';
+
+	import { PasswordForm, SetupProgressWrapper } from '../components';
 
 	const modalStore = getModalStore();
 
