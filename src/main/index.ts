@@ -369,7 +369,6 @@ const router = t.router({
     const holochainLairBinariesExist = checkHolochainLairBinariesExist();
 
     if (!holochainLairBinariesExist) {
-      console.log('error');
       return throwTRPCErrorError({
         message: MISSING_BINARIES,
       });
