@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       release_id: ${{ steps.create_release.outputs.id }}
+      holochain_version: ${{ steps.packagejson.outputs.holochain_version }}
+      lair_keystore_version: ${{ steps.packagejson.outputs.lair_keystore_version }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
@@ -18,12 +20,14 @@ jobs:
         id: packagejson
         run: |
           echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+          echo "holochain_version=$(node -p "require('./package.json').binaries.holochain")" >> $GITHUB_OUTPUT
+          echo "lair_keystore_version=$(node -p "require('./package.json').binaries.lair_keystore")" >> $GITHUB_OUTPUT
       - name: Create Draft Release
         id: create_release
         uses: ncipollo/release-action@v1
         with:
           tag: v${{ steps.packagejson.outputs.version }}
-          name: v${{ steps.packagejson.outputs.version }}
+          name: v${{ steps.packagejson.outputs.version }} (Holochain v${{ steps.packagejson.outputs.holochain_version }})
           draft: true
           generateReleaseNotes: true
           allowUpdates: true

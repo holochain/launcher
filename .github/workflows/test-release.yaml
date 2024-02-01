@@ -1,0 +1,58 @@
+name: 'test-release'
+on:
+  push:
+    branches:
+      - feat/binaries-fix
+
+jobs:
+  create-draft-release:
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.create_release.outputs.id }}
+      holochain_version: ${{ steps.packagejson.outputs.holochain_version }}
+      lair_keystore_version: ${{ steps.packagejson.outputs.lair_keystore_version }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+      - name: Get version
+        id: packagejson
+        run: |
+          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+          echo "holochain_version=$(node -p "require('./package.json').binaries.holochain")" >> $GITHUB_OUTPUT
+          echo "lair_keystore_version=$(node -p "require('./package.json').binaries.lair_keystore")" >> $GITHUB_OUTPUT
+      - name: Create Draft Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ steps.packagejson.outputs.version }}
+          name: v${{ steps.packagejson.outputs.version }} (Holochain v${{ steps.packagejson.outputs.holochain_version }})
+          draft: true
+          generateReleaseNotes: true
+          allowUpdates: true
+  mark-as-prerelease:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+      - name: Log versions
+        run: |
+          echo "Holochain version: ${{ needs.create-draft-release.outputs.holochain_version }}"
+          echo "Lair keystore version: ${{ needs.create-draft-release.outputs.lair_keystore_version }}"
+      - name: Mark release as pre-release
+        run: |
+          curl \
+            -X PATCH \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/releases/${{ needs.create-draft-release.outputs.release_id }} \
+            -d '{
+              "prerelease": true,
+              "draft": false
+            }'
+
+

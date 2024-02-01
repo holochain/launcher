@@ -6,6 +6,10 @@
   "author": "Holochain Foundation <info@holochain.org> (http://holochain.org)",
   "license": "CAL-1.0",
   "main": "./out/main/index.js",
+  "binaries": {
+    "holochain": "0.2.5",
+    "lair_keystore": "0.4.2"
+  },
   "workspaces": [
     "src/renderer"
   ],
