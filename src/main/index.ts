@@ -25,10 +25,12 @@ import {
   InstallKandoSchema,
   LOADING_PROGRESS_UPDATE,
   mainScreen,
+  MISSING_BINARIES,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
   settingsScreen,
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '../types';
+import { checkHolochainLairBinariesExist } from './binaries';
 import { validateArgs } from './cli';
 import { LauncherFileSystem } from './filesystem';
 import { HolochainManager } from './holochainManager';
@@ -364,6 +366,15 @@ const router = t.router({
     await holochainManager.installWebHapp(filePath, appId, networkSeed);
   }),
   lairSetupRequired: t.procedure.query(() => {
+    const holochainLairBinariesExist = checkHolochainLairBinariesExist();
+
+    if (!holochainLairBinariesExist) {
+      console.log('error');
+      return throwTRPCErrorError({
+        message: MISSING_BINARIES,
+      });
+    }
+
     const isInitialized =
       LAUNCHER_FILE_SYSTEM.keystoreInitialized() ||
       VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external';

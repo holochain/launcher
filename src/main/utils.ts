@@ -116,7 +116,7 @@ export function isHappAlreadyOpened({
   return true;
 }
 
-export function breakingVersion(version) {
+export function breakingVersion(version: string) {
   if (!semver.valid(version)) {
     throw new Error('Version is not valid semver.');
   }

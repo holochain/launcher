@@ -50,6 +50,7 @@
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@napi-rs/cli": "^2.16.3",
     "@types/node": "^20.10.5",
+    "@types/split": "^1.0.5",
     "concurrently": "^8.2.2",
     "electron": "^28.1.1",
     "electron-builder": "^24.9.1",

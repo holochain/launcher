@@ -6,6 +6,7 @@ export const WRONG_PASSWORD = 'wrongPassword';
 export const WRONG_INSTALLED_APP_STRUCTURE = 'wrongInstalledAppStructure';
 export const CHECK_INITIALIZED_KEYSTORE_ERROR = 'checkInitializedKeystoreError';
 export const NO_RUNNING_HOLOCHAIN_MANAGER_ERROR = 'noRunningHolochainManagerError';
+export const MISSING_BINARIES = 'missingBinaries';
 export const FILE_UNDEFINED_ERROR = 'fileUndefinedError';
 
 export type ErrorWithMessage = {
