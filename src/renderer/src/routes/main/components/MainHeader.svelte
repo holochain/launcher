@@ -58,7 +58,7 @@
 				class: 'pl-10 input rounded text-base font-medium',
 				type: 'text',
 				placeholder:
-					type === AppStore ? $i18n.t('whatDoYouWantToLaunch') : $i18n.t('searchForApps'),
+					type === AppStore ? $i18n.t('whatDoYouWantToInstall') : $i18n.t('searchForApps'),
 				autofocus: true
 			}}
 		/>

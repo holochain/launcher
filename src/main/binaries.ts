@@ -5,12 +5,12 @@ import * as path from 'path';
 
 import { HolochainLairVersionSchema } from '../types';
 
-const getFilePath = (relativePath) => path.join(app.getAppPath(), relativePath);
+const getFilePath = (relativePath: string) => path.join(app.getAppPath(), relativePath);
 
 const getPackageJSONPath = () =>
   getFilePath(app.isPackaged ? '../app.asar.unpacked/package.json' : './package.json');
 
-const readJSONFile = (filePath) => JSON.parse(readFileSync(filePath, 'utf8'));
+const readJSONFile = (filePath: string) => JSON.parse(readFileSync(filePath, 'utf8'));
 
 const packageJSON = readJSONFile(getPackageJSONPath());
 

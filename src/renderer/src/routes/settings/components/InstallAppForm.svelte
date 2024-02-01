@@ -11,6 +11,8 @@
 
 	const installedApps = client.getInstalledApps.createQuery();
 	const installHappMutation = client.installHapp.createMutation();
+
+	$: isButtonDisabled = appId.length === 0 || files.length === 0 || $installHappMutation.isPending;
 </script>
 
 <form
@@ -59,7 +61,7 @@
 	/>
 	<Button
 		props={{
-			disabled: appId.length === 0 || files.length > 0,
+			disabled: isButtonDisabled,
 			type: 'submit'
 		}}
 	>

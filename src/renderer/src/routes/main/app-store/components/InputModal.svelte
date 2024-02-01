@@ -3,7 +3,6 @@
 
 	export let label = '';
 	export let id: string;
-	export let pl = 'pl-16';
 	export let value: string;
 </script>
 
@@ -12,7 +11,7 @@
 	<Input
 		bind:value
 		props={{
-			class: `${pl} input-modal pt-6`,
+			class: `pl-20 input-modal pt-6`,
 			id,
 			type: 'text'
 		}}

@@ -44,12 +44,7 @@
 			class="modal-form flex flex-col space-y-4 p-4"
 		>
 			<InputModal bind:value={formData.appId} id="appName" label={$i18n.t('name')} />
-			<InputModal
-				bind:value={formData.networkSeed}
-				id="networkSeed"
-				label={$i18n.t('network')}
-				pl="pl-20"
-			/>
+			<InputModal bind:value={formData.networkSeed} id="networkSeed" label={$i18n.t('network')} />
 			<footer class="modal-footer flex justify-between gap-2">
 				{#if !$installKandoMutation.isPending}
 					<Button
@@ -66,7 +61,7 @@
 				{/if}
 				<Button
 					props={{
-						disabled: formData.appId.length === 0,
+						disabled: formData.appId.length === 0 || $installKandoMutation.isPending,
 						type: 'submit',
 						class: 'btn-app-store-modal flex-1'
 					}}

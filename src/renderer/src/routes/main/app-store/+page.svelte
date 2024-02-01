@@ -25,6 +25,8 @@
 
 	let searchInput = '';
 
+	$: isKandoInSearch = 'kando'.includes(searchInput.toLowerCase());
+
 	function handlePress(event: CustomEvent) {
 		if (!(event.detail instanceof KeyboardEvent)) return;
 
@@ -41,20 +43,22 @@
 
 <div class="grow bg-apps-list-dark-gradient">
 	<div class=" text-token grid w-full gap-4 md:grid-cols-2">
-		<div class="card variant-soft-warning m-4 flex items-center p-4">
-			<Avatar initials={'kn'} rounded="rounded-2xl" background="bg-app-gradient" />
-			<div class="ml-4 mr-2 flex-1">
-				<h3 class="h3">{$i18n.t('kando')}</h3>
-				<p class="line-clamp-2 text-xs leading-[0.8rem] opacity-60">
-					Holochain hApp for collaborative KanBan boards. Real-time collaboration delivered by syn
-				</p>
+		{#if isKandoInSearch}
+			<div class="card variant-soft-warning m-4 flex items-center p-4">
+				<Avatar initials={'kn'} rounded="rounded-2xl" background="bg-app-gradient" />
+				<div class="ml-4 mr-2 flex-1">
+					<h3 class="h3">{$i18n.t('kando')}</h3>
+					<p class="line-clamp-2 text-xs leading-[0.8rem] opacity-60">
+						Holochain hApp for collaborative KanBan boards. Real-time collaboration delivered by syn
+					</p>
+				</div>
+				<Button
+					props={{
+						onClick: () => modalStore.trigger(modal),
+						class: 'btn-app-store variant-filled'
+					}}>{$i18n.t('install')}</Button
+				>
 			</div>
-			<Button
-				props={{
-					onClick: () => modalStore.trigger(modal),
-					class: 'btn-app-store variant-filled'
-				}}>{$i18n.t('install')}</Button
-			>
-		</div>
+		{/if}
 	</div>
 </div>

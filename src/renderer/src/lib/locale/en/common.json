@@ -38,5 +38,5 @@
 	"setupProgress": "Setup Progress",
 	"startingHolochain": "Starting Holochain...",
 	"startingLairKeystore": "Starting Lair Keystore...",
-	"whatDoYouWantToLaunch": "What do you want to launch?"
+	"whatDoYouWantToInstall": "What do you want to install?"
 }
