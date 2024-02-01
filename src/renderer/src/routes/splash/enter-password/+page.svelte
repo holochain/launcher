@@ -2,9 +2,10 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
-	import { PasswordForm, SetupProgressWrapper } from '$components';
 	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
+
+	import { PasswordForm, SetupProgressWrapper } from '../components';
 
 	const modalStore = getModalStore();
 
@@ -34,7 +35,7 @@
 </script>
 
 <SetupProgressWrapper>
-	<h3 class="h3 max-w-56 font-semibold">{$i18n.t('manageAndLaunchApps')}</h3>
+	<h4 class="h4 max-w-56 font-semibold">{$i18n.t('manageAndLaunchApps')}</h4>
 	<PasswordForm
 		placeholderText={$i18n.t('passwordPlaceholder')}
 		buttonAction={loginAndLaunch}

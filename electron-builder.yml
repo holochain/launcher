@@ -5,6 +5,7 @@ directories:
 files:
   - resources
   - out
+  - package.json
 asarUnpack:
   - resources/**
 afterSign: scripts/notarize.js

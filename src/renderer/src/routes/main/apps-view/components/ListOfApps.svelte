@@ -3,28 +3,30 @@
 
 	import { i18n, trpc } from '$services';
 
-	import type { ExtendedAppInfo } from '../../../../types';
+	import type { ExtendedAppInfo } from '../../../../../../types';
+	import TooltipForTruncate from './TooltipForTruncate.svelte';
 
 	const client = trpc();
 
 	export let installedApps: ExtendedAppInfo[];
+	export let isSearchInputFilled = false;
 	export let openAppCallback: () => void;
 
 	const openSettings = client.openSettings.createMutation();
 	const openApp = client.openApp.createMutation();
 </script>
 
-<div class="align-center bg-apps-list-dark-gradient flex grow justify-center bg-fixed">
+<div class="align-center flex grow justify-center bg-apps-list-dark-gradient bg-fixed">
 	<div
 		class="flex snap-x snap-mandatory scroll-px-4 gap-4 self-center overflow-x-auto scroll-smooth px-4 pt-4"
 	>
-		{#each installedApps as app}
+		{#each installedApps as app, index}
 			{@const isDisabled = 'disabled' in app.appInfo.status}
+			{@const shouldGreyOut = isSearchInputFilled && index !== 0}
 			<button
-				type="button"
 				class:cursor-not-allowed={isDisabled}
-				class:opacity-50={isDisabled}
-				class="flex shrink-0 snap-start flex-col items-center"
+				class:opacity-50={isDisabled || shouldGreyOut}
+				class="flex w-20 snap-start flex-col items-center"
 				on:click={() => {
 					if (!isDisabled)
 						$openApp.mutate(app, {
@@ -37,14 +39,13 @@
 				<Avatar
 					initials={app.appInfo.installed_app_id}
 					rounded="rounded-2xl"
-					background="bg-icon-gradient"
+					background="bg-app-gradient"
 				/>
-				<span class="pt-2 text-xs">{app.appInfo.installed_app_id}</span>
+				<TooltipForTruncate text={app.appInfo.installed_app_id} />
 			</button>
 		{/each}
 		<button
-			type="button"
-			class="flex shrink-0 snap-start flex-col items-center"
+			class="flex w-20 shrink-0 snap-start flex-col items-center"
 			on:click={() => $openSettings.mutate()}
 		>
 			<Avatar

@@ -5,7 +5,10 @@ on:
       - 'lair-binaries-v*'
 
 jobs:
+  extract-versions:
+    uses: ./.github/workflows/get-versions.yaml
   publish-lair-binaries:
+    needs: extract-versions
     strategy:
       fail-fast: false
       matrix:
@@ -41,30 +44,30 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cargo install --version 0.4.1 lair_keystore
+          cargo install --version ${{ needs.extract-versions.outputs.lair_keystore }} lair_keystore
           $LkPath = Get-Command lair-keystore | Select-Object -ExpandProperty Definition
-          Copy-Item $LkPath -Destination "lair-keystore-v0.4.1-x86_64-pc-windows-msvc.exe"
+          Copy-Item $LkPath -Destination "lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }}-x86_64-pc-windows-msvc.exe"
 
-          gh release upload "$($env:GITHUB_REF -replace "refs/tags/")" "lair-keystore-v0.4.1-x86_64-pc-windows-msvc.exe"
+          gh release upload "$($env:GITHUB_REF -replace "refs/tags/")" "lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }}-x86_64-pc-windows-msvc.exe"
 
       - name: setup binaries (macos only)
         if: matrix.platform == 'macos-11'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cargo install --version 0.4.1 lair_keystore
+          cargo install --version ${{ needs.extract-versions.outputs.lair_keystore }} lair_keystore
           LAIR_PATH=$(which lair-keystore)
-          cp $LAIR_PATH lair-keystore-v0.4.1-x86_64-apple-darwin
+          cp $LAIR_PATH lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }}-x86_64-apple-darwin
 
-          gh release upload "${GITHUB_REF#refs/tags/}" "lair-keystore-v0.4.1-x86_64-apple-darwin"
+          gh release upload "${GITHUB_REF#refs/tags/}" "lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }}-x86_64-apple-darwin"
 
       - name: setup binaries (ubuntu only)
         if: matrix.platform == 'ubuntu-20.04'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cargo install --version 0.4.1 lair_keystore
+          cargo install --version ${{ needs.extract-versions.outputs.lair_keystore }} lair_keystore
           LAIR_PATH=$(which lair-keystore)
-          cp $LAIR_PATH lair-keystore-v0.4.1-x86_64-unknown-linux-gnu
+          cp $LAIR_PATH lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }}-x86_64-unknown-linux-gnu
 
-          gh release upload "${GITHUB_REF#refs/tags/}" "lair-keystore-v0.4.1-x86_64-unknown-linux-gnu"
+          gh release upload "${GITHUB_REF#refs/tags/}" "lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }}-x86_64-unknown-linux-gnu"

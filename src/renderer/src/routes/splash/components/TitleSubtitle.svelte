@@ -4,6 +4,4 @@
 </script>
 
 <h1 class="h1">{title}</h1>
-{#if subtitle}
-	<h3 class="h3">{subtitle}</h3>
-{/if}
+<h4 class="h4">{subtitle}</h4>

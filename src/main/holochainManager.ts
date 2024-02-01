@@ -9,7 +9,7 @@ import split from 'split';
 
 import type { HolochainDataRoot, HolochainPartition, HolochainVersion } from '../types';
 import { APP_INSTALLED, HOLOCHAIN_ERROR, HOLOCHAIN_LOG } from '../types';
-import { HOLOCHAIN_BINARIES } from './binaries';
+import { DEFAULT_HOLOCHAIN_VERSION, HOLOCHAIN_BINARIES } from './binaries';
 import type { LauncherFileSystem } from './filesystem';
 import { createDirIfNotExists } from './filesystem';
 import type { LauncherEmitter } from './launcherEmitter';
@@ -22,6 +22,15 @@ export type AppPort = number;
 
 const DEFAULT_BOOTSTRAP_SERVER = 'https://bootstrap.holo.host';
 const DEFAULT_SIGNALING_SERVER = 'wss://signal.holo.host';
+const DEFAULT_RUST_LOG =
+  'warn,' +
+  // this thrashes on startup
+  'wasmer_compiler_cranelift=error,' +
+  // this gives a bunch of warnings about how long db accesses are taking, tmi
+  'holochain_sqlite::db::access=error,' +
+  // this gives a lot of "search_and_discover_peer_connect: no peers found, retrying after delay" messages on INFO
+  'kitsune_p2p::spawn::actor::discover=error';
+const DEFAULT_WASM_LOG = 'warn';
 
 export class HolochainManager {
   processHandle: childProcess.ChildProcessWithoutNullStreams | undefined;
@@ -64,6 +73,8 @@ export class HolochainManager {
     lairUrl: string,
     bootstrapUrl?: string,
     signalingUrl?: string,
+    rustLog?: string,
+    wasmLog?: string,
     nonDefaultPartition?: HolochainPartition, // launch with data from a non-default partition
   ): Promise<[HolochainManager, HolochainDataRoot]> {
     let holochainDataRoot: HolochainDataRoot;
@@ -82,11 +93,13 @@ export class HolochainManager {
         };
         break;
       default:
-        if (version.type !== 'built-in')
+        if (version.type !== 'built-in' && !nonDefaultPartition)
           throw new Error('Only built-in holochain binaries can be used in the default partition.');
         holochainDataRoot = {
           type: 'partition',
-          name: breakingVersion(version.version),
+          name: breakingVersion(
+            version.type === 'built-in' ? version.version : DEFAULT_HOLOCHAIN_VERSION,
+          ),
         };
         break;
     }
@@ -170,11 +183,10 @@ export class HolochainManager {
     }
 
     const binary = version.type === 'built-in' ? HOLOCHAIN_BINARIES[version.version] : version.path;
-    console.log('HOLOCHAIN_BINARIES: ', HOLOCHAIN_BINARIES);
-    console.log('HOLOCHAIN BINARY: ', binary);
     const conductorHandle = childProcess.spawn(binary, ['-c', configPath, '-p'], {
       env: {
-        RUST_LOG: 'info',
+        RUST_LOG: rustLog ? rustLog : DEFAULT_RUST_LOG,
+        WASM_LOG: wasmLog ? wasmLog : DEFAULT_WASM_LOG,
       },
     });
     conductorHandle.stdin.write(password);
@@ -256,7 +268,7 @@ export class HolochainManager {
     await this.adminWebsocket.enableApp({ installed_app_id: appId });
     console.log('Insalled app.');
     const installedApps = await this.adminWebsocket.listApps({});
-    console.log('Installed apps: ', installedApps);
+    // console.log('Installed apps: ', installedApps);
     this.installedApps = installedApps;
     this.launcherEmitter.emit(APP_INSTALLED, {
       version: this.version,

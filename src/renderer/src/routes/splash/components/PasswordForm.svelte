@@ -37,6 +37,7 @@
 	<Button
 		props={{
 			class: 'btn-next',
+			type: 'submit',
 			disabled: isDisabled
 		}}
 	>

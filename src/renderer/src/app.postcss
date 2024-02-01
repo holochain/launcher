@@ -14,30 +14,65 @@ body {
 	src: url('/fonts/Figtree-VariableFont_wght.ttf');
 }
 
+.heading {
+	@apply font-semibold;
+}
+
 .h1 {
-	@apply text-4xl font-semibold;
+	@apply heading text-4xl;
 }
 .h2 {
-	@apply text-2xl font-semibold;
+	@apply heading text-2xl;
 }
 .h3 {
+	@apply heading text-lg leading-5;
+}
+.h4 {
 	@apply pb-8 text-base;
 }
+
 .btn {
-	@apply mb-2 rounded font-semibold;
+	@apply mb-2 rounded;
 }
-.btn-primary {
-	@apply btn bg-button-gradient;
-}
-.btn-secondary {
-	@apply btn border border-surface-400 bg-transparent pl-2 pr-4 text-sm;
-}
+
+.btn-primary,
 .btn-next {
-	@apply btn ml-2 h-10 rounded bg-button-gradient p-2 leading-4;
+	@apply btn bg-button-gradient font-semibold;
 }
+
+.btn-secondary {
+	@apply btn border border-surface-400 bg-transparent pl-2 pr-4 text-sm font-semibold;
+}
+
+.btn-next {
+	@apply ml-2 h-10 p-2 leading-4;
+}
+
+.btn-app-store {
+	@apply btn btn-sm !rounded-full font-semibold;
+}
+
+.btn-app-store-modal {
+	@apply btn !rounded-full bg-app-gradient;
+}
+
+.btn-app-store-modal-secondary {
+	@apply btn !rounded-full border-4 border-primary-900;
+}
+
+.input-base {
+	@apply rounded !bg-black py-2.5 leading-5;
+}
+
+.input,
+.input-modal {
+	@apply input-base;
+}
+
 .input {
-	@apply rounded py-2.5 leading-5;
+	@apply !border-surface-400;
 }
-.dark .input {
-	@apply border-surface-400 bg-black;
+
+.input-modal {
+	@apply w-full rounded-full border-4 !border-primary-900 text-center !outline-none;
 }

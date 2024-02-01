@@ -1,21 +1,34 @@
 import fs from 'fs';
 
 import type { HolochainVersion } from '../types';
-import { DEFAULT_HOLOCHAIN_VERSION } from './binaries';
+import { DEFAULT_HOLOCHAIN_VERSION, LAIR_BINARY } from './binaries';
 
-export interface CliArgs {
+export type CliArgs = {
   profile?: string;
   holochainPath?: string;
+  lairBinaryPath?: string;
+  useDefaultPartition?: boolean;
   adminPort?: number;
   lairUrl?: string;
   appsDataDir?: string;
   bootstrapUrl?: string;
   signalingUrl?: string;
-}
+  rustLog?: string;
+  wasmLog?: string;
+};
 
-export function validateArgs(
-  args: CliArgs,
-): [string | undefined, HolochainVersion, string | undefined, string | undefined] {
+export type ValidatedCliArgs = {
+  profile: string | undefined;
+  holochainVersion: HolochainVersion;
+  lairBinaryPath: string;
+  useDefaultPartition: boolean;
+  bootstrapUrl: string | undefined;
+  signalingUrl: string | undefined;
+  rustLog: string | undefined;
+  wasmLog: string | undefined;
+};
+
+export function validateArgs(args: CliArgs): ValidatedCliArgs {
   const allowedProfilePattern = /^[0-9a-zA-Z-]+$/;
   if (args.profile && !allowedProfilePattern.test(args.profile)) {
     throw new Error(
@@ -30,6 +43,11 @@ export function validateArgs(
   if (args.lairUrl) {
     console.warn(
       'WARN: The --lair-url option is only taken into accound when using an external binary (--admin-port).',
+    );
+  }
+  if (args.useDefaultPartition && !args.holochainPath) {
+    throw new Error(
+      'The --use-default-partition flag is only valid in combination with the --holochain-path option.',
     );
   }
 
@@ -50,6 +68,16 @@ export function validateArgs(
       type: 'custom-path',
       path: args.holochainPath,
     };
+  }
+  if (args.lairBinaryPath) {
+    if (!fs.existsSync(args.lairBinaryPath)) {
+      throw new Error('No file found at the path provided via --lair-binary-path');
+    }
+    if (args.adminPort) {
+      throw new Error(
+        'If you specify an external binary (--admin-port) the --lair-binary-path option is invalid as you have to provide your own lair instance and pass its url via --lair-url',
+      );
+    }
   }
   if (args.adminPort) {
     if (typeof args.adminPort !== 'number') {
@@ -90,7 +118,16 @@ export function validateArgs(
   const profile = args.profile ? args.profile : undefined;
 
   const bootstrapUrl = args.bootstrapUrl && !args.adminPort ? args.bootstrapUrl : undefined;
-  const singalingUrl = args.signalingUrl && !args.adminPort ? args.signalingUrl : undefined;
+  const signalingUrl = args.signalingUrl && !args.adminPort ? args.signalingUrl : undefined;
 
-  return [profile, holochainVersion, bootstrapUrl, singalingUrl];
+  return {
+    profile,
+    holochainVersion,
+    lairBinaryPath: args.lairBinaryPath ? args.lairBinaryPath : LAIR_BINARY,
+    useDefaultPartition: args.useDefaultPartition ? true : false,
+    bootstrapUrl,
+    signalingUrl,
+    rustLog: args.rustLog ? args.rustLog : undefined,
+    wasmLog: args.wasmLog ? args.wasmLog : undefined,
+  };
 }
