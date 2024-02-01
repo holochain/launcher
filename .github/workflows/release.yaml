@@ -13,8 +13,8 @@ jobs:
     outputs:
       release_id: ${{ steps.create_release.outputs.id }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '18'
       - name: Create Draft Release
@@ -27,7 +27,7 @@ jobs:
           generateReleaseNotes: true
           allowUpdates: true
   publish:
-    needs: create-draft-release
+    needs: [extract-versions, create-draft-release]
     strategy:
       fail-fast: false
       matrix:
@@ -40,7 +40,7 @@ jobs:
       contents: write
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Setup for macOS code signing
         if: matrix.platform == 'macos-11'
@@ -50,7 +50,7 @@ jobs:
           p12-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
 
       - name: setup node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
@@ -88,11 +88,11 @@ jobs:
         run: |
           mkdir resources/bins
 
-          # cargo install --version ${{ needs.extract-versions.outputs.lair_keystore }} lair_keystore
+          # cargo install --version ${{ needs.extract-versions.outputs.lair_keystore_version }} lair_keystore
           # $LkPath = Get-Command lair-keystore | Select-Object -ExpandProperty Definition
-          # Copy-Item $LkPath -Destination resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }}.exe
+          # Copy-Item $LkPath -Destination resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}.exe
 
-          curl -L --output resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }}.exe https://github.com/holochain/launcher-electron/releases/download/lair-binaries-v${{ needs.extract-versions.outputs.lair_keystore }}/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }}-x86_64-pc-windows-msvc.exe
+          curl -L --output resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}.exe https://github.com/holochain/launcher-electron/releases/download/lair-binaries-v${{ needs.extract-versions.outputs.lair_keystore_version }}/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}-x86_64-pc-windows-msvc.exe
 
           # cargo install holochain --version ${{ needs.extract-versions.outputs.holochain_version }} --locked --features sqlite-encrypted
           # $HcPath = Get-Command holochain | Select-Object -ExpandProperty Definition
@@ -107,12 +107,12 @@ jobs:
         run: |
           mkdir resources/bins
 
-          # cargo install --version ${{ needs.extract-versions.outputs.lair_keystore }} lair_keystore
+          # cargo install --version ${{ needs.extract-versions.outputs.lair_keystore_version }} lair_keystore
           # LAIR_PATH=$(which lair-keystore)
-          # cp $LAIR_PATH resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }}
+          # cp $LAIR_PATH resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}
 
-          curl -L --output resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }} https://github.com/holochain/launcher-electron/releases/download/lair-binaries-v${{ needs.extract-versions.outputs.lair_keystore }}/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }}-x86_64-apple-darwin
-          chmod +x ./resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }}
+          curl -L --output resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }} https://github.com/holochain/launcher-electron/releases/download/lair-binaries-v${{ needs.extract-versions.outputs.lair_keystore_version }}/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}-x86_64-apple-darwin
+          chmod +x ./resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}
 
           # cargo install holochain --version ${{ needs.extract-versions.outputs.holochain_version }} --locked --features sqlite-encrypted
           # HOLOCHAIN_PATH=$(which holochain)
@@ -128,12 +128,12 @@ jobs:
         run: |
           mkdir resources/bins
 
-          # cargo install --version ${{ needs.extract-versions.outputs.lair_keystore }} lair_keystore
+          # cargo install --version ${{ needs.extract-versions.outputs.lair_keystore_version }} lair_keystore
           # LAIR_PATH=$(which lair-keystore)
-          # cp $LAIR_PATH resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }}
+          # cp $LAIR_PATH resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}
 
-          curl -L --output resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }} https://github.com/holochain/launcher-electron/releases/download/lair-binaries-v${{ needs.extract-versions.outputs.lair_keystore }}/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }}-x86_64-unknown-linux-gnu
-          chmod +x ./resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore }}
+          curl -L --output resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }} https://github.com/holochain/launcher-electron/releases/download/lair-binaries-v${{ needs.extract-versions.outputs.lair_keystore_version }}/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}-x86_64-unknown-linux-gnu
+          chmod +x ./resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}
 
           # cargo install holochain --version ${{ needs.extract-versions.outputs.holochain_version }} --locked --features sqlite-encrypted
           # HOLOCHAIN_PATH=$(which holochain)
@@ -189,8 +189,8 @@ jobs:
     needs: [publish, create-draft-release]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '18'
       - name: Mark release as pre-release
