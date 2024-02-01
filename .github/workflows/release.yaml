@@ -2,7 +2,7 @@ name: 'publish'
 on:
   push:
     branches:
-      - release
+      - release-0.2.6-rc.0
 
 jobs:
   extract-versions:
@@ -98,7 +98,7 @@ jobs:
           # $HcPath = Get-Command holochain | Select-Object -ExpandProperty Definition
           # Copy-Item $HcPath -Destination resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }}.exe
 
-          curl -L --output resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }}.exe https://github.com/holochain/launcher-electron/releases/download/holochain-binaries-v${{ needs.extract-versions.outputs.holochain_version }}/holochain-v${{ needs.extract-versions.outputs.holochain_version }}-x86_64-pc-windows-msvc.exe
+          curl -L --output resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }}.exe https://github.com/matthme/holochain-binaries/releases/download/holochain-binaries-${{ needs.extract-versions.outputs.holochain_version }}/holochain-v${{ needs.extract-versions.outputs.holochain_version }}-x86_64-pc-windows-msvc.exe
 
           # NEW_VERSION: install new holochain version and copy its binary to the tauri path
 
@@ -118,7 +118,7 @@ jobs:
           # HOLOCHAIN_PATH=$(which holochain)
           # cp $HOLOCHAIN_PATH resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }}
 
-          curl -L --output resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }} https://github.com/holochain/launcher-electron/releases/download/holochain-binaries-v${{ needs.extract-versions.outputs.holochain_version }}/holochain-v${{ needs.extract-versions.outputs.holochain_version }}-x86_64-apple-darwin
+          curl -L --output resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }} https://github.com/matthme/holochain-binaries/releases/download/holochain-binaries-${{ needs.extract-versions.outputs.holochain_version }}/holochain-v${{ needs.extract-versions.outputs.holochain_version }}-x86_64-apple-darwin
           chmod +x ./resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }}
 
           # NEW_VERSION: install new holochain version and copy its binary to the tauri path
@@ -139,7 +139,7 @@ jobs:
           # HOLOCHAIN_PATH=$(which holochain)
           # cp $HOLOCHAIN_PATH resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }}
 
-          curl -L --output resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }} https://github.com/holochain/launcher-electron/releases/download/holochain-binaries-v${{ needs.extract-versions.outputs.holochain_version }}/holochain-v${{ needs.extract-versions.outputs.holochain_version }}-x86_64-unknown-linux-gnu
+          curl -L --output resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }} https://github.com/matthme/holochain-binaries/releases/download/holochain-binaries-${{ needs.extract-versions.outputs.holochain_version }}/holochain-v${{ needs.extract-versions.outputs.holochain_version }}-x86_64-unknown-linux-gnu
           chmod +x ./resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }}
 
           # NEW_VERSION: install new holochain version and copy its binary to the tauri path
