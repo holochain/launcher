@@ -5,9 +5,9 @@ directories:
 files:
   - resources
   - out
-  - package.json
 asarUnpack:
   - resources/**
+  - package.json
 afterSign: scripts/notarize.js
 win:
   executableName: holochain-launcher-electron
