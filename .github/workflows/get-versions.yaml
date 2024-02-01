@@ -23,9 +23,9 @@ jobs:
       - name: Extract version information
         id: packagejson
         run: |
-          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
-          echo "holochain_version=$(node -p "require('./package.json').binaries.holochain")" >> $GITHUB_ENV
-          echo "lair_keystore_version=$(node -p "require('./package.json').binaries.lair_keystore")" >> $GITHUB_ENV
+          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+          echo "holochain_version=$(node -p "require('./package.json').binaries.holochain")" >> $GITHUB_OUTPUT
+          echo "lair_keystore_version=$(node -p "require('./package.json').binaries.lair_keystore")" >> $GITHUB_OUTPUT
     outputs:
       version: ${{ steps.packagejson.outputs.version }}
       holochain_version: ${{ steps.packagejson.outputs.holochain_version }}
