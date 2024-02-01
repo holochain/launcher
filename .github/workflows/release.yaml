@@ -27,8 +27,7 @@ jobs:
           generateReleaseNotes: true
           allowUpdates: true
   publish:
-    needs: create-draft-release
-    needs: extract-versions
+    needs: [extract-versions, create-draft-release]
     strategy:
       fail-fast: false
       matrix:
