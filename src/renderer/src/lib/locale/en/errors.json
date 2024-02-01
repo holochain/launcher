@@ -4,6 +4,7 @@
 	"fileUndefinedError": "File undefined",
 	"initializeLairKeystoreError": "Error initializing lair keystore",
 	"launchLairKeystoreError": "Error launching lair keystore",
+	"missingBinaries": "There are missing holochain or lair keystore binaries",
 	"noRunningHolochainManagerError": "No running Holochain manager",
 	"unknownError": "Unknown error",
 	"wrongInstalledAppStructure": "Wrong installed app structure",
