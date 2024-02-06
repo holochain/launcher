@@ -13,16 +13,14 @@
 		<meta name="viewport" content="width=device-width" />
 		%sveltekit.head%
 		<script>
-			// Check the initial color scheme
-			if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-				document.documentElement.classList.add('dark');
-			}
+			const toggleTheme = (isDark) => document.documentElement.classList.toggle('dark', isDark);
+			const matchMediaDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+
+			// Set the default theme based on system preference with fallback to dark
+			toggleTheme(matchMediaDark ? matchMediaDark.matches : true);
 
 			// Listen for changes to the color scheme
-			window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-				const newColorScheme = e.matches ? 'dark' : 'light';
-				document.documentElement.classList.toggle('dark', newColorScheme === 'dark');
-			});
+			matchMediaDark && matchMediaDark.addEventListener('change', (e) => toggleTheme(e.matches));
 		</script>
 	</head>
 	<body data-sveltekit-preload-data="hover" data-theme="app-theme">
