@@ -25,7 +25,7 @@
 	<div
 		class="card w-modal flex flex-col items-center justify-center !bg-transparent !ring-transparent"
 	>
-		<Avatar initials={'kn'} rounded="rounded-2xl" background="bg-app-gradient" width="w-20" />
+		<Avatar initials={'kn'} rounded="rounded-2xl" background="dark:bg-app-gradient" width="w-20" />
 		<header class="pt-4 text-2xl font-bold">{$modalStore[0].title ?? $i18n.t('kando')}</header>
 		<form
 			on:submit|preventDefault={() =>

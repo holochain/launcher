@@ -15,6 +15,7 @@ import url from 'url';
 
 import type { ExtendedAppInfo, Screen } from '../types';
 import { mainScreen, settingsScreen } from '../types';
+import { searchHeigh, windowSize } from './const';
 import type { LauncherFileSystem } from './filesystem';
 import { ICONS_DIRECTORY } from './paths';
 import { setLinkOpenHandlers } from './utils';
@@ -35,8 +36,9 @@ const loadVite = (window: BrowserWindow): void => {
 const createBrowserWindow = (title: string, frame = false) =>
   new BrowserWindow({
     frame,
-    width: 500,
-    height: 520,
+    width: windowSize,
+    minWidth: windowSize,
+    height: windowSize,
     title: title,
     show: false,
     webPreferences: {
@@ -88,6 +90,7 @@ export const setupAppWindows = () => {
   });
 
   globalShortcut.register('CommandOrControl+Shift+L', () => {
+    mainWindow.setSize(windowSize, searchHeigh);
     mainWindow.show();
   });
 

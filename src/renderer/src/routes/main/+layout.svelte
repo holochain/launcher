@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	import { goto } from '$app/navigation';
 	import { trpc } from '$services';
 
 	const client = trpc();
@@ -10,6 +11,7 @@
 	const handleEscapeKey = (event: KeyboardEvent): void => {
 		if (event.key === 'Escape') {
 			$hideApp.mutate();
+			goto('/main/apps-view');
 		}
 	};
 

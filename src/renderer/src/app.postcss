@@ -22,13 +22,13 @@ body {
 	@apply heading text-4xl;
 }
 .h2 {
-	@apply heading text-2xl;
+	@apply heading pb-2 text-2xl;
 }
 .h3 {
 	@apply heading text-lg leading-5;
 }
 .h4 {
-	@apply pb-8 text-base;
+	@apply pb-4 text-base;
 }
 
 .btn {
@@ -61,7 +61,7 @@ body {
 }
 
 .input-base {
-	@apply rounded !bg-black py-2.5 leading-5;
+	@apply rounded py-2.5 leading-5  dark:!bg-black;
 }
 
 .input,
@@ -70,9 +70,17 @@ body {
 }
 
 .input {
-	@apply !border-surface-400;
+	@apply !border-light-primary dark:!border-surface-400;
 }
 
 .input-modal {
-	@apply w-full rounded-full border-4 !border-primary-900 text-center !outline-none;
+	@apply w-full rounded-full border-4 !border-primary-900 bg-transparent text-center !outline-none;
+}
+
+.app-region-drag {
+	-webkit-app-region: drag;
+}
+
+.app-region-no-drag {
+	-webkit-app-region: no-drag;
 }

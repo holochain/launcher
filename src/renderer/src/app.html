@@ -12,6 +12,18 @@
 		/>
 		<meta name="viewport" content="width=device-width" />
 		%sveltekit.head%
+		<script>
+			// Check the initial color scheme
+			if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+				document.documentElement.classList.add('dark');
+			}
+
+			// Listen for changes to the color scheme
+			window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+				const newColorScheme = e.matches ? 'dark' : 'light';
+				document.documentElement.classList.toggle('dark', newColorScheme === 'dark');
+			});
+		</script>
 	</head>
 	<body data-sveltekit-preload-data="hover" data-theme="app-theme">
 		<div style="display: contents" class="h-full overflow-hidden">%sveltekit.body%</div>
