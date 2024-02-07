@@ -32,7 +32,7 @@ import {
 } from '../types';
 import { checkHolochainLairBinariesExist } from './binaries';
 import { validateArgs } from './cli';
-import { searchHeigh, windowSize } from './const';
+import { SEARCH_HEIGH, WINDOW_SIZE } from './const';
 import { LauncherFileSystem } from './filesystem';
 import { HolochainManager } from './holochainManager';
 // import { AdminWebsocket } from '@holochain/client';
@@ -289,7 +289,7 @@ async function handleLaunch(password: string) {
   );
   HOLOCHAIN_DATA_ROOT = holochainDataRoot;
   HOLOCHAIN_MANAGERS[holochainDataRoot.name] = holochainManager;
-  LAUNCHER_WINDOWS[mainScreen].setSize(windowSize, searchHeigh, true);
+  LAUNCHER_WINDOWS[mainScreen].setSize(WINDOW_SIZE, SEARCH_HEIGH, true);
   return;
 }
 
