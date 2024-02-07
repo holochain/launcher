@@ -45,7 +45,7 @@
 <SetupProgressWrapper>
 	<p class="text-base font-semibold leading-[0.5] opacity-50">2 {$i18n.t('of')} 2</p>
 	<h2 class="h2">{$i18n.t('confirmYourPassword')}</h2>
-	<div class="py-2">
+	<div class="pb-2">
 		<Warning />
 	</div>
 	<p class="mb-4 max-w-72 font-[450] text-error-500">
@@ -57,7 +57,7 @@
 		bind:value={confirmPasswordInput}
 		isDisabled={!confirmPasswordInput || $setupAndLaunch.isPending}
 	/>
-	<p class="pb-10 text-xs font-semibold leading-[0.5] opacity-50">
+	<p class="pb-20 text-xs font-semibold leading-[0.5] opacity-50">
 		{$i18n.t('password').toUpperCase()}
 	</p>
 </SetupProgressWrapper>

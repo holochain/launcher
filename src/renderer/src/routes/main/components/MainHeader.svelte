@@ -32,11 +32,11 @@
 	};
 </script>
 
-<div class="flex justify-between bg-apps-input-dark-gradient p-3">
+<div class="app-region-drag flex justify-between p-3 dark:bg-apps-input-dark-gradient">
 	{#if type == AppsView}
 		<Button
 			props={{
-				class: 'p-2',
+				class: 'p-2 app-region-no-drag',
 				onClick: handleNavigationWithAnimationDelay('app-store')
 			}}
 		>
@@ -45,7 +45,7 @@
 	{/if}
 
 	<div
-		class="relative mx-2 max-w-md flex-grow origin-left transition-transform"
+		class="app-region-no-drag relative mx-2 max-w-md flex-grow origin-left transition-transform"
 		class:duration-{animationDuration}={inputExpanded}
 		class:scale-x-100={inputExpanded}
 		class:scale-x-0={!inputExpanded}
@@ -64,16 +64,16 @@
 		/>
 		<div class="absolute left-2 top-2 z-10">
 			{#if type === AppsView}
-				<Rocket fillColor="white" />
+				<Rocket fillColor="fill-light-primary dark:fill-white" />
 			{:else}
-				<Home fillColor="white" />
+				<Home fillColor="fill-light-primary dark:fill-white" />
 			{/if}
 		</div>
 	</div>
 	{#if type == AppStore}
 		<Button
 			props={{
-				class: 'p-2 mr-2 ml-auto',
+				class: 'p-2 mr-2 ml-auto app-region-no-drag',
 				onClick: handleNavigationWithAnimationDelay('apps-view')
 			}}
 		>
@@ -82,7 +82,7 @@
 	{/if}
 	<Button
 		props={{
-			class: '',
+			class: 'app-region-no-drag',
 			onClick: () =>
 				$openSettings.mutate(undefined, {
 					onSuccess: clearSearchInput

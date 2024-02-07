@@ -13,6 +13,10 @@ export default {
 	],
 	theme: {
 		extend: {
+			colors: {
+				'light-primary': 'rgb(25, 182, 227)',
+				'light-background': 'rgba(0, 102, 255, 0.1)'
+			},
 			backgroundImage: {
 				'login-background': "url('/images/login-background.png')",
 				'button-gradient':
