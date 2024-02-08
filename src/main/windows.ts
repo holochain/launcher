@@ -21,7 +21,7 @@ import { ICONS_DIRECTORY } from './paths';
 import { setLinkOpenHandlers } from './utils';
 
 const serveURL = (filename = 'index') =>
-  serve({ directory: join(__dirname, '..', 'renderer'), file: `${filename}.html` });
+  serve({ directory: join(__dirname, '..', 'renderer'), file: filename });
 
 const loadVite =
   (key = '') =>
