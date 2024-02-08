@@ -71,8 +71,20 @@ jobs:
         with:
           go-version: 'stable'
 
+      - name: Cache rust-utils build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin
+            target
+          key: ${{ runner.os }}-rust-utils-${{ hashFiles('**/Cargo.lock') }}
       - name: build rust-utils
-        run: yarn setup
+        run: |
+          if [ -z "$(ls ~/.cargo/bin)" ]; then
+            yarn setup
+          else
+            echo "Rust-utils build cached"
+          fi
 
       - name: install app dependencies
         run: yarn
