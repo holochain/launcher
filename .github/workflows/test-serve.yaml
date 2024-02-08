@@ -2,7 +2,7 @@ name: 'test-serve'
 on:
   push:
     branches:
-      - test-serve
+      - feat/settings
 
 jobs:
   extract-versions:
