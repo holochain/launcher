@@ -20,7 +20,7 @@ import type { LauncherFileSystem } from './filesystem';
 import { ICONS_DIRECTORY } from './paths';
 import { setLinkOpenHandlers } from './utils';
 
-const serveURL = serve({ directory: join(__dirname, '..', 'renderer'), file: 'index' });
+const serveURL = serve({ directory: join(__dirname, '..', 'renderer'), file: 'settings' });
 
 // const serveURL = () => serve({ directory: join(__dirname, '..', 'renderer') });
 
