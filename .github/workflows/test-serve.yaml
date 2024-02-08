@@ -75,12 +75,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            rust-utils/target
-            ~/.cargo/registry
-            ~/.cargo/git
+            rust-utils/dist
           key: ${{ runner.os }}-rust-utils-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-rust-utils-
+
       - name: Setup rust-utils
         run: yarn setup
         if: steps.cache.outputs.cache-hit != 'true'
