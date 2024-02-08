@@ -34,6 +34,14 @@ const loadVite = (window: BrowserWindow): void => {
   }
 };
 
+const loadWindow = (window: BrowserWindow, path: string) => {
+  if (is.dev) {
+    window.loadURL(`http://localhost:5173/${path}`);
+  } else {
+    window.loadFile(`./${path}.html`);
+  }
+};
+
 const createBrowserWindow = (title: string) =>
   new BrowserWindow({
     frame: false,
@@ -83,8 +91,7 @@ export const setupAppWindows = () => {
   };
 
   Object.values(windows).forEach((window) => (is.dev ? loadVite(window) : serveURL(window)));
-  const settingsURL = is.dev ? `http://localhost:5173/settings` : `app://-/settings.html`;
-  settingsWindow.loadURL(settingsURL);
+  loadWindow(settingsWindow, settingsScreen);
 
   globalShortcut.register('CommandOrControl+Shift+L', () => {
     mainWindow.setSize(WINDOW_SIZE, SEARCH_HEIGH);
