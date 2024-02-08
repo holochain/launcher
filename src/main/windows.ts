@@ -20,19 +20,31 @@ import type { LauncherFileSystem } from './filesystem';
 import { ICONS_DIRECTORY } from './paths';
 import { setLinkOpenHandlers } from './utils';
 
-const serveURL = () => serve({ directory: join(__dirname, '..', 'renderer') });
+const serveURL = serve({ directory: join(__dirname, '..', 'renderer') });
 
-const loadVite =
-  (key = '') =>
-  (window: BrowserWindow): void => {
-    if (!window) return;
-    window.loadURL(`http://localhost:5173/${key}`).catch((e) => {
-      console.log('Error loading URL, retrying', e);
-      setTimeout(() => {
-        loadVite(key)(window);
-      }, 200);
-    });
-  };
+// const serveURL = () => serve({ directory: join(__dirname, '..', 'renderer') });
+
+const loadVite = (window: BrowserWindow): void => {
+  if (!window) return;
+  window.loadURL(`http://localhost:5173`).catch((e) => {
+    console.log('Error loading URL, retrying', e);
+    setTimeout(() => {
+      loadVite(window);
+    }, 200);
+  });
+};
+
+// const loadVite =
+//   (key = '') =>
+//   (window: BrowserWindow): void => {
+//     if (!window) return;
+//     window.loadURL(`http://localhost:5173/${key}`).catch((e) => {
+//       console.log('Error loading URL, retrying', e);
+//       setTimeout(() => {
+//         loadVite(key)(window);
+//       }, 200);
+//     });
+//   };
 
 const createBrowserWindow = (title: string) =>
   new BrowserWindow({
@@ -82,10 +94,18 @@ export const setupAppWindows = () => {
     [settingsScreen]: settingsWindow,
   };
 
-  Object.entries(windows).forEach(([key, window]) => {
-    const indexOrPageName = key === mainScreen ? undefined : key;
-    const loadFunction = is.dev ? loadVite : serveURL;
-    loadFunction(indexOrPageName)(window);
+  // Object.entries(windows).forEach(([key, window]) => {
+  //   const indexOrPageName = key === mainScreen ? undefined : key;
+  //   const loadFunction = is.dev ? loadVite : serveURL;
+  //   loadFunction(indexOrPageName)(window);
+  // });
+
+  Object.values(windows).map((window) => {
+    if (is.dev) {
+      loadVite(window);
+    } else {
+      serveURL(window);
+    }
   });
 
   globalShortcut.register('CommandOrControl+Shift+L', () => {
