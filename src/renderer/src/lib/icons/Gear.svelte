@@ -1,5 +1,5 @@
 <script>
-	export let fillColor = 'fill-black dark:fill-tertiary-200';
+	export let fillColor = 'fill-black dark:fill-tertiary-400';
 </script>
 
 <svg

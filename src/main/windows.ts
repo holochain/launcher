@@ -20,22 +20,24 @@ import type { LauncherFileSystem } from './filesystem';
 import { ICONS_DIRECTORY } from './paths';
 import { setLinkOpenHandlers } from './utils';
 
-const serveURL = serve({ directory: join(__dirname, '..', 'renderer') });
+const serveURL = (filename = 'index') =>
+  serve({ directory: join(__dirname, '..', 'renderer'), file: `${filename}.html` });
 
-// this is needed to prevent blank screen when dev electron loads
-const loadVite = (window: BrowserWindow): void => {
-  if (!window) return;
-  window.loadURL(`http://localhost:5173`).catch((e) => {
-    console.log('Error loading URL, retrying', e);
-    setTimeout(() => {
-      loadVite(window);
-    }, 200);
-  });
-};
+const loadVite =
+  (key = '') =>
+  (window: BrowserWindow): void => {
+    if (!window) return;
+    window.loadURL(`http://localhost:5173/${key}`).catch((e) => {
+      console.log('Error loading URL, retrying', e);
+      setTimeout(() => {
+        loadVite(key)(window);
+      }, 200);
+    });
+  };
 
-const createBrowserWindow = (title: string, frame = false) =>
+const createBrowserWindow = (title: string) =>
   new BrowserWindow({
-    frame,
+    frame: false,
     width: WINDOW_SIZE,
     minWidth: WINDOW_SIZE,
     height: WINDOW_SIZE,
@@ -51,7 +53,7 @@ export const setupAppWindows = () => {
   // Create the browser window.
   const mainWindow = createBrowserWindow('Holochain Launcher');
 
-  const settingsWindow = createBrowserWindow('Holochain Launcher Settings', true);
+  const settingsWindow = createBrowserWindow('Holochain Launcher Settings');
 
   const icon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '16x16.png'));
   const tray = new Tray(icon);
@@ -81,12 +83,10 @@ export const setupAppWindows = () => {
     [settingsScreen]: settingsWindow,
   };
 
-  Object.values(windows).map((window) => {
-    if (is.dev) {
-      loadVite(window);
-    } else {
-      serveURL(window);
-    }
+  Object.entries(windows).forEach(([key, window]) => {
+    const indexOrPageName = key === mainScreen ? undefined : key;
+    const loadFunction = is.dev ? loadVite : serveURL;
+    loadFunction(indexOrPageName)(window);
   });
 
   globalShortcut.register('CommandOrControl+Shift+L', () => {

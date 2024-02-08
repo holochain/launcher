@@ -1,4 +1,5 @@
 <script lang="ts">
+	import cslx from 'clsx';
 	import { createEventDispatcher, onMount } from 'svelte';
 
 	import type { InputProps } from '$types';
@@ -42,7 +43,9 @@
 		on:keydown={handleKeydown}
 		bind:value
 		{...props}
-		class={iptClass}
+		class={cslx(iptClass, {
+			'text-transparent': autocomplete && value && !autocomplete.startsWith(value)
+		})}
 	/>
 	{#if autocomplete && value}
 		<span class="pointer-events-none absolute left-[42px] top-[9px] opacity-50">{autocomplete}</span

@@ -1,0 +1,207 @@
+name: 'test-serve'
+on:
+  push:
+    branches:
+      - test-serve
+
+jobs:
+  extract-versions:
+    uses: ./.github/workflows/get-versions.yaml
+  create-draft-release:
+    needs: extract-versions
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.create_release.outputs.id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Create Draft Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ needs.extract-versions.outputs.version }}
+          name: v${{ needs.extract-versions.outputs.version }} (Holochain v${{ needs.extract-versions.outputs.holochain_version }})
+          draft: true
+          generateReleaseNotes: true
+          allowUpdates: true
+  publish:
+    needs: [extract-versions, create-draft-release]
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-11]
+    env:
+      MACOSX_DEPLOYMENT_TARGET: 10.13
+
+    permissions:
+      contents: write
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup for macOS code signing
+        if: matrix.platform == 'macos-11'
+        uses: matthme/import-codesign-certs@5565bb656f60c98c8fc515f3444dd8db73545dc2
+        with:
+          p12-file-base64: ${{ secrets.APPLE_CERTIFICATE }}
+          p12-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Retrieve version
+        run: |
+          echo "Retrieved App version: $(node -p -e "require('./package.json').version")"
+          echo "APP_VERSION=$(node -p -e "require('./package.json').version")" >> $GITHUB_OUTPUT
+        id: version
+        shell: bash
+
+      - name: install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          toolchain: stable
+
+      - name: install Go stable
+        uses: actions/setup-go@v4
+        with:
+          go-version: 'stable'
+
+      - name: build rust-utils
+        run: yarn setup
+
+      - name: install app dependencies
+        run: yarn
+
+      - name: install default apps
+        run: |
+          mkdir resources/default-apps
+          yarn fetch:default-apps
+
+      - name: setup binaries (Windows only)
+        if: matrix.platform == 'windows-2019'
+        run: |
+          mkdir resources/bins
+
+          # cargo install --version ${{ needs.extract-versions.outputs.lair_keystore_version }} lair_keystore
+          # $LkPath = Get-Command lair-keystore | Select-Object -ExpandProperty Definition
+          # Copy-Item $LkPath -Destination resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}.exe
+
+          curl -L --output resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}.exe https://github.com/holochain/launcher-electron/releases/download/lair-binaries-v${{ needs.extract-versions.outputs.lair_keystore_version }}/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}-x86_64-pc-windows-msvc.exe
+
+          # cargo install holochain --version ${{ needs.extract-versions.outputs.holochain_version }} --locked --features sqlite-encrypted
+          # $HcPath = Get-Command holochain | Select-Object -ExpandProperty Definition
+          # Copy-Item $HcPath -Destination resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }}.exe
+
+          curl -L --output resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }}.exe https://github.com/matthme/holochain-binaries/releases/download/holochain-binaries-${{ needs.extract-versions.outputs.holochain_version }}/holochain-v${{ needs.extract-versions.outputs.holochain_version }}-x86_64-pc-windows-msvc.exe
+
+          # NEW_VERSION: install new holochain version and copy its binary to the tauri path
+
+      - name: setup binaries (macos only)
+        if: matrix.platform == 'macos-11'
+        run: |
+          mkdir resources/bins
+
+          # cargo install --version ${{ needs.extract-versions.outputs.lair_keystore_version }} lair_keystore
+          # LAIR_PATH=$(which lair-keystore)
+          # cp $LAIR_PATH resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}
+
+          curl -L --output resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }} https://github.com/holochain/launcher-electron/releases/download/lair-binaries-v${{ needs.extract-versions.outputs.lair_keystore_version }}/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}-x86_64-apple-darwin
+          chmod +x ./resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}
+
+          # cargo install holochain --version ${{ needs.extract-versions.outputs.holochain_version }} --locked --features sqlite-encrypted
+          # HOLOCHAIN_PATH=$(which holochain)
+          # cp $HOLOCHAIN_PATH resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }}
+
+          curl -L --output resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }} https://github.com/matthme/holochain-binaries/releases/download/holochain-binaries-${{ needs.extract-versions.outputs.holochain_version }}/holochain-v${{ needs.extract-versions.outputs.holochain_version }}-x86_64-apple-darwin
+          chmod +x ./resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }}
+
+          # NEW_VERSION: install new holochain version and copy its binary to the tauri path
+
+      - name: setup binaries (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          mkdir resources/bins
+
+          # cargo install --version ${{ needs.extract-versions.outputs.lair_keystore_version }} lair_keystore
+          # LAIR_PATH=$(which lair-keystore)
+          # cp $LAIR_PATH resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}
+
+          curl -L --output resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }} https://github.com/holochain/launcher-electron/releases/download/lair-binaries-v${{ needs.extract-versions.outputs.lair_keystore_version }}/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}-x86_64-unknown-linux-gnu
+          chmod +x ./resources/bins/lair-keystore-v${{ needs.extract-versions.outputs.lair_keystore_version }}
+
+          # cargo install holochain --version ${{ needs.extract-versions.outputs.holochain_version }} --locked --features sqlite-encrypted
+          # HOLOCHAIN_PATH=$(which holochain)
+          # cp $HOLOCHAIN_PATH resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }}
+
+          curl -L --output resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }} https://github.com/matthme/holochain-binaries/releases/download/holochain-binaries-${{ needs.extract-versions.outputs.holochain_version }}/holochain-v${{ needs.extract-versions.outputs.holochain_version }}-x86_64-unknown-linux-gnu
+          chmod +x ./resources/bins/holochain-v${{ needs.extract-versions.outputs.holochain_version }}
+
+          # NEW_VERSION: install new holochain version and copy its binary to the tauri path
+
+      - name: build and upload the app (macOS)
+        if: matrix.platform == 'macos-11'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_DEV_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID_EMAIL: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          DEBUG: electron-osx-sign*,electron-notarize*
+        run: |
+          yarn build:mac
+          ls dist
+
+      - name: build and upload the app (Linux)
+        if: matrix.platform == 'ubuntu-22.04'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          yarn build:linux
+          ls dist
+
+      - name: build, sign and upload the app (Windows)
+        if: matrix.platform == 'windows-2019'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          yarn build:win
+
+          ls dist
+
+          dotnet tool install --global AzureSignTool
+
+          echo "sha512 before code signing"
+          CertUtil -hashfile "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" SHA512
+
+          AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe"
+
+          echo "sha512 after code signing"
+          CertUtil -hashfile "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" SHA512
+
+          gh release upload "v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" --clobber
+  mark-as-prerelease:
+    needs: [publish, create-draft-release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Mark release as pre-release
+        run: |
+          curl \
+            -X PATCH \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/releases/${{ needs.create-draft-release.outputs.release_id }} \
+            -d '{
+              "prerelease": true,
+              "draft": false
+            }'
+
+

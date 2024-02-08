@@ -132,5 +132,4 @@ export type LoadingProgressUpdate =
   | 'initializingLairKeystore'
   | 'startingLairKeystore'
   | 'startingHolochain'
-  | 'settings'
   | '';

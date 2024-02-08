@@ -315,7 +315,6 @@ const getHolochainManager = (dataRootName: string) => {
 const router = t.router({
   openSettings: t.procedure.mutation(() => {
     LAUNCHER_WINDOWS[mainScreen].hide();
-    LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'settings');
     LAUNCHER_WINDOWS[settingsScreen].show();
   }),
   hideApp: t.procedure.mutation(() => {

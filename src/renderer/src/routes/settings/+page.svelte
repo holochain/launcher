@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { CenterProgressRadial, Error } from '$components';
+	import { Button, CenterProgressRadial, Error } from '$components';
 	import { validateApp } from '$helpers';
+	import { Gear, Home, Rocket } from '$icons';
 	import { i18n, trpc } from '$services';
 
 	import { AppEntry, InstallAppForm } from './components';
@@ -9,6 +10,32 @@
 
 	const installedApps = client.getInstalledApps.createQuery();
 </script>
+
+<div class="app-region-drag dark:bg-apps-input-dark-gradient flex justify-between p-3">
+	<Button
+		props={{
+			class: 'p-2 app-region-no-drag',
+			onClick: () => null
+		}}
+	>
+		<Home />
+	</Button>
+	<Button
+		props={{
+			class: 'p-2 mr-2 app-region-no-drag',
+			onClick: () => null
+		}}
+	>
+		<Rocket />
+	</Button>
+	<Button
+		props={{
+			class: 'ml-auto app-region-no-drag p-2 bg-black rounded-md'
+		}}
+	>
+		<Gear />
+	</Button>
+</div>
 
 <InstallAppForm />
 

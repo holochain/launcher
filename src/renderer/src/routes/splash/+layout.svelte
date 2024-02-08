@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { Button } from '$components';
 	import { ArrowLeft } from '$icons';
@@ -12,20 +11,15 @@
 
 	const client = trpc();
 
-	const handleSetupProgress = (data: string) => {
-		setupProgress = data;
-		if (data === 'settings') {
-			goto('/settings');
-		}
-	};
-
 	client.onSetupProgressUpdate.createSubscription(undefined, {
-		onData: handleSetupProgress
+		onData: (data: string) => {
+			setupProgress = data;
+		}
 	});
 </script>
 
-<div class="relative flex h-screen flex-col bg-login-background bg-fixed bg-center bg-no-repeat">
-	<div class="absolute inset-0 bg-tertiary-500 opacity-10" />
+<div class="bg-login-background relative flex h-screen flex-col bg-fixed bg-center bg-no-repeat">
+	<div class="bg-tertiary-500 absolute inset-0 opacity-10" />
 	<p class="app-region-drag z-10 p-1 text-center text-xs opacity-30">Holochain Beta 0.1</p>
 	{#if displayBackButton}
 		<Button
