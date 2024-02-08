@@ -20,8 +20,7 @@ import type { LauncherFileSystem } from './filesystem';
 import { ICONS_DIRECTORY } from './paths';
 import { setLinkOpenHandlers } from './utils';
 
-const serveURL = (filename = 'index') =>
-  serve({ directory: join(__dirname, '..', 'renderer'), file: filename });
+const serveURL = () => serve({ directory: join(__dirname, '..', 'renderer') });
 
 const loadVite =
   (key = '') =>
