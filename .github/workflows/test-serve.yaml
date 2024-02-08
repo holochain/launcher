@@ -76,7 +76,7 @@ jobs:
         with:
           path: |
             rust-utils/dist
-          key: ${{ runner.os }}-rust-utils-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-rust-utils-${{ needs.extract-versions.outputs.rust_utils_version }}
 
       - name: Setup rust-utils
         run: yarn setup
