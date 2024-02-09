@@ -72,7 +72,15 @@ jobs:
         with:
           go-version: 'stable'
 
-      - name: build rust-utils
+      - name: Cache rust-utils build
+        id: cache-rust-utils
+        uses: actions/cache@v4
+        with:
+          path: rust-utils/dist
+          key: ${{ runner.os }}-rust-utils-${{ needs.extract-versions.outputs.rust_utils_version }}
+
+      - name: Conditionally Setup rust-utils
+        if: steps.cache-rust-utils.outputs.cache-hit != 'true'
         run: yarn setup
 
       - name: install app dependencies
