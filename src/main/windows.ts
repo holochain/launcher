@@ -86,6 +86,7 @@ export const setupAppWindows = () => {
 
   Object.values(windows).forEach((window) => (is.dev ? loadVite(window) : serveURL(window)));
   settingsWindow.loadURL(`${urlPrefix}${settingsScreen}`);
+  settingsWindow.webContents.openDevTools();
 
   globalShortcut.register('CommandOrControl+Shift+L', () => {
     mainWindow.setSize(WINDOW_SIZE, SEARCH_HEIGH);
