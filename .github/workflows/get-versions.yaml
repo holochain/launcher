@@ -2,6 +2,9 @@ name: Extract Versions Workflow
 on:
   workflow_call:
     outputs:
+      rust_utils_version:
+        description: "Rust utils version"
+        value: ${{ jobs.extract-versions.outputs.rust_utils_version }}
       version:
         description: "App version"
         value: ${{ jobs.extract-versions.outputs.version }}
@@ -23,10 +26,12 @@ jobs:
       - name: Extract version information
         id: packagejson
         run: |
+          echo "rust_utils_version=$(node -p "require('./rust-utils/package.json').version")" >> $GITHUB_OUTPUT
           echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
           echo "holochain_version=$(node -p "require('./package.json').binaries.holochain")" >> $GITHUB_OUTPUT
           echo "lair_keystore_version=$(node -p "require('./package.json').binaries.lair_keystore")" >> $GITHUB_OUTPUT
     outputs:
       version: ${{ steps.packagejson.outputs.version }}
+      rust_utils_version: ${{ steps.packagejson.outputs.rust_utils_version }}
       holochain_version: ${{ steps.packagejson.outputs.holochain_version }}
       lair_keystore_version: ${{ steps.packagejson.outputs.lair_keystore_version }}
