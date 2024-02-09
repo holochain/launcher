@@ -20,19 +20,22 @@ import type { LauncherFileSystem } from './filesystem';
 import { ICONS_DIRECTORY } from './paths';
 import { setLinkOpenHandlers } from './utils';
 
-const urlPrefix = is.dev ? 'app://-/' : 'http://localhost:5173/';
-
 const serveURL = serve({ directory: join(__dirname, '..', 'renderer') });
 
-const loadVite = (window: BrowserWindow): void => {
+const encodeQuery = (query: Record<string, string>) =>
+  Object.entries(query)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
+
+const loadVite = (window: BrowserWindow, query: Record<string, string> = {}): void => {
   if (!window) return;
+  const queryString = encodeQuery(query);
+  const load = () => window.loadURL(`http://localhost:5173?${queryString}`);
   try {
-    window.loadURL(`http://localhost:5173`);
+    load();
   } catch (e) {
     console.log('Error loading URL, retrying', e);
-    setTimeout(() => {
-      loadVite(window);
-    }, 200);
+    setTimeout(load, 200);
   }
 };
 
@@ -84,9 +87,8 @@ export const setupAppWindows = () => {
     [settingsScreen]: settingsWindow,
   };
 
-  Object.values(windows).forEach((window) => (is.dev ? loadVite(window) : serveURL(window)));
-  settingsWindow.loadURL(`${urlPrefix}${settingsScreen}`);
-  settingsWindow.webContents.openDevTools();
+  const loadOrServe = is.dev ? loadVite : serveURL;
+  Object.entries(windows).forEach(([key, window]) => loadOrServe(window, { screen: key }));
 
   globalShortcut.register('CommandOrControl+Shift+L', () => {
     mainWindow.setSize(WINDOW_SIZE, SEARCH_HEIGH);
