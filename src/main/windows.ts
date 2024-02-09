@@ -20,6 +20,8 @@ import type { LauncherFileSystem } from './filesystem';
 import { ICONS_DIRECTORY } from './paths';
 import { setLinkOpenHandlers } from './utils';
 
+const urlPrefix = is.dev ? 'app://-/' : 'http://localhost:5173/';
+
 const serveURL = serve({ directory: join(__dirname, '..', 'renderer') });
 
 const loadVite = (window: BrowserWindow): void => {
@@ -31,14 +33,6 @@ const loadVite = (window: BrowserWindow): void => {
     setTimeout(() => {
       loadVite(window);
     }, 200);
-  }
-};
-
-const loadWindow = (window: BrowserWindow, path: string) => {
-  if (is.dev) {
-    window.loadURL(`http://localhost:5173/${path}`);
-  } else {
-    window.loadFile(`./${path}.html`);
   }
 };
 
@@ -91,7 +85,7 @@ export const setupAppWindows = () => {
   };
 
   Object.values(windows).forEach((window) => (is.dev ? loadVite(window) : serveURL(window)));
-  loadWindow(settingsWindow, settingsScreen);
+  settingsWindow.loadURL(`${urlPrefix}${settingsScreen}`);
 
   globalShortcut.register('CommandOrControl+Shift+L', () => {
     mainWindow.setSize(WINDOW_SIZE, SEARCH_HEIGH);
