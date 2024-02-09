@@ -18,14 +18,9 @@ import { mainScreen, settingsScreen } from '../types';
 import { SEARCH_HEIGH, WINDOW_SIZE } from './const';
 import type { LauncherFileSystem } from './filesystem';
 import { ICONS_DIRECTORY } from './paths';
-import { setLinkOpenHandlers } from './utils';
+import { encodeQuery, setLinkOpenHandlers } from './utils';
 
 const serveURL = serve({ directory: join(__dirname, '..', 'renderer') });
-
-const encodeQuery = (query: Record<string, string>) =>
-  Object.entries(query)
-    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-    .join('&');
 
 const loadVite = (window: BrowserWindow, query: Record<string, string> = {}): void => {
   if (!window) return;
