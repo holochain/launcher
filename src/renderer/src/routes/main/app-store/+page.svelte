@@ -8,8 +8,8 @@
 
 	import { Button } from '$components';
 	import { i18n } from '$services';
-	import { AppStore } from '$types';
 
+	import { AppStore } from '../../../../../types';
 	import MainHeader from '../components/MainHeader.svelte';
 	import Modal from './components/Modal.svelte';
 

@@ -14,6 +14,7 @@ import type {
   HolochainDataRoot,
   HolochainPartition,
   LoadingProgressUpdate,
+  MainScreenRoute,
   Screen,
   WindowInfoRecord,
 } from '../types';
@@ -24,7 +25,9 @@ import {
   InstallHappInputSchema,
   InstallKandoSchema,
   LOADING_PROGRESS_UPDATE,
+  MAIN_SCREEN_ROUTE,
   mainScreen,
+  MainScreenRouteSchema,
   MISSING_BINARIES,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
   settingsScreen,
@@ -317,6 +320,11 @@ const router = t.router({
     LAUNCHER_WINDOWS[mainScreen].hide();
     LAUNCHER_WINDOWS[settingsScreen].show();
   }),
+  closeSettings: t.procedure.input(MainScreenRouteSchema).mutation(async (opts) => {
+    LAUNCHER_EMITTER.emit(MAIN_SCREEN_ROUTE, opts.input);
+    LAUNCHER_WINDOWS[settingsScreen].hide();
+    LAUNCHER_WINDOWS[mainScreen].show();
+  }),
   hideApp: t.procedure.mutation(() => {
     LAUNCHER_WINDOWS[mainScreen].hide();
   }),
@@ -412,6 +420,19 @@ const router = t.router({
 
       return () => {
         LAUNCHER_EMITTER.off(LOADING_PROGRESS_UPDATE, onProgressUpdate);
+      };
+    });
+  }),
+  mainScreenRoute: t.procedure.subscription(() => {
+    return observable<MainScreenRoute>((emit) => {
+      function changeRoute(route: MainScreenRoute) {
+        emit.next(route);
+      }
+
+      LAUNCHER_EMITTER.on(MAIN_SCREEN_ROUTE, changeRoute);
+
+      return () => {
+        LAUNCHER_EMITTER.off(MAIN_SCREEN_ROUTE, changeRoute);
       };
     });
   }),

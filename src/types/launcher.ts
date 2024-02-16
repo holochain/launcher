@@ -6,6 +6,13 @@ export const settingsScreen = 'settings';
 
 export type Screen = typeof mainScreen | typeof settingsScreen;
 
+export const AppStore = 'app-store';
+export const AppsView = 'apps-view';
+
+export const MainScreenRouteSchema = z.union([z.literal(AppStore), z.literal(AppsView)]);
+
+export type MainScreenRoute = z.infer<typeof MainScreenRouteSchema>;
+
 export type WindowInfo = {
   agentPubKey: AgentPubKey;
   installedAppId: string;

@@ -4,9 +4,12 @@
 	import { Gear, Home, Rocket } from '$icons';
 	import { i18n, trpc } from '$services';
 
+	import { AppStore, AppsView } from '../../../../types';
 	import { AppEntry, InstallAppForm } from './components';
 
 	const client = trpc();
+
+	const closeSettings = client.closeSettings.createMutation();
 
 	const installedApps = client.getInstalledApps.createQuery();
 </script>
@@ -15,7 +18,7 @@
 	<Button
 		props={{
 			class: 'p-2 app-region-no-drag',
-			onClick: () => null
+			onClick: () => $closeSettings.mutate(AppStore)
 		}}
 	>
 		<Home />
@@ -23,7 +26,7 @@
 	<Button
 		props={{
 			class: 'p-2 mr-2 app-region-no-drag',
-			onClick: () => null
+			onClick: () => $closeSettings.mutate(AppsView)
 		}}
 	>
 		<Rocket />

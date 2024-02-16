@@ -5,7 +5,8 @@
 	import { Button, Input } from '$components';
 	import { Gear, Home, Rocket } from '$icons';
 	import { i18n, trpc } from '$services';
-	import { type AppHeader, AppStore, AppsView } from '$types';
+
+	import { AppStore, AppsView, type MainScreenRoute } from '../../../../../types';
 
 	const client = trpc();
 
@@ -17,7 +18,7 @@
 
 	const animationDuration = 300;
 
-	export let type: AppHeader;
+	export let type: MainScreenRoute;
 
 	let inputExpanded = false;
 

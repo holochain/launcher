@@ -15,6 +15,12 @@
 		}
 	};
 
+	client.mainScreenRoute.createSubscription(undefined, {
+		onData: (data: string) => {
+			goto(`/main/${data}`);
+		}
+	});
+
 	onMount(() => {
 		window.addEventListener('keydown', handleEscapeKey);
 		return () => {

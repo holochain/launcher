@@ -1,6 +1,8 @@
 import type { HolochainData, LoadingProgressUpdate } from './holochain';
+import type { MainScreenRoute } from './launcher';
 
 export const LOADING_PROGRESS_UPDATE = 'loading-progress-update';
+export const MAIN_SCREEN_ROUTE = 'main-screen-route';
 export const APP_INSTALLED = 'app-installed';
 export const LAIR_ERROR = 'lair-error';
 export const LAIR_FATAL_PANIC = 'lair-fatal-panic';
@@ -13,6 +15,7 @@ export const WASM_LOG = 'wasm-log';
 
 export type EventMap = {
   [LOADING_PROGRESS_UPDATE]: LoadingProgressUpdate;
+  [MAIN_SCREEN_ROUTE]: MainScreenRoute;
   [APP_INSTALLED]: HolochainData;
   [LAIR_ERROR]: string;
   [LAIR_FATAL_PANIC]: string;
