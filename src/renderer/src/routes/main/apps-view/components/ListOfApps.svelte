@@ -2,8 +2,8 @@
 	import { i18n, trpc } from '$services';
 
 	import type { ExtendedAppInfo } from '../../../../../../types';
-	import AddAppsButton from './AddAppsButton.svelte';
 	import AppButton from './AppButton.svelte';
+	import BaseButton from './BaseButton.svelte';
 
 	const client = trpc();
 
@@ -36,7 +36,14 @@
 						})}
 				/>
 			{/each}
-			<AddAppsButton onClick={() => $openSettings.mutate()}>{$i18n.t('addApps')}</AddAppsButton>
+			<BaseButton
+				fontSize={250}
+				fill="fill-white opacity-50"
+				initials="+"
+				onClick={() => $openSettings.mutate()}
+			>
+				<span class="pt-2 text-xs opacity-50">{$i18n.t('addApps')}</span>
+			</BaseButton>
 		</div>
 	</div>
 </div>

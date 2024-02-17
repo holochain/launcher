@@ -24,3 +24,8 @@ export type ButtonProps = {
 	disabled?: boolean;
 	type?: 'submit' | 'button' | 'reset';
 };
+
+export type AppInstallFormData = {
+	appId: string;
+	networkSeed: string;
+};

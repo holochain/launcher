@@ -34,6 +34,8 @@ const loadVite = (window: BrowserWindow, query: Record<string, string> = {}): vo
   }
 };
 
+export const loadOrServe = is.dev ? loadVite : serveURL;
+
 const createBrowserWindow = (title: string) =>
   new BrowserWindow({
     frame: false,
@@ -82,8 +84,7 @@ export const setupAppWindows = () => {
     [settingsScreen]: settingsWindow,
   };
 
-  const loadOrServe = is.dev ? loadVite : serveURL;
-  Object.entries(windows).forEach(([key, window]) => loadOrServe(window, { screen: key }));
+  loadOrServe(mainWindow, { screen: mainScreen });
 
   globalShortcut.register('CommandOrControl+Shift+L', () => {
     mainWindow.setSize(WINDOW_SIZE, SEARCH_HEIGH);

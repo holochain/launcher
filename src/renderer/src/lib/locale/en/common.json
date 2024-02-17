@@ -14,8 +14,8 @@
 	"holochainLauncher": "Holochain Launcher",
 	"initializingLairKeystore": "Initializing Lair Keystore...",
 	"install": "Install",
+	"installFromYourDevice": "Install from your device",
 	"installHapp": "Install Happ",
-	"installNewApp": "Install new app from file",
 	"installing": "Installing...",
 	"kando": "KanDo",
 	"launch": "Launch",
@@ -31,11 +31,11 @@
 	"passwordWarning": "Your password can not be reset, recovered or changed. Write it down and store it in a secure location.",
 	"passwordsDontMatch": "Passwords don't match!",
 	"searchForApps": "Search for apps",
-	"selectAppFromFilesystem": "Select app from filesystem",
 	"setYourPassword": "Set your password",
 	"setupError": "Setup Error",
 	"setupProgress": "Setup Progress",
 	"startingHolochain": "Starting Holochain...",
 	"startingLairKeystore": "Starting Lair Keystore...",
+	"useWebhappFileToAddHapp": "Use a webhapp file to add your hApp",
 	"whatDoYouWantToInstall": "What do you want to install?"
 }

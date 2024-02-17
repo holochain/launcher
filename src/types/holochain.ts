@@ -72,7 +72,7 @@ export const InstallKandoSchema = CommonAppSchema.extend({
 export type InstallKando = z.infer<typeof InstallKandoSchema>;
 
 export const InstallHappInputSchema = InstallKandoSchema.extend({
-  filePath: z.string().optional(),
+  filePath: z.string(),
 });
 
 export type InstallHappInput = z.infer<typeof InstallHappInputSchema>;

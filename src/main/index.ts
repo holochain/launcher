@@ -44,7 +44,7 @@ import { LauncherEmitter } from './launcherEmitter';
 import { setupLogs } from './logs';
 import { DEFAULT_APPS_DIRECTORY } from './paths';
 import { isHappAlreadyOpened, throwTRPCErrorError, validateWithZod } from './utils';
-import { createHappWindow, setupAppWindows } from './windows';
+import { createHappWindow, loadOrServe, setupAppWindows } from './windows';
 
 const t = initTRPC.create({ isServer: true });
 
@@ -293,6 +293,7 @@ async function handleLaunch(password: string) {
   HOLOCHAIN_DATA_ROOT = holochainDataRoot;
   HOLOCHAIN_MANAGERS[holochainDataRoot.name] = holochainManager;
   LAUNCHER_WINDOWS[mainScreen].setSize(WINDOW_SIZE, SEARCH_HEIGH, true);
+  loadOrServe(LAUNCHER_WINDOWS[settingsScreen], { screen: settingsScreen });
   return;
 }
 
