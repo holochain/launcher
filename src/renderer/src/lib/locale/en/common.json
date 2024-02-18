@@ -12,6 +12,7 @@
 	"enterNetworkSeed": "Enter network seed",
 	"getStarted": "Get started",
 	"holochainLauncher": "Holochain Launcher",
+	"holochainVersion": "Holochain version",
 	"initializingLairKeystore": "Initializing Lair Keystore...",
 	"install": "Install",
 	"installFromYourDevice": "Install from your device",
@@ -37,6 +38,7 @@
 	"setupProgress": "Setup Progress",
 	"startingHolochain": "Starting Holochain...",
 	"startingLairKeystore": "Starting Lair Keystore...",
+	"systemInformation": "System information",
 	"useWebhappFileToAddHapp": "Use a webhapp file to add your hApp",
 	"whatDoYouWantToInstall": "What do you want to install?"
 }

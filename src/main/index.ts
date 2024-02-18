@@ -393,6 +393,9 @@ const router = t.router({
     });
     return !isInitializedValidated;
   }),
+  holochainVersion: t.procedure.query(
+    () => HOLOCHAIN_MANAGERS[Object.keys(HOLOCHAIN_MANAGERS)[0]].version,
+  ),
   getInstalledApps: t.procedure.query(() => {
     const installedApps = Object.values(HOLOCHAIN_MANAGERS).flatMap((manager) =>
       manager.installedApps.map((app) => ({
