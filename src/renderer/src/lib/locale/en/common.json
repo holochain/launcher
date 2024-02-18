@@ -19,6 +19,7 @@
 	"installing": "Installing...",
 	"kando": "KanDo",
 	"launch": "Launch",
+	"loading": "loading...",
 	"loginError": "Login error",
 	"manageAndLaunchApps": "Log in to add, manage & launch your Holochain apps",
 	"name": "name",

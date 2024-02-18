@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { AppStore } from '../../../../../types';
 	import MainHeader from '../components/MainHeader.svelte';
-	import AppCard from './components/AppCard.svelte';
-	import InstallFromDeviceCard from './components/InstallFromDeviceCard.svelte';
+	import { AppCard, InstallFromDeviceCard } from './components';
 
 	let searchInput = '';
 
