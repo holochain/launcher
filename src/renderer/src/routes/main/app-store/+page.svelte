@@ -4,7 +4,7 @@
 	import AppCard from './components/AppCard.svelte';
 	import InstallFromDeviceCard from './components/InstallFromDeviceCard.svelte';
 
-	export let searchInput: string = '';
+	let searchInput = '';
 
 	$: isKandoInSearch = 'kando'.includes(searchInput.toLowerCase());
 

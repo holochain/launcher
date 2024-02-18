@@ -5,12 +5,12 @@
 	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
 
-	import ModalForm from './ModalForm.svelte'; // Updated import
+	import ModalForm from './ModalForm.svelte';
 
 	const client = trpc();
 	const modalStore = getModalStore();
 
-	let files: FileList | null = null; // Adjusted for ModalForm compatibility
+	let files: FileList | null = null;
 	let formData = {
 		appId: '',
 		networkSeed: ''
