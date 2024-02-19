@@ -5,6 +5,7 @@
 	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
 
+	import { APP_STORE } from '../../../../../types';
 	import { PasswordForm, SetupProgressWrapper } from '../components';
 
 	const modalStore = getModalStore();
@@ -20,7 +21,7 @@
 			{ password: passwordInput },
 			{
 				onSuccess: () => {
-					goto('/main/app-store');
+					goto(`/${APP_STORE}`);
 				},
 				onError: (error) => {
 					showModalError({

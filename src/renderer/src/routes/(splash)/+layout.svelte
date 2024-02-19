@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { Button } from '$components';
 	import { ArrowLeft } from '$icons';
@@ -12,15 +11,10 @@
 
 	const client = trpc();
 
-	const handleSetupProgress = (data: string) => {
-		setupProgress = data;
-		if (data === 'settings') {
-			goto('/settings');
-		}
-	};
-
 	client.onSetupProgressUpdate.createSubscription(undefined, {
-		onData: handleSetupProgress
+		onData: (data: string) => {
+			setupProgress = data;
+		}
 	});
 </script>
 

@@ -6,6 +6,12 @@ import type { ZodSchema } from 'zod';
 
 import type { ErrorWithMessage, WindowInfoRecord } from '../types';
 
+export function encodeQuery(query: Record<string, string>) {
+  return Object.entries(query)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
+}
+
 export function setLinkOpenHandlers(browserWindow: BrowserWindow): void {
   // links in happ windows should open in the system default application
   // instead of the webview

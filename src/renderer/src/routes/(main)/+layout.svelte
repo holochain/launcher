@@ -4,6 +4,8 @@
 	import { goto } from '$app/navigation';
 	import { trpc } from '$services';
 
+	import { APPS_VIEW } from '../../../../types';
+
 	const client = trpc();
 
 	const hideApp = client.hideApp.createMutation();
@@ -11,9 +13,15 @@
 	const handleEscapeKey = (event: KeyboardEvent): void => {
 		if (event.key === 'Escape') {
 			$hideApp.mutate();
-			goto('/main/apps-view');
+			goto(`/${APPS_VIEW}`);
 		}
 	};
+
+	client.mainScreenRoute.createSubscription(undefined, {
+		onData: (data: string) => {
+			goto(`/${data}`);
+		}
+	});
 
 	onMount(() => {
 		window.addEventListener('keydown', handleEscapeKey);

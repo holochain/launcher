@@ -5,7 +5,8 @@
 	import { Button, Input } from '$components';
 	import { Gear, Home, Rocket } from '$icons';
 	import { i18n, trpc } from '$services';
-	import { type AppHeader, AppStore, AppsView } from '$types';
+
+	import { APP_STORE, APPS_VIEW, type MainScreenRoute } from '../../../../../types';
 
 	const client = trpc();
 
@@ -17,7 +18,7 @@
 
 	const animationDuration = 300;
 
-	export let type: AppHeader;
+	export let type: MainScreenRoute;
 
 	let inputExpanded = false;
 
@@ -32,12 +33,12 @@
 	};
 </script>
 
-<div class="app-region-drag flex justify-between p-3 dark:bg-apps-input-dark-gradient">
-	{#if type == AppsView}
+<div class="app-region-drag dark:bg-apps-input-dark-gradient flex justify-between p-3">
+	{#if type == APPS_VIEW}
 		<Button
 			props={{
 				class: 'p-2 app-region-no-drag',
-				onClick: handleNavigationWithAnimationDelay('app-store')
+				onClick: handleNavigationWithAnimationDelay(APP_STORE)
 			}}
 		>
 			<Home />
@@ -58,23 +59,23 @@
 				class: 'pl-10 input rounded text-base font-medium',
 				type: 'text',
 				placeholder:
-					type === AppStore ? $i18n.t('whatDoYouWantToInstall') : $i18n.t('searchForApps'),
+					type === APP_STORE ? $i18n.t('whatDoYouWantToInstall') : $i18n.t('searchForApps'),
 				autofocus: true
 			}}
 		/>
 		<div class="absolute left-2 top-2 z-10">
-			{#if type === AppsView}
+			{#if type === APPS_VIEW}
 				<Rocket fillColor="fill-light-primary dark:fill-white" />
 			{:else}
 				<Home fillColor="fill-light-primary dark:fill-white" />
 			{/if}
 		</div>
 	</div>
-	{#if type == AppStore}
+	{#if type == APP_STORE}
 		<Button
 			props={{
 				class: 'p-2 mr-2 ml-auto app-region-no-drag',
-				onClick: handleNavigationWithAnimationDelay('apps-view')
+				onClick: handleNavigationWithAnimationDelay(APPS_VIEW)
 			}}
 		>
 			<Rocket />

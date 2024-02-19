@@ -1,6 +1,6 @@
 {
   "name": "holochain-launcher-electron",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "private": true,
   "description": "Holochain Launcher Electron (Prototype)",
   "author": "Holochain Foundation <info@holochain.org> (http://holochain.org)",
@@ -34,7 +34,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0 ",
     "@electron-toolkit/utils": "^3.0.0",
-    "@electron/notarize": "2.2.0",
+    "@electron/notarize": "2.3.0",
     "@holochain/client": "^0.16.3",
     "@trpc/client": "^10.44.1",
     "@trpc/server": "^10.44.1",
@@ -43,7 +43,7 @@
     "electron-serve": "^1.2.0",
     "electron-trpc": "^0.5.2",
     "hc-launcher-rust-utils": "file:./rust-utils/dist",
-    "nanoid": "5.0.4",
+    "nanoid": "5.0.5",
     "split": "1.0.1",
     "winston": "3.11.0",
     "zod": "^3.22.4"
@@ -61,7 +61,7 @@
     "electron-squirrel-startup": "^1.0.0",
     "electron-vite": "^2.0.0",
     "eslint": "^8.56.0",
-    "eslint-plugin-simple-import-sort": "^10.0.0",
+    "eslint-plugin-simple-import-sort": "^12.0.0",
     "get-port": "7.0.0",
     "prettier": "^3.1.1",
     "typescript": "^5.3.3",

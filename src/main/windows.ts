@@ -14,28 +14,31 @@ import path, { join, resolve } from 'path';
 import url from 'url';
 
 import type { ExtendedAppInfo, Screen } from '../types';
-import { mainScreen, settingsScreen } from '../types';
+import { MAIN_SCREEN, SETTINGS_SCREEN } from '../types';
 import { SEARCH_HEIGH, WINDOW_SIZE } from './const';
 import type { LauncherFileSystem } from './filesystem';
 import { ICONS_DIRECTORY } from './paths';
-import { setLinkOpenHandlers } from './utils';
+import { encodeQuery, setLinkOpenHandlers } from './utils';
 
 const serveURL = serve({ directory: join(__dirname, '..', 'renderer') });
 
-// this is needed to prevent blank screen when dev electron loads
-const loadVite = (window: BrowserWindow): void => {
+const loadVite = (window: BrowserWindow, query: Record<string, string> = {}): void => {
   if (!window) return;
-  window.loadURL(`http://localhost:5173`).catch((e) => {
+  const queryString = encodeQuery(query);
+  const load = () => window.loadURL(`http://localhost:5173?${queryString}`);
+  try {
+    load();
+  } catch (e) {
     console.log('Error loading URL, retrying', e);
-    setTimeout(() => {
-      loadVite(window);
-    }, 200);
-  });
+    setTimeout(load, 200);
+  }
 };
 
-const createBrowserWindow = (title: string, frame = false) =>
+export const loadOrServe = is.dev ? loadVite : serveURL;
+
+const createBrowserWindow = (title: string) =>
   new BrowserWindow({
-    frame,
+    frame: false,
     width: WINDOW_SIZE,
     minWidth: WINDOW_SIZE,
     height: WINDOW_SIZE,
@@ -51,7 +54,7 @@ export const setupAppWindows = () => {
   // Create the browser window.
   const mainWindow = createBrowserWindow('Holochain Launcher');
 
-  const settingsWindow = createBrowserWindow('Holochain Launcher Settings', true);
+  const settingsWindow = createBrowserWindow('Holochain Launcher Settings');
 
   const icon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '16x16.png'));
   const tray = new Tray(icon);
@@ -76,18 +79,12 @@ export const setupAppWindows = () => {
   tray.setToolTip('Holochain Launcher');
   tray.setContextMenu(contextMenu);
 
-  const windows: Record<Screen, BrowserWindow> = {
-    [mainScreen]: mainWindow,
-    [settingsScreen]: settingsWindow,
-  };
+  loadOrServe(mainWindow, { screen: MAIN_SCREEN });
 
-  Object.values(windows).map((window) => {
-    if (is.dev) {
-      loadVite(window);
-    } else {
-      serveURL(window);
-    }
-  });
+  const windows: Record<Screen, BrowserWindow> = {
+    [MAIN_SCREEN]: mainWindow,
+    [SETTINGS_SCREEN]: settingsWindow,
+  };
 
   globalShortcut.register('CommandOrControl+Shift+L', () => {
     mainWindow.setSize(WINDOW_SIZE, SEARCH_HEIGH);

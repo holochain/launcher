@@ -25,7 +25,7 @@ export type ButtonProps = {
 	type?: 'submit' | 'button' | 'reset';
 };
 
-export const AppStore = 'app-store';
-export const AppsView = 'apps-view';
-
-export type AppHeader = typeof AppStore | typeof AppsView;
+export type AppInstallFormData = {
+	appId: string;
+	networkSeed: string;
+};

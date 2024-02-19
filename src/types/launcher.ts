@@ -1,10 +1,17 @@
 import type { AgentPubKey } from '@holochain/client';
 import { z } from 'zod';
 
-export const mainScreen = 'main';
-export const settingsScreen = 'settings';
+export const MAIN_SCREEN = 'main';
+export const SETTINGS_SCREEN = 'settings';
 
-export type Screen = typeof mainScreen | typeof settingsScreen;
+export type Screen = typeof MAIN_SCREEN | typeof SETTINGS_SCREEN;
+
+export const APP_STORE = 'app-store';
+export const APPS_VIEW = 'apps-view';
+
+export const MainScreenRouteSchema = z.union([z.literal(APP_STORE), z.literal(APPS_VIEW)]);
+
+export type MainScreenRoute = z.infer<typeof MainScreenRouteSchema>;
 
 export type WindowInfo = {
   agentPubKey: AgentPubKey;

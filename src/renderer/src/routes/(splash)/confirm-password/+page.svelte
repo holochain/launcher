@@ -7,6 +7,7 @@
 	import { i18n, trpc } from '$services';
 	import { appPassword } from '$stores';
 
+	import { APP_STORE } from '../../../../../types';
 	import { PasswordForm, SetupProgressWrapper } from '../components';
 
 	const modalStore = getModalStore();
@@ -26,7 +27,7 @@
 			{ password: $appPassword },
 			{
 				onSuccess: () => {
-					goto('/main/app-store');
+					goto(`/${APP_STORE}`);
 				},
 				onError: (error) => handleError($i18n.t(error.message || 'unknownError'))
 			}
@@ -48,7 +49,7 @@
 	<div class="pb-2">
 		<Warning />
 	</div>
-	<p class="mb-4 max-w-72 font-[450] text-error-500">
+	<p class="text-error-500 mb-4 max-w-72 font-[450]">
 		{$i18n.t('passwordWarning')}
 	</p>
 	<PasswordForm
