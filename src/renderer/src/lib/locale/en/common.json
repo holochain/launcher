@@ -39,6 +39,7 @@
 	"startingHolochain": "Starting Holochain...",
 	"startingLairKeystore": "Starting Lair Keystore...",
 	"systemInformation": "System information",
+	"uninstall": "Uninstall",
 	"useWebhappFileToAddHapp": "Use a webhapp file to add your hApp",
 	"whatDoYouWantToInstall": "What do you want to install?"
 }

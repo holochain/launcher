@@ -21,7 +21,7 @@
 	};
 </script>
 
-<div class="card flex items-center p-4 dark:variant-soft-warning">
+<div class="card dark:variant-soft-warning flex items-center p-4">
 	<Avatar
 		border="border-4 border-white border-opacity-20"
 		fontSize={250}
@@ -40,6 +40,8 @@
 		props={{
 			onClick: () => modalStore.trigger(modal),
 			class: 'btn-app-store variant-filled'
-		}}>{$i18n.t('install')}</Button
+		}}
 	>
+		{$i18n.t('install')}
+	</Button>
 </div>
