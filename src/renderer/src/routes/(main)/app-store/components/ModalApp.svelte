@@ -5,6 +5,7 @@
 	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
 
+	import { APPS_VIEW } from '../../../../../../types';
 	import ModalForm from './ModalForm.svelte'; // Updated import
 
 	const client = trpc();
@@ -31,7 +32,7 @@
 			{
 				onSuccess: () => {
 					$installedApps.refetch();
-					goto(`apps-view?presearch=${formData.appId}`);
+					goto(`${APPS_VIEW}?presearch=${formData.appId}`);
 					modalStore.close();
 				},
 				onError: (error) => {

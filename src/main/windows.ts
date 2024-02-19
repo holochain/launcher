@@ -14,7 +14,7 @@ import path, { join, resolve } from 'path';
 import url from 'url';
 
 import type { ExtendedAppInfo, Screen } from '../types';
-import { mainScreen, settingsScreen } from '../types';
+import { MAIN_SCREEN, SETTINGS_SCREEN } from '../types';
 import { SEARCH_HEIGH, WINDOW_SIZE } from './const';
 import type { LauncherFileSystem } from './filesystem';
 import { ICONS_DIRECTORY } from './paths';
@@ -79,11 +79,11 @@ export const setupAppWindows = () => {
   tray.setToolTip('Holochain Launcher');
   tray.setContextMenu(contextMenu);
 
-  loadOrServe(mainWindow, { screen: mainScreen });
+  loadOrServe(mainWindow, { screen: MAIN_SCREEN });
 
   const windows: Record<Screen, BrowserWindow> = {
-    [mainScreen]: mainWindow,
-    [settingsScreen]: settingsWindow,
+    [MAIN_SCREEN]: mainWindow,
+    [SETTINGS_SCREEN]: settingsWindow,
   };
 
   globalShortcut.register('CommandOrControl+Shift+L', () => {

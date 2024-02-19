@@ -8,7 +8,7 @@
 	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
 
-	import { settingsScreen } from '../../../types';
+	import { SETTINGS_SCREEN } from '../../../types';
 
 	const client = trpc();
 
@@ -19,7 +19,7 @@
 	onMount(() => {
 		const url = $page.url;
 
-		if (url.searchParams.get('screen') === settingsScreen) {
+		if (url.searchParams.get('screen') === SETTINGS_SCREEN) {
 			return goto('/settings');
 		}
 
@@ -33,7 +33,7 @@
 			}
 
 			if (setupData.isSuccess) {
-				return goto(setupData.data ? '/splash/welcome' : '/splash/enter-password');
+				return goto(setupData.data ? '/welcome' : '/enter-password');
 			}
 		});
 	});

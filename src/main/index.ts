@@ -25,12 +25,12 @@ import {
   InstallHappInputSchema,
   InstallKandoSchema,
   LOADING_PROGRESS_UPDATE,
+  MAIN_SCREEN,
   MAIN_SCREEN_ROUTE,
-  mainScreen,
   MainScreenRouteSchema,
   MISSING_BINARIES,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
-  settingsScreen,
+  SETTINGS_SCREEN,
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '../types';
 import { checkHolochainLairBinariesExist } from './binaries';
@@ -122,11 +122,11 @@ if (!isFirstInstance) {
 }
 
 app.on('second-instance', () => {
-  LAUNCHER_WINDOWS[mainScreen].show();
+  LAUNCHER_WINDOWS[MAIN_SCREEN].show();
 });
 
 app.on('activate', () => {
-  LAUNCHER_WINDOWS[mainScreen].show();
+  LAUNCHER_WINDOWS[MAIN_SCREEN].show();
 });
 
 protocol.registerSchemesAsPrivileged([
@@ -292,8 +292,8 @@ async function handleLaunch(password: string) {
   );
   HOLOCHAIN_DATA_ROOT = holochainDataRoot;
   HOLOCHAIN_MANAGERS[holochainDataRoot.name] = holochainManager;
-  LAUNCHER_WINDOWS[mainScreen].setSize(WINDOW_SIZE, SEARCH_HEIGH, true);
-  loadOrServe(LAUNCHER_WINDOWS[settingsScreen], { screen: settingsScreen });
+  LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE, SEARCH_HEIGH, true);
+  loadOrServe(LAUNCHER_WINDOWS[SETTINGS_SCREEN], { screen: SETTINGS_SCREEN });
   return;
 }
 
@@ -318,16 +318,16 @@ const getHolochainManager = (dataRootName: string) => {
 
 const router = t.router({
   openSettings: t.procedure.mutation(() => {
-    LAUNCHER_WINDOWS[mainScreen].hide();
-    LAUNCHER_WINDOWS[settingsScreen].show();
+    LAUNCHER_WINDOWS[MAIN_SCREEN].hide();
+    LAUNCHER_WINDOWS[SETTINGS_SCREEN].show();
   }),
   closeSettings: t.procedure.input(MainScreenRouteSchema).mutation(async (opts) => {
     LAUNCHER_EMITTER.emit(MAIN_SCREEN_ROUTE, opts.input);
-    LAUNCHER_WINDOWS[settingsScreen].hide();
-    LAUNCHER_WINDOWS[mainScreen].show();
+    LAUNCHER_WINDOWS[SETTINGS_SCREEN].hide();
+    LAUNCHER_WINDOWS[MAIN_SCREEN].show();
   }),
   hideApp: t.procedure.mutation(() => {
-    LAUNCHER_WINDOWS[mainScreen].hide();
+    LAUNCHER_WINDOWS[MAIN_SCREEN].hide();
   }),
   openApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
     const { appInfo, holochainDataRoot } = opts.input;

@@ -5,7 +5,7 @@
 	import { validateApp } from '$helpers';
 	import { trpc } from '$services';
 
-	import { AppsView } from '../../../../../types';
+	import { APPS_VIEW } from '../../../../../types';
 	import MainHeader from '../components/MainHeader.svelte';
 	import ListOfApps from './components/ListOfApps.svelte';
 
@@ -54,7 +54,7 @@
 	}
 </script>
 
-<MainHeader {handlePress} bind:searchInput type={AppsView} bind:autocomplete />
+<MainHeader {handlePress} bind:searchInput type={APPS_VIEW} bind:autocomplete />
 {#if $installedApps.isSuccess}
 	<ListOfApps
 		isSearchInputFilled={searchInput !== ''}
