@@ -22,6 +22,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: v${{ needs.extract-versions.outputs.version }}
+          commit: ${{ github.sha }}
           name: v${{ needs.extract-versions.outputs.version }} (Holochain v${{ needs.extract-versions.outputs.holochain_version }})
           draft: true
           generateReleaseNotes: true
