@@ -21,7 +21,7 @@
 
 <MainHeader {handlePress} bind:searchInput type={APP_STORE} />
 
-<div class="bg-light-background dark:bg-apps-list-dark-gradient grow p-4">
+<div class="grow bg-light-background p-4 dark:bg-apps-list-dark-gradient">
 	<div class="text-token grid w-full gap-4 md:grid-cols-2">
 		{#if isKandoInSearch}
 			<AppCard />

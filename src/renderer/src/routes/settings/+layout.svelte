@@ -10,11 +10,9 @@
 
 	const installedApps = client.getInstalledApps.createQuery();
 
-	function selectView(view: string) {
-		goto(`/settings/${view}`);
-	}
+	const selectView = (view: string) => goto(`/settings${view ? `?view=${view}` : ''}`);
 
-	$: view = $page.params.slug;
+	$: view = $page.url.searchParams.get('view');
 </script>
 
 <TopBar />

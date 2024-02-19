@@ -21,7 +21,7 @@
 	};
 </script>
 
-<div class="card dark:variant-soft-warning flex items-center p-4">
+<div class="card flex items-center p-4 dark:variant-soft-warning">
 	<Avatar
 		border="border-4 border-white border-opacity-20"
 		fontSize={250}

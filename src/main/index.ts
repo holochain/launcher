@@ -386,11 +386,13 @@ const router = t.router({
     const isInitialized =
       LAUNCHER_FILE_SYSTEM.keystoreInitialized() ||
       VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external';
+
     const isInitializedValidated = validateWithZod({
       schema: z.boolean(),
       data: isInitialized,
       errorType: CHECK_INITIALIZED_KEYSTORE_ERROR,
     });
+
     return !isInitializedValidated;
   }),
   holochainVersion: t.procedure.query(

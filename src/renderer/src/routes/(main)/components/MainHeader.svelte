@@ -33,7 +33,7 @@
 	};
 </script>
 
-<div class="app-region-drag dark:bg-apps-input-dark-gradient flex justify-between p-3">
+<div class="app-region-drag flex justify-between p-3 dark:bg-apps-input-dark-gradient">
 	{#if type == APPS_VIEW}
 		<Button
 			props={{
