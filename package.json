@@ -7,7 +7,7 @@
   "license": "CAL-1.0",
   "main": "./out/main/index.js",
   "binaries": {
-    "holochain": "0.2.6",
+    "holochain": "0.2.7-rc.0",
     "lair_keystore": "0.4.2"
   },
   "workspaces": [
