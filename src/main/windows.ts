@@ -79,12 +79,12 @@ export const setupAppWindows = () => {
   tray.setToolTip('Holochain Launcher');
   tray.setContextMenu(contextMenu);
 
+  loadOrServe(mainWindow, { screen: mainScreen });
+
   const windows: Record<Screen, BrowserWindow> = {
     [mainScreen]: mainWindow,
     [settingsScreen]: settingsWindow,
   };
-
-  loadOrServe(mainWindow, { screen: mainScreen });
 
   globalShortcut.register('CommandOrControl+Shift+L', () => {
     mainWindow.setSize(WINDOW_SIZE, SEARCH_HEIGH);

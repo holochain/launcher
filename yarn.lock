@@ -902,17 +902,17 @@
   dependencies:
     mini-svg-data-uri "^1.2.3"
 
-"@tanstack/query-core@5.20.5":
-  version "5.20.5"
-  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.20.5.tgz#12bb02a937cc8f4f158b1428c0ddef5a1f48479b"
-  integrity sha512-T1W28gGgWn0A++tH3lxj3ZuUVZZorsiKcv+R50RwmPYz62YoDEkG4/aXHZELGkRp4DfrW07dyq2K5dvJ4Wl1aA==
+"@tanstack/query-core@5.21.7":
+  version "5.21.7"
+  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.21.7.tgz#c020574ea683a0738836549a686605f740438a7d"
+  integrity sha512-z0NSWFsM75esVmkxeuDWeyo9Wv4CZ/WsLMZgu1Zz164S6Oc/57NMia88dTu/d51wdVowMTAcDMQgRmiWmyPMxQ==
 
-"@tanstack/svelte-query@^5.14.1 ":
-  version "5.20.5"
-  resolved "https://registry.yarnpkg.com/@tanstack/svelte-query/-/svelte-query-5.20.5.tgz#58c3583fbb603b3f3b026c0d8a92c7dc6a9ae437"
-  integrity sha512-Ji9rE4ovy1m9i1chb/06JdEksNM+KzQlRfbdKvaaNTSpa6vp/Bj5PO9P7dq7EmVDsuFZgixUmF7VPzNvMQ8vNw==
+"@tanstack/svelte-query@^5.21.7":
+  version "5.21.7"
+  resolved "https://registry.yarnpkg.com/@tanstack/svelte-query/-/svelte-query-5.21.7.tgz#bac62086c304902abb045e3cfc1b919acb363784"
+  integrity sha512-wgezaM8y6e4hqvkPlH4qkUrUWRGi0Jan04+DazI0YyWMBDFQeyiT7OFj7YoZPiqLRwBh2RPn5CZ0pPjWNqc3zg==
   dependencies:
-    "@tanstack/query-core" "5.20.5"
+    "@tanstack/query-core" "5.21.7"
 
 "@tauri-apps/api@^1.4.0":
   version "1.5.1"
@@ -2767,10 +2767,10 @@ https-proxy-agent@^5.0.1:
     agent-base "6"
     debug "4"
 
-i18next@^23.7.11:
-  version "23.8.2"
-  resolved "https://registry.yarnpkg.com/i18next/-/i18next-23.8.2.tgz#f3ff6ea929e0927d9717f0ed195ae46d05919900"
-  integrity sha512-Z84zyEangrlERm0ZugVy4bIt485e/H8VecGUZkZWrH7BDePG6jT73QdL9EA1tRTTVVMpry/MgWIP1FjEn0DRXA==
+i18next@^23.9.0:
+  version "23.9.0"
+  resolved "https://registry.yarnpkg.com/i18next/-/i18next-23.9.0.tgz#659cfcbf51a20158bb094d17a85f3c583d473901"
+  integrity sha512-f3MUciKqwzNV//mHG6EtdSlC65+nqH/3zK8sOSWqNV6FVu2tmHhF/rFOp9UF8S4m1odojtuipKaKJrP0Loh60g==
   dependencies:
     "@babel/runtime" "^7.23.2"
 
@@ -3274,10 +3274,10 @@ mz@^2.7.0:
     object-assign "^4.0.1"
     thenify-all "^1.0.0"
 
-nanoid@5.0.4:
-  version "5.0.4"
-  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-5.0.4.tgz#d2b608d8169d7da669279127615535705aa52edf"
-  integrity sha512-vAjmBf13gsmhXSgBrtIclinISzFFy22WwCYoyilZlsrRXNIHSwgFQ1bEdjRwMT3aoadeIF6HMuDRlOxzfXV8ig==
+nanoid@5.0.5:
+  version "5.0.5"
+  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-5.0.5.tgz#5112efb5c0caf4fc80680d66d303c65233a79fdd"
+  integrity sha512-/Veqm+QKsyMY3kqi4faWplnY1u+VuKO3dD2binyPIybP31DRO29bPF+1mszgLnrR2KqSLceFLBNw0zmvDzN1QQ==
 
 nanoid@^3.3.7:
   version "3.3.7"
@@ -4235,10 +4235,10 @@ triple-beam@^1.3.0:
   resolved "https://registry.yarnpkg.com/triple-beam/-/triple-beam-1.4.1.tgz#6fde70271dc6e5d73ca0c3b24e2d92afb7441984"
   integrity sha512-aZbgViZrg1QNcG+LULa7nhZpJTZSLm/mXnHXnbAbjmN5aSa0y7V+wvv6+4WaBtpISJzThKy+PIPxc1Nq1EJ9mg==
 
-trpc-svelte-query-adapter@^2.2.1:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/trpc-svelte-query-adapter/-/trpc-svelte-query-adapter-2.2.2.tgz#609cd3a989f78b0c9a4d997a5d40ef0e4ba9b379"
-  integrity sha512-t4zIPQ+gji4jqbkYayRFUj6sCYGIuq/yrZ1SyM+HGQge7ZqP75xyLnykSsRHPBr975W6U/a+z1t3anGX7Mq/3A==
+trpc-svelte-query-adapter@^2.2.3:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/trpc-svelte-query-adapter/-/trpc-svelte-query-adapter-2.2.3.tgz#bab34533152f917b3746ff00fd5f50aa5e42d348"
+  integrity sha512-rWOQwn9tmsT6QmtBmTX+iZEaR1kywnrALR+Hx2k8JNeiSVfDOdH2sRIADfQdNm/YaHkVHqgNke200G/Voqyysg==
   dependencies:
     proxy-deep "^3.1.1"
 
