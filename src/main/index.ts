@@ -19,6 +19,7 @@ import type {
   WindowInfoRecord,
 } from '../types';
 import {
+  ANIMATION_DURATION,
   CHECK_INITIALIZED_KEYSTORE_ERROR,
   ExtendedAppInfoSchema,
   FILE_UNDEFINED_ERROR,
@@ -324,7 +325,9 @@ const router = t.router({
   closeSettings: t.procedure.input(MainScreenRouteSchema).mutation(async (opts) => {
     LAUNCHER_EMITTER.emit(MAIN_SCREEN_ROUTE, opts.input);
     LAUNCHER_WINDOWS[SETTINGS_SCREEN].hide();
-    LAUNCHER_WINDOWS[MAIN_SCREEN].show();
+    setTimeout(() => {
+      LAUNCHER_WINDOWS[MAIN_SCREEN].show();
+    }, ANIMATION_DURATION);
   }),
   hideApp: t.procedure.mutation(() => {
     LAUNCHER_WINDOWS[MAIN_SCREEN].hide();

@@ -7,13 +7,19 @@
 	} from '@skeletonlabs/skeleton';
 
 	import { Button } from '$components';
-	import { i18n } from '$services';
+	import { i18n, trpc } from '$services';
+	import { navigationStore } from '$stores';
 
+	import { APPS_VIEW } from '../../../../../../types';
 	import ModalApp from './ModalApp.svelte';
+
+	const client = trpc();
 
 	const modalStore = getModalStore();
 
 	const modalComponent: ModalComponent = { ref: ModalApp };
+
+	const installedApps = client.getInstalledApps.createQuery();
 
 	const modal: ModalSettings = {
 		type: 'component',
@@ -30,10 +36,20 @@
 			Holochain hApp for collaborative KanBan boards. Real-time collaboration delivered by syn
 		</p>
 	</div>
-	<Button
-		props={{
-			onClick: () => modalStore.trigger(modal),
-			class: 'btn-app-store variant-filled'
-		}}>{$i18n.t('install')}</Button
-	>
+	<div class="flex flex-col items-center">
+		{#if $installedApps.isSuccess && $installedApps.data.length > 0}
+			<Button
+				props={{
+					onClick: () => navigationStore.set(APPS_VIEW),
+					class: 'btn-app-store variant-ringed-warning mb-2'
+				}}>{$i18n.t('launch')}</Button
+			>
+		{/if}
+		<Button
+			props={{
+				onClick: () => modalStore.trigger(modal),
+				class: 'btn-app-store variant-filled'
+			}}>{$i18n.t('install')}</Button
+		>
+	</div>
 </div>

@@ -2,11 +2,17 @@
 	import { onMount } from 'svelte';
 
 	import { goto } from '$app/navigation';
-	import { Button, Input } from '$components';
+	import { IconButton, Input } from '$components';
 	import { Gear, Home, Rocket } from '$icons';
 	import { i18n, trpc } from '$services';
+	import { navigationStore } from '$stores';
 
-	import { APP_STORE, APPS_VIEW, type MainScreenRoute } from '../../../../../types';
+	import {
+		ANIMATION_DURATION,
+		APP_STORE,
+		APPS_VIEW,
+		type MainScreenRoute
+	} from '../../../../../types';
 
 	const client = trpc();
 
@@ -16,38 +22,38 @@
 	export let autocomplete: string | null = null;
 	export let searchInput: string;
 
-	const animationDuration = 300;
-
 	export let type: MainScreenRoute;
 
 	let inputExpanded = false;
 
 	onMount(() => {
 		inputExpanded = true;
+
+		const unsubscribe = navigationStore.subscribe((value) => {
+			if (value !== null) {
+				handleNavigationWithAnimationDelay(value)();
+				navigationStore.set(null);
+			}
+		});
+
+		return unsubscribe;
 	});
 
 	const clearSearchInput = () => (searchInput = '');
-	const handleNavigationWithAnimationDelay = (destination: string) => () => {
+	const handleNavigationWithAnimationDelay = (destination: MainScreenRoute) => () => {
 		inputExpanded = false;
-		setTimeout(() => goto(destination), animationDuration);
+		setTimeout(() => goto(destination), ANIMATION_DURATION);
 	};
 </script>
 
 <div class="app-region-drag flex justify-between p-3 dark:bg-apps-input-dark-gradient">
-	{#if type == APPS_VIEW}
-		<Button
-			props={{
-				class: 'p-2 app-region-no-drag',
-				onClick: handleNavigationWithAnimationDelay(APP_STORE)
-			}}
-		>
-			<Home />
-		</Button>
+	{#if type === APPS_VIEW}
+		<IconButton onClick={handleNavigationWithAnimationDelay(APP_STORE)}><Home /></IconButton>
 	{/if}
 
 	<div
 		class="app-region-no-drag relative mx-2 max-w-md flex-grow origin-left transition-transform"
-		class:duration-{animationDuration}={inputExpanded}
+		class:duration-{ANIMATION_DURATION}={inputExpanded}
 		class:scale-x-100={inputExpanded}
 		class:scale-x-0={!inputExpanded}
 	>
@@ -72,24 +78,16 @@
 		</div>
 	</div>
 	{#if type == APP_STORE}
-		<Button
-			props={{
-				class: 'p-2 mr-2 ml-auto app-region-no-drag',
-				onClick: handleNavigationWithAnimationDelay(APPS_VIEW)
-			}}
-		>
+		<IconButton onClick={handleNavigationWithAnimationDelay(APPS_VIEW)} buttonClass="ml-auto">
 			<Rocket />
-		</Button>
+		</IconButton>
 	{/if}
-	<Button
-		props={{
-			class: 'app-region-no-drag',
-			onClick: () =>
-				$openSettings.mutate(undefined, {
-					onSuccess: clearSearchInput
-				})
-		}}
+	<IconButton
+		onClick={() =>
+			$openSettings.mutate(undefined, {
+				onSuccess: clearSearchInput
+			})}
 	>
 		<Gear />
-	</Button>
+	</IconButton>
 </div>
