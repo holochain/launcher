@@ -53,7 +53,7 @@
 
 	<div
 		class="app-region-no-drag relative mx-2 max-w-md flex-grow origin-left transition-transform"
-		class:duration-{animationDuration}={inputExpanded}
+		class:duration-{ANIMATION_DURATION}={inputExpanded}
 		class:scale-x-100={inputExpanded}
 		class:scale-x-0={!inputExpanded}
 	>
