@@ -36,7 +36,7 @@
 		const { key } = event.detail;
 		const hasApps = filteredInstalledApps.length > 0;
 
-		if (key === 'Enter' && hasApps) {
+		if (key === 'Enter' && hasApps && searchInput !== '') {
 			$openApp.mutate(filteredInstalledApps[0]);
 			return;
 		}
@@ -55,6 +55,7 @@
 </script>
 
 <MainHeader {handlePress} bind:searchInput type={APPS_VIEW} bind:autocomplete />
+
 {#if $installedApps.isSuccess}
 	<ListOfApps
 		isSearchInputFilled={searchInput !== ''}

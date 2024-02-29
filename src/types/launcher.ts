@@ -4,6 +4,8 @@ import { z } from 'zod';
 export const MAIN_SCREEN = 'main';
 export const SETTINGS_SCREEN = 'settings';
 
+export const ANIMATION_DURATION = 300;
+
 export type Screen = typeof MAIN_SCREEN | typeof SETTINGS_SCREEN;
 
 export const APP_STORE = 'app-store';

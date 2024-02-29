@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { i18n, trpc } from '$services';
+	import { navigationStore } from '$stores';
 
-	import type { ExtendedAppInfo } from '../../../../../../types';
+	import { APP_STORE, type ExtendedAppInfo } from '../../../../../../types';
 	import AppButton from './AppButton.svelte';
 	import BaseButton from './BaseButton.svelte';
 
@@ -11,11 +12,7 @@
 	export let isSearchInputFilled = false;
 	export let openAppCallback: () => void;
 
-	const openSettings = client.openSettings.createMutation();
 	const openApp = client.openApp.createMutation();
-
-	$: isDisabled = (app: ExtendedAppInfo) => 'disabled' in app.appInfo.status;
-	$: shouldGreyOut = (index: number) => isSearchInputFilled && index !== 0;
 </script>
 
 <div
@@ -25,9 +22,9 @@
 		<div class="my-8 grid grid-cols-5 gap-8 scroll-smooth px-2">
 			{#each installedApps as app, index}
 				<AppButton
+					{index}
 					{app}
-					isDisabled={isDisabled(app)}
-					shouldGreyOut={shouldGreyOut(index)}
+					{isSearchInputFilled}
 					onClick={() =>
 						$openApp.mutate(app, {
 							onSuccess: () => {
@@ -40,7 +37,7 @@
 				fontSize={250}
 				fill="fill-white opacity-50"
 				initials="+"
-				onClick={() => $openSettings.mutate()}
+				onClick={() => navigationStore.set(APP_STORE)}
 			>
 				<span class="pt-2 text-xs opacity-50">{$i18n.t('addApps')}</span>
 			</BaseButton>

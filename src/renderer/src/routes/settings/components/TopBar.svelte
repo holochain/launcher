@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button } from '$components';
+	import { IconButton } from '$components';
 	import { Gear, Home, Rocket } from '$icons';
 	import { trpc } from '$services';
 
@@ -10,27 +10,9 @@
 </script>
 
 <div class="app-region-drag flex justify-between p-3 dark:bg-apps-input-dark-gradient">
-	<Button
-		props={{
-			class: 'p-2 app-region-no-drag',
-			onClick: () => $closeSettings.mutate(APP_STORE)
-		}}
+	<IconButton onClick={() => $closeSettings.mutate(APP_STORE)}><Home /></IconButton>
+	<IconButton onClick={() => $closeSettings.mutate(APPS_VIEW)} buttonClass="mr-2"
+		><Rocket /></IconButton
 	>
-		<Home />
-	</Button>
-	<Button
-		props={{
-			class: 'p-2 mr-2 app-region-no-drag',
-			onClick: () => $closeSettings.mutate(APPS_VIEW)
-		}}
-	>
-		<Rocket />
-	</Button>
-	<Button
-		props={{
-			class: 'ml-auto app-region-no-drag p-2 bg-black rounded-md'
-		}}
-	>
-		<Gear />
-	</Button>
+	<IconButton buttonClass="ml-auto p-2 bg-black rounded-md"><Gear /></IconButton>
 </div>
