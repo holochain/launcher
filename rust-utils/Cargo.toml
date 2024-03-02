@@ -1,21 +1,21 @@
 [package]
 edition = "2021"
 name = "hc-launcher-rust-utils"
-version = "0.200.0"
+version = "0.201.0"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-holochain_client = "0.4.7-rc.0"
-holochain_conductor_api = "0.2.5-rc.1"
-holochain_integrity_types = "0.2.5-rc.0"
-holochain_p2p = "0.2.5-rc.1"
-holochain_types = "0.2.5-rc.1"
-holochain_zome_types = "0.2.5-rc.0"
-holo_hash = "0.2.5-rc.0"
-kitsune_p2p_timestamp = "0.2.5-rc.0"
-lair_keystore_api = "0.4.1"
+holochain_client = "0.4.7"
+holochain_conductor_api = "0.2.6"
+holochain_integrity_types = "0.2.6"
+holochain_p2p = "0.2.6"
+holochain_types = "0.2.6"
+holochain_zome_types = "0.2.6"
+holo_hash = "0.2.6"
+kitsune_p2p_timestamp = "0.2.6"
+lair_keystore_api = "0.4.2"
 
 nanoid = "0.4.0"
 
@@ -25,9 +25,8 @@ napi = { version = "2.12.2", default-features = false, features = [
   "tokio_rt",
   "async",
   "serde-json",
-] }
+] } 
 napi-derive = "2.12.2"
-
 serde_yaml = "0.8"
 sodoken = "0.0.9"
 url2 = "0.0.6"

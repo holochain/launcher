@@ -25,6 +25,15 @@
       "presentation": {
         "hidden": true
       }
+    },
+    {
+      "name": "Yarn Dev",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "yarn",
+      "runtimeArgs": ["dev"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
     }
   ],
   "compounds": [
@@ -33,6 +42,13 @@
       "configurations": ["Debug Main Process", "Debug Renderer Process"],
       "presentation": {
         "order": 1
+      }
+    },
+    {
+      "name": "Develop All",
+      "configurations": ["Yarn Dev"],
+      "presentation": {
+        "order": 2
       }
     }
   ]

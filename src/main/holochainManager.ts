@@ -4,6 +4,7 @@ import { AdminWebsocket } from '@holochain/client';
 import * as childProcess from 'child_process';
 import fs from 'fs';
 import getPort from 'get-port';
+import * as rustUtils from 'hc-launcher-rust-utils';
 import path from 'path';
 import split from 'split';
 
@@ -14,8 +15,6 @@ import type { LauncherFileSystem } from './filesystem';
 import { createDirIfNotExists } from './filesystem';
 import type { LauncherEmitter } from './launcherEmitter';
 import { breakingVersion } from './utils';
-
-const rustUtils = require('hc-launcher-rust-utils');
 
 export type AdminPort = number;
 export type AppPort = number;
@@ -159,23 +158,27 @@ export class HolochainManager {
     console.log('configPath: ', configPath);
 
     if (fs.existsSync(configPath)) {
-      // TODO Reuse existing config and only overwrite chosen values if necessary
-      const conductorConfigNew = rustUtils.defaultConductorConfig(
+      const conductorConfigNew = rustUtils.overwriteConfig(
+        configPath,
         adminPort,
-        conductorEnvironmentPath,
         lairUrl,
-        bootstrapUrl ? bootstrapUrl : DEFAULT_BOOTSTRAP_SERVER,
-        signalingUrl ? signalingUrl : DEFAULT_SIGNALING_SERVER,
+        bootstrapUrl || DEFAULT_BOOTSTRAP_SERVER,
+        signalingUrl || DEFAULT_SIGNALING_SERVER,
       );
       console.log('Overwriting new conductor-config.yaml...');
-      fs.writeFileSync(configPath, conductorConfigNew);
+      debugger;
+      try {
+        fs.writeFileSync(configPath, conductorConfigNew);
+      } catch (err) {
+        console.error('Failed to write to file:', err);
+      }
     } else {
       const conductorConfig = rustUtils.defaultConductorConfig(
         adminPort,
         conductorEnvironmentPath,
         lairUrl,
-        bootstrapUrl ? bootstrapUrl : DEFAULT_BOOTSTRAP_SERVER,
-        signalingUrl ? signalingUrl : DEFAULT_SIGNALING_SERVER,
+        bootstrapUrl || DEFAULT_BOOTSTRAP_SERVER,
+        signalingUrl || DEFAULT_SIGNALING_SERVER,
       );
       console.log(typeof conductorConfig);
       console.log('Writing new conductor-config.yaml...');
@@ -185,8 +188,8 @@ export class HolochainManager {
     const binary = version.type === 'built-in' ? HOLOCHAIN_BINARIES[version.version] : version.path;
     const conductorHandle = childProcess.spawn(binary, ['-c', configPath, '-p'], {
       env: {
-        RUST_LOG: rustLog ? rustLog : DEFAULT_RUST_LOG,
-        WASM_LOG: wasmLog ? wasmLog : DEFAULT_WASM_LOG,
+        RUST_LOG: rustLog || DEFAULT_RUST_LOG,
+        WASM_LOG: wasmLog || DEFAULT_WASM_LOG,
       },
     });
     conductorHandle.stdin.write(password);
