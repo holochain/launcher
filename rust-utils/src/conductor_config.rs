@@ -75,7 +75,7 @@ pub fn overwrite_config(
   let network = config
     .get_mut(&Value::String(String::from("network")))
     .and_then(|v| v.as_mapping_mut())
-    .expect("Expected 'network' entry in the config");
+    .ok_or_else(|| create_error("Expected 'network' entry in the config"))?;
 
   bootstrap_server_url.map(|url| {
     network.insert(
@@ -96,16 +96,15 @@ pub fn overwrite_config(
       ])));
     }
   });
-  if let Some(bootstrap_service) = config
+
+  let _ = config
     .get(&Value::String(String::from("network")))
     .and_then(|v| v.as_mapping())
     .and_then(|network| network.get(&Value::String(String::from("bootstrap_service"))))
-    .and_then(|v| v.as_str())
-  {
-    println!("Bootstrap Server URL from config: {}", bootstrap_service);
-  }
+    .and_then(|v| v.as_str());
 
-  Ok(serde_yaml::to_string(&config).expect("Could not convert conductor config to string"))
+  serde_yaml::to_string(&config)
+    .map_err(|_| create_error("Could not convert conductor config to string"))
 }
 
 #[napi]
