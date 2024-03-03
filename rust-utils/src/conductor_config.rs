@@ -13,17 +13,30 @@ use napi_derive::napi;
 use serde_yaml::{Mapping, Value};
 use std::path::{Path, PathBuf};
 
+fn create_error(msg: &str) -> napi::Error {
+  napi::Error::new(napi::Status::GenericFailure, String::from(msg))
+}
+
+fn insert_mapping(mapping: &mut Mapping, key: &str, value: Value) {
+  mapping.insert(Value::String(String::from(key)), value);
+}
+
+fn create_mapping_with_entries(entries: Vec<(&str, Value)>) -> Mapping {
+  let mut mapping = Mapping::new();
+  for (key, value) in entries {
+    insert_mapping(&mut mapping, key, value);
+  }
+  mapping
+}
+
 #[napi]
 pub fn overwrite_config(
-  config_path: String,
   admin_port: u16,
   keystore_connection_url: String,
   bootstrap_server_url: Option<String>,
   signaling_server_url: Option<String>,
-) -> Result<String, String> {
-  let create_error =
-    |msg: &str| napi::Error::new(napi::Status::GenericFailure.to_string(), String::from(msg));
-
+  config_path: String,
+) -> Result<String> {
   let mut config = std::fs::read_to_string(&PathBuf::from(config_path))
     .map_err(|_| create_error("Failed to read file"))
     .and_then(|contents| {
@@ -105,7 +118,7 @@ pub fn overwrite_config(
             mapping.clone()
           }
           _ => {
-            return Err(napi::Error::new(napi::Status::InvalidArg.to_string(), String::from("Failed to overwrite config: 'network' value of conductor-config.yaml is of unexpected type")))
+            return Err(create_error("Failed to overwrite config: 'network' value of conductor-config.yaml is of unexpected type"))
           }
         },
         None => {
@@ -169,16 +182,15 @@ pub fn overwrite_config(
 #[napi]
 pub fn default_conductor_config(
   admin_port: u16,
-  conductor_environment_path: String,
   keystore_connection_url: String,
   bootstrap_server_url: String,
   signaling_server_url: String,
-) -> String {
+  conductor_environment_path: String,
+) -> Result<String> {
   let mut network_config = KitsuneP2pConfig::default();
   network_config.bootstrap_service = Some(url2::url2!("{}", bootstrap_server_url));
 
   let tuning_params = KitsuneP2pTuningParams::default();
-
   network_config.tuning_params = std::sync::Arc::new(tuning_params);
 
   network_config.transport_pool.push(TransportConfig::WebRTC {
@@ -200,7 +212,6 @@ pub fn default_conductor_config(
     tracing_scope: None,
   };
 
-  serde_yaml::to_string(&config).expect("Failed to convert conductor config to yaml string.")
+  serde_yaml::to_string(&config)
+    .map_err(|_| create_error("Failed to convert conductor config to yaml string."))
 }
-
-// overwrite conductor config

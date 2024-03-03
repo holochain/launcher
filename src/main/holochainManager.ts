@@ -156,33 +156,23 @@ export class HolochainManager {
     const conductorEnvironmentPath = launcherFileSystem.conductorEnvironmentDir(partitionName);
     const configPath = launcherFileSystem.conductorConfigPath(partitionName);
     console.log('configPath: ', configPath);
+    const generateConductorConfig = fs.existsSync(configPath)
+      ? rustUtils.overwriteConfig
+      : rustUtils.defaultConductorConfig;
+    const conductorConfig = generateConductorConfig(
+      adminPort,
+      lairUrl,
+      bootstrapUrl || DEFAULT_BOOTSTRAP_SERVER,
+      signalingUrl || DEFAULT_SIGNALING_SERVER,
+      fs.existsSync(configPath) ? configPath : conductorEnvironmentPath,
+    );
+    const action = fs.existsSync(configPath) ? 'Overwriting' : 'Writing';
+    console.log(`${action} new conductor-config.yaml...`);
 
-    if (fs.existsSync(configPath)) {
-      const conductorConfigNew = rustUtils.overwriteConfig(
-        configPath,
-        adminPort,
-        lairUrl,
-        bootstrapUrl || DEFAULT_BOOTSTRAP_SERVER,
-        signalingUrl || DEFAULT_SIGNALING_SERVER,
-      );
-      console.log('Overwriting new conductor-config.yaml...');
-      debugger;
-      try {
-        fs.writeFileSync(configPath, conductorConfigNew);
-      } catch (err) {
-        console.error('Failed to write to file:', err);
-      }
-    } else {
-      const conductorConfig = rustUtils.defaultConductorConfig(
-        adminPort,
-        conductorEnvironmentPath,
-        lairUrl,
-        bootstrapUrl || DEFAULT_BOOTSTRAP_SERVER,
-        signalingUrl || DEFAULT_SIGNALING_SERVER,
-      );
-      console.log(typeof conductorConfig);
-      console.log('Writing new conductor-config.yaml...');
+    try {
       fs.writeFileSync(configPath, conductorConfig);
+    } catch (err) {
+      throw new Error(`Failed to write to file: ${JSON.stringify(err)}`);
     }
 
     const binary = version.type === 'built-in' ? HOLOCHAIN_BINARIES[version.version] : version.path;
