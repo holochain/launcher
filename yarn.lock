@@ -2734,7 +2734,7 @@ hasown@^2.0.0:
     function-bind "^1.1.2"
 
 "hc-launcher-rust-utils@file:./rust-utils/dist":
-  version "0.200.0"
+  version "0.201.0"
 
 hosted-git-info@^4.1.0:
   version "4.1.0"
