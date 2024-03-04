@@ -156,17 +156,22 @@ export class HolochainManager {
     const conductorEnvironmentPath = launcherFileSystem.conductorEnvironmentDir(partitionName);
     const configPath = launcherFileSystem.conductorConfigPath(partitionName);
     console.log('configPath: ', configPath);
-    const generateConductorConfig = fs.existsSync(configPath)
-      ? rustUtils.overwriteConfig
-      : rustUtils.defaultConductorConfig;
-    const conductorConfig = generateConductorConfig(
-      adminPort,
-      lairUrl,
-      bootstrapUrl || DEFAULT_BOOTSTRAP_SERVER,
-      signalingUrl || DEFAULT_SIGNALING_SERVER,
-      fs.existsSync(configPath) ? configPath : conductorEnvironmentPath,
-    );
-    const action = fs.existsSync(configPath) ? 'Overwriting' : 'Writing';
+    const configExists = fs.existsSync(configPath);
+
+    const overwriteConfig = () =>
+      rustUtils.overwriteConfig(adminPort, lairUrl, undefined, undefined, configPath);
+
+    const defaultConductorConfig = () =>
+      rustUtils.defaultConductorConfig(
+        adminPort,
+        lairUrl,
+        bootstrapUrl || DEFAULT_BOOTSTRAP_SERVER,
+        signalingUrl || DEFAULT_SIGNALING_SERVER,
+        conductorEnvironmentPath,
+      );
+
+    const conductorConfig = configExists ? overwriteConfig() : defaultConductorConfig();
+    const action = configExists ? 'Overwriting' : 'Writing';
     console.log(`${action} new conductor-config.yaml...`);
 
     try {
