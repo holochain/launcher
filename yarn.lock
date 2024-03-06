@@ -727,6 +727,11 @@
   resolved "https://registry.yarnpkg.com/@msgpack/msgpack/-/msgpack-2.8.0.tgz#4210deb771ee3912964f14a15ddfb5ff877e70b9"
   integrity sha512-h9u4u/jiIRKbq25PM+zymTyW6bhTzELvOoUd+AvYriWOAKpLGnIamaET3pnHYoI5iYphAHBI4ayx0MehR+VVPQ==
 
+"@msgpack/msgpack@^3.0.0-beta2":
+  version "3.0.0-beta2"
+  resolved "https://registry.yarnpkg.com/@msgpack/msgpack/-/msgpack-3.0.0-beta2.tgz#5bccee30f84df220b33905e3d8249ba96deca0b7"
+  integrity sha512-y+l1PNV0XDyY8sM3YtuMLK5vE3/hkfId+Do8pLo/OPxfxuFAUwcGz3oiiUuV46/aBpwTzZ+mRWVMtlSKbradhw==
+
 "@napi-rs/cli@^2.16.3":
   version "2.18.0"
   resolved "https://registry.yarnpkg.com/@napi-rs/cli/-/cli-2.18.0.tgz#3064f142e65c87d14e6ddc38e5425aa29a8871eb"
@@ -844,6 +849,15 @@
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/@skeletonlabs/tw-plugin/-/tw-plugin-0.3.1.tgz#75ba4d100948c59b70ec5343f637d3aeb155f878"
   integrity sha512-DjjeOHN3HhFQf6gYPT2MUZMkIdw1jeB9mbuKC8etQxUlOR4XitfC7hssRWFJ8RJsvrrN0myCBbdWkVG1JVA96g==
+
+"@spartan-hc/bundles@0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@spartan-hc/bundles/-/bundles-0.2.2.tgz#2cbcbfc90afc8127ed17d59c111074205d0f8a91"
+  integrity sha512-UDdASyLFjGjJ2AJQ37B7oglcr60JlmTSztpvAPcXyLL6p2k5HvPyfvLh+n6WRT863gWuZoBNgGJ6GlfOg8ggMA==
+  dependencies:
+    "@msgpack/msgpack" "^3.0.0-beta2"
+    "@whi/weblogger" "^0.2.1"
+    fflate "^0.8.1"
 
 "@sveltejs/adapter-static@^3.0.0":
   version "3.0.1"
@@ -1270,6 +1284,11 @@
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
+
+"@whi/weblogger@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@whi/weblogger/-/weblogger-0.2.1.tgz#9003d65d9994dab6c4c17dcbabe6248a16d8c296"
+  integrity sha512-ToIBS7sgLZul4Xp7Pu7eFBi0ZbsPanqhYZ3NrGeeGvUmLVL8oEQo3ohqB+44qlvU2ozIjPp0+ycr1XF1rkz4Cw==
 
 "@xmldom/xmldom@^0.8.8":
   version "0.8.10"
@@ -2506,6 +2525,11 @@ fecha@^4.2.0:
   resolved "https://registry.yarnpkg.com/fecha/-/fecha-4.2.3.tgz#4d9ccdbc61e8629b259fdca67e65891448d569fd"
   integrity sha512-OP2IUU6HeYKJi3i0z4A19kHMQoLVs4Hc+DPqqxI2h/DPZHTm/vjsfC6P0b4jCMy14XizLBqvndQ+UilD7707Jw==
 
+fflate@^0.8.1, fflate@^0.8.2:
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/fflate/-/fflate-0.8.2.tgz#fc8631f5347812ad6028bbe4a2308b2792aa1dea"
+  integrity sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==
+
 file-entry-cache@^6.0.1:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/file-entry-cache/-/file-entry-cache-6.0.1.tgz#211b2dd9659cb0394b073e7323ac3c933d522027"
@@ -3070,6 +3094,11 @@ js-base64@^3.7.5:
   version "3.7.5"
   resolved "https://registry.yarnpkg.com/js-base64/-/js-base64-3.7.5.tgz#21e24cf6b886f76d6f5f165bfcd69cc55b9e3fca"
   integrity sha512-3MEt5DTINKqfScXKfJFrRbxkrnk2AxPWGBL/ycjz4dK8iqiSJ06UxD8jh8xuh6p10TX4t2+7FsBYVxxQbMg+qA==
+
+js-sha256@^0.11.0:
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/js-sha256/-/js-sha256-0.11.0.tgz#256a921d9292f7fe98905face82e367abaca9576"
+  integrity sha512-6xNlKayMZvds9h1Y1VWc0fQHQ82BxTXizWPEtEeGvmOUYpBRy4gbWroHLpzowe6xiQhHpelCQiE7HEdznyBL9Q==
 
 js-tokens@^4.0.0:
   version "4.0.0"
