@@ -20,7 +20,6 @@ import type {
 	CreateUiEntryInput,
 	CreateWebAppInput,
 	CreateWebAppPackageFrontendInput,
-	CreateWebAppPackageInput,
 	DeprecationNotice,
 	Entity,
 	EntityId,
