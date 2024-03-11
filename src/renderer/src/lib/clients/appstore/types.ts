@@ -9,12 +9,12 @@ export type AppEntry = {
 	description: string;
 	icon: EntryHash;
 	publisher: EntityId;
-	apphubHrl: HRL;
+	apphub_hrl: HRL;
 	editors: Array<AgentPubKey>;
 
 	author: AgentPubKey;
-	publishedAt: number;
-	lastUpdated: number;
+	published_at: number;
+	last_updated: number;
 	metadata: any;
 
 	deprecation?: DeprecationNotice;
@@ -26,11 +26,11 @@ export type CreateAppFrontendInput = {
 	description: string;
 	icon: Uint8Array; // icon bytes
 	publisher: EntityId;
-	apphubHrl: HRL;
+	apphub_hrl: HRL;
 	editors?: Array<AgentPubKey>;
 
-	publishedAt: number;
-	lastUpdated: number;
+	published_at: number;
+	last_updated: number;
 	metadata: any;
 };
 
@@ -40,11 +40,11 @@ export type CreateAppInput = {
 	description: string;
 	icon: EntryHash;
 	publisher: EntityId;
-	apphubHrl: HRL;
+	apphub_hrl: HRL;
 	editors?: Array<AgentPubKey>;
 
-	publishedAt: number;
-	lastUpdated: number;
+	published_at: number;
+	last_updated: number;
 	metadata: any;
 };
 
@@ -56,8 +56,8 @@ export type PublisherEntry = {
 	editors: Array<AgentPubKey>;
 
 	author: AgentPubKey;
-	publishedAt: number | undefined;
-	lastUpdated: number | undefined;
+	published_at: number | undefined;
+	last_updated: number | undefined;
 	metadata: any;
 
 	description: string | undefined;
@@ -75,8 +75,8 @@ export type CreatePublisherInput = {
 	email: string | undefined;
 	editors: Array<AgentPubKey> | undefined;
 
-	publishedAt: number | undefined;
-	lastUpdated: number | undefined;
+	published_at: number | undefined;
+	last_updated: number | undefined;
 	metadata: any;
 };
 
@@ -90,8 +90,8 @@ export type CreatePublisherFrontendInput = {
 	email: string | undefined;
 	editors: Array<AgentPubKey> | undefined;
 
-	publishedAt: number | undefined;
-	lastUpdated: number | undefined;
+	published_at: number | undefined;
+	last_updated: number | undefined;
 	metadata: any;
 };
 
@@ -107,7 +107,7 @@ export type UpdatePublisherFrontendInput = {
 
 	// TODO figure out whether that's really intentional that this is updateable
 	// publishedAt?: number | undefined;
-	lastUpdated?: number | undefined;
+	last_updated?: number | undefined;
 	metadata?: any;
 };
 
@@ -123,7 +123,7 @@ export type UpdatePublisherInput = {
 
 	// TODO figure out whether that's really intentional that this is updateable
 	// publishedAt?: number | undefined;
-	lastUpdated?: number | undefined;
+	last_updated?: number | undefined;
 	metadata?: any;
 };
 
@@ -149,5 +149,5 @@ export type WebAddress = {
 
 export type DeprecationNotice = {
 	message: string;
-	recommendedAlternatives: Array<ActionHash>;
+	recommended_alternatives: Array<ActionHash>;
 };
