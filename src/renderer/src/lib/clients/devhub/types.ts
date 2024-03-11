@@ -11,12 +11,12 @@ import type {
 
 export type AppEntry = {
 	manifest: AppManifestV1;
-	appToken: AppToken;
+	app_token: AppToken;
 };
 
 export type CreateAppInput = {
 	manifest: AppManifestV1;
-	rolesDnaTokens: RolesDnaTokensInput;
+	roles_dna_tokens: RolesDnaTokensInput;
 };
 
 export type AppEntryInput = {
@@ -25,15 +25,15 @@ export type AppEntryInput = {
 };
 
 export type AppToken = {
-	integrityHash: Uint8Array;
-	rolesTokenHash: Uint8Array;
-	rolesToekn: RolesToken;
+	integrity_hash: Uint8Array;
+	roles_token_hash: Uint8Array;
+	roles_token: RolesToken;
 };
 
 export type AppTokenInput = {
-	integrityHash: Uint8Array;
-	rolesTokenHash: Uint8Array;
-	rolesToken: RolesTokenInput;
+	integrity_hash: Uint8Array;
+	roles_token_hash: Uint8Array;
+	roles_token: RolesTokenInput;
 };
 
 export type RolesToken = Array<[string, RoleToken]>;
@@ -41,25 +41,25 @@ export type RolesToken = Array<[string, RoleToken]>;
 export type RolesTokenInput = Array<[string, RoleTokenInput]>;
 
 export type RoleToken = {
-	integrityHash: Uint8Array;
-	integritiesTokenHash: Uint8Array;
-	coordinatorsTokenHash: Uint8Array;
-	modifiersHash: Uint8Array;
+	integrity_hash: Uint8Array;
+	integrities_token_tash: Uint8Array;
+	coordinators_token_hash: Uint8Array;
+	modifiers_hash: Uint8Array;
 };
 
 export type RoleTokenInput = {
-	integrityHash: Uint8Array;
-	integritiesTokenHash: Uint8Array;
-	coordinatorsTokenHash: Uint8Array;
+	integrity_hash: Uint8Array;
+	integrities_token_hash: Uint8Array;
+	coordinators_token_hash: Uint8Array;
 	modifiersHash: Uint8Array;
 };
 
 export type RolesDnaTokensInput = Record<string, DnaTokenInput>;
 
 export type DnaTokenInput = {
-	integrityHash: Uint8Array;
-	integritiesTokenHash: Uint8Array;
-	coordinatorsTokenHash: Uint8Array;
+	integrity_hash: Uint8Array;
+	integrities_token_hash: Uint8Array;
+	coordinators_token_hash: Uint8Array;
 };
 
 export type AppManifestV1 = {
@@ -77,18 +77,18 @@ export type AppRoleManifest = {
 export type RoleName = string;
 
 export type Ui = {
-	mereMemoryAddr: EntryHash;
+	mere_memory_address: EntryHash;
 	fileSize: number;
 	bytes: Uint8Array;
 };
 
 export type UiEntry = {
-	mereMemoryAddr: EntryHash;
+	mere_memory_address: EntryHash;
 	fileSize: number;
 };
 
 export type CreateUiEntryInput = {
-	mereMemoryAddr: EntryHash;
+	mere_memory_address: EntryHash;
 };
 
 export type WebAppPackageEntry = {
@@ -97,7 +97,7 @@ export type WebAppPackageEntry = {
 	description: string;
 	maintainer: any; // enum Authority with variant Agent(AgentPubKey)
 	icon: MemoryAddr;
-	sourceCodeUri: string | undefined;
+	source_code_uri: string | undefined;
 	deprecation: DeprecationNotice | undefined;
 	metadata: any;
 };
@@ -108,7 +108,7 @@ export type WebAppPackageEntryInput = {
 	description: string;
 	maintainer: any; // enum Authority with variant Agent(AgentPubKey)
 	icon: MemoryAddr;
-	sourceCodeUri: string | undefined;
+	source_code_uri: string | undefined;
 	deprecation: DeprecationNotice | undefined;
 	metadata: any;
 };
@@ -120,7 +120,7 @@ export type CreateWebAppPackageFrontendInput = {
 	icon: Uint8Array;
 	metadata: any;
 	maintainer: any; // enum Authority with variant Agent(AgentPubKey)
-	sourceCodeUri: string | undefined;
+	source_code_uri: string | undefined;
 };
 
 export type CreateWebAppPackageInput = {
@@ -130,7 +130,7 @@ export type CreateWebAppPackageInput = {
 	icon: MemoryAddr;
 	metadata: any;
 	maintainer: any; // enum Authority with variant Agent(AgentPubKey)
-	sourceCodeUri: string | undefined;
+	source_code_uri: string | undefined;
 };
 
 export type UpdateWebAppPackageInput = {
@@ -139,7 +139,7 @@ export type UpdateWebAppPackageInput = {
 	description?: string;
 	icon?: MemoryAddr;
 	maintainer?: any;
-	sourceCodeUri?: string;
+	source_code_uri?: string;
 	deprecation?: DeprecationNotice;
 	metadata?: any;
 };
@@ -147,12 +147,12 @@ export type UpdateWebAppPackageInput = {
 export type WebAppPackageVersionMap = EntityMap<WebAppPackageVersionEntry>;
 
 export type WebAppPackageVersionEntry = {
-	forPackage: EntityId;
+	for_package: EntityId;
 	maintainer: any;
 	webapp: BundleAddr;
-	webappToken: WebAppToken;
+	webapp_token: WebAppToken;
 	changelog: string | undefined;
-	sourceCodeRevisionUri: string | undefined;
+	source_code_revision_uri: string | undefined;
 	metadata: any;
 };
 
@@ -162,22 +162,22 @@ export type CreateWebAppInput = {
 
 export type WebAppEntry = {
 	manifest: WebAppManifestV1;
-	webappToken: WebAppToken;
+	webapp_token: WebAppToken;
 };
 
 export type WebAppEntryInput = {
 	manifest: WebAppManifestV1;
-	webappToken: WebAppTokenInput;
+	webapp_token: WebAppTokenInput;
 };
 
 export type WebAppManifestV1 = {
 	name: string;
 	ui: WebUI;
-	happManifest: AppManifestLocation;
+	happ_manifest: AppManifestLocation;
 };
 
 export type WebUI = {
-	uiEntry: EntryHash;
+	ui_entry: EntryHash;
 };
 
 export type AppManifestLocation = {
@@ -185,18 +185,18 @@ export type AppManifestLocation = {
 };
 
 export type WebAppToken = {
-	uiHash: Uint8Array;
-	appToken: AppToken;
+	ui_hash: Uint8Array;
+	app_token: AppToken;
 };
 
 export type WebAppTokenInput = {
-	uiHash: Uint8Array;
-	appToken: AppTokenInput;
+	ui_hash: Uint8Array;
+	app_token: AppTokenInput;
 };
 
 export type DeprecationNotice = {
 	message: string;
-	recommendedAlternatives: Array<ActionHash>;
+	recommended_alternatives: Array<ActionHash>;
 };
 
 export type MemoryAddr = EntryHash;
@@ -232,16 +232,16 @@ export type BundleAddr = EntryHash;
 // ZOME HUB
 
 export type Wasm = {
-	wasmType: WasmType;
-	mereMemoryAddr: EntryHash;
-	fileSize: number;
+	wasm_type: WasmType;
+	mere_memory_address: EntryHash;
+	file_size: number;
 	bytes: Uint8Array;
 };
 
 export type WasmEntry = {
-	wasmType: WasmType;
-	mereMemoryAddr: EntryHash;
-	fileSize: number;
+	wasm_type: WasmType;
+	mere_memory_address: EntryHash;
+	file_size: number;
 };
 
 export enum WasmType {
@@ -250,24 +250,24 @@ export enum WasmType {
 }
 
 export type CreateWasmEntryInput = {
-	wasmType: WasmType;
-	mereMemoryAddress: EntryHash;
+	wasm_type: WasmType;
+	mere_memory_address: EntryHash;
 };
 
 // DNA HUB
 
 export type DnaEntry = {
 	manifest: DnaManifestV1;
-	dnaToken: DnaToken;
-	integritiesToken: IntegritiesToken;
-	coordinatorsToken: CoordinatorsToken;
+	dna_token: DnaToken;
+	integrities_token: IntegritiesToken;
+	coordinators_token: CoordinatorsToken;
 };
 
 export type DnaEntryInput = {
 	manifest: DnaManifestV1;
 	dnaToken: DnaToken;
-	integritiesToken: IntegritiesTokenInput;
-	coordinatorsToken: CoordinatorsTokenInput;
+	integrities_token: IntegritiesTokenInput;
+	coordinators_token: CoordinatorsTokenInput;
 };
 
 export type IntegritiesToken = Array<[string, Uint8Array]>;
@@ -287,9 +287,9 @@ export type DnaManifestV1 = {
 };
 
 export type IntegrityManifest = {
-	networkSeed: string | undefined;
+	network_seed: string | undefined;
 	properties: any | undefined;
-	originTime: any;
+	origin_time: any;
 	zomes: Array<ZomeManifest>;
 };
 
@@ -300,7 +300,7 @@ export type CoordinatorManifest = {
 export type ZomeManifest = {
 	name: ZomeName;
 	hash: WasmHashB64 | undefined;
-	wasmHrl: HRL;
+	wasm_hrl: HRL;
 	dependencies: Array<ZomeDependency> | undefined;
 	dylib: any;
 };
@@ -310,9 +310,9 @@ export type ZomeDependency = {
 };
 
 export type DnaToken = {
-	integrityHash: Uint8Array;
-	integritiesTokenHash: Uint8Array;
-	coordinatorsTokenHash: Uint8Array;
+	integrity_hash: Uint8Array;
+	integrities_token_hash: Uint8Array;
+	coordinators_token_hash: Uint8Array;
 };
 
 export type HRL = {
