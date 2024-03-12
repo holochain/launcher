@@ -78,13 +78,13 @@ export type RoleName = string;
 
 export type Ui = {
 	mere_memory_address: EntryHash;
-	fileSize: number;
+	file_size: number;
 	bytes: Uint8Array;
 };
 
 export type UiEntry = {
 	mere_memory_address: EntryHash;
-	fileSize: number;
+	file_size: number;
 };
 
 export type CreateUiEntryInput = {

@@ -1,5 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { ActionHash, AgentPubKey, EntryHash } from '@holochain/client';
+import type {
+	ActionHash,
+	AgentPubKey,
+	DnaHash,
+	EntryHash,
+	FunctionName,
+	ZomeCallCapGrant,
+	ZomeName
+} from '@holochain/client';
 
 import type { EntityId, HRL } from '../devhub/types';
 
@@ -151,3 +159,36 @@ export type DeprecationNotice = {
 	message: string;
 	recommended_alternatives: Array<ActionHash>;
 };
+
+export type DnaZomeFunction = {
+	dna: DnaHash;
+	zome: ZomeName;
+	function: FunctionName;
+};
+
+export interface HostEntry {
+	dna: DnaHash;
+	capabilities: ZomeCallCapGrant;
+	author: AgentPubKey;
+	published_at: number;
+	last_updated: number;
+	metadata: any;
+}
+
+export interface CustomRemoteCallInput {
+	host: AgentPubKey;
+	call: RemoteCallInput;
+}
+
+export interface RemoteCallInput {
+	dna: DnaHash;
+	zome: string;
+	function: string;
+	payload: any;
+}
+
+export interface DevHubResponse<T> {
+	type: 'success' | 'failure';
+	metadata: any;
+	payload: T;
+}

@@ -1,18 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-	type ActionHash,
-	type AgentPubKey,
-	type AnyDhtHash,
-	type AppAgentCallZomeRequest,
-	type AppAgentClient,
-	decodeHashFromBase64,
-	encodeHashToBase64,
-	type EntryHash
-} from '@holochain/client';
-import { Bundle } from '@spartan-hc/bundles';
+import { type ActionHash, type AgentPubKey, type AnyDhtHash } from '@holochain/client';
 
-import type { MereMemoryClient } from '../mere-memory/mere-memory-client';
-import type { DnaHubClient } from './dnahub-client';
+import { ZomeClient } from '../../app-client/app-client';
 import type {
 	AppEntry,
 	AppEntryInput,
@@ -20,6 +9,7 @@ import type {
 	CreateUiEntryInput,
 	CreateWebAppInput,
 	CreateWebAppPackageFrontendInput,
+	CreateWebAppPackageInput,
 	DeprecationNotice,
 	Entity,
 	EntityId,
@@ -32,19 +22,11 @@ import type {
 	WebAppPackageEntry,
 	WebAppPackageEntryInput,
 	WebAppPackageVersionMap
-} from './types';
+} from '../types';
 
 export type CompressionType = 'gzip';
 
-export class AppHubClient {
-	constructor(
-		public client: AppAgentClient,
-		public mereMemoryClient: MereMemoryClient,
-		public dnaHubClient: DnaHubClient,
-		public roleName = 'apphub',
-		public zomeName = 'apphub_csr'
-	) {}
-
+export class AppHubZomeClient extends ZomeClient {
 	// App
 
 	async createAppEntry(input: AppEntryInput): Promise<Entity<AppEntry>> {
@@ -81,22 +63,6 @@ export class AppHubClient {
 		return this.callZome('get_ui_entry', address);
 	}
 
-	async getUi(address: AnyDhtHash): Promise<Ui> {
-		const uiEntryEntity = await this.getUiEntry(address);
-		const uiEntry = uiEntryEntity.content;
-		const uiBytes = await this.mereMemoryClient.getMereMemoryBytes(uiEntry.mereMemoryAddr);
-		return {
-			mereMemoryAddr: uiEntry.mereMemoryAddr,
-			fileSize: uiEntry.fileSize,
-			bytes: uiBytes
-		};
-	}
-
-	async getUiBytes(address: AnyDhtHash): Promise<Uint8Array> {
-		const uiEntryEntity = await this.getUiEntry(address);
-		return this.mereMemoryClient.getMereMemoryBytes(uiEntryEntity.content.mereMemoryAddr);
-	}
-
 	async getUiEntriesForAgent(agentPubKey?: AgentPubKey): Promise<Array<Entity<UiEntry>>> {
 		return this.callZome('get_ui_entries_for_agent', agentPubKey);
 	}
@@ -129,18 +95,14 @@ export class AppHubClient {
 
 	// WebApp Package
 
-	async createWebappPackage(
-		input: CreateWebAppPackageFrontendInput
-	): Promise<Entity<WebAppPackageEntry>> {
-		const iconAddress = await this.mereMemoryClient.saveBytes(input.icon);
-		input.icon = iconAddress;
-		return this.callZome('create_webapp_package', input);
-	}
-
 	async createWebappPackageEntry(
 		input: WebAppPackageEntryInput
 	): Promise<Entity<WebAppPackageEntry>> {
 		return this.callZome('create_webapp_package_entry', input);
+	}
+
+	async createWebappPackage(input: CreateWebAppPackageInput): Promise<Entity<WebAppPackageEntry>> {
+		return this.callZome('create_webapp_package', input);
 	}
 
 	async getWebappPackage(address: EntityId): Promise<Entity<WebAppPackageEntry>> {
@@ -182,16 +144,4 @@ export class AppHubClient {
 	// WebApp Package Version
 
 	// TODO
-
-	// Helper functions
-
-	protected callZome(fn_name: string, payload: unknown) {
-		const req: AppAgentCallZomeRequest = {
-			role_name: this.roleName,
-			zome_name: this.zomeName,
-			fn_name,
-			payload
-		};
-		return this.client.callZome(req);
-	}
 }

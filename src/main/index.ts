@@ -154,6 +154,7 @@ let LAUNCHER_WINDOWS: Record<Screen, BrowserWindow>;
 const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
 
 const handleSignZomeCall = (e: IpcMainInvokeEvent, zomeCall: ZomeCallUnsignedNapi) => {
+  // TODO check here that cellId belongs to the installedAppId that the window belongs to
   const windowInfo = WINDOW_INFO_MAP[e.sender.id];
   if (zomeCall.provenance.toString() !== Array.from(windowInfo.agentPubKey).toString())
     return Promise.reject('Agent public key unauthorized.');

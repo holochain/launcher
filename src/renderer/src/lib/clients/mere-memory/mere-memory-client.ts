@@ -1,12 +1,13 @@
 import {
 	type AppAgentCallZomeRequest,
-	type AppAgentClient,
 	decodeHashFromBase64,
 	encodeHashToBase64,
 	type EntryHash
 } from '@holochain/client';
 import { gunzipSync, gzipSync } from 'fflate';
 import { sha256 } from 'js-sha256';
+
+import { ZomeClient } from '../app-client/app-client';
 
 export type MemoryEntry = {
 	hash: string;
@@ -29,13 +30,7 @@ export type SequencePosition = {
 // atm only gzip is supported
 export type CompressionType = 'gzip';
 
-export class MereMemoryClient {
-	constructor(
-		public client: AppAgentClient,
-		public roleName = 'mere_memory',
-		public zomeName = 'mere_memory_api'
-	) {}
-
+export class MereMemoryZomeClient extends ZomeClient {
 	hashBytes(bytes: Uint8Array): string {
 		return sha256.hex(bytes);
 	}
