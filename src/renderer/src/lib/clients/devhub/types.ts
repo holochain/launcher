@@ -91,6 +91,17 @@ export type CreateUiEntryInput = {
 	mere_memory_address: EntryHash;
 };
 
+export type CreateLinkWebAppPackageVersionInput = {
+	version: string;
+	webapp_package_id: EntityId;
+	webapp_package_version_addr: ActionHash;
+};
+
+export type DeleteLinkWebAppPackageVersionInput = {
+	version: string;
+	webapp_package_id: EntityId;
+};
+
 export type WebAppPackageEntry = {
 	title: string;
 	subtitle: string;
@@ -154,6 +165,40 @@ export type WebAppPackageVersionEntry = {
 	changelog: string | undefined;
 	source_code_revision_uri: string | undefined;
 	metadata: any;
+};
+
+export type WebAppPackageVersionEntryInput = {
+	for_package: EntityId;
+	maintainer: any;
+	webapp: BundleAddr;
+	webapp_token: WebAppToken;
+	changelog: string | undefined;
+	source_code_revision_uri: string | undefined;
+	metadata: any;
+};
+
+export type CreateWebAppPackageVersionInput = {
+	for_package: EntityId;
+	version: string;
+	webapp: BundleAddr;
+	metadata: any;
+	changelog?: string;
+	maintainer?: any;
+	source_code_revision_uri?: string;
+};
+
+export type UpdateWebAppPackageVersionInput = {
+	for_package?: EntityId;
+	changelog?: string;
+	maintainer?: any;
+	source_code_revision_uri?: string;
+	metadata?: any;
+};
+
+export type MoveWebAppPackageVersionInput = {
+	version: string;
+	webapp_package_version_id: ActionHash;
+	webapp_package_ids: MoveLinkInput<ActionHash>;
 };
 
 export type CreateWebAppInput = {
@@ -318,4 +363,9 @@ export type DnaToken = {
 export type HRL = {
 	dna: DnaHash;
 	target: AnyDhtHash;
+};
+
+export type MoveLinkInput<T> = {
+	from: T;
+	to: T;
 };

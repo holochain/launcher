@@ -7,13 +7,17 @@ import { getCellId } from '$helpers';
 
 import { MereMemoryZomeClient } from '../mere-memory/mere-memory-client';
 import {
+	type AppEntry,
 	type CreateWebAppPackageFrontendInput,
 	type DnaEntry,
+	type DnaToken,
 	type Entity,
 	type Ui,
+	type UiEntry,
 	type Wasm,
 	type WasmEntry,
 	WasmType,
+	type WebAppEntry,
 	type WebAppPackageEntry
 } from './types';
 import { AppHubZomeClient } from './zomes/apphub-zome-client';
@@ -152,6 +156,45 @@ export class DevhubAppClient {
 		});
 	}
 
+	async saveApp(bytes: Uint8Array): Promise<Entity<AppEntry>> {
+		const bundle = new Bundle(bytes, 'happ');
+		const roles_dna_tokens: Record<string, DnaToken> = {};
+
+		for (const role of bundle.manifest.roles) {
+			const name = role.name;
+			const rpath = role.dna.bundled;
+			const dna_bytes = bundle.resources[rpath];
+
+			const dnaEntry = await this.saveDna(dna_bytes);
+
+			const dnaHubAppInfo = await this.client.appInfo();
+			const dnaHubCell = dnaHubAppInfo.cell_info.zome_hub;
+			const dnaHubCellProvisioned = dnaHubCell.find((cellInfo) => 'provisioned' in cellInfo);
+			if (!dnaHubCellProvisioned) throw new Error('No zome_hub cell found.');
+			const dnaHubCellId = getCellId(dnaHubCellProvisioned);
+			if (!dnaHubCellId) throw new Error('zome_hub CellId undefined.');
+
+			role.dna.dna_hrl = {
+				dna: dnaHubCellId[0],
+				target: dnaEntry.address
+			};
+
+			delete role.dna.bundled;
+
+			roles_dna_tokens[name] = dnaEntry.content.dna_token;
+		}
+
+		return await this.appHubZomeClient.createApp({
+			manifest: bundle.manifest,
+			roles_dna_tokens
+		});
+	}
+
+	async saveUi(bytes: Uint8Array): Promise<Entity<UiEntry>> {
+		const mereMemoryAddress = await this.mereMemoryZomeClient.saveBytes(bytes);
+		return this.appHubZomeClient.createUi({ mere_memory_address: mereMemoryAddress });
+	}
+
 	async getUi(address: AnyDhtHash): Promise<Ui> {
 		const uiEntryEntity = await this.appHubZomeClient.getUiEntry(address);
 		const uiEntry = uiEntryEntity.content;
@@ -175,4 +218,36 @@ export class DevhubAppClient {
 		input.icon = iconAddress;
 		return this.appHubZomeClient.createWebappPackage(input);
 	}
+
+	async saveWebapp(bytes: Uint8Array): Promise<Entity<WebAppEntry>> {
+		const bundle = new Bundle(bytes, 'webhapp');
+
+		{
+			const happManifest = bundle.manifest.happ_manifest;
+			const happBytes = bundle.resources[happManifest.bundled];
+
+			const appEntry = await this.saveApp(happBytes);
+
+			happManifest.app_entry = appEntry.address;
+			delete happManifest.bundled;
+		}
+		{
+			const uiManifest = bundle.manifest.ui;
+			const uiBytes = bundle.resources[uiManifest.bundled];
+
+			const uiEntry = await this.saveUi(uiBytes);
+
+			uiManifest.ui_entry = uiEntry.address;
+			delete uiManifest.bundled;
+		}
+
+		return await this.appHubZomeClient.createWebapp({
+			manifest: bundle.manifest
+		});
+	}
+
+	// TODO if required
+	// getWebhappBundle
+	// getHappBundle
+	// getAppDnaEntry
 }

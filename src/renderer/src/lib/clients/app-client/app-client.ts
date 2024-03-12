@@ -24,13 +24,13 @@ export class ZomeClient {
 	// 	});
 	// }
 
-	protected callZome(fn_name: string, payload: unknown) {
+	protected callZome(fn_name: string, payload: unknown, timeoutMs?: number) {
 		const req: AppAgentCallZomeRequest = {
 			role_name: this.roleName,
 			zome_name: this.zomeName,
 			fn_name,
 			payload
 		};
-		return this.client.callZome(req);
+		return this.client.callZome(req, timeoutMs);
 	}
 }

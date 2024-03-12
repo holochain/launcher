@@ -6,21 +6,27 @@ import type {
 	AppEntry,
 	AppEntryInput,
 	CreateAppInput,
+	CreateLinkWebAppPackageVersionInput,
 	CreateUiEntryInput,
 	CreateWebAppInput,
-	CreateWebAppPackageFrontendInput,
 	CreateWebAppPackageInput,
+	CreateWebAppPackageVersionInput,
+	DeleteLinkWebAppPackageVersionInput,
 	DeprecationNotice,
 	Entity,
 	EntityId,
+	MoveWebAppPackageVersionInput,
 	Ui,
 	UiEntry,
 	UpdateEntityInput,
 	UpdateWebAppPackageInput,
+	UpdateWebAppPackageVersionInput,
 	WebAppEntry,
 	WebAppEntryInput,
 	WebAppPackageEntry,
 	WebAppPackageEntryInput,
+	WebAppPackageVersionEntry,
+	WebAppPackageVersionEntryInput,
 	WebAppPackageVersionMap
 } from '../types';
 
@@ -139,9 +145,66 @@ export class AppHubZomeClient extends ZomeClient {
 
 	//  WebAppPackage Links
 
-	// TODO
+	async createWebappPackageLinkToVersion(
+		input: CreateLinkWebAppPackageVersionInput
+	): Promise<ActionHash> {
+		return this.callZome('create_webapp_package_link_to_version', input);
+	}
+
+	async deleteWabappPackageLinksToVersion(
+		input: DeleteLinkWebAppPackageVersionInput
+	): Promise<Array<ActionHash>> {
+		return this.callZome('delete_webapp_package_links_to_version', input);
+	}
+
+	// If not needed don't bother because the Link type is not provided by @holochain/client
+	// async getWebappPackageVersionLinks(webappPackageId: EntityId): Promise<Array<Link>> {
+	// 	return this.callZome('get_webapp_package_version_links', webappPackageId);
+	// }
+
+	async getWebappPackageVersionTargets(
+		webappPackageId: EntityId
+	): Promise<Record<string, EntityId>> {
+		return this.callZome('get_webapp_package_version_targets', webappPackageId);
+	}
 
 	// WebApp Package Version
+
+	async createWebappPackageVersion(
+		input: CreateWebAppPackageVersionInput
+	): Promise<Entity<WebAppPackageVersionEntry>> {
+		return this.callZome('create_webapp_package_version', input);
+	}
+
+	async createWebappPackageVersionEntry(
+		input: WebAppPackageVersionEntryInput
+	): Promise<Entity<WebAppPackageVersionEntry>> {
+		return this.callZome('create_webapp_package_version_entry', input);
+	}
+
+	async updateWebappPackageVersion(
+		input: UpdateEntityInput<UpdateWebAppPackageVersionInput>
+	): Promise<Entity<WebAppPackageVersionEntry>> {
+		return this.callZome('update_webapp_package_version', input);
+	}
+
+	async getWebappPackageVersionEntry(address: ActionHash): Promise<WebAppPackageVersionEntry> {
+		return this.callZome('get_webapp_package_version_entry', address);
+	}
+
+	async getWebappPackageVersion(address: ActionHash): Promise<Entity<WebAppPackageVersionEntry>> {
+		return this.callZome('get_webapp_package_version', address);
+	}
+
+	async moveWebappPackageVersion(
+		input: MoveWebAppPackageVersionInput
+	): Promise<Entity<WebAppPackageVersionEntry>> {
+		return this.callZome('move_webapp_package_version', input);
+	}
+
+	async deleteWebappPackageVersion(address: ActionHash): Promise<ActionHash> {
+		return this.callZome('delete_webapp_package_version', address);
+	}
 
 	// TODO
 }
