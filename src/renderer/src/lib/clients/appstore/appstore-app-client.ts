@@ -11,14 +11,17 @@ import type {
 	UpdatePublisherFrontendInput
 } from './types';
 import { AppstoreZomeClient } from './zomes/appstore-zome-client';
+import { PortalZomeClient } from './zomes/portal-zome-client';
 
 export class AppstoreAppClient {
 	mereMemoryZomeClient: MereMemoryZomeClient;
 	appstoreZomeClient: AppstoreZomeClient;
+	portalZomeClient: PortalZomeClient;
 
 	constructor(public client: AppAgentClient) {
 		this.mereMemoryZomeClient = new MereMemoryZomeClient(client, 'mere_memory', 'mere_memory_api');
 		this.appstoreZomeClient = new AppstoreZomeClient(client, 'appstore', 'appstore_csr');
+		this.portalZomeClient = new PortalZomeClient(client, 'portal', 'portal_csr');
 	}
 
 	async createPublisher(input: CreatePublisherFrontendInput): Promise<Entity<PublisherEntry>> {

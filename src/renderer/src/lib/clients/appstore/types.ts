@@ -175,6 +175,12 @@ export interface HostEntry {
 	metadata: any;
 }
 
+export interface HostAvailability {
+	responded: AgentPubKey[];
+	totalHosts: number;
+	pingTimestamp: number;
+}
+
 export interface CustomRemoteCallInput {
 	host: AgentPubKey;
 	call: RemoteCallInput;
