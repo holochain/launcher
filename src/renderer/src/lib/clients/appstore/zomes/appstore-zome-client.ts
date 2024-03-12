@@ -1,37 +1,23 @@
-import type {
-	ActionHash,
-	AgentPubKey,
-	AppAgentCallZomeRequest,
-	AppAgentClient
-} from '@holochain/client';
+import type { ActionHash, AgentPubKey, AppAgentCallZomeRequest } from '@holochain/client';
 
-import type { Entity, UpdateEntityInput } from '../devhub/types';
-import type { MereMemoryClient } from '../mere-memory/mere-memory-client';
+import { ZomeClient } from '../../app-client/app-client';
+import type { Entity, UpdateEntityInput } from '../../devhub/types';
 import type {
 	AppEntry,
-	CreateAppFrontendInput,
-	CreatePublisherFrontendInput,
+	CreateAppInput,
+	CreatePublisherInput,
 	DeprecateInput,
 	PublisherEntry,
 	UndeprecateInput,
-	UpdatePublisherFrontendInput
-} from './types';
+	UpdatePublisherInput
+} from '../types';
 
-export class AppStoreClient {
-	constructor(
-		public client: AppAgentClient,
-		public mereMemoryClient: MereMemoryClient,
-		public roleName = 'appstore',
-		public zomeName = 'appstore_csr'
-	) {}
-
+export class AppstoreZomeClient extends ZomeClient {
 	//
 	// Publisher
 	//
 
-	async createPublisher(input: CreatePublisherFrontendInput): Promise<Entity<PublisherEntry>> {
-		const iconAddress = await this.mereMemoryClient.saveBytes(input.icon);
-		input.icon = iconAddress;
+	async createPublisher(input: CreatePublisherInput): Promise<Entity<PublisherEntry>> {
 		return this.callZome('create_publisher', input);
 	}
 
@@ -52,12 +38,8 @@ export class AppStoreClient {
 	}
 
 	async updatePublisher(
-		input: UpdateEntityInput<UpdatePublisherFrontendInput>
+		input: UpdateEntityInput<UpdatePublisherInput>
 	): Promise<Entity<PublisherEntry>> {
-		if (input.properties.icon) {
-			const iconAddress = await this.mereMemoryClient.saveBytes(input.properties.icon);
-			input.properties.icon = iconAddress;
-		}
 		return this.callZome('update_publisher', input);
 	}
 
@@ -73,9 +55,7 @@ export class AppStoreClient {
 	// App
 	//
 
-	async createApp(input: CreateAppFrontendInput): Promise<Entity<AppEntry>> {
-		const iconAddress = await this.mereMemoryClient.saveBytes(input.icon);
-		input.icon = iconAddress;
+	async createApp(input: CreateAppInput): Promise<Entity<AppEntry>> {
 		return this.callZome('create_app', input);
 	}
 
