@@ -7,3 +7,4 @@ rust-utils/
 .svelte-kit/
 .github/
 /.vscode
+*.rs

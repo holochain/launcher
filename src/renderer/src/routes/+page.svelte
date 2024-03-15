@@ -25,6 +25,7 @@
 
 		return lairSetupRequired.subscribe((setupData) => {
 			if (setupData.isError) {
+				console.error(setupData.error);
 				return showModalError({
 					modalStore,
 					errorTitle: $i18n.t('appError'),

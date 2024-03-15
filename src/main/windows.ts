@@ -1,4 +1,5 @@
 import { is } from '@electron-toolkit/utils';
+import crypto from 'crypto';
 import {
   app,
   BrowserWindow,
@@ -10,17 +11,19 @@ import {
   Tray,
 } from 'electron';
 import serve from 'electron-serve';
-import path, { join, resolve } from 'path';
+import path from 'path';
 import url from 'url';
 
 import type { ExtendedAppInfo, Screen } from '../types';
-import { MAIN_SCREEN, SETTINGS_SCREEN } from '../types';
+import { LAUNCHER_ERROR, MAIN_SCREEN, SETTINGS_SCREEN } from '../types';
 import { SEARCH_HEIGH, WINDOW_SIZE } from './const';
 import type { LauncherFileSystem } from './filesystem';
+import { type UiHashes } from './holochainManager';
+import { type LauncherEmitter } from './launcherEmitter';
 import { ICONS_DIRECTORY } from './paths';
 import { encodeQuery, setLinkOpenHandlers } from './utils';
 
-const serveURL = serve({ directory: join(__dirname, '..', 'renderer') });
+const serveURL = serve({ directory: path.join(__dirname, '..', 'renderer') });
 
 const loadVite = (window: BrowserWindow, query: Record<string, string> = {}): void => {
   if (!window) return;
@@ -45,7 +48,7 @@ const createBrowserWindow = (title: string) =>
     title: title,
     show: false,
     webPreferences: {
-      preload: resolve(__dirname, '../preload/admin.js'),
+      preload: path.resolve(__dirname, '../preload/admin.js'),
     },
   });
 
@@ -118,36 +121,56 @@ export const setupAppWindows = () => {
 export const createHappWindow = (
   extendedAppInfo: ExtendedAppInfo,
   launcherFileSystem: LauncherFileSystem,
+  launcherEmitter: LauncherEmitter,
   appPort: number | undefined,
+  // TODO pass UI asset hashes here
 ): BrowserWindow => {
   // TODO create mapping between installed-app-id's and window ids
   if (!appPort) throw new Error('App port not defined.');
   const appId = extendedAppInfo.appInfo.installed_app_id;
   const holochainDataRoot = extendedAppInfo.holochainDataRoot;
+  const appUiDir = launcherFileSystem.appUiDir(
+    extendedAppInfo.appInfo.installed_app_id,
+    extendedAppInfo.holochainDataRoot,
+  );
+  if (!launcherFileSystem.integrityChecker)
+    throw new Error('IntegrityChecker must be set before creating a happ window.');
+  const uiHashes = launcherFileSystem.integrityChecker.readSignedJSON<UiHashes>(
+    path.join(appUiDir, 'hashes.json'),
+  );
   const partition = `persist:${holochainDataRoot.name}#${appId}`;
   const ses = session.fromPartition(partition);
   ses.protocol.handle('webhapp', async (request) => {
     // console.log("### Got file request: ", request);
     const uriWithoutProtocol = request.url.slice('webhapp://'.length);
     const filePathComponents = uriWithoutProtocol.split('/').slice(1);
-    const filePath = join(...filePathComponents);
-    const resource = net.fetch(
-      url
-        .pathToFileURL(join(launcherFileSystem.happUiDir(appId, holochainDataRoot), filePath))
-        .toString(),
+    const filePath = path.join(...filePathComponents);
+    const response = await net.fetch(
+      url.pathToFileURL(path.join(appUiDir, 'assets', filePath)).toString(),
     );
+
+    // TODO check resource hash
+    const hasher = crypto.createHash('sha256');
+    const arrayBuffer = await response.arrayBuffer();
+    const bodyBuffer = Buffer.from(arrayBuffer);
+    hasher.update(bodyBuffer);
+    const hash = hasher.digest('hex');
+    if (hash !== uiHashes[filePath]) {
+      launcherEmitter.emit(LAUNCHER_ERROR, `Failed to load asset '${filePath}': Invalid Hash.`);
+      throw new Error('Rejecting to load resource: Invalid hash.');
+    }
+
     if (!filePath.endsWith('index.html')) {
-      return resource;
+      return new Response(arrayBuffer, response);
     } else {
-      const indexHtmlResponse = await resource;
-      const indexHtml = await indexHtmlResponse.text();
+      const indexHtml = bodyBuffer.toString('utf-8');
       let modifiedContent = indexHtml.replace(
         '<head>',
         `<head><script type="module">window.__HC_LAUNCHER_ENV__ = { APP_INTERFACE_PORT: ${appPort}, INSTALLED_APP_ID: "${appId}", FRAMEWORK: "electron" };</script>`,
       );
       // remove title attribute to be able to set title to app id later
       modifiedContent = modifiedContent.replace(/<title>.*?<\/title>/i, '');
-      return new Response(modifiedContent, indexHtmlResponse);
+      return new Response(modifiedContent, response);
     }
   });
   // Create the browser window.
@@ -155,7 +178,7 @@ export const createHappWindow = (
     width: 1200,
     height: 800,
     webPreferences: {
-      preload: resolve(__dirname, '../preload/happs.js'),
+      preload: path.resolve(__dirname, '../preload/happs.js'),
       partition,
     },
   });
