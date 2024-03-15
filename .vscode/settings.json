@@ -16,5 +16,10 @@
     "editor.detectIndentation": false,
     "editor.insertSpaces": true
   },
+  "prettier.requireConfig": true,
+  "prettier.documentSelectors": ["**/*.svelte"],
+  "[svelte]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
   "editor.formatOnSave": true,
 }

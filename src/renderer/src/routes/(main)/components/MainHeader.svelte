@@ -29,14 +29,12 @@
 	onMount(() => {
 		inputExpanded = true;
 
-		const unsubscribe = navigationStore.subscribe((value) => {
+		return navigationStore.subscribe((value) => {
 			if (value !== null) {
 				handleNavigationWithAnimationDelay(value)();
 				navigationStore.set(null);
 			}
 		});
-
-		return unsubscribe;
 	});
 
 	const clearSearchInput = () => (searchInput = '');
