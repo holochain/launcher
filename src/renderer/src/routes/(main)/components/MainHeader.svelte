@@ -46,8 +46,6 @@
 
 <div class="app-region-drag flex justify-between p-3 dark:bg-apps-input-dark-gradient">
 	{#if type === APPS_VIEW}
-
-	
 		<IconButton onClick={handleNavigationWithAnimationDelay(APP_STORE)}><Home /></IconButton>
 	{/if}
 

@@ -1,2 +1,2 @@
-yarn lintAndFormatAll
+yarn lintAndFormatAllPrePush
 
