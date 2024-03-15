@@ -8,5 +8,10 @@
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "prettier.requireConfig": true,
+  "prettier.documentSelectors": ["**/*.svelte"],
+  "[svelte]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
   "editor.formatOnSave": true,
 }
