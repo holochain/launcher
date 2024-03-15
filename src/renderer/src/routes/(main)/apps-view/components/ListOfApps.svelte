@@ -19,7 +19,7 @@
 </script>
 
 <div
-	class="align-center bg-light-background dark:bg-apps-list-dark-gradient flex grow justify-center bg-fixed"
+	class="align-center flex grow justify-center bg-light-background bg-fixed dark:bg-apps-list-dark-gradient"
 >
 	<div>
 		<div class="my-8 grid grid-cols-5 gap-8 scroll-smooth px-2">
