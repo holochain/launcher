@@ -305,8 +305,7 @@ export class HolochainManager {
       fs.rmSync(tmpUiZipPath);
     }
 
-    // store app metadata to installed app directory (potentially backing up existing one to keep ability to undo updates)
-    // TODO needs to be stored with signature to make sure that cannot be modified either to point to a false ui assets folder
+    // store app metadata to installed app directory
     const metaData: AppMetadata<AppMetadataV1> = {
       formatVersion: 1,
       data: {
@@ -327,6 +326,7 @@ export class HolochainManager {
       fs.mkdirSync(this.fs.appMetadataDir(appId, this.holochainDataRoot), { recursive: true });
     }
 
+    // TODO potentially back up existing one to allow for undoing updates
     this.integrityChecker.storeToSignedJSON(
       path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json'),
       metaData,
