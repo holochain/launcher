@@ -29,14 +29,12 @@
 	onMount(() => {
 		inputExpanded = true;
 
-		const unsubscribe = navigationStore.subscribe((value) => {
+		return navigationStore.subscribe((value) => {
 			if (value !== null) {
 				handleNavigationWithAnimationDelay(value)();
 				navigationStore.set(null);
 			}
 		});
-
-		return unsubscribe;
 	});
 
 	const clearSearchInput = () => (searchInput = '');
@@ -48,6 +46,8 @@
 
 <div class="app-region-drag flex justify-between p-3 dark:bg-apps-input-dark-gradient">
 	{#if type === APPS_VIEW}
+
+	
 		<IconButton onClick={handleNavigationWithAnimationDelay(APP_STORE)}><Home /></IconButton>
 	{/if}
 
