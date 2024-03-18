@@ -22,7 +22,7 @@
     "typecheck": "npm run typecheck:node",
     "start": "electron-vite preview",
     "dev": "concurrently -p \"[{time}] [{name}]\" -n=sveltekit,electron -c=red,blue \"electron-vite dev --watch\" \"yarn run dev:sveltekit\"",
-    "build": "yarn build:sveltekit && yarn typecheck && electron-vite build",
+    "build": "yarn test && yarn build:sveltekit && yarn typecheck && electron-vite build",
     "setup": "cd rust-utils && yarn && yarn build && cd ..",
     "fetch:default-apps": "curl -L --output resources/default-apps/kando.webhapp https://github.com/holochain-apps/kando/releases/download/v0.8.18/kando.webhapp",
     "postinstall": "electron-builder install-app-deps",
