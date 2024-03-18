@@ -42,6 +42,7 @@
     "commander": "11.1.0",
     "electron-serve": "^1.2.0",
     "electron-trpc": "^0.5.2",
+    "elliptic": "6.5.5",
     "fflate": "^0.8.2",
     "hc-launcher-rust-utils": "file:./rust-utils/dist",
     "nanoid": "5.0.6",
