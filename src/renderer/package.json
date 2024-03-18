@@ -11,9 +11,6 @@
 		"lint": "prettier --check 'src/**/*.{js,ts,svelte,json,postcss}' && eslint 'src/**/*.{js,ts,svelte}' --fix",
 		"format": "prettier --write 'src/**/*.{js,ts,svelte,json,postcss}'"
 	},
-	"dependencies": {
-		"@spartan-hc/bundles": "0.2.2"
-	},
 	"devDependencies": {
 		"@skeletonlabs/skeleton": "2.8.0",
 		"@skeletonlabs/tw-plugin": "0.3.1",
