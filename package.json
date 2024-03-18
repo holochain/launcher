@@ -11,7 +11,8 @@
     "lair_keystore": "0.4.2"
   },
   "workspaces": [
-    "src/renderer"
+    "src/renderer",
+    "libs/*"
   ],
   "scripts": {
     "format": "prettier . \"!src/renderer\" --write",
@@ -38,7 +39,7 @@
     "@electron-toolkit/preload": "^3.0.0 ",
     "@electron-toolkit/utils": "^3.0.0",
     "@electron/notarize": "2.3.0",
-    "@holochain/client": "^0.16.3",
+    "@holochain/client": "^0.16.10",
     "@trpc/client": "^10.44.1",
     "@trpc/server": "^10.44.1",
     "adm-zip": "0.5.12",

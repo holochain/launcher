@@ -252,6 +252,21 @@
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
 
+"@bitgo/blake2b-wasm@^3.2.3":
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/@bitgo/blake2b-wasm/-/blake2b-wasm-3.2.3.tgz#6ae5e942f2a5fd5b3ed27103af5df0ed50adfbc9"
+  integrity sha512-NaurBrMaEpjfg7EdUJgW/c6byt27O6q1ZaxB5Ita10MjjYjUu0SyYF4q7JPNxpHF/lMxb0YZakOxigbDBu9Jjw==
+  dependencies:
+    nanoassert "^1.0.0"
+
+"@bitgo/blake2b@^3.2.4":
+  version "3.2.4"
+  resolved "https://registry.yarnpkg.com/@bitgo/blake2b/-/blake2b-3.2.4.tgz#6440992affdeabc22b2de8b8f381f51b551dd513"
+  integrity sha512-46PEgEVPxecNJ/xczggIllSxIkFIvvbVM0OfIDdNJ5qpFHUeBCkNIiGdzC3fYZlsv7bVTdUZOj79GcFBLMYBqA==
+  dependencies:
+    "@bitgo/blake2b-wasm" "^3.2.3"
+    nanoassert "^2.0.0"
+
 "@colors/colors@1.6.0", "@colors/colors@^1.6.0":
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/@colors/colors/-/colors-1.6.0.tgz#ec6cd237440700bc23ca23087f513c75508958b0"
@@ -634,11 +649,12 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.57.0.tgz#a5417ae8427873f1dd08b70b3574b453e67b5f7f"
   integrity sha512-Ys+3g2TaW7gADOJzPt83SJtCDhMjndcDMFVQ/Tj9iA1BfJzFKD9mAUXT3OenpuPHbI6P/myECxRJrofUsDx/5g==
 
-"@holochain/client@^0.16.3":
-  version "0.16.5"
-  resolved "https://registry.yarnpkg.com/@holochain/client/-/client-0.16.5.tgz#330e44198e9e1b13c0d97c25d65aa5b5a889e5a8"
-  integrity sha512-cJkhMQb3Biy1udgbqUAhRFQx4e+8QGGgkEO8xYxmdptPXn7wtnRsnVYgUSTVBl8U0lEpY6L92VuOAQoKK7gcPQ==
+"@holochain/client@0.16.10", "@holochain/client@^0.16.10":
+  version "0.16.10"
+  resolved "https://registry.yarnpkg.com/@holochain/client/-/client-0.16.10.tgz#7ef9019922edfea4ceda7bb8d3eaae7beddc98e3"
+  integrity sha512-Urgx6vXNux2XD/4+eOxou2FKwlUBu/g/BxUSZLX6wEaYWH9wDYXR5f3VToUrAhXGF5ssc08jb8jLiQZ23k62EQ==
   dependencies:
+    "@bitgo/blake2b" "^3.2.4"
     "@holochain/serialization" "^0.1.0-beta-rc.3"
     "@msgpack/msgpack" "^2.8.0"
     "@tauri-apps/api" "^1.4.0"
@@ -3490,6 +3506,16 @@ mz@^2.7.0:
     object-assign "^4.0.1"
     thenify-all "^1.0.0"
 
+nanoassert@^1.0.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/nanoassert/-/nanoassert-1.1.0.tgz#4f3152e09540fde28c76f44b19bbcd1d5a42478d"
+  integrity sha512-C40jQ3NzfkP53NsO8kEOFd79p4b9kDXQMwgiY1z8ZwrDZgUyom0AHwGegF4Dm99L+YoYhuaB0ceerUcXmqr1rQ==
+
+nanoassert@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/nanoassert/-/nanoassert-2.0.0.tgz#a05f86de6c7a51618038a620f88878ed1e490c09"
+  integrity sha512-7vO7n28+aYO4J+8w96AzhmU8G+Y/xpPDJz/se19ICsqj/momRbb9mh9ZUtkoJ5X3nTnPdhEJyc0qnM6yAsHBaA==
+
 nanoid@5.0.6:
   version "5.0.6"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-5.0.6.tgz#7f99a033aa843e4dcf9778bdaec5eb02f4dc44d5"
@@ -4520,6 +4546,11 @@ typescript@^5.0.3, typescript@^5.3.3:
   version "5.3.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.3.3.tgz#b3ce6ba258e72e6305ba66f5c9b452aaee3ffe37"
   integrity sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==
+
+typescript@^5.2.2:
+  version "5.4.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.4.2.tgz#0ae9cebcfae970718474fe0da2c090cad6577372"
+  integrity sha512-+2/g0Fds1ERlP6JsakQQDXjZdZMM+rqpamFZJEKh4kwTIn3iDkgKtby0CeNd5ATNZ4Ry1ax15TMx0W2V+miizQ==
 
 undici-types@~5.26.4:
   version "5.26.5"
