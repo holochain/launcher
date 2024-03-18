@@ -7,6 +7,7 @@ import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
 import { app, ipcMain, protocol } from 'electron';
 import { createIPCHandler } from 'electron-trpc/main';
 import type { ZomeCallSigner, ZomeCallUnsignedNapi } from 'hc-launcher-rust-utils';
+import os from 'os';
 import path from 'path';
 import z from 'zod';
 
@@ -45,7 +46,12 @@ import { initializeLairKeystore, launchLairKeystore } from './lairKeystore';
 import { LauncherEmitter } from './launcherEmitter';
 import { setupLogs } from './logs';
 import { DEFAULT_APPS_DIRECTORY } from './paths';
-import { isHappAlreadyOpened, throwTRPCErrorError, validateWithZod } from './utils';
+import {
+  breakingVersion,
+  isHappAlreadyOpened,
+  throwTRPCErrorError,
+  validateWithZod,
+} from './utils';
 import { createHappWindow, loadOrServe, setupAppWindows } from './windows';
 
 const t = initTRPC.create({ isServer: true });
@@ -300,6 +306,36 @@ async function handleLaunch(password: string) {
   );
   HOLOCHAIN_DATA_ROOT = holochainDataRoot;
   HOLOCHAIN_MANAGERS[holochainDataRoot.name] = holochainManager;
+
+  // Install default apps if necessary
+  // TODO check sha256 hashes
+  // TODO Do not install devhub on startup
+  const defaultAppsNetworkSeed = app.isPackaged
+    ? `launcher-${breakingVersion(app.getVersion())}`
+    : `launcher-dev-${os.hostname()}`;
+  const appstoreAppId = 'App Store 0.0.1';
+  const appstoreSha256 = 'e75e94b26e97e7ae9f8e9ea5d5ae0b532d561b7d12b4469275ea34ee06dcfd9c';
+  const devhubAppId = 'Dev Hub 0.0.1';
+  const devhubSha256 = '30faeccb7c0333ffd5a01e3be111dac71773ad344ecb386f2f011bf61e513d96';
+  if (!holochainManager.installedApps.map((app) => app.installed_app_id).includes(appstoreAppId)) {
+    LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'installingAppStore');
+    await holochainManager.installHeadlessHapp(
+      path.join(DEFAULT_APPS_DIRECTORY, 'appstore.happ'),
+      appstoreAppId,
+      appstoreSha256,
+      defaultAppsNetworkSeed,
+    );
+  }
+  if (!holochainManager.installedApps.map((app) => app.installed_app_id).includes(devhubAppId)) {
+    LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'installingDevHub');
+    await holochainManager.installHeadlessHapp(
+      path.join(DEFAULT_APPS_DIRECTORY, 'devhub.happ'),
+      devhubAppId,
+      devhubSha256,
+      defaultAppsNetworkSeed,
+    );
+  }
+
   LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE, SEARCH_HEIGH, true);
   loadOrServe(LAUNCHER_WINDOWS[SETTINGS_SCREEN], { screen: SETTINGS_SCREEN });
   return;
