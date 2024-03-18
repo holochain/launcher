@@ -1,1 +1,1 @@
-export * from './zomes/mere-memory-zome-client';
+export * from './zomes/mere-memory-zome-client.js';

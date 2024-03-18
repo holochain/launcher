@@ -8,9 +8,6 @@
     "type": "git",
     "url": "git+https://github.com/lightningrodlabs/we.git"
   },
-  "keywords": [
-    "holochain"
-  ],
   "exports": {
     ".": "./dist/index.js",
     "./dist/*": "./dist/*"
@@ -30,8 +27,5 @@
   "devDependencies": {
     "rimraf": "^3.0.2",
     "typescript": "^5.2.2"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }
