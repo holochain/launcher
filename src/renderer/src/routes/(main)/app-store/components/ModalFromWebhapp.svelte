@@ -39,6 +39,7 @@
 				},
 				onError: (error) => {
 					modalStore.close();
+					console.error(error);
 					showModalError({
 						modalStore,
 						errorTitle: $i18n.t('appError'),

@@ -3,7 +3,14 @@ import type winston from 'winston';
 import { createLogger, format, transports } from 'winston';
 
 import type { HolochainData } from '../types';
-import { HOLOCHAIN_ERROR, HOLOCHAIN_LOG, LAIR_ERROR, LAIR_LOG, WASM_LOG } from '../types';
+import {
+  HOLOCHAIN_ERROR,
+  HOLOCHAIN_LOG,
+  LAIR_ERROR,
+  LAIR_LOG,
+  LAUNCHER_ERROR,
+  WASM_LOG,
+} from '../types';
 import type { LauncherFileSystem } from './filesystem';
 import type { LauncherEmitter } from './launcherEmitter';
 
@@ -22,8 +29,14 @@ export function setupLogs(
   // with file rotation set maxsize. But then we require logic to garbage collect old files...
   // const logFileTransport = new transports.File({ filename: logFilePath, maxsize: 50_000_000, maxfiles: 5 });
   const logFileTransport = new transports.File({ filename: logFilePath });
+  const launcherLogger = createLauncherLogger(logFileTransport);
   const lairLogger = createLairLogger(logFileTransport);
 
+  launcherEmitter.on(LAUNCHER_ERROR, (log) => {
+    const logLine = `[LAUNCHER] ERROR: ${log}`;
+    console.log(logLine);
+    launcherLogger.log('error', logLine);
+  });
   launcherEmitter.on(LAIR_LOG, (log) => {
     const logLine = `[LAIR] ${log}`;
     console.log(logLine);
@@ -76,6 +89,25 @@ function createHolochainLogger(
         return JSON.stringify({
           timestamp,
           label,
+          level,
+          message,
+        });
+      }),
+    ),
+  });
+}
+
+function createLauncherLogger(
+  logFileTransport: winston.transports.FileTransportInstance,
+): winston.Logger {
+  return createLogger({
+    transports: [logFileTransport],
+    format: combine(
+      timestamp(),
+      format.printf(({ level, message, timestamp }) => {
+        return JSON.stringify({
+          timestamp,
+          label: 'LAUNCHER',
           level,
           message,
         });

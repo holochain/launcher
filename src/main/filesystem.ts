@@ -3,14 +3,47 @@ import fs from 'fs';
 import path from 'path';
 
 import type { HolochainDataRoot } from '../types';
+import { type IntegrityChecker } from './integrityChecker';
 import { breakingVersion } from './utils';
 
 export type Profile = string;
+
+/**
+ * Version 1 of app metadata structure.
+ */
+export type AppMetadataV1 = {
+  type: 'webhapp' | 'headless';
+  happ: {
+    sha256: string;
+    dnas?: unknown; // sha256 hashes of dnas and zomes
+  };
+  ui?: {
+    location:
+      | {
+          type: 'filesystem';
+          sha256: string; // Also defines the foldername where the unzipped assets are stored
+        }
+      | {
+          type: 'localhost';
+          port: number;
+        };
+  };
+};
+
+export type AppMetadata<T> = {
+  /**
+   * Version number of the format of the data to be able to update
+   * the format without losing backwards compatibility
+   */
+  formatVersion: number;
+  data: T;
+};
 
 export class LauncherFileSystem {
   public profileDataDir: string;
   public profileLogsDir: string;
   public profile: string;
+  integrityChecker: IntegrityChecker | undefined;
 
   constructor(profileDataDir: string, profileLogsDir: string, profile: string) {
     this.profileDataDir = profileDataDir;
@@ -54,6 +87,10 @@ export class LauncherFileSystem {
     createDirIfNotExists(this.holochainDir);
   };
 
+  setIntegrityChecker(integrityChecker: IntegrityChecker) {
+    this.integrityChecker = integrityChecker;
+  }
+
   get keystoreDir() {
     return path.join(this.profileDataDir, 'lair');
   }
@@ -74,11 +111,80 @@ export class LauncherFileSystem {
     return path.join(this.holochainDir, partitionName, 'dbs');
   }
 
-  happUiDir(appId: string, holochainDataRoot: HolochainDataRoot) {
-    if (holochainDataRoot.type === 'partition') {
-      return path.join(this.holochainPartitionDir(holochainDataRoot.name), 'apps', appId, 'ui');
-    }
-    return path.join(holochainDataRoot.path, 'apps', 'ui');
+  /**
+   * This is the directory in which app metadata is stored like the UI associated to the
+   * app and the sha256 hash of the .happ file that belongs to it or potentially an alias
+   * for the installed_app_id
+   *
+   * @param holochainDataRoot
+   * @returns
+   */
+  appsDir(holochainDataRoot: HolochainDataRoot) {
+    return path.join(this.holochainDataBase(holochainDataRoot), 'apps');
+  }
+
+  /**
+   * This is the directory in which .happ files are being stored to not have to refetch
+   * .happ files over the network if they have already been installed earlier
+   *
+   * @param holochainDataRoot
+   * @returns
+   */
+  happsDir(holochainDataRoot: HolochainDataRoot) {
+    return path.join(this.holochainDataBase(holochainDataRoot), 'happs');
+  }
+
+  /**
+   * This is the directory where UI assets are stored. UI assets are stored
+   * in folders named by the sha256 hash of the ui.zip they are originating from
+   * which results in deduplication in case multiple apps use the same UI and
+   * allows to not have to refetch a UI over the network if the same UI is already
+   * used by another app instance.
+   * It also opens questions around garbage collection if no app is using a
+   * certain UI anymore.
+   *
+   * @param holochainDataRoot
+   * @returns
+   */
+  uisDir(holochainDataRoot: HolochainDataRoot) {
+    return path.join(this.holochainDataBase(holochainDataRoot), 'uis');
+  }
+
+  /**
+   * Directory where metadata of an app instance is stored. For example which UI
+   * it currently uses.
+   *
+   * @param appId
+   * @param holochainDataRoot
+   * @returns
+   */
+  appMetadataDir(appId: string, holochainDataRoot: HolochainDataRoot) {
+    return path.join(this.appsDir(holochainDataRoot), appId);
+  }
+
+  /**
+   * Reads the sha256 hash of the ui zip file to determine the directory
+   * where the UI assets for the specified app are stored
+   *
+   * @param appId
+   * @param holochainDataRoot
+   * @returns
+   */
+  appUiDir(appId: string, holochainDataRoot: HolochainDataRoot) {
+    if (!this.integrityChecker) throw new Error('IntegrityCheker not set.');
+    const metadataPath = path.join(this.appMetadataDir(appId, holochainDataRoot), 'info.json');
+    const appMetaData =
+      this.integrityChecker.readSignedJSON<AppMetadata<AppMetadataV1>>(metadataPath);
+    if (!appMetaData.data.ui || appMetaData.data.ui.location.type !== 'filesystem')
+      throw new Error('App seems to be headless or the metadata file is malformed.');
+    const uiSha256 = appMetaData.data.ui.location.sha256;
+    return path.join(this.uisDir(holochainDataRoot), uiSha256);
+  }
+
+  holochainDataBase(holochainDataRoot: HolochainDataRoot) {
+    return holochainDataRoot.type === 'partition'
+      ? this.holochainPartitionDir(holochainDataRoot.name)
+      : holochainDataRoot.path;
   }
 
   keystoreInitialized = () => {
