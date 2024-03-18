@@ -24,7 +24,7 @@
     "dev": "concurrently -p \"[{time}] [{name}]\" -n=sveltekit,electron -c=red,blue \"electron-vite dev --watch\" \"yarn run dev:sveltekit\"",
     "build": "yarn build:sveltekit && yarn typecheck && electron-vite build",
     "setup": "cd rust-utils && yarn && yarn build && cd ..",
-    "fetch:default-apps": "curl -L --output resources/default-apps/kando.webhapp https://github.com/holochain-apps/kando/releases/download/v0.8.18/kando.webhapp",
+    "fetch:default-apps": "curl -L --output resources/default-apps/kando.webhapp https://github.com/holochain-apps/kando/releases/download/v0.8.18/kando.webhapp && curl -L --output resources/default-apps/devhub.happ https://drive.switch.ch/index.php/s/UA39yHFs514ZLC3/download && curl -L --output resources/default-apps/appstore.happ https://drive.switch.ch/index.php/s/9C4j1WruDoRxXSn/download",
     "postinstall": "electron-builder install-app-deps",
     "build:win": "yarn build && electron-builder --win --config",
     "build:mac": "yarn build && electron-builder --mac --config",

@@ -305,6 +305,16 @@ export class HolochainManager {
       fs.rmSync(tmpUiZipPath);
     }
 
+    // install happ file into conductor
+    const pubKey = await this.adminWebsocket.generateAgentPubKey();
+    const appInfo = await this.adminWebsocket.installApp({
+      agent_key: pubKey,
+      installed_app_id: appId,
+      membrane_proofs: {},
+      path: happFilePath,
+      network_seed: networkSeed,
+    });
+
     // store app metadata to installed app directory
     const metaData: AppMetadata<AppMetadataV1> = {
       formatVersion: 1,
@@ -332,16 +342,54 @@ export class HolochainManager {
       metaData,
     );
 
-    // install happ file into conductor
+    await this.adminWebsocket.enableApp({ installed_app_id: appId });
+    const installedApps = await this.adminWebsocket.listApps({});
+    // console.log('Installed apps: ', installedApps);
+    this.installedApps = installedApps;
+    this.launcherEmitter.emit(APP_INSTALLED, {
+      version: this.version,
+      holochainDataRoot: this.holochainDataRoot,
+      data: appInfo,
+    });
+  }
+
+  async installHeadlessHapp(
+    happPath: string,
+    appId: string,
+    happSha256: string,
+    networkSeed?: string,
+  ) {
     const pubKey = await this.adminWebsocket.generateAgentPubKey();
     const appInfo = await this.adminWebsocket.installApp({
       agent_key: pubKey,
       installed_app_id: appId,
       membrane_proofs: {},
-      path: happFilePath,
+      path: happPath,
       network_seed: networkSeed,
     });
+
+    // store app metadata to installed app directory
+    const metaData: AppMetadata<AppMetadataV1> = {
+      formatVersion: 1,
+      data: {
+        type: 'headless',
+        happ: {
+          sha256: happSha256,
+        },
+      },
+    };
+
+    if (!fs.existsSync(this.fs.appMetadataDir(appId, this.holochainDataRoot))) {
+      fs.mkdirSync(this.fs.appMetadataDir(appId, this.holochainDataRoot), { recursive: true });
+    }
+
+    this.integrityChecker.storeToSignedJSON(
+      path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json'),
+      metaData,
+    );
+
     await this.adminWebsocket.enableApp({ installed_app_id: appId });
+    console.log('Insalled app.');
     const installedApps = await this.adminWebsocket.listApps({});
     // console.log('Installed apps: ', installedApps);
     this.installedApps = installedApps;
