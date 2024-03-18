@@ -1423,11 +1423,8 @@ app-builder-lib@24.12.0:
     tar "^6.1.12"
     temp-file "^3.4.0"
 
-"appstore-tools@file:libs/appstore":
-  version "0.0.1"
-  dependencies:
-    "@holochain/client" "0.16.10"
-    "@spartan-hc/bundles" "0.2.2"
+"appstore-tools@file:./libs/appstore/dist":
+  version "0.0.0"
 
 arg@^5.0.2:
   version "5.0.2"

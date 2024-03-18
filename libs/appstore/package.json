@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
+  "private": true,
   "license": "MIT",
   "repository": {
     "type": "git",
