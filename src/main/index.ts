@@ -155,6 +155,9 @@ const CUSTOM_ZOME_CALL_SIGNERS: Record<number, ZomeCallSigner> = {};
 
 let INTEGRITY_CHECKER: IntegrityChecker | undefined;
 
+// App port of holochain version in nwhich appstore and devhub are installed.
+let APP_PORT: number | undefined;
+
 // For now there is only one holochain data root at a time for the sake of simplicity.
 let HOLOCHAIN_DATA_ROOT: HolochainDataRoot | undefined;
 const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
@@ -306,6 +309,7 @@ async function handleLaunch(password: string) {
   );
   HOLOCHAIN_DATA_ROOT = holochainDataRoot;
   HOLOCHAIN_MANAGERS[holochainDataRoot.name] = holochainManager;
+  APP_PORT = holochainManager.appPort;
 
   // Install default apps if necessary
   // TODO check sha256 hashes
@@ -449,6 +453,7 @@ const router = t.router({
   holochainVersion: t.procedure.query(
     () => HOLOCHAIN_MANAGERS[Object.keys(HOLOCHAIN_MANAGERS)[0]].version,
   ),
+  getAppPort: t.procedure.query(() => APP_PORT),
   getInstalledApps: t.procedure.query(() => {
     const installedApps = Object.values(HOLOCHAIN_MANAGERS).flatMap((manager) =>
       manager.installedApps.map((app) => ({
