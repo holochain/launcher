@@ -44,14 +44,57 @@ describe('Testing integrity checker', () => {
       }, Error);
     });
 
-    it('Reading signed JSON with an IntegrityChecker should fail if the file was tampered with', () => {
+    it('Reading signed JSON with an IntegrityChecker should fail if one of the file content was tampered with', () => {
       const writeData = 'test123';
       const filePath = './out-tests/test.json';
       const iC = new IntegrityChecker('passphrase');
       iC.storeToSignedJSON(filePath, writeData);
       // tamper with file
       const readString = fs.readFileSync(filePath, 'utf-8');
-      fs.writeFileSync(filePath, readString + 'tampered');
+      const jsonContent = JSON.parse(readString);
+
+      // making sure that we got the expected structure after parsing
+      assert.equal(jsonContent.content, writeData);
+      console.log('JSON content: ', jsonContent);
+
+      // making sure that the method of writing is correct
+      fs.writeFileSync(filePath, JSON.stringify(jsonContent));
+      iC.readSignedJSON(filePath); // would throw an error if format after writing was not correct
+
+      const tamperedJsonContent = jsonContent;
+      tamperedJsonContent.content += 'tampered';
+      console.log('tampered JSON content: ', tamperedJsonContent);
+
+      fs.writeFileSync(filePath, JSON.stringify(tamperedJsonContent));
+      assert.throws(() => {
+        const iC2 = new IntegrityChecker('passphrase');
+        iC2.readSignedJSON(filePath);
+      }, Error);
+    });
+
+    it('Reading signed JSON with an IntegrityChecker should fail if the signature was tampered with', () => {
+      const writeData = 'test123';
+      const filePath = './out-tests/test.json';
+      const iC = new IntegrityChecker('passphrase');
+      iC.storeToSignedJSON(filePath, writeData);
+      // tamper with file
+      const readString = fs.readFileSync(filePath, 'utf-8');
+      const jsonContent = JSON.parse(readString);
+
+      // making sure that we got the expected structure after parsing
+      assert.equal(jsonContent.content, writeData);
+      console.log('JSON content: ', jsonContent);
+
+      // making sure that the method of writing is correct
+      fs.writeFileSync(filePath, JSON.stringify(jsonContent));
+      iC.readSignedJSON(filePath); // would throw an error if format after writing was not correct
+
+      const tamperedJsonContent = jsonContent;
+      tamperedJsonContent.signature =
+        tamperedJsonContent.signature.slice(0, tamperedJsonContent.signature.length - 1) + 'B';
+      console.log('tampered JSON content: ', tamperedJsonContent);
+
+      fs.writeFileSync(filePath, JSON.stringify(tamperedJsonContent));
       assert.throws(() => {
         const iC2 = new IntegrityChecker('passphrase');
         iC2.readSignedJSON(filePath);
