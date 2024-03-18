@@ -149,15 +149,24 @@ export const createHappWindow = (
       url.pathToFileURL(path.join(appUiDir, 'assets', filePath)).toString(),
     );
 
-    // TODO check resource hash
+    const expectedHash = uiHashes[filePath];
+    if (!expectedHash) {
+      launcherEmitter.emit(
+        LAUNCHER_ERROR,
+        `Failed to load asset '${filePath}': File is not in the list of files that have been installed with this UI.`,
+      );
+      throw new Error(
+        `Failed to load asset '${filePath}': File is not in the list of files that have been installed with this UI.`,
+      );
+    }
     const hasher = crypto.createHash('sha256');
     const arrayBuffer = await response.arrayBuffer();
     const bodyBuffer = Buffer.from(arrayBuffer);
     hasher.update(bodyBuffer);
     const hash = hasher.digest('hex');
-    if (hash !== uiHashes[filePath]) {
+    if (hash !== expectedHash) {
       launcherEmitter.emit(LAUNCHER_ERROR, `Failed to load asset '${filePath}': Invalid Hash.`);
-      throw new Error('Rejecting to load resource: Invalid hash.');
+      throw new Error(`Failed to load asset '${filePath}': Invalid hash.`);
     }
 
     if (!filePath.endsWith('index.html')) {
