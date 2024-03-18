@@ -1,23 +1,30 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import type { AppInfo } from '@holochain/client';
 import { AdminWebsocket } from '@holochain/client';
+import AdmZip from 'adm-zip';
 import * as childProcess from 'child_process';
+import crypto from 'crypto';
 import fs from 'fs';
 import getPort from 'get-port';
 import * as rustUtils from 'hc-launcher-rust-utils';
+import { nanoid } from 'nanoid';
+import os from 'os';
 import path from 'path';
 import split from 'split';
 
 import type { HolochainDataRoot, HolochainPartition, HolochainVersion } from '../types';
 import { APP_INSTALLED, HOLOCHAIN_ERROR, HOLOCHAIN_LOG } from '../types';
 import { DEFAULT_HOLOCHAIN_VERSION, HOLOCHAIN_BINARIES } from './binaries';
-import type { LauncherFileSystem } from './filesystem';
+import type { AppMetadata, AppMetadataV1, LauncherFileSystem } from './filesystem';
 import { createDirIfNotExists } from './filesystem';
+import { type IntegrityChecker } from './integrityChecker';
 import type { LauncherEmitter } from './launcherEmitter';
 import { breakingVersion } from './utils';
 
 export type AdminPort = number;
 export type AppPort = number;
+
+export type UiHashes = Record<string, string>;
 
 const DEFAULT_BOOTSTRAP_SERVER = 'https://bootstrap.holo.host';
 const DEFAULT_SIGNALING_SERVER = 'wss://signal.holo.host';
@@ -39,6 +46,7 @@ export class HolochainManager {
   fs: LauncherFileSystem;
   installedApps: AppInfo[];
   launcherEmitter: LauncherEmitter;
+  integrityChecker: IntegrityChecker;
   version: HolochainVersion;
   holochainDataRoot: HolochainDataRoot;
 
@@ -46,6 +54,7 @@ export class HolochainManager {
     processHandle: childProcess.ChildProcessWithoutNullStreams | undefined,
     launcherEmitter: LauncherEmitter,
     launcherFileSystem: LauncherFileSystem,
+    integrityChecker: IntegrityChecker,
     adminPort: AdminPort,
     appPort: AppPort,
     adminWebsocket: AdminWebsocket,
@@ -55,6 +64,7 @@ export class HolochainManager {
   ) {
     this.processHandle = processHandle;
     this.launcherEmitter = launcherEmitter;
+    this.integrityChecker = integrityChecker;
     this.adminPort = adminPort;
     this.appPort = appPort;
     this.adminWebsocket = adminWebsocket;
@@ -67,6 +77,7 @@ export class HolochainManager {
   static async launch(
     launcherEmitter: LauncherEmitter,
     launcherFileSystem: LauncherFileSystem,
+    integrityChecker: IntegrityChecker,
     password: string,
     version: HolochainVersion,
     lairUrl: string,
@@ -134,6 +145,7 @@ export class HolochainManager {
             undefined,
             launcherEmitter,
             launcherFileSystem,
+            integrityChecker,
             version.adminPort,
             appPort,
             adminWebsocket,
@@ -234,6 +246,7 @@ export class HolochainManager {
               conductorHandle,
               launcherEmitter,
               launcherFileSystem,
+              integrityChecker,
               adminPort,
               appPort,
               adminWebsocket,
@@ -250,21 +263,85 @@ export class HolochainManager {
 
   // TODO Add option to install happ without UI
   async installWebHapp(webHappPath: string, appId: string, networkSeed?: string) {
-    const uiTargetDir = this.fs.happUiDir(appId, this.holochainDataRoot);
-    console.log('uiTargetDir: ', uiTargetDir);
-    console.log('Installing app...');
-    const tempHappPath = await rustUtils.saveWebhapp(webHappPath, uiTargetDir);
-    console.log('Stored UI and got temp happ path: ', tempHappPath);
+    // Decode webhapp into .happ bytes and ui.zip bytes
+    // TODO Option to install headless app
+    const happAndUiBytes = await rustUtils.readAndDecodeWebhapp(webHappPath);
+
+    // write [sha256].happ to happs directory
+    const happHasher = crypto.createHash('sha256');
+    const happSha256 = happHasher.update(Buffer.from(happAndUiBytes.happBytes)).digest('hex');
+    const happFilePath = path.join(this.fs.happsDir(this.holochainDataRoot), `${happSha256}.happ`);
+    writeFile(happFilePath, Buffer.from(happAndUiBytes.happBytes));
+
+    // compute UI hash
+    const uiZipHasher = crypto.createHash('sha256');
+    const uiZipSha256 = uiZipHasher.update(Buffer.from(happAndUiBytes.uiBytes)).digest('hex');
+
+    // If same UI is not already stored, write ui bytes to temp file to compute hashes
+    // (randomly generated filename to prevent other processes from being able to modify
+    // the file before the hashes are computed)
+    const uiDir = path.join(this.fs.uisDir(this.holochainDataRoot), uiZipSha256);
+    // here we assume that if the uiDir exists, the hashes.json exists as well.
+    if (!fs.existsSync(path.join(uiDir, 'assets'))) {
+      fs.mkdirSync(uiDir, { recursive: true });
+      const tmpUiZipPath = path.join(os.tmpdir(), `${nanoid(13)}.zip`);
+      fs.writeFileSync(tmpUiZipPath, Buffer.from(happAndUiBytes.uiBytes));
+
+      const hashes: Record<string, string> = {};
+      const zip = new AdmZip(tmpUiZipPath);
+      zip.getEntries().forEach((entry) => {
+        // console.log(entry.entryName);
+        const hasher = crypto.createHash('sha256');
+        const data = entry.getData();
+        hasher.update(data);
+        const hash = hasher.digest('hex');
+        hashes[entry.entryName] = hash;
+      });
+
+      this.integrityChecker.storeToSignedJSON(path.join(uiDir, 'hashes.json'), hashes);
+      zip.extractAllTo(path.join(uiDir, 'assets'));
+
+      // delete ui temp file
+      fs.rmSync(tmpUiZipPath);
+    }
+
+    // store app metadata to installed app directory
+    const metaData: AppMetadata<AppMetadataV1> = {
+      formatVersion: 1,
+      data: {
+        type: 'webhapp',
+        happ: {
+          sha256: happSha256,
+        },
+        ui: {
+          location: {
+            type: 'filesystem',
+            sha256: uiZipSha256,
+          },
+        },
+      },
+    };
+
+    if (!fs.existsSync(this.fs.appMetadataDir(appId, this.holochainDataRoot))) {
+      fs.mkdirSync(this.fs.appMetadataDir(appId, this.holochainDataRoot), { recursive: true });
+    }
+
+    // TODO potentially back up existing one to allow for undoing updates
+    this.integrityChecker.storeToSignedJSON(
+      path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json'),
+      metaData,
+    );
+
+    // install happ file into conductor
     const pubKey = await this.adminWebsocket.generateAgentPubKey();
     const appInfo = await this.adminWebsocket.installApp({
       agent_key: pubKey,
       installed_app_id: appId,
       membrane_proofs: {},
-      path: tempHappPath,
+      path: happFilePath,
       network_seed: networkSeed,
     });
     await this.adminWebsocket.enableApp({ installed_app_id: appId });
-    console.log('Insalled app.');
     const installedApps = await this.adminWebsocket.listApps({});
     // console.log('Installed apps: ', installedApps);
     this.installedApps = installedApps;
@@ -277,10 +354,21 @@ export class HolochainManager {
 
   async uninstallApp(appId: string) {
     await this.adminWebsocket.uninstallApp({ installed_app_id: appId });
-    fs.rmSync(this.fs.happUiDir(appId, this.holochainDataRoot), { recursive: true });
+    fs.rmSync(this.fs.appMetadataDir(appId, this.holochainDataRoot), { recursive: true });
     console.log('Uninstalled app.');
     const installedApps = await this.adminWebsocket.listApps({});
     console.log('Installed apps: ', installedApps);
     this.installedApps = installedApps;
+
+    // TODO Potentially remove .happ file and ui directory in case it is not used by any
+    // other app instance anymore. This would mean however that happ and UI would need
+    // to be fetched over the network again if the same happ and UI shall be installed
+    // at a later time
   }
+}
+
+function writeFile(filePath: string, contents: string | NodeJS.ArrayBufferView): void {
+  const dirname = path.dirname(filePath);
+  fs.mkdirSync(dirname, { recursive: true });
+  fs.writeFileSync(filePath, contents);
 }

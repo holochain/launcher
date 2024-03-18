@@ -39,6 +39,7 @@ import { validateArgs } from './cli';
 import { SEARCH_HEIGH, WINDOW_SIZE } from './const';
 import { LauncherFileSystem } from './filesystem';
 import { HolochainManager } from './holochainManager';
+import { IntegrityChecker } from './integrityChecker';
 // import { AdminWebsocket } from '@holochain/client';
 import { initializeLairKeystore, launchLairKeystore } from './lairKeystore';
 import { LauncherEmitter } from './launcherEmitter';
@@ -146,6 +147,8 @@ let DEFAULT_ZOME_CALL_SIGNER: ZomeCallSigner | undefined;
 // Zome call signers for external binaries (admin ports used as keys)
 const CUSTOM_ZOME_CALL_SIGNERS: Record<number, ZomeCallSigner> = {};
 
+let INTEGRITY_CHECKER: IntegrityChecker | undefined;
+
 // For now there is only one holochain data root at a time for the sake of simplicity.
 let HOLOCHAIN_DATA_ROOT: HolochainDataRoot | undefined;
 const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
@@ -243,6 +246,8 @@ async function handleSetupAndLaunch(password: string) {
 }
 
 async function handleLaunch(password: string) {
+  INTEGRITY_CHECKER = new IntegrityChecker(password);
+  LAUNCHER_FILE_SYSTEM.setIntegrityChecker(INTEGRITY_CHECKER);
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingLairKeystore');
   let lairUrl: string;
 
@@ -283,6 +288,7 @@ async function handleLaunch(password: string) {
   const [holochainManager, holochainDataRoot] = await HolochainManager.launch(
     LAUNCHER_EMITTER,
     LAUNCHER_FILE_SYSTEM,
+    INTEGRITY_CHECKER,
     password,
     VALIDATED_CLI_ARGS.holochainVersion,
     lairUrl,
@@ -341,7 +347,12 @@ const router = t.router({
       return;
     }
 
-    const happWindow = createHappWindow(opts.input, LAUNCHER_FILE_SYSTEM, holochainManager.appPort);
+    const happWindow = createHappWindow(
+      opts.input,
+      LAUNCHER_FILE_SYSTEM,
+      LAUNCHER_EMITTER,
+      holochainManager.appPort,
+    );
     WINDOW_INFO_MAP[happWindow.webContents.id] = {
       installedAppId: appInfo.installed_app_id,
       agentPubKey: appInfo.agent_pub_key,

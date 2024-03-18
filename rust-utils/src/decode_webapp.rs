@@ -1,7 +1,34 @@
 use std::path::PathBuf;
 use std::fs;
 use holochain_types::web_app::WebAppBundle;
+use crate::types::HappAndUiBytes;
 
+
+
+
+#[napi]
+pub async fn read_and_decode_webhapp(path: String) -> napi::Result<HappAndUiBytes> {
+    let webhapp_bytes = fs::read(path)?;
+    let web_app_bundle = WebAppBundle::decode(&webhapp_bytes)
+        .map_err(|e| napi::Error::from_reason(format!("Failed to decode WebAppBundle: {}", e)))?;
+
+    // extracting happ bundle
+    let app_bundle = web_app_bundle.happ_bundle().await
+        .map_err(|e| napi::Error::from_reason(format!("Failed to get happ bundle from webapp bundle bytes: {}", e)))?;
+
+    let app_bundle_bytes = app_bundle.encode()
+        .map_err(|e| napi::Error::from_reason(format!("Failed to encode AppBundle: {}", e)))?;
+
+    // extracting ui.zip bytes
+    let web_ui_zip_bytes = web_app_bundle.web_ui_zip_bytes().await
+        .map_err(|e| napi::Error::from_reason(format!("Failed to extract ui zip bytes: {}", e)))?;
+
+
+    Ok(HappAndUiBytes {
+        happ_bytes: app_bundle_bytes,
+        ui_bytes: web_ui_zip_bytes.to_vec(),
+    })
+}
 
 
 #[napi]

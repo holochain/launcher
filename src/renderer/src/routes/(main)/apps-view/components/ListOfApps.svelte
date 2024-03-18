@@ -1,12 +1,15 @@
 <script lang="ts">
+	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
 	import { navigationStore } from '$stores';
+	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { APP_STORE, type ExtendedAppInfo } from '../../../../../../types';
 	import AppButton from './AppButton.svelte';
 	import BaseButton from './BaseButton.svelte';
 
 	const client = trpc();
+	const modalStore = getModalStore();
 
 	export let installedApps: ExtendedAppInfo[];
 	export let isSearchInputFilled = false;
@@ -29,6 +32,14 @@
 						$openApp.mutate(app, {
 							onSuccess: () => {
 								openAppCallback();
+							},
+							onError: (error) => {
+								console.error(error);
+								showModalError({
+									modalStore,
+									errorTitle: $i18n.t('appError'),
+									errorMessage: $i18n.t(error.message)
+								});
 							}
 						})}
 				/>

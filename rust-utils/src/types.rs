@@ -50,3 +50,10 @@ pub struct ZomeCallNapi {
     pub expires_at: i64,
     pub signature: Vec<u8>,
 }
+
+
+#[napi(object)]
+pub struct HappAndUiBytes {
+    pub happ_bytes: Vec<u8>,
+    pub ui_bytes: Vec<u8>,
+}

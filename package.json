@@ -1,6 +1,6 @@
 {
   "name": "holochain-launcher-electron",
-  "version": "0.0.15",
+  "version": "0.0.16-alpha.0",
   "private": true,
   "description": "Holochain Launcher Electron (Prototype)",
   "author": "Holochain Foundation <info@holochain.org> (http://holochain.org)",
@@ -17,6 +17,7 @@
     "format": "prettier . \"!src/renderer\" --write",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "lintAndFormatAll": "yarn lint || true && yarn format || true && cd src/renderer && yarn lint || true && yarn format || true && cd ../..",
+    "lintAndFormatAllPrePush": "yarn lint && yarn format && cd src/renderer && yarn lint && yarn format && cd ../..",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "typecheck": "npm run typecheck:node",
     "start": "electron-vite preview",
@@ -29,7 +30,8 @@
     "build:mac": "yarn build && electron-builder --mac --config",
     "build:linux": "yarn build && electron-builder --linux --config",
     "dev:sveltekit": "cd src/renderer && yarn dev",
-    "build:sveltekit": "cd src/renderer && yarn build"
+    "build:sveltekit": "cd src/renderer && yarn build",
+    "prepare": "husky"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0 ",
@@ -38,6 +40,7 @@
     "@holochain/client": "^0.16.3",
     "@trpc/client": "^10.44.1",
     "@trpc/server": "^10.44.1",
+    "adm-zip": "0.5.12",
     "bufferutil": "4.0.8",
     "commander": "11.1.0",
     "electron-serve": "^1.2.0",
@@ -56,6 +59,8 @@
     "@electron-toolkit/eslint-config-ts": "^1.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@napi-rs/cli": "^2.16.3",
+    "@types/adm-zip": "0.5.5",
+    "@types/elliptic": "6.4.18",
     "@types/node": "^20.11.22",
     "@types/split": "^1.0.5",
     "concurrently": "^8.2.2",
@@ -66,6 +71,7 @@
     "eslint": "^8.57.0",
     "eslint-plugin-simple-import-sort": "^12.0.0",
     "get-port": "7.0.0",
+    "husky": "^9.0.11",
     "prettier": "^3.1.1",
     "typescript": "^5.3.3",
     "utf-8-validate": "^6.0.3",
