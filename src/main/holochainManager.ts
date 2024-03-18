@@ -181,8 +181,8 @@ export class HolochainManager {
       );
 
     const conductorConfig = configExists ? overwriteConfig() : defaultConductorConfig();
-    const action = configExists ? 'Overwriting' : 'Writing';
-    console.log(`${action} new conductor-config.yaml...`);
+    const action = configExists ? 'Partially overwriting' : 'Writing new';
+    console.log(`${action} conductor-config.yaml...`);
 
     try {
       fs.writeFileSync(configPath, conductorConfig);
