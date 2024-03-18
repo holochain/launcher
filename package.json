@@ -46,8 +46,10 @@
     "electron-serve": "^1.2.0",
     "electron-trpc": "^0.5.2",
     "elliptic": "6.5.5",
+    "fflate": "^0.8.2",
     "hc-launcher-rust-utils": "file:./rust-utils/dist",
     "nanoid": "5.0.6",
+    "js-sha256": "^0.11.0",
     "split": "1.0.1",
     "winston": "3.11.0",
     "zod": "^3.22.4"
