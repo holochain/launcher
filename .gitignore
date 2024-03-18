@@ -5,3 +5,6 @@ out
 .DS_Store
 
 .env
+
+# testing
+out-tests

@@ -8,3 +8,4 @@ rust-utils/
 .github/
 /.vscode
 *.rs
+out-tests
