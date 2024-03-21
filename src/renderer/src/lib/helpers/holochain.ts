@@ -1,4 +1,4 @@
-import { type CellId, CellInfoSchema } from '../../../../types';
+import { type CellId, CellInfoSchema } from '$shared/types';
 
 export function getCellId(cellInfo: unknown): CellId | undefined {
 	const parsedCellInfo = CellInfoSchema.safeParse(cellInfo);

@@ -4,8 +4,8 @@
 	import { goto } from '$app/navigation';
 	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
+	import { APP_STORE } from '$shared/types';
 
-	import { APP_STORE } from '../../../../../types';
 	import { PasswordForm, SetupProgressWrapper } from '../components';
 
 	const modalStore = getModalStore();

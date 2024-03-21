@@ -4,7 +4,7 @@ import { shell } from 'electron';
 import semver from 'semver';
 import type { ZodSchema } from 'zod';
 
-import type { ErrorWithMessage, WindowInfoRecord } from '../types';
+import type { ErrorWithMessage, WindowInfoRecord } from '../shared/types';
 
 export function encodeQuery(query: Record<string, string>) {
   return Object.entries(query)

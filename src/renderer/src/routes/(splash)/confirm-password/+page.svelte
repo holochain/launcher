@@ -5,9 +5,9 @@
 	import { showModalError } from '$helpers';
 	import { Warning } from '$icons';
 	import { i18n, trpc } from '$services';
+	import { APP_STORE } from '$shared/types';
 	import { appPassword } from '$stores';
 
-	import { APP_STORE } from '../../../../../types';
 	import { PasswordForm, SetupProgressWrapper } from '../components';
 
 	const modalStore = getModalStore();
