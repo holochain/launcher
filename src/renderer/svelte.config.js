@@ -27,7 +27,9 @@ const config = {
 			$helpers: path.resolve('./src/lib/helpers'),
 			$types: path.resolve('./src/lib/types'),
 			$stores: path.resolve('./src/lib/stores'),
-			$icons: path.resolve('./src/lib/icons')
+			$icons: path.resolve('./src/lib/icons'),
+			$const: path.resolve('./src/lib/const'),
+			$modal: path.resolve('./src/lib/modal')
 		}
 	}
 };

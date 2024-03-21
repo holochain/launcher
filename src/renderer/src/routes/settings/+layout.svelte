@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { SYSTEM_INFORMATION, SYSTEM_SETTINGS } from '$const';
 	import { validateApp } from '$helpers';
 	import { i18n, trpc } from '$services';
 
@@ -13,6 +14,8 @@
 	const selectView = (view: string) => goto(`/settings${view ? `?view=${view}` : ''}`);
 
 	$: view = $page.url.searchParams.get('view');
+
+	const systemViews = [SYSTEM_INFORMATION, SYSTEM_SETTINGS];
 </script>
 
 <TopBar />
@@ -24,11 +27,13 @@
 	>
 		<div class="space-y-4 overflow-y-auto p-4">
 			<div class="flex flex-col space-y-1">
-				<MenuEntry
-					name={$i18n.t('systemInformation')}
-					onClick={() => selectView('')}
-					isSelected={!view}
-				/>
+				{#each systemViews as systemView}
+					<MenuEntry
+						name={$i18n.t(systemView)}
+						onClick={() => selectView(systemView)}
+						isSelected={view === systemView || (!view && systemView === SYSTEM_INFORMATION)}
+					/>
+				{/each}
 				<div class="!my-2 h-px w-full bg-tertiary-800"></div>
 				{#if $installedApps.isLoading}
 					<p>{$i18n.t('loading')}</p>

@@ -22,4 +22,10 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "editor.formatOnSave": true,
+  "cSpell.words": [
+    "APPSTORE",
+    "DEVHUB",
+    "Kando",
+    "Webhapp"
+  ],
 }
