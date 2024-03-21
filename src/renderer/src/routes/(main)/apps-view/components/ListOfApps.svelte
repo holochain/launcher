@@ -1,8 +1,9 @@
 <script lang="ts">
+	import { getModalStore } from '@skeletonlabs/skeleton';
+
 	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
 	import { navigationStore } from '$stores';
-	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { APP_STORE, type ExtendedAppInfo } from '../../../../../../types';
 	import AppButton from './AppButton.svelte';

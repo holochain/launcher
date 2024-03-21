@@ -7,8 +7,6 @@ import crypto from 'crypto';
 import fs from 'fs';
 import getPort from 'get-port';
 import * as rustUtils from 'hc-launcher-rust-utils';
-import { nanoid } from 'nanoid';
-import os from 'os';
 import path from 'path';
 import split from 'split';
 
@@ -277,18 +275,13 @@ export class HolochainManager {
     const uiZipHasher = crypto.createHash('sha256');
     const uiZipSha256 = uiZipHasher.update(Buffer.from(happAndUiBytes.uiBytes)).digest('hex');
 
-    // If same UI is not already stored, write ui bytes to temp file to compute hashes
-    // (randomly generated filename to prevent other processes from being able to modify
-    // the file before the hashes are computed)
     const uiDir = path.join(this.fs.uisDir(this.holochainDataRoot), uiZipSha256);
     // here we assume that if the uiDir exists, the hashes.json exists as well.
     if (!fs.existsSync(path.join(uiDir, 'assets'))) {
       fs.mkdirSync(uiDir, { recursive: true });
-      const tmpUiZipPath = path.join(os.tmpdir(), `${nanoid(13)}.zip`);
-      fs.writeFileSync(tmpUiZipPath, Buffer.from(happAndUiBytes.uiBytes));
 
       const hashes: Record<string, string> = {};
-      const zip = new AdmZip(tmpUiZipPath);
+      const zip = new AdmZip(Buffer.from(happAndUiBytes.uiBytes));
       zip.getEntries().forEach((entry) => {
         // console.log(entry.entryName);
         const hasher = crypto.createHash('sha256');
@@ -300,9 +293,6 @@ export class HolochainManager {
 
       this.integrityChecker.storeToSignedJSON(path.join(uiDir, 'hashes.json'), hashes);
       zip.extractAllTo(path.join(uiDir, 'assets'));
-
-      // delete ui temp file
-      fs.rmSync(tmpUiZipPath);
     }
 
     // store app metadata to installed app directory

@@ -1,0 +1,10 @@
+{
+  "extends": "@electron-toolkit/tsconfig/tsconfig.node.json",
+  "include": ["electron.vite.config.*", "src/main/*", "src/main/tests/*", "src/types/*"],
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "out-tests",
+    "module": "CommonJS",
+    "types": ["electron-vite/node", "mocha"]
+  }
+}
