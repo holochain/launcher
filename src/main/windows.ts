@@ -14,8 +14,9 @@ import serve from 'electron-serve';
 import path from 'path';
 import url from 'url';
 
-import type { ExtendedAppInfo, Screen } from '../shared/types';
-import { LAUNCHER_ERROR, MAIN_SCREEN, SETTINGS_SCREEN } from '../shared/types';
+import type { ExtendedAppInfo, Screen } from '$shared/types';
+import { LAUNCHER_ERROR, MAIN_SCREEN, SETTINGS_SCREEN } from '$shared/types';
+
 import { SEARCH_HEIGH, WINDOW_SIZE } from './const';
 import type { LauncherFileSystem } from './filesystem';
 import { type UiHashes } from './holochainManager';

@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 
-import type { EventMap } from '../shared/types';
+import type { EventMap } from '$shared/types';
 
 export class LauncherEmitter extends EventEmitter {
   // Override 'on' method for type safety

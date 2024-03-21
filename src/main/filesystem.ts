@@ -2,7 +2,8 @@ import type { App } from 'electron';
 import fs from 'fs';
 import path from 'path';
 
-import type { HolochainDataRoot } from '../shared/types';
+import type { HolochainDataRoot } from '$shared/types';
+
 import { type IntegrityChecker } from './integrityChecker';
 import { breakingVersion } from './utils';
 
