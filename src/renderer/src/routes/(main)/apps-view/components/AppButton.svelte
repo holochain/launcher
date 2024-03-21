@@ -1,7 +1,8 @@
 <script lang="ts">
 	import clsx from 'clsx';
 
-	import type { ExtendedAppInfo } from '../../../../../../types';
+	import type { ExtendedAppInfo } from '$shared/types';
+
 	import BaseButton from './BaseButton.svelte';
 	import TooltipForTruncate from './TooltipForTruncate.svelte';
 

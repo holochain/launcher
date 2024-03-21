@@ -7,8 +7,7 @@
 	import { CenterProgressRadial } from '$components';
 	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
-
-	import { SETTINGS_SCREEN } from '../../../types';
+	import { SETTINGS_SCREEN } from '$shared/types';
 
 	const client = trpc();
 

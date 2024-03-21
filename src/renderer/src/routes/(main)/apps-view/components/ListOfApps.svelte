@@ -3,9 +3,9 @@
 
 	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
+	import { APP_STORE, type ExtendedAppInfo } from '$shared/types';
 	import { navigationStore } from '$stores';
 
-	import { APP_STORE, type ExtendedAppInfo } from '../../../../../../types';
 	import AppButton from './AppButton.svelte';
 	import BaseButton from './BaseButton.svelte';
 

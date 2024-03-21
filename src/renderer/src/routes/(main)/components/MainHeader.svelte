@@ -5,14 +5,8 @@
 	import { IconButton, Input } from '$components';
 	import { Gear, Home, Rocket } from '$icons';
 	import { i18n, trpc } from '$services';
+	import { ANIMATION_DURATION, APP_STORE, APPS_VIEW, type MainScreenRoute } from '$shared/types';
 	import { navigationStore } from '$stores';
-
-	import {
-		ANIMATION_DURATION,
-		APP_STORE,
-		APPS_VIEW,
-		type MainScreenRoute
-	} from '../../../../../types';
 
 	const client = trpc();
 

@@ -5,9 +5,8 @@
 	import { MODAL_INSTALL_KANDO } from '$const';
 	import { createModalParams } from '$helpers';
 	import { i18n, trpc } from '$services';
+	import { APPS_VIEW } from '$shared/types';
 	import { navigationStore } from '$stores';
-
-	import { APPS_VIEW } from '../../../../../../types';
 
 	const client = trpc();
 

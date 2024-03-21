@@ -1,6 +1,7 @@
 import fs from 'fs';
 
-import type { HolochainVersion } from '../types';
+import type { HolochainVersion } from '$shared/types';
+
 import { DEFAULT_HOLOCHAIN_VERSION, LAIR_BINARY } from './binaries';
 
 export type CliArgs = {

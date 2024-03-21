@@ -2,8 +2,7 @@
 	import { IconButton } from '$components';
 	import { Gear, Home, Rocket, Upload } from '$icons';
 	import { trpc } from '$services';
-
-	import { APP_STORE, APPS_VIEW } from '../../../../../types';
+	import { APP_STORE, APPS_VIEW } from '$shared/types';
 
 	const client = trpc();
 	const closeSettings = client.closeSettings.createMutation();

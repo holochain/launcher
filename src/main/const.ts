@@ -1,11 +1,10 @@
-import type { AppToInstall } from '../types';
+import { APPSTORE_APP_ID, DEVHUB_APP_ID } from '$shared/const';
+import type { AppToInstall } from '$shared/types';
 
 export const WINDOW_SIZE = 600;
 export const SEARCH_HEIGH = 200;
 
-export const APPSTORE_APP_ID = 'App Store 0.0.1';
 export const APPSTORE_SHA256 = 'e75e94b26e97e7ae9f8e9ea5d5ae0b532d561b7d12b4469275ea34ee06dcfd9c';
-export const DEVHUB_APP_ID = 'Dev Hub 0.0.1';
 export const DEVHUB_SHA256 = '30faeccb7c0333ffd5a01e3be111dac71773ad344ecb386f2f011bf61e513d96';
 
 export const APPS_TO_INSTALL: AppToInstall[] = [

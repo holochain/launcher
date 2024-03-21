@@ -3,8 +3,7 @@
 
 	import { goto } from '$app/navigation';
 	import { trpc } from '$services';
-
-	import { APPS_VIEW } from '../../../../types';
+	import { APPS_VIEW } from '$shared/types';
 
 	const client = trpc();
 
