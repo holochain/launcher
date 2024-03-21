@@ -1,30 +1,21 @@
 <script lang="ts">
-	import {
-		Avatar,
-		getModalStore,
-		type ModalComponent,
-		type ModalSettings
-	} from '@skeletonlabs/skeleton';
+	import { Avatar, getModalStore } from '@skeletonlabs/skeleton';
 
 	import { Button } from '$components';
+	import { MODAL_INSTALL_KANDO } from '$const';
+	import { createModalParams } from '$helpers';
 	import { i18n, trpc } from '$services';
 	import { navigationStore } from '$stores';
 
 	import { APPS_VIEW } from '../../../../../../types';
-	import ModalApp from './ModalApp.svelte';
 
 	const client = trpc();
 
 	const modalStore = getModalStore();
 
-	const modalComponent: ModalComponent = { ref: ModalApp };
-
 	const installedApps = client.getInstalledApps.createQuery();
 
-	const modal: ModalSettings = {
-		type: 'component',
-		component: modalComponent
-	};
+	const modal = createModalParams(MODAL_INSTALL_KANDO);
 </script>
 
 <div class="card flex items-center p-4 dark:variant-soft-warning">

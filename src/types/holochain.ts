@@ -135,3 +135,10 @@ export type LoadingProgressUpdate =
   | 'installingAppStore'
   | 'installingDevHub'
   | '';
+
+export type AppToInstall = {
+  id: string;
+  sha256: string;
+  name: string;
+  progressUpdate: LoadingProgressUpdate;
+};

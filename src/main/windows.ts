@@ -52,6 +52,15 @@ const createBrowserWindow = (title: string) =>
     },
   });
 
+export const focusVisibleWindow = (launcherWindows: Record<Screen, BrowserWindow>) => {
+  const visibleWindow = Object.values(launcherWindows).find(
+    (window) => !window.isMinimized() && window.isVisible(),
+  );
+  if (visibleWindow) {
+    visibleWindow.focus();
+  }
+};
+
 export const setupAppWindows = () => {
   let isQuitting = false;
   // Create the browser window.
@@ -62,14 +71,33 @@ export const setupAppWindows = () => {
   const icon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '16x16.png'));
   const tray = new Tray(icon);
 
+  loadOrServe(mainWindow, { screen: MAIN_SCREEN });
+
+  const windows: Record<Screen, BrowserWindow> = {
+    [MAIN_SCREEN]: mainWindow,
+    [SETTINGS_SCREEN]: settingsWindow,
+  };
+
   const contextMenu = Menu.buildFromTemplate([
     {
       label: 'Open',
       type: 'normal',
       click() {
-        mainWindow.show();
+        focusVisibleWindow(windows);
       },
     },
+    ...(is.dev
+      ? [
+          {
+            label: 'Open dev tools',
+            type: 'normal' as const,
+            click: () =>
+              Object.values(windows)
+                .filter((window) => !window.isMinimized() && window.isVisible())
+                .forEach((window) => window.webContents.openDevTools()),
+          },
+        ]
+      : []),
     {
       label: 'Quit',
       type: 'normal',
@@ -82,16 +110,9 @@ export const setupAppWindows = () => {
   tray.setToolTip('Holochain Launcher');
   tray.setContextMenu(contextMenu);
 
-  loadOrServe(mainWindow, { screen: MAIN_SCREEN });
-
-  const windows: Record<Screen, BrowserWindow> = {
-    [MAIN_SCREEN]: mainWindow,
-    [SETTINGS_SCREEN]: settingsWindow,
-  };
-
   globalShortcut.register('CommandOrControl+Shift+L', () => {
     mainWindow.setSize(WINDOW_SIZE, SEARCH_HEIGH);
-    mainWindow.show();
+    focusVisibleWindow(windows);
   });
 
   app.on('will-quit', () => {

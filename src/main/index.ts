@@ -37,7 +37,7 @@ import {
 } from '../types';
 import { checkHolochainLairBinariesExist } from './binaries';
 import { validateArgs } from './cli';
-import { SEARCH_HEIGH, WINDOW_SIZE } from './const';
+import { APPS_TO_INSTALL, DEVHUB_APP_ID, SEARCH_HEIGH, WINDOW_SIZE } from './const';
 import { LauncherFileSystem } from './filesystem';
 import { HolochainManager } from './holochainManager';
 import { IntegrityChecker } from './integrityChecker';
@@ -52,7 +52,7 @@ import {
   throwTRPCErrorError,
   validateWithZod,
 } from './utils';
-import { createHappWindow, loadOrServe, setupAppWindows } from './windows';
+import { createHappWindow, focusVisibleWindow, loadOrServe, setupAppWindows } from './windows';
 
 const t = initTRPC.create({ isServer: true });
 
@@ -130,11 +130,11 @@ if (!isFirstInstance) {
 }
 
 app.on('second-instance', () => {
-  LAUNCHER_WINDOWS[MAIN_SCREEN].show();
+  focusVisibleWindow(LAUNCHER_WINDOWS);
 });
 
 app.on('activate', () => {
-  LAUNCHER_WINDOWS[MAIN_SCREEN].show();
+  focusVisibleWindow(LAUNCHER_WINDOWS);
 });
 
 protocol.registerSchemesAsPrivileged([
@@ -317,28 +317,18 @@ async function handleLaunch(password: string) {
   const defaultAppsNetworkSeed = app.isPackaged
     ? `launcher-${breakingVersion(app.getVersion())}`
     : `launcher-dev-${os.hostname()}`;
-  const appstoreAppId = 'App Store 0.0.1';
-  const appstoreSha256 = 'e75e94b26e97e7ae9f8e9ea5d5ae0b532d561b7d12b4469275ea34ee06dcfd9c';
-  const devhubAppId = 'Dev Hub 0.0.1';
-  const devhubSha256 = '30faeccb7c0333ffd5a01e3be111dac71773ad344ecb386f2f011bf61e513d96';
-  if (!holochainManager.installedApps.map((app) => app.installed_app_id).includes(appstoreAppId)) {
-    LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'installingAppStore');
-    await holochainManager.installHeadlessHapp(
-      path.join(DEFAULT_APPS_DIRECTORY, 'appstore.happ'),
-      appstoreAppId,
-      appstoreSha256,
-      defaultAppsNetworkSeed,
-    );
-  }
-  if (!holochainManager.installedApps.map((app) => app.installed_app_id).includes(devhubAppId)) {
-    LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'installingDevHub');
-    await holochainManager.installHeadlessHapp(
-      path.join(DEFAULT_APPS_DIRECTORY, 'devhub.happ'),
-      devhubAppId,
-      devhubSha256,
-      defaultAppsNetworkSeed,
-    );
-  }
+
+  APPS_TO_INSTALL.forEach(async ({ id, sha256, name, progressUpdate }) => {
+    if (!holochainManager.installedApps.map((app) => app.installed_app_id).includes(id)) {
+      LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, progressUpdate);
+      await holochainManager.installHeadlessHapp(
+        path.join(DEFAULT_APPS_DIRECTORY, name),
+        id,
+        sha256,
+        defaultAppsNetworkSeed,
+      );
+    }
+  });
 
   LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE, SEARCH_HEIGH, true);
   loadOrServe(LAUNCHER_WINDOWS[SETTINGS_SCREEN], { screen: SETTINGS_SCREEN });
@@ -454,6 +444,11 @@ const router = t.router({
     () => HOLOCHAIN_MANAGERS[Object.keys(HOLOCHAIN_MANAGERS)[0]].version,
   ),
   getAppPort: t.procedure.query(() => APP_PORT),
+  isDevhubInstalled: t.procedure.query(() =>
+    Object.values(HOLOCHAIN_MANAGERS)
+      .flatMap((manager) => manager.installedApps)
+      .some((app) => app.installed_app_id === DEVHUB_APP_ID),
+  ),
   getInstalledApps: t.procedure.query(() => {
     const installedApps = Object.values(HOLOCHAIN_MANAGERS).flatMap((manager) =>
       manager.installedApps.map((app) => ({

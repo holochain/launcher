@@ -1,24 +1,14 @@
 <script lang="ts">
-	import {
-		Avatar,
-		getModalStore,
-		type ModalComponent,
-		type ModalSettings
-	} from '@skeletonlabs/skeleton';
+	import { Avatar, getModalStore } from '@skeletonlabs/skeleton';
 
 	import { Button } from '$components';
+	import { MODAL_INSTALL_FROM_FILE } from '$const';
+	import { createModalParams } from '$helpers';
 	import { i18n } from '$services';
-
-	import ModalFromWebhapp from './ModalFromWebhapp.svelte';
 
 	const modalStore = getModalStore();
 
-	const modalComponent: ModalComponent = { ref: ModalFromWebhapp };
-
-	const modal: ModalSettings = {
-		type: 'component',
-		component: modalComponent
-	};
+	const modal = createModalParams(MODAL_INSTALL_FROM_FILE);
 </script>
 
 <div class="card flex items-center p-4 dark:variant-soft-warning">

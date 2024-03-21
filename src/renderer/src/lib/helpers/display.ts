@@ -1,5 +1,7 @@
 import type { ModalSettings, ModalStore } from '@skeletonlabs/skeleton';
 
+import type { Modals } from '$types';
+
 export const showModalError = ({
 	modalStore,
 	errorTitle,
@@ -16,3 +18,8 @@ export const showModalError = ({
 	};
 	modalStore.trigger(modal);
 };
+
+export const createModalParams = (component: Modals): ModalSettings => ({
+	type: 'component' as const,
+	component
+});
