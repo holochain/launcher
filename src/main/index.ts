@@ -1,4 +1,5 @@
 import { optimizer } from '@electron-toolkit/utils';
+import type { AppInfo } from '@holochain/client';
 import { initTRPC } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
 import * as childProcess from 'child_process';
@@ -37,7 +38,13 @@ import {
 } from '../types';
 import { checkHolochainLairBinariesExist } from './binaries';
 import { validateArgs } from './cli';
-import { APPS_TO_INSTALL, DEVHUB_APP_ID, SEARCH_HEIGH, WINDOW_SIZE } from './const';
+import {
+  APPS_TO_INSTALL,
+  APPSTORE_APP_ID,
+  DEVHUB_APP_ID,
+  SEARCH_HEIGH,
+  WINDOW_SIZE,
+} from './const';
 import { LauncherFileSystem } from './filesystem';
 import { HolochainManager } from './holochainManager';
 import { IntegrityChecker } from './integrityChecker';
@@ -450,20 +457,23 @@ const router = t.router({
       .some((app) => app.installed_app_id === DEVHUB_APP_ID),
   ),
   getInstalledApps: t.procedure.query(() => {
+    const filterHeadlessApps = (app: { installed_app_id: string }) =>
+      ![DEVHUB_APP_ID, APPSTORE_APP_ID].includes(app.installed_app_id);
+    const mapAppInfo = (manager: HolochainManager) => (app: AppInfo) => ({
+      appInfo: app,
+      version: manager.version,
+      holochainDataRoot: manager.holochainDataRoot,
+    });
+
     const installedApps = Object.values(HOLOCHAIN_MANAGERS).flatMap((manager) =>
-      manager.installedApps.map((app) => ({
-        appInfo: app,
-        version: manager.version,
-        holochainDataRoot: manager.holochainDataRoot,
-      })),
+      manager.installedApps.filter(filterHeadlessApps).map(mapAppInfo(manager)),
     );
 
-    const installedAppsValidated = validateWithZod({
+    return validateWithZod({
       schema: z.array(ExtendedAppInfoSchema),
       data: installedApps,
       errorType: WRONG_INSTALLED_APP_STRUCTURE,
     });
-    return installedAppsValidated;
   }),
   handleSetupAndLaunch: handlePasswordInput(handleSetupAndLaunch),
   launch: handlePasswordInput(handleLaunch),
