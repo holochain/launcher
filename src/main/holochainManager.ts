@@ -10,8 +10,9 @@ import * as rustUtils from 'hc-launcher-rust-utils';
 import path from 'path';
 import split from 'split';
 
-import type { HolochainDataRoot, HolochainPartition, HolochainVersion } from '../shared/types';
-import { APP_INSTALLED, HOLOCHAIN_ERROR, HOLOCHAIN_LOG } from '../shared/types';
+import type { HolochainDataRoot, HolochainPartition, HolochainVersion } from '$shared/types';
+import { APP_INSTALLED, HOLOCHAIN_ERROR, HOLOCHAIN_LOG } from '$shared/types';
+
 import { DEFAULT_HOLOCHAIN_VERSION, HOLOCHAIN_BINARIES } from './binaries';
 import type { AppMetadata, AppMetadataV1, LauncherFileSystem } from './filesystem';
 import { createDirIfNotExists } from './filesystem';

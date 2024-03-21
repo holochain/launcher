@@ -19,7 +19,6 @@ import path from 'path';
 import z from 'zod';
 
 import { APPSTORE_APP_ID, DEVHUB_APP_ID } from '$shared/const';
-
 import type {
   HolochainDataRoot,
   HolochainPartition,
@@ -27,7 +26,7 @@ import type {
   MainScreenRoute,
   Screen,
   WindowInfoRecord,
-} from '../shared/types';
+} from '$shared/types';
 import {
   ANIMATION_DURATION,
   CHECK_INITIALIZED_KEYSTORE_ERROR,
@@ -43,7 +42,8 @@ import {
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
   SETTINGS_SCREEN,
   WRONG_INSTALLED_APP_STRUCTURE,
-} from '../shared/types';
+} from '$shared/types';
+
 import { checkHolochainLairBinariesExist } from './binaries';
 import { validateArgs } from './cli';
 import { APPS_TO_INSTALL, SEARCH_HEIGH, WINDOW_SIZE } from './const';
