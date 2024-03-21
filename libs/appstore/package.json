@@ -17,16 +17,11 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "rimraf dist && tsc",
     "build:watch": "tsc --watch --preserveWatchOutput"
   },
   "type": "module",
   "dependencies": {
-    "@holochain/client": "0.16.10",
     "@spartan-hc/bundles": "0.2.2"
-  },
-  "devDependencies": {
-    "rimraf": "^3.0.2",
-    "typescript": "^5.2.2"
   }
 }

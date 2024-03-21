@@ -10,7 +10,7 @@
   "license": "MIT",
   "devDependencies": {
     "@napi-rs/cli": "^2.16.5",
-    "rimraf": "5.0.5",
+
     "ava": "^5.1.1"
   },
   "ava": {
