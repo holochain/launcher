@@ -30,6 +30,7 @@ const config = {
 			$icons: path.resolve('./src/lib/icons'),
 			$const: path.resolve('./src/lib/const'),
 			$modal: path.resolve('./src/lib/modal'),
+			$queries: path.resolve('./src/lib/queries'),
 			$shared: path.resolve('../shared')
 		}
 	}

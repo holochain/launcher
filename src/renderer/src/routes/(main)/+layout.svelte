@@ -2,12 +2,14 @@
 	import { onMount } from 'svelte';
 
 	import { goto } from '$app/navigation';
-	import { trpc } from '$services';
+	import { createAppStoreClient, trpc } from '$services';
 	import { APPS_VIEW } from '$shared/types';
 
 	const client = trpc();
 
 	const hideApp = client.hideApp.createMutation();
+
+	const appPort = client.getAppPort.createQuery();
 
 	const handleEscapeKey = (event: KeyboardEvent): void => {
 		if (event.key === 'Escape') {
@@ -23,6 +25,13 @@
 	});
 
 	onMount(() => {
+		const unsubscribe = appPort.subscribe(async ({ isSuccess, data }) => {
+			if (isSuccess && typeof data === 'number') {
+				await createAppStoreClient(data);
+				unsubscribe();
+			}
+		});
+
 		window.addEventListener('keydown', handleEscapeKey);
 		return () => {
 			window.removeEventListener('keydown', handleEscapeKey);

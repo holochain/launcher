@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { SYSTEM_INFORMATION, SYSTEM_SETTINGS } from '$const';
 	import { validateApp } from '$helpers';
-	import { i18n, trpc } from '$services';
+	import { createAppStoreClient, i18n, trpc } from '$services';
 
 	import { MenuEntry, TopBar } from './components';
 
@@ -16,6 +18,17 @@
 	$: view = $page.url.searchParams.get('view');
 
 	const systemViews = [SYSTEM_INFORMATION, SYSTEM_SETTINGS];
+
+	const appPort = client.getAppPort.createQuery();
+
+	onMount(() => {
+		const unsubscribe = appPort.subscribe(async ({ isSuccess, data }) => {
+			if (isSuccess && typeof data === 'number') {
+				await createAppStoreClient(data);
+				unsubscribe();
+			}
+		});
+	});
 </script>
 
 <TopBar />
