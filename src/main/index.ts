@@ -203,7 +203,7 @@ const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeReques
     expiresAt: getNonceExpiration(),
   };
 
-  if (windowInfo.adminPort) {
+  if (windowInfo && windowInfo.adminPort) {
     // In case of externally running binaries we need to use a custom zome call signer
     const zomeCallSigner = CUSTOM_ZOME_CALL_SIGNERS[windowInfo.adminPort];
     return zomeCallSigner.signZomeCall(zomeCallUnsignedNapi);
