@@ -1,5 +1,11 @@
 import { optimizer } from '@electron-toolkit/utils';
-import type { AppInfo } from '@holochain/client';
+import {
+  type AppInfo,
+  type CallZomeRequest,
+  getNonceExpiration,
+  randomNonce,
+} from '@holochain/client';
+import { encode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
 import * as childProcess from 'child_process';
@@ -168,18 +174,52 @@ let LAIR_HANDLE: childProcess.ChildProcessWithoutNullStreams | undefined;
 let LAUNCHER_WINDOWS: Record<Screen, BrowserWindow>;
 const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
 
-const handleSignZomeCall = (e: IpcMainInvokeEvent, zomeCall: ZomeCallUnsignedNapi) => {
+const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeRequest) => {
   // TODO check here that cellId belongs to the installedAppId that the window belongs to
   const windowInfo = WINDOW_INFO_MAP[e.sender.id];
-  if (zomeCall.provenance.toString() !== Array.from(windowInfo.agentPubKey).toString())
-    return Promise.reject('Agent public key unauthorized.');
+  if (request.provenance.toString() !== Array.from(windowInfo.agentPubKey).toString()) {
+    // Launcher admin windows get a wildcard to have any zome calls signed
+    if (
+      !Object.values(LAUNCHER_WINDOWS)
+        .map((window) => window.webContents.id)
+        .includes(e.sender.id)
+    ) {
+      return Promise.reject('Agent public key unauthorized.');
+    }
+  }
+
+  const zomeCallUnsignedNapi: ZomeCallUnsignedNapi = {
+    provenance: Array.from(request.provenance),
+    cellId: [Array.from(request.cell_id[0]), Array.from(request.cell_id[1])],
+    zomeName: request.zome_name,
+    fnName: request.fn_name,
+    payload: Array.from(encode(request.payload)),
+    nonce: Array.from(await randomNonce()),
+    expiresAt: getNonceExpiration(),
+  };
+
   if (windowInfo.adminPort) {
     // In case of externally running binaries we need to use a custom zome call signer
     const zomeCallSigner = CUSTOM_ZOME_CALL_SIGNERS[windowInfo.adminPort];
-    return zomeCallSigner.signZomeCall(zomeCall);
+    return zomeCallSigner.signZomeCall(zomeCallUnsignedNapi);
   }
   if (!DEFAULT_ZOME_CALL_SIGNER) throw Error('Lair signer is not ready');
-  return DEFAULT_ZOME_CALL_SIGNER.signZomeCall(zomeCall);
+  return DEFAULT_ZOME_CALL_SIGNER.signZomeCall(zomeCallUnsignedNapi);
+};
+
+// https://github.com/holochain/holochain-client-js/issues/221
+const handleSignZomeCallLegacy = async (e: IpcMainInvokeEvent, request: ZomeCallUnsignedNapi) => {
+  const windowInfo = WINDOW_INFO_MAP[e.sender.id];
+  if (request.provenance.toString() !== Array.from(windowInfo.agentPubKey).toString())
+    return Promise.reject('Agent public key unauthorized.');
+
+  if (windowInfo.adminPort) {
+    // In case of externally running binaries we need to use a custom zome call signer
+    const zomeCallSigner = CUSTOM_ZOME_CALL_SIGNERS[windowInfo.adminPort];
+    return zomeCallSigner.signZomeCall(request);
+  }
+  if (!DEFAULT_ZOME_CALL_SIGNER) throw Error('Lair signer is not ready');
+  return DEFAULT_ZOME_CALL_SIGNER.signZomeCall(request);
 };
 
 // // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -203,6 +243,7 @@ app.whenReady().then(async () => {
   createIPCHandler({ router, windows: Object.values(LAUNCHER_WINDOWS) });
 
   ipcMain.handle('sign-zome-call', handleSignZomeCall);
+  ipcMain.handle('sign-zome-call-legacy', handleSignZomeCallLegacy);
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
