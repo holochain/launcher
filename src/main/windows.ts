@@ -39,7 +39,14 @@ const loadVite = (window: BrowserWindow, query: Record<string, string> = {}): vo
 
 export const loadOrServe = is.dev ? loadVite : serveURL;
 
-const createBrowserWindow = (title: string) =>
+/**
+ * Admin windows have special priviledges when it comes to zome call signing. Normal happs must run
+ * in happ windows with lower priviledges.
+ *
+ * @param title
+ * @returns
+ */
+const createAdminWindow = (title: string) =>
   new BrowserWindow({
     frame: false,
     width: WINDOW_SIZE,
@@ -64,9 +71,9 @@ export const focusVisibleWindow = (launcherWindows: Record<Screen, BrowserWindow
 export const setupAppWindows = () => {
   let isQuitting = false;
   // Create the browser window.
-  const mainWindow = createBrowserWindow('Holochain Launcher');
+  const mainWindow = createAdminWindow('Holochain Launcher');
 
-  const settingsWindow = createBrowserWindow('Holochain Launcher Settings');
+  const settingsWindow = createAdminWindow('Holochain Launcher Settings');
 
   const icon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '16x16.png'));
   const tray = new Tray(icon);
