@@ -177,8 +177,16 @@ const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - 
 const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeRequest) => {
   // TODO check here that cellId belongs to the installedAppId that the window belongs to
   const windowInfo = WINDOW_INFO_MAP[e.sender.id];
-  if (request.provenance.toString() !== Array.from(windowInfo.agentPubKey).toString())
-    return Promise.reject('Agent public key unauthorized.');
+  if (request.provenance.toString() !== Array.from(windowInfo.agentPubKey).toString()) {
+    // Launcher admin windows get a wildcard to have any zome calls signed
+    if (
+      !Object.values(LAUNCHER_WINDOWS)
+        .map((window) => window.webContents.id)
+        .includes(e.sender.id)
+    ) {
+      return Promise.reject('Agent public key unauthorized.');
+    }
+  }
 
   const zomeCallUnsignedNapi: ZomeCallUnsignedNapi = {
     provenance: Array.from(request.provenance),
