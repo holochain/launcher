@@ -218,7 +218,7 @@ const handleSignZomeCallLegacy = async (e: IpcMainInvokeEvent, request: ZomeCall
   if (request.provenance.toString() !== Array.from(windowInfo.agentPubKey).toString())
     return Promise.reject('Agent public key unauthorized.');
 
-  if (windowInfo.adminPort) {
+  if (windowInfo && windowInfo.adminPort) {
     // In case of externally running binaries we need to use a custom zome call signer
     const zomeCallSigner = CUSTOM_ZOME_CALL_SIGNERS[windowInfo.adminPort];
     return zomeCallSigner.signZomeCall(request);
