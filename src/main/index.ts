@@ -58,6 +58,7 @@ import { DEFAULT_APPS_DIRECTORY } from './paths';
 import {
   breakingVersion,
   isHappAlreadyOpened,
+  signZomeCall,
   throwTRPCErrorError,
   validateWithZod,
 } from './utils';
@@ -206,10 +207,10 @@ const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeReques
   if (windowInfo && windowInfo.adminPort) {
     // In case of externally running binaries we need to use a custom zome call signer
     const zomeCallSigner = CUSTOM_ZOME_CALL_SIGNERS[windowInfo.adminPort];
-    return zomeCallSigner.signZomeCall(zomeCallUnsignedNapi);
+    return signZomeCall(zomeCallSigner, zomeCallUnsignedNapi);
   }
   if (!DEFAULT_ZOME_CALL_SIGNER) throw Error('Lair signer is not ready');
-  return DEFAULT_ZOME_CALL_SIGNER.signZomeCall(zomeCallUnsignedNapi);
+  return signZomeCall(DEFAULT_ZOME_CALL_SIGNER, zomeCallUnsignedNapi);
 };
 
 // https://github.com/holochain/holochain-client-js/issues/221
