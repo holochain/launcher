@@ -52,6 +52,7 @@
     "fflate": "^0.8.2",
     "hc-launcher-rust-utils": "file:./rust-utils/dist",
     "js-sha256": "^0.11.0",
+    "@msgpack/msgpack": "^2.8.0",
     "nanoid": "5.0.6",
     "split": "1.0.1",
     "winston": "3.12.0",
