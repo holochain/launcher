@@ -1,6 +1,8 @@
+import type { CallZomeRequestSigned } from '@holochain/client';
 import { TRPCError } from '@trpc/server';
 import { BrowserWindow } from 'electron';
 import { shell } from 'electron';
+import type { ZomeCallNapi, ZomeCallSigner, ZomeCallUnsignedNapi } from 'hc-launcher-rust-utils';
 import semver from 'semver';
 import type { ZodSchema } from 'zod';
 
@@ -136,4 +138,28 @@ export function breakingVersion(version: string) {
   const patch = semver.patch(version);
 
   return major === 0 ? (minor === 0 ? `0.0.${patch}` : `0.${minor}.x`) : `${major}.x.x`;
+}
+
+export async function signZomeCall(
+  zomeCallSigner: ZomeCallSigner,
+  zomeCallUnsigned: ZomeCallUnsignedNapi,
+): Promise<CallZomeRequestSigned> {
+  const zomeCallSignedNapi: ZomeCallNapi = await zomeCallSigner.signZomeCall(zomeCallUnsigned);
+
+  const zomeCallSigned: CallZomeRequestSigned = {
+    provenance: Uint8Array.from(zomeCallSignedNapi.provenance),
+    cap_secret: null,
+    cell_id: [
+      Uint8Array.from(zomeCallSignedNapi.cellId[0]),
+      Uint8Array.from(zomeCallSignedNapi.cellId[1]),
+    ],
+    zome_name: zomeCallSignedNapi.zomeName,
+    fn_name: zomeCallSignedNapi.fnName,
+    payload: Uint8Array.from(zomeCallSignedNapi.payload),
+    signature: Uint8Array.from(zomeCallSignedNapi.signature),
+    expires_at: zomeCallSignedNapi.expiresAt,
+    nonce: Uint8Array.from(zomeCallSignedNapi.nonce),
+  };
+
+  return zomeCallSigned;
 }
