@@ -8,5 +8,6 @@
 	"noRunningHolochainManagerError": "No running Holochain manager",
 	"unknownError": "Unknown error",
 	"wrongInstalledAppStructure": "Wrong installed app structure",
-	"wrongPassword": "Wrong password"
+	"wrongPassword": "Wrong password",
+	"youNeedToSetupAtLeastOnePublisher": "You need to setup at least one publisher"
 }
