@@ -7,7 +7,6 @@ import {
 } from '@holochain/client';
 import { encode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
-import { observable } from '@trpc/server/observable';
 import * as childProcess from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
@@ -18,12 +17,10 @@ import os from 'os';
 import path from 'path';
 import z from 'zod';
 
-import { APPSTORE_APP_ID, DEVHUB_APP_ID } from '$shared/const';
+import { APP_STORE_APP_ID, DEVHUB_APP_ID } from '$shared/const';
 import type {
   HolochainDataRoot,
   HolochainPartition,
-  LoadingProgressUpdate,
-  MainScreenRoute,
   Screen,
   WindowInfoRecord,
 } from '$shared/types';
@@ -57,6 +54,7 @@ import { setupLogs } from './logs';
 import { DEFAULT_APPS_DIRECTORY } from './paths';
 import {
   breakingVersion,
+  createObservable,
   isHappAlreadyOpened,
   signZomeCall,
   throwTRPCErrorError,
@@ -165,9 +163,7 @@ const CUSTOM_ZOME_CALL_SIGNERS: Record<number, ZomeCallSigner> = {};
 
 let INTEGRITY_CHECKER: IntegrityChecker | undefined;
 
-// App port of holochain version in nwhich appstore and devhub are installed.
 let APP_PORT: number | undefined;
-
 // For now there is only one holochain data root at a time for the sake of simplicity.
 let HOLOCHAIN_DATA_ROOT: HolochainDataRoot | undefined;
 const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
@@ -360,7 +356,6 @@ async function handleLaunch(password: string) {
   HOLOCHAIN_DATA_ROOT = holochainDataRoot;
   HOLOCHAIN_MANAGERS[holochainDataRoot.name] = holochainManager;
   APP_PORT = holochainManager.appPort;
-
   // Install default apps if necessary
   // TODO check sha256 hashes
   // TODO Do not install devhub on startup
@@ -493,7 +488,6 @@ const router = t.router({
   holochainVersion: t.procedure.query(
     () => HOLOCHAIN_MANAGERS[Object.keys(HOLOCHAIN_MANAGERS)[0]].version,
   ),
-  getAppPort: t.procedure.query(() => APP_PORT),
   isDevhubInstalled: t.procedure.query(() =>
     Object.values(HOLOCHAIN_MANAGERS)
       .flatMap((manager) => manager.installedApps)
@@ -501,7 +495,7 @@ const router = t.router({
   ),
   getInstalledApps: t.procedure.query(() => {
     const filterHeadlessApps = (app: { installed_app_id: string }) =>
-      ![DEVHUB_APP_ID, APPSTORE_APP_ID].includes(app.installed_app_id);
+      ![DEVHUB_APP_ID, APP_STORE_APP_ID].includes(app.installed_app_id);
     const mapAppInfo = (manager: HolochainManager) => (app: AppInfo) => ({
       appInfo: app,
       version: manager.version,
@@ -520,31 +514,12 @@ const router = t.router({
   }),
   handleSetupAndLaunch: handlePasswordInput(handleSetupAndLaunch),
   launch: handlePasswordInput(handleLaunch),
+  getAppPort: t.procedure.query(() => APP_PORT),
   onSetupProgressUpdate: t.procedure.subscription(() => {
-    return observable<LoadingProgressUpdate>((emit) => {
-      function onProgressUpdate(text: LoadingProgressUpdate) {
-        emit.next(text);
-      }
-
-      LAUNCHER_EMITTER.on(LOADING_PROGRESS_UPDATE, onProgressUpdate);
-
-      return () => {
-        LAUNCHER_EMITTER.off(LOADING_PROGRESS_UPDATE, onProgressUpdate);
-      };
-    });
+    return createObservable(LAUNCHER_EMITTER, LOADING_PROGRESS_UPDATE);
   }),
   mainScreenRoute: t.procedure.subscription(() => {
-    return observable<MainScreenRoute>((emit) => {
-      function changeRoute(route: MainScreenRoute) {
-        emit.next(route);
-      }
-
-      LAUNCHER_EMITTER.on(MAIN_SCREEN_ROUTE, changeRoute);
-
-      return () => {
-        LAUNCHER_EMITTER.off(MAIN_SCREEN_ROUTE, changeRoute);
-      };
-    });
+    return createObservable(LAUNCHER_EMITTER, MAIN_SCREEN_ROUTE);
   }),
 });
 

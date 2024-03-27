@@ -2,10 +2,11 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { IconButton } from '$components';
-	import { showModalError } from '$helpers';
+	import { MODAL_ADD_PUBLISHER } from '$const';
+	import { createModalParams } from '$helpers';
 	import { Gear, Home, Rocket, Upload } from '$icons';
-	import { usePublishers } from '$queries';
-	import { i18n, trpc } from '$services';
+	import { createAppQueries } from '$queries';
+	import { trpc } from '$services';
 	import { APP_STORE, APPS_VIEW } from '$shared/types';
 
 	const client = trpc();
@@ -14,7 +15,9 @@
 
 	const modalStore = getModalStore();
 
-	const publishers = usePublishers();
+	const { publishersQuery } = createAppQueries();
+
+	const modal = createModalParams(MODAL_ADD_PUBLISHER);
 </script>
 
 <div class="app-region-drag flex justify-between p-3 dark:bg-apps-input-dark-gradient">
@@ -23,13 +26,9 @@
 	{#if $isDevhubInstalled.data}
 		<IconButton
 			onClick={() => {
-				console.log($publishers);
-				if ($publishers.isSuccess && $publishers.data.length > 0) {
-					showModalError({
-						modalStore,
-						errorTitle: $i18n.t('appError'),
-						errorMessage: $i18n.t('youNeedToSetupAtLeastOnePublisher')
-					});
+				console.log($publishersQuery.data);
+				if ($publishersQuery.isSuccess && $publishersQuery.data.length < 1) {
+					modalStore.trigger(modal);
 				}
 			}}><Upload /></IconButton
 		>

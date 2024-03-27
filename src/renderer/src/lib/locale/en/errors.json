@@ -1,4 +1,5 @@
 {
+	"appStoreClientNotInitializedError": "AppStoreClient not initialized",
 	"checkInitializedKeystoreError": "Error checking initialized keystore",
 	"failedToCreateSymlinkedLairDirectoryError": "Failed to create symlinked lair directory",
 	"fileUndefinedError": "File undefined",

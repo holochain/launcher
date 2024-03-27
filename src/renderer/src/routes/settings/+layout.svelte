@@ -23,7 +23,7 @@
 
 	onMount(() => {
 		const unsubscribe = appPort.subscribe(async ({ isSuccess, data }) => {
-			if (isSuccess && typeof data === 'number') {
+			if (isSuccess && data) {
 				await createAppStoreClient(data);
 				unsubscribe();
 			}

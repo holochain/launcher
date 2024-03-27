@@ -4,7 +4,6 @@
     "declarationDir": "dist",
     "rootDir": "./src",
     "declaration": true,
-    "incremental": true,
     "target": "es2018",
     "module": "esnext",
     "moduleResolution": "node",
