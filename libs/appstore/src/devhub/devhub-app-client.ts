@@ -23,20 +23,26 @@ import { DnaHubZomeClient } from './zomes/dnahub-zome-client';
 import { ZomeHubZomeClient } from './zomes/zomehub-zome-client';
 
 export class DevhubAppClient {
-  mereMemoryZomeClient: MereMemoryZomeClient;
+  zomeHubMereMemoryZomeClient: MereMemoryZomeClient;
+  appHubMereMemoryZomeClient: MereMemoryZomeClient;
   zomeHubZomeClient: ZomeHubZomeClient;
   dnaHubZomeClient: DnaHubZomeClient;
   appHubZomeClient: AppHubZomeClient;
 
   constructor(public client: AppAgentClient) {
-    this.mereMemoryZomeClient = new MereMemoryZomeClient(client, 'mere_memory', 'mere_memory_api');
+    this.zomeHubMereMemoryZomeClient = new MereMemoryZomeClient(
+      client,
+      'zomehub',
+      'mere_memory_api',
+    );
+    this.appHubMereMemoryZomeClient = new MereMemoryZomeClient(client, 'apphub', 'mere_memory_api');
     this.zomeHubZomeClient = new ZomeHubZomeClient(client, 'zomehub', 'zomehub_csr');
     this.dnaHubZomeClient = new DnaHubZomeClient(client, 'dnahub', 'dnahub_csr');
     this.appHubZomeClient = new AppHubZomeClient(client, 'apphub', 'apphub_csr');
   }
 
   async saveIntegrityZome(bytes: Uint8Array): Promise<Entity<WasmEntry>> {
-    const mereMemoryAddress = await this.mereMemoryZomeClient.saveBytes(bytes);
+    const mereMemoryAddress = await this.zomeHubMereMemoryZomeClient.saveBytes(bytes);
     return this.zomeHubZomeClient.createWasm({
       wasm_type: WasmType.Integrity,
       mere_memory_address: mereMemoryAddress,
@@ -44,7 +50,7 @@ export class DevhubAppClient {
   }
 
   async saveCoordinatorZome(bytes: Uint8Array): Promise<Entity<WasmEntry>> {
-    const mereMemoryAddress = await this.mereMemoryZomeClient.saveBytes(bytes);
+    const mereMemoryAddress = await this.zomeHubMereMemoryZomeClient.saveBytes(bytes);
     return this.zomeHubZomeClient.createWasm({
       wasm_type: WasmType.Coordinator,
       mere_memory_address: mereMemoryAddress,
@@ -54,7 +60,7 @@ export class DevhubAppClient {
   async getWasm(addr: AnyDhtHash): Promise<Wasm> {
     const wasmEntryEntity = await this.zomeHubZomeClient.getWasmEntry(addr);
     const wasmEntry = wasmEntryEntity.content;
-    const wasmBytes = await this.mereMemoryZomeClient.getMereMemoryBytes(
+    const wasmBytes = await this.zomeHubMereMemoryZomeClient.getMereMemoryBytes(
       wasmEntry.mere_memory_address,
     );
     return {
@@ -191,14 +197,16 @@ export class DevhubAppClient {
   }
 
   async saveUi(bytes: Uint8Array): Promise<Entity<UiEntry>> {
-    const mereMemoryAddress = await this.mereMemoryZomeClient.saveBytes(bytes);
+    const mereMemoryAddress = await this.appHubMereMemoryZomeClient.saveBytes(bytes);
     return this.appHubZomeClient.createUi({ mere_memory_address: mereMemoryAddress });
   }
 
   async getUi(address: AnyDhtHash): Promise<Ui> {
     const uiEntryEntity = await this.appHubZomeClient.getUiEntry(address);
     const uiEntry = uiEntryEntity.content;
-    const uiBytes = await this.mereMemoryZomeClient.getMereMemoryBytes(uiEntry.mere_memory_address);
+    const uiBytes = await this.appHubMereMemoryZomeClient.getMereMemoryBytes(
+      uiEntry.mere_memory_address,
+    );
     return {
       mere_memory_address: uiEntry.mere_memory_address,
       file_size: uiEntry.file_size,
@@ -208,13 +216,15 @@ export class DevhubAppClient {
 
   async getUiBytes(address: AnyDhtHash): Promise<Uint8Array> {
     const uiEntryEntity = await this.appHubZomeClient.getUiEntry(address);
-    return this.mereMemoryZomeClient.getMereMemoryBytes(uiEntryEntity.content.mere_memory_address);
+    return this.appHubMereMemoryZomeClient.getMereMemoryBytes(
+      uiEntryEntity.content.mere_memory_address,
+    );
   }
 
   async createWebappPackage(
     input: CreateWebAppPackageFrontendInput,
   ): Promise<Entity<WebAppPackageEntry>> {
-    const iconAddress = await this.mereMemoryZomeClient.saveBytes(input.icon);
+    const iconAddress = await this.appHubMereMemoryZomeClient.saveBytes(input.icon);
     input.icon = iconAddress;
     return this.appHubZomeClient.createWebappPackage(input);
   }

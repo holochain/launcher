@@ -19,7 +19,7 @@ export class AppstoreAppClient {
   portalZomeClient: PortalZomeClient;
 
   constructor(public client: AppAgentClient) {
-    this.mereMemoryZomeClient = new MereMemoryZomeClient(client, 'mere_memory', 'mere_memory_api');
+    this.mereMemoryZomeClient = new MereMemoryZomeClient(client, 'appstore', 'mere_memory_api');
     this.appstoreZomeClient = new AppstoreZomeClient(client, 'appstore', 'appstore_csr');
     this.portalZomeClient = new PortalZomeClient(client, 'portal', 'portal_csr');
   }
