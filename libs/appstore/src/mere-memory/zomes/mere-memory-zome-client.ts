@@ -12,9 +12,9 @@ import { ZomeClient } from '../../zome-client/zome-client';
 export type MemoryEntry = {
   hash: string;
   compression: CompressionType | undefined;
-  uncompressedSize: number | undefined;
-  memorySize: number;
-  blockAddresses: Array<EntryHash>;
+  uncompressed_size: number | undefined;
+  memory_size: number;
+  block_addresses: Array<EntryHash>;
 };
 
 export type MemoryBlockEntry = {
@@ -85,9 +85,9 @@ export class MereMemoryZomeClient extends ZomeClient {
     return this.createMemoryEntry({
       hash: bytesHash,
       compression: 'gzip',
-      uncompressedSize,
-      memorySize: compressedSize,
-      blockAddresses,
+      uncompressed_size: uncompressedSize,
+      memory_size: compressedSize,
+      block_addresses: blockAddresses,
     });
   }
 
@@ -97,11 +97,11 @@ export class MereMemoryZomeClient extends ZomeClient {
     if (memoryEntry.compression !== 'gzip')
       throw new Error(`Got invalid compression type: ${memoryEntry.compression}`);
 
-    const bytes = new Uint8Array(memoryEntry.memorySize);
+    const bytes = new Uint8Array(memoryEntry.memory_size);
 
     let index = 0;
 
-    for (const blockAddress of memoryEntry.blockAddresses) {
+    for (const blockAddress of memoryEntry.block_addresses) {
       const block = await this.getMemoryBlockEntry(blockAddress);
       bytes.set(block.bytes, index);
       index += block.bytes.length;
