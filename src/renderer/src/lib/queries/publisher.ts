@@ -1,5 +1,5 @@
 import { createMutation, createQuery, QueryClient } from '@tanstack/svelte-query';
-import type { CreatePublisherInput } from 'appstore-tools';
+import type { CreatePublisherFrontendInput } from 'appstore-tools';
 import { get } from 'svelte/store';
 
 import { getAppStoreClient } from '$services';
@@ -27,8 +27,8 @@ export const createPublishersQuery = () => {
 
 export const createPublisherMutation = (queryClient: QueryClient) => {
 	return createMutation({
-		mutationFn: (createPublisherInput: CreatePublisherInput) =>
-			getAppStoreClientOrThrow().appstoreZomeClient.createPublisher(createPublisherInput),
+		mutationFn: (createPublisherInput: CreatePublisherFrontendInput) =>
+			getAppStoreClientOrThrow().createPublisher(createPublisherInput),
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: [PUBLISHERS_QUERY_KEY] })
 	});
 };

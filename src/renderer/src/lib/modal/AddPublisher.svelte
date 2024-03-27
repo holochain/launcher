@@ -40,7 +40,7 @@
 		<form
 			class="modal-form flex flex-col space-y-4 p-4"
 			on:submit|preventDefault={() => {
-				console.log(publisherData);
+				console.log('publisherData: ', publisherData);
 				$publisherMutation.mutate(publisherData);
 			}}
 		>
