@@ -6,7 +6,7 @@
 	import { i18n, trpc } from '$services';
 	import { APPS_VIEW } from '$shared/types';
 
-	import ModalForm from './ModalForm.svelte';
+	import ModalInstallForm from './ModalInstallForm.svelte';
 
 	const client = trpc();
 
@@ -21,7 +21,7 @@
 	const installKandoMutation = client.installKando.createMutation();
 </script>
 
-<ModalForm
+<ModalInstallForm
 	bind:formData
 	onSubmit={() =>
 		$installKandoMutation.mutate(
@@ -51,4 +51,4 @@
 	<slot name="avatar">
 		<Avatar initials={'kn'} rounded="rounded-2xl" background="dark:bg-app-gradient" width="w-20" />
 	</slot>
-</ModalForm>
+</ModalInstallForm>

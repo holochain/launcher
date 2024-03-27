@@ -79,13 +79,13 @@ export type CreatePublisherInput = {
   website: WebAddress;
   icon: EntryHash;
 
-  description: string | undefined;
-  email: string | undefined;
-  editors: Array<AgentPubKey> | undefined;
+  description?: string;
+  email?: string;
+  editors?: Array<AgentPubKey>;
 
-  published_at: number | undefined;
-  last_updated: number | undefined;
-  metadata: any;
+  published_at?: number;
+  last_updated?: number;
+  metadata?: any;
 };
 
 export type CreatePublisherFrontendInput = {
@@ -94,13 +94,13 @@ export type CreatePublisherFrontendInput = {
   website: WebAddress;
   icon: Uint8Array;
 
-  description: string | undefined;
-  email: string | undefined;
-  editors: Array<AgentPubKey> | undefined;
+  description?: string;
+  email?: string;
+  editors?: Array<AgentPubKey>;
 
-  published_at: number | undefined;
-  last_updated: number | undefined;
-  metadata: any;
+  published_at?: number;
+  last_updated?: number;
+  metadata?: any;
 };
 
 export type UpdatePublisherFrontendInput = {

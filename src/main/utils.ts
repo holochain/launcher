@@ -1,12 +1,15 @@
 import type { CallZomeRequestSigned } from '@holochain/client';
 import { TRPCError } from '@trpc/server';
+import { observable } from '@trpc/server/observable';
 import { BrowserWindow } from 'electron';
 import { shell } from 'electron';
 import type { ZomeCallNapi, ZomeCallSigner, ZomeCallUnsignedNapi } from 'hc-launcher-rust-utils';
 import semver from 'semver';
 import type { ZodSchema } from 'zod';
 
-import type { ErrorWithMessage, WindowInfoRecord } from '$shared/types';
+import type { ErrorWithMessage, EventKeys, EventMap, WindowInfoRecord } from '$shared/types';
+
+import type { LauncherEmitter } from './launcherEmitter';
 
 export function encodeQuery(query: Record<string, string>) {
   return Object.entries(query)
@@ -162,4 +165,23 @@ export async function signZomeCall(
   };
 
   return zomeCallSigned;
+}
+
+export function createObservable<K extends EventKeys>(
+  emitter: LauncherEmitter,
+  eventName: K,
+  singleEmission: boolean = false,
+) {
+  return observable<EventMap[K]>((emit) => {
+    const handler = (data: EventMap[K]) => {
+      emit.next(data);
+      if (singleEmission) {
+        emitter.off(eventName, handler);
+      }
+    };
+
+    emitter.on(eventName, handler);
+
+    return !singleEmission ? () => emitter.off(eventName, handler) : undefined;
+  });
 }

@@ -40,6 +40,7 @@
     "@electron-toolkit/utils": "^3.0.0",
     "@electron/notarize": "2.3.0",
     "@holochain/client": "^0.16.10",
+    "@msgpack/msgpack": "^2.8.0",
     "@trpc/client": "^10.44.1",
     "@trpc/server": "^10.44.1",
     "adm-zip": "0.5.12",
@@ -52,10 +53,9 @@
     "fflate": "^0.8.2",
     "hc-launcher-rust-utils": "file:./rust-utils/dist",
     "js-sha256": "^0.11.0",
-    "@msgpack/msgpack": "^2.8.0",
     "nanoid": "5.0.6",
     "split": "1.0.1",
-    "winston": "3.12.0",
+    "winston": "3.13.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -80,6 +80,6 @@
     "rimraf": "5.0.5",
     "typescript": "^5.3.3",
     "utf-8-validate": "^6.0.3",
-    "vite": "^5.1.4"
+    "vite": "^5.2.6"
   }
 }

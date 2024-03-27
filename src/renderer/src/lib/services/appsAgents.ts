@@ -2,7 +2,7 @@ import { AppAgentWebsocket } from '@holochain/client';
 import { AppstoreAppClient, DevhubAppClient } from 'appstore-tools';
 import { type Writable, writable } from 'svelte/store';
 
-import { APPSTORE_APP_ID, DEVHUB_APP_ID } from '$shared/const';
+import { APP_STORE_APP_ID, DEVHUB_APP_ID } from '$shared/const';
 
 const appStoreClientStore = writable<AppstoreAppClient | null>(null);
 const devHubClientStore = writable<DevhubAppClient | null>(null);
@@ -18,12 +18,16 @@ const createAppClient = async <T>(
 ): Promise<void> => {
 	const client = await createClient(port, appId);
 	const appClient = new clientConstructor(client);
-	console.log('appClient', appClient);
 	store.set(appClient);
 };
 
 export const createAppStoreClient = (port: number) =>
-	createAppClient<AppstoreAppClient>(port, APPSTORE_APP_ID, AppstoreAppClient, appStoreClientStore);
+	createAppClient<AppstoreAppClient>(
+		port,
+		APP_STORE_APP_ID,
+		AppstoreAppClient,
+		appStoreClientStore
+	);
 
 export const getAppStoreClient = () => appStoreClientStore;
 

@@ -1,12 +1,17 @@
 {
+	"add": "Add",
 	"addApps": "Add Apps",
+	"addPublisher": "Add Publisher",
+	"adding": "Adding",
 	"appError": "App Error",
 	"back": "Back",
 	"cancel": "Cancel",
 	"chooseAPassword": "Choose a password",
 	"choosePassword": "Choose a password to encrypt your data and private keys. You will always need this password to start Launcher.",
+	"city": "City",
 	"confirmPassword": "Confirm password",
 	"confirmYourPassword": "Confirm your password",
+	"country": "Country",
 	"discoverInstallAndManageYourApps": "Discover, install and manage your apps",
 	"enterAppName": "Enter app name",
 	"enterNetworkSeed": "Enter network seed",
@@ -34,6 +39,7 @@
 	"passwordPlaceholder": "Enter your password",
 	"passwordWarning": "Your password can not be reset, recovered or changed. Write it down and store it in a secure location.",
 	"passwordsDontMatch": "Passwords don't match!",
+	"region": "Region",
 	"searchForApps": "Search for apps",
 	"setYourPassword": "Set your password",
 	"setupError": "Setup Error",
@@ -44,5 +50,6 @@
 	"systemSettings": "System settings",
 	"uninstall": "Uninstall",
 	"useWebhappFileToAddHapp": "Use a webhapp file to add your hApp",
+	"website": "Website",
 	"whatDoYouWantToInstall": "What do you want to install?"
 }

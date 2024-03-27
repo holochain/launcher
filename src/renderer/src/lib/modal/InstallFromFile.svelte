@@ -6,7 +6,7 @@
 	import { i18n, trpc } from '$services';
 	import { APPS_VIEW } from '$shared/types';
 
-	import ModalForm from './ModalForm.svelte';
+	import ModalInstallForm from './ModalInstallForm.svelte';
 
 	const client = trpc();
 	const modalStore = getModalStore();
@@ -21,7 +21,7 @@
 	const installHappMutation = client.installHapp.createMutation();
 </script>
 
-<ModalForm
+<ModalInstallForm
 	bind:formData
 	bind:files
 	onSubmit={() =>
