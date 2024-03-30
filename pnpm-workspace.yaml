@@ -1,0 +1,4 @@
+packages:
+  - 'src/renderer'
+  - 'libs/*'
+  - 'rust-utils'
