@@ -7,4 +7,5 @@ export { default as PasswordEye } from './PasswordEye.svelte';
 export { default as Plus } from './Plus.svelte';
 export { default as Rocket } from './Rocket.svelte';
 export { default as Upload } from './Upload.svelte';
+export { default as UploadImage } from './UploadImage.svelte';
 export { default as Warning } from './Warning.svelte';

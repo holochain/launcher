@@ -21,7 +21,7 @@
 {#if view === SYSTEM_SETTINGS}
 	<h2 class="text-lg font-bold">{$i18n.t(SYSTEM_SETTINGS)}</h2>
 {:else if selectedApp}
-	<div>
+	<div class="p-4">
 		<div class="flex items-center justify-between">
 			<h2 class="text-lg font-bold">{selectedApp.appInfo.installed_app_id}</h2>
 			<Button

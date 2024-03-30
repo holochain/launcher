@@ -19,6 +19,7 @@
 	"getStarted": "Get started",
 	"holochainLauncher": "Holochain Launcher",
 	"holochainVersion": "Holochain version",
+	"icon": "Icon",
 	"initializingLairKeystore": "Initializing Lair Keystore...",
 	"install": "Install",
 	"installFromYourDevice": "Install from your device",

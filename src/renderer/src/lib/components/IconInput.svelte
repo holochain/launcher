@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { Avatar } from '@skeletonlabs/skeleton';
 
-	export let icon: Uint8Array;
+	import { UploadImage } from '$icons';
+	import { i18n } from '$services';
+
+	export let icon: Uint8Array | undefined = undefined;
 
 	export let handleFileUpload: (file: File) => void;
 	$: imageUrl = icon
@@ -21,6 +24,22 @@
 	};
 </script>
 
-<div class="flex justify-center">
-	<Avatar src={imageUrl} initials="?" width="w-20" on:click={createInputAndTriggerClick} />
-</div>
+<button
+	type="button"
+	class="mx-auto flex-shrink"
+	on:click={createInputAndTriggerClick}
+	aria-label="Upload Image"
+>
+	{#if !imageUrl}
+		<div
+			class="relative flex flex-shrink flex-col items-center rounded-lg border-2 border-dashed border-surface-400 bg-surface-700 p-6"
+			role="img"
+			aria-label="Uploaded Image Preview"
+		>
+			<span class="absolute top-1 text-xs opacity-50">{$i18n.t('icon').toUpperCase()}</span>
+			<UploadImage />
+		</div>
+	{:else}
+		<Avatar src={imageUrl} width="w-20" />
+	{/if}
+</button>

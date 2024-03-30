@@ -13,6 +13,7 @@ type FileProps = {
 type TextProps = {
 	placeholder?: string;
 	required?: boolean;
+	maxlength?: number;
 };
 
 export type Modals =

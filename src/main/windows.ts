@@ -61,11 +61,13 @@ const createAdminWindow = (title: string) =>
   });
 
 export const focusVisibleWindow = (launcherWindows: Record<Screen, BrowserWindow>) => {
-  const visibleWindow = Object.values(launcherWindows).find(
-    (window) => !window.isMinimized() && window.isVisible(),
-  );
-  if (visibleWindow) {
-    visibleWindow.focus();
+  const windows = Object.values(launcherWindows);
+  const anyVisible = windows.some((window) => !window.isMinimized() && window.isVisible());
+
+  if (!anyVisible) {
+    launcherWindows[MAIN_SCREEN].show();
+  } else {
+    windows.find((window) => !window.isMinimized() && window.isVisible())?.focus();
   }
 };
 

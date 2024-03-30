@@ -1,5 +1,4 @@
 <script lang="ts">
-	import cslx from 'clsx';
 	import { createEventDispatcher, onMount } from 'svelte';
 
 	import type { InputProps } from '$types';
@@ -13,22 +12,14 @@
 	export let autocomplete: string | null = null;
 	export let files: FileList | null = null;
 
-	function handleKeydown(event: KeyboardEvent) {
-		dispatch('keydown', event);
-	}
+	const focusInput = () => inputElement?.focus();
 
-	function focusInput() {
-		if (inputElement) {
-			inputElement.focus();
-		}
-	}
+	const handleEvent = (type: string) => (event: Event) => dispatch(type, event);
 
 	onMount(() => {
 		if (props.autofocus) {
 			window.addEventListener('focus', focusInput);
-			return () => {
-				window.removeEventListener('focus', focusInput);
-			};
+			return () => window.removeEventListener('focus', focusInput);
 		}
 	});
 
@@ -39,13 +30,14 @@
 	<input type="file" bind:files {...rest} class={iptClass} />
 {:else}
 	<input
+		on:focus={handleEvent('focus')}
+		on:blur={handleEvent('blur')}
 		bind:this={inputElement}
-		on:keydown={handleKeydown}
+		on:keydown={handleEvent('keydown')}
 		bind:value
 		{...props}
-		class={cslx(iptClass, {
-			'text-transparent': autocomplete && value && !autocomplete.startsWith(value)
-		})}
+		class={iptClass}
+		class:text-transparent={autocomplete && value && !autocomplete.startsWith(value)}
 	/>
 	{#if autocomplete && value}
 		<span class="pointer-events-none absolute left-[42px] top-[9px] opacity-50">{autocomplete}</span
