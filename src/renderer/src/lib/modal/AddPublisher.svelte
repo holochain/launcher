@@ -25,15 +25,12 @@
 	const handleFileUpload = async (file: File): Promise<void> => {
 		publisherData.icon = new Uint8Array(await file.arrayBuffer());
 	};
-
-	$: console.log($publisherMutation.error);
 </script>
 
 {#if $modalStore[0]}
 	<div
 		class="card w-modal flex flex-col items-center justify-center !bg-transparent !ring-transparent"
 	>
-		<slot name="avatar" />
 		<header class="pt-4 text-2xl font-bold">
 			{$i18n.t('addPublisher')}
 		</header>

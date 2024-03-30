@@ -3,9 +3,10 @@
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { SYSTEM_INFORMATION, SYSTEM_SETTINGS } from '$const';
-	import { validateApp } from '$helpers';
-	import { createAppStoreClient, i18n, trpc } from '$services';
+	import { ADD_APP_PAGE, SYSTEM_INFORMATION, SYSTEM_SETTINGS } from '$const';
+	import { initializeAppPortSubscription, validateApp } from '$helpers';
+	import { Plus } from '$icons';
+	import { i18n, trpc } from '$services';
 
 	import { MenuEntry, TopBar } from './components';
 
@@ -21,13 +22,10 @@
 
 	const appPort = client.getAppPort.createQuery();
 
+	$: isAddAppPage = $page.url.pathname.endsWith(ADD_APP_PAGE);
+
 	onMount(() => {
-		const unsubscribe = appPort.subscribe(async ({ isSuccess, data }) => {
-			if (isSuccess && data) {
-				await createAppStoreClient(data);
-				unsubscribe();
-			}
-		});
+		initializeAppPortSubscription(appPort);
 	});
 </script>
 
@@ -40,11 +38,24 @@
 	>
 		<div class="space-y-4 overflow-y-auto p-4">
 			<div class="flex flex-col space-y-1">
+				{#if isAddAppPage}
+					<MenuEntry
+						background="bg-app-button-gradient"
+						name={$i18n.t('addhApp')}
+						onClick={() => goto(`/settings/${ADD_APP_PAGE}`)}
+						isSelected={true}
+					>
+						<div slot="leading" class="pr-2">
+							<Plus />
+						</div>
+					</MenuEntry>
+				{/if}
 				{#each systemViews as systemView}
 					<MenuEntry
 						name={$i18n.t(systemView)}
 						onClick={() => selectView(systemView)}
-						isSelected={view === systemView || (!view && systemView === SYSTEM_INFORMATION)}
+						isSelected={!isAddAppPage &&
+							(view === systemView || (!view && systemView === SYSTEM_INFORMATION))}
 					/>
 				{/each}
 				<div class="!my-2 h-px w-full bg-tertiary-800"></div>

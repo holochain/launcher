@@ -26,7 +26,6 @@ export class AppstoreAppClient {
 
   async createPublisher(input: CreatePublisherFrontendInput): Promise<Entity<PublisherEntry>> {
     const iconAddress = await this.mereMemoryZomeClient.saveBytes(input.icon);
-    console.log(iconAddress);
     return this.appstoreZomeClient.createPublisher({
       ...input,
       icon: iconAddress,
