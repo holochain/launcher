@@ -4,6 +4,7 @@ export { default as defaultIcon } from './default-icon.png?base64';
 export { default as Gear } from './Gear.svelte';
 export { default as Home } from './Home.svelte';
 export { default as PasswordEye } from './PasswordEye.svelte';
+export { default as Plus } from './Plus.svelte';
 export { default as Rocket } from './Rocket.svelte';
 export { default as Upload } from './Upload.svelte';
 export { default as Warning } from './Warning.svelte';
