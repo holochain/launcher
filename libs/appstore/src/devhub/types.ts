@@ -183,7 +183,7 @@ export type CreateWebAppPackageVersionInput = {
   for_package: EntityId;
   version: string;
   webapp: BundleAddr;
-  metadata: any;
+  metadata?: any;
   changelog?: string;
   maintainer?: any;
   source_code_revision_uri?: string;

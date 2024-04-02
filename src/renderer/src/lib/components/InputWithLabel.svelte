@@ -1,13 +1,17 @@
 <script lang="ts">
 	import { Input } from '$components';
 
-	export let label = '';
-	export let id: string;
-	export let value: string;
+	export let value: string | null = null;
 	export let maxLength: number | undefined = undefined;
+	export let id: string;
+	export let label: string;
+	export let handleFileUpload: ((file: File) => void) | undefined = undefined;
 
-	$: wordCount = value?.length || 0;
+	let files: FileList | null = null;
 	let isFocused = false;
+
+	$: files && handleFileUpload?.(files[0]);
+	$: wordCount = value?.length || 0;
 </script>
 
 <div class="flex flex-col">
@@ -26,16 +30,30 @@
 		class:bg-transparent={!isFocused}
 		class:bg-app-gradient={isFocused}
 	>
-		<Input
-			bind:value
-			on:focus={() => (isFocused = true)}
-			on:blur={() => (isFocused = false)}
-			props={{
-				class: `input`,
-				id,
-				type: 'text',
-				maxlength: maxLength
-			}}
-		/>
+		{#if handleFileUpload}
+			<Input
+				bind:files
+				on:focus={() => (isFocused = true)}
+				on:blur={() => (isFocused = false)}
+				props={{
+					class: `input`,
+					id,
+					type: 'file',
+					accept: '.webhapp'
+				}}
+			/>
+		{:else}
+			<Input
+				bind:value
+				on:focus={() => (isFocused = true)}
+				on:blur={() => (isFocused = false)}
+				props={{
+					class: `input`,
+					id,
+					type: 'text',
+					maxlength: maxLength
+				}}
+			/>
+		{/if}
 	</div>
 </div>

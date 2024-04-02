@@ -1,44 +1,80 @@
 <script lang="ts">
-	import { ProgressRadial } from '@skeletonlabs/skeleton';
+	import { getModalStore, ProgressRadial } from '@skeletonlabs/skeleton';
 
 	import { Button, IconInput, InputWithLabel } from '$components';
-	// import { createAppQueries } from '$queries';
-	import { i18n } from '$services';
+	import { showModalError } from '$helpers';
+	import { createAppQueries } from '$queries';
+	import { i18n, trpc } from '$services';
+	import { APP_STORE } from '$shared/types';
+	import { isAppDataValid } from '$types';
 
-	// const { publishHappMutation } = createAppQueries();
+	const client = trpc();
+	const closeSettings = client.closeSettings.createMutation();
 
-	let publisherData = {
-		name: '',
-		location: { country: '', region: '', city: '' },
-		website: { url: '', context: undefined },
-		icon: undefined as Uint8Array | undefined
+	const { publishHappMutation } = createAppQueries();
+
+	const modalStore = getModalStore();
+
+	let appData = {
+		title: '',
+		subtitle: '',
+		description: '',
+		version: '0.0.1',
+		icon: undefined as Uint8Array | undefined,
+		bytes: undefined as Uint8Array | undefined
 	};
 	let isPending = false;
 
-	const handleFileUpload = async (file: File): Promise<void> => {
+	const handleIconUpload = async (file: File): Promise<void> => {
 		const arrayBuffer = await file.arrayBuffer();
-		publisherData = { ...publisherData, icon: new Uint8Array(arrayBuffer) };
+		appData = { ...appData, icon: new Uint8Array(arrayBuffer) };
+	};
+
+	const handleAppUpload = async (file: File): Promise<void> => {
+		const arrayBuffer = await file.arrayBuffer();
+		appData = { ...appData, bytes: new Uint8Array(arrayBuffer) };
 	};
 </script>
 
 <form
 	class="modal-form mx-auto flex w-full max-w-xs flex-col space-y-4 pt-4"
-	on:submit|preventDefault={() => {
-		// $publishHappMutation.mutate();
+	on:submit|preventDefault={async () => {
+		if (isAppDataValid(appData)) {
+			$publishHappMutation.mutate(appData, {
+				onSuccess: () => {
+					$closeSettings.mutate(APP_STORE);
+				},
+				onError: (error) => {
+					console.error(error);
+					showModalError({
+						modalStore,
+						errorTitle: $i18n.t('appError'),
+						errorMessage: $i18n.t(error.message)
+					});
+				}
+			});
+		}
 	}}
 >
-	<IconInput bind:icon={publisherData.icon} {handleFileUpload} />
-	<InputWithLabel bind:value={publisherData.name} id="happName" label={$i18n.t('nameYourHapp')} />
+	<IconInput bind:icon={appData.icon} handleFileUpload={handleIconUpload} />
+	<InputWithLabel bind:value={appData.title} id="happName" label={$i18n.t('nameYourHapp')} />
 	<InputWithLabel
-		bind:value={publisherData.location.country}
+		bind:value={appData.subtitle}
 		id="happDescription"
 		label={$i18n.t('oneLineDescription')}
 	/>
 	<InputWithLabel
-		bind:value={publisherData.location.city}
-		id="publisherCity"
+		bind:value={appData.description}
+		id="description"
 		label={$i18n.t('description')}
 		maxLength={500}
+	/>
+	<InputWithLabel handleFileUpload={handleAppUpload} id="webbhapp" label={$i18n.t('webbhapp')} />
+	<InputWithLabel
+		bind:value={appData.version}
+		id="version"
+		label={$i18n.t('version')}
+		maxLength={10}
 	/>
 	<footer class="modal-footer flex justify-between gap-2">
 		<Button

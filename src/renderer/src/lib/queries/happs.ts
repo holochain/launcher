@@ -2,8 +2,6 @@ import { createMutation, createQuery, QueryClient } from '@tanstack/svelte-query
 import type {
 	AppstoreAppClient,
 	CreatePublisherFrontendInput,
-	// CreateWebAppPackageInput,
-	// CreateWebAppPackageVersionInput,
 	DevhubAppClient
 } from 'appstore-tools';
 import { get, type Writable } from 'svelte/store';
@@ -14,6 +12,7 @@ import {
 	DEV_HUB_CLIENT_NOT_INITIALIZED_ERROR,
 	NO_PUBLISHERS_AVAILABLE_ERROR
 } from '$shared/types';
+import type { AppData } from '$types';
 
 export const PUBLISHERS_QUERY_KEY = 'publishers';
 type ClientType = DevhubAppClient | AppstoreAppClient;
@@ -51,21 +50,7 @@ export const createPublisherMutation = (queryClient: QueryClient) => {
 
 export const createPublishHappMutation = () => {
 	return createMutation({
-		mutationFn: async ({
-			title,
-			subtitle,
-			description,
-			icon,
-			bytes,
-			version
-		}: {
-			title: string;
-			subtitle: string;
-			description: string;
-			icon: Uint8Array;
-			bytes: Uint8Array;
-			version: string;
-		}) => {
+		mutationFn: async ({ title, subtitle, description, icon, bytes, version }: AppData) => {
 			const devHubClient = getDevHubClientOrThrow();
 			const appStoreClient = getAppStoreClientOrThrow();
 			const appEntry = await devHubClient.saveWebapp(bytes);
@@ -78,8 +63,7 @@ export const createPublishHappMutation = () => {
 			const webappPackageVersion = await devHubClient.appHubZomeClient.createWebappPackageVersion({
 				for_package: webappPackage.id,
 				version,
-				webapp: appEntry.address,
-				metadata: {}
+				webapp: appEntry.address
 			});
 
 			devHubClient.appHubZomeClient.createWebappPackageLinkToVersion({
@@ -93,17 +77,17 @@ export const createPublishHappMutation = () => {
 				throw new Error(NO_PUBLISHERS_AVAILABLE_ERROR);
 			}
 
-			// appStoreClient.appstoreZomeClient.createApp({
-			// 	title,
-			// 	subtitle,
-			// 	description,
-			// 	icon,
-			// 	publisher: publishers[0].id,
-			// 	apphub_hrl: {
-			// 		dna: devHubClient
-			// 		target: webappPackage.address
-			// 	}
-			// });
+			await appStoreClient.appstoreZomeClient.createApp({
+				title,
+				subtitle,
+				description,
+				icon,
+				publisher: publishers[0].id,
+				apphub_hrl: {
+					dna: await devHubClient.apphubDnaHash(),
+					target: webappPackage.address
+				}
+			});
 		}
 	});
 };
