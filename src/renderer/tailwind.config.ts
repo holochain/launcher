@@ -27,6 +27,7 @@ export default {
 				'apps-list-dark-gradient':
 					'linear-gradient(10deg, rgb(47, 45, 48) 15%, rgb(14, 17, 19) 45%)',
 				'settings-dark-gradient': `linear-gradient(350deg, rgba(0, 82, 205, 0.15) 5.32%, rgba(0, 0, 0, 0) 88.82%), linear-gradient(0deg, rgb(32, 33, 34), rgb(14, 17, 19)), linear-gradient(0deg, rgb(14, 17, 19), rgb(14, 17, 19))`,
+				'add-happ-button': `linear-gradient(92.56deg, rgb(7, 194, 69) 20%, rgb(12, 142, 156) 84%)`,
 				'app-button-gradient':
 					'linear-gradient(92.56deg, #584BA8 -0.56%, rgba(158, 0, 255, 0.51) 97.18%)'
 			},

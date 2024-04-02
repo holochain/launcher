@@ -37,9 +37,9 @@ export type CreateAppFrontendInput = {
   apphub_hrl: HRL;
   editors?: Array<AgentPubKey>;
 
-  published_at: number;
-  last_updated: number;
-  metadata: any;
+  published_at?: number;
+  last_updated?: number;
+  metadata?: any;
 };
 
 export type CreateAppInput = {
@@ -51,9 +51,9 @@ export type CreateAppInput = {
   apphub_hrl: HRL;
   editors?: Array<AgentPubKey>;
 
-  published_at: number;
-  last_updated: number;
-  metadata: any;
+  published_at?: number;
+  last_updated?: number;
+  metadata?: any;
 };
 
 export type PublisherEntry = {

@@ -29,7 +29,7 @@ export class AppstoreZomeClient extends ZomeClient {
     return this.callZome('get_publishers_for_agent', { forAgent: agentPubKey });
   }
 
-  async getMyPublishers(): Promise<Array<PublisherEntry>> {
+  async getMyPublishers(): Promise<Array<Entity<PublisherEntry>>> {
     return this.callZome('get_my_publishers', null);
   }
 

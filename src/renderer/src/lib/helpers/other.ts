@@ -1,4 +1,4 @@
-import { createAppStoreClient } from '$services';
+import { createAppStoreClient, createDevHubClient } from '$services';
 import {
 	type CellId,
 	CellInfoSchema,
@@ -34,6 +34,7 @@ export const initializeAppPortSubscription = (appPort: {
 	const unsubscribe = appPort.subscribe(async ({ isSuccess, data }) => {
 		if (isSuccess && data) {
 			await createAppStoreClient(data);
+			await createDevHubClient(data);
 			unsubscribe();
 		}
 	});

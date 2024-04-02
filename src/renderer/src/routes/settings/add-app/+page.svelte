@@ -2,7 +2,10 @@
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
 
 	import { Button, IconInput, InputWithLabel } from '$components';
+	// import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
+
+	// const { publishHappMutation } = createAppQueries();
 
 	let publisherData = {
 		name: '',
@@ -20,37 +23,29 @@
 
 <form
 	class="modal-form mx-auto flex w-full max-w-xs flex-col space-y-4 pt-4"
-	on:submit|preventDefault={() => {}}
+	on:submit|preventDefault={() => {
+		// $publishHappMutation.mutate();
+	}}
 >
 	<IconInput bind:icon={publisherData.icon} {handleFileUpload} />
-	<InputWithLabel bind:value={publisherData.name} id="publisherName" label={$i18n.t('name')} />
+	<InputWithLabel bind:value={publisherData.name} id="happName" label={$i18n.t('nameYourHapp')} />
 	<InputWithLabel
 		bind:value={publisherData.location.country}
-		id="publisherCountry"
-		label={$i18n.t('country')}
-	/>
-	<InputWithLabel
-		bind:value={publisherData.location.region}
-		id="publisherRegion"
-		label={$i18n.t('region')}
+		id="happDescription"
+		label={$i18n.t('oneLineDescription')}
 	/>
 	<InputWithLabel
 		bind:value={publisherData.location.city}
 		id="publisherCity"
-		label={$i18n.t('city')}
-		maxLength={50}
-	/>
-	<InputWithLabel
-		bind:value={publisherData.website.url}
-		id="publisherWebsite"
-		label={$i18n.t('website')}
+		label={$i18n.t('description')}
+		maxLength={500}
 	/>
 	<footer class="modal-footer flex justify-between gap-2">
 		<Button
 			props={{
 				disabled: isPending,
 				type: 'submit',
-				class: 'btn-app-store-modal flex-1'
+				class: 'btn bg-add-happ-button flex-1'
 			}}
 		>
 			{#if isPending}

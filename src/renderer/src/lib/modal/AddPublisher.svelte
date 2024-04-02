@@ -2,7 +2,9 @@
 	import { getModalStore, ProgressRadial } from '@skeletonlabs/skeleton';
 	import type { CreatePublisherFrontendInput } from 'appstore-tools';
 
+	import { goto } from '$app/navigation';
 	import { Button, IconInput } from '$components';
+	import { ADD_APP_PAGE } from '$const';
 	import { base64ToArrayBuffer } from '$helpers';
 	import { defaultIcon } from '$icons';
 	import { createAppQueries } from '$queries';
@@ -37,7 +39,12 @@
 		<form
 			class="modal-form flex flex-col space-y-4 p-4"
 			on:submit|preventDefault={() => {
-				$publisherMutation.mutate(publisherData);
+				$publisherMutation.mutate(publisherData, {
+					onSuccess: () => {
+						modalStore.close();
+						goto(`/settings/${ADD_APP_PAGE}`);
+					}
+				});
 			}}
 		>
 			<IconInput bind:icon={publisherData.icon} {handleFileUpload} />

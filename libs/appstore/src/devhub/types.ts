@@ -141,9 +141,9 @@ export type CreateWebAppPackageInput = {
   subtitle: string;
   description: string;
   icon: MemoryAddr;
-  metadata: any;
-  maintainer: any; // enum Authority with variant Agent(AgentPubKey)
-  source_code_uri: string | undefined;
+  metadata?: any;
+  maintainer?: any; // enum Authority with variant Agent(AgentPubKey)
+  source_code_uri?: string;
 };
 
 export type UpdateWebAppPackageInput = {
