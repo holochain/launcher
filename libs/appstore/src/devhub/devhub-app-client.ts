@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { AnyDhtHash, AppAgentClient, ZomeName } from '@holochain/client';
+import type { DnaHash, ProvisionedCell } from '@holochain/client';
+import { type AnyDhtHash, type AppAgentClient, CellType, type ZomeName } from '@holochain/client';
 import { Bundle } from '@spartan-hc/bundles';
 
 import { MereMemoryZomeClient } from '../mere-memory/zomes/mere-memory-zome-client';
@@ -29,6 +30,8 @@ export class DevhubAppClient {
   dnaHubZomeClient: DnaHubZomeClient;
   appHubZomeClient: AppHubZomeClient;
 
+  cachedApphubDnaHash: DnaHash | undefined;
+
   constructor(public client: AppAgentClient) {
     this.zomeHubMereMemoryZomeClient = new MereMemoryZomeClient(
       client,
@@ -39,6 +42,27 @@ export class DevhubAppClient {
     this.zomeHubZomeClient = new ZomeHubZomeClient(client, 'zomehub', 'zomehub_csr');
     this.dnaHubZomeClient = new DnaHubZomeClient(client, 'dnahub', 'dnahub_csr');
     this.appHubZomeClient = new AppHubZomeClient(client, 'apphub', 'apphub_csr');
+  }
+
+  /**
+   * Dna Hash of the apphub cell of DevHub
+   * @returns
+   */
+  async apphubDnaHash() {
+    if (this.cachedApphubDnaHash) return this.cachedApphubDnaHash;
+    const appInfo = await this.client.appInfo();
+    if (!appInfo) throw new Error('AppInfo undefined.');
+    const apphubCellInfo = appInfo.cell_info.apphub.find(
+      (cellInfo) => CellType.Provisioned in cellInfo,
+    );
+    if (!apphubCellInfo) throw new Error('apphub cell not found');
+    const apphubCell = (
+      apphubCellInfo as {
+        [CellType.Provisioned]: ProvisionedCell;
+      }
+    )[CellType.Provisioned];
+    this.cachedApphubDnaHash = apphubCell.cell_id[0];
+    return apphubCell.cell_id[0];
   }
 
   async saveIntegrityZome(bytes: Uint8Array): Promise<Entity<WasmEntry>> {
