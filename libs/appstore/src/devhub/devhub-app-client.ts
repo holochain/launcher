@@ -148,10 +148,16 @@ export class DevhubAppClient {
 
     const devhubAppInfo = await this.client.appInfo();
     if (!devhubAppInfo) throw new Error('Failed to get app info of devhub');
-    const zomeHubCell = devhubAppInfo.cell_info.zome_hub;
-    const zomeHubCellProvisioned = zomeHubCell.find((cellInfo) => 'provisioned' in cellInfo);
-    if (!zomeHubCellProvisioned) throw new Error('No zome_hub cell found.');
-    const zomehubCellId = getCellId(zomeHubCellProvisioned);
+    const zomeHubCellInfo = devhubAppInfo.cell_info.zomehub.find(
+      (cellInfo) => CellType.Provisioned in cellInfo,
+    );
+    if (!zomeHubCellInfo) throw new Error('No zome_hub cell found.');
+    const zomeHubCell = (
+      zomeHubCellInfo as {
+        [CellType.Provisioned]: ProvisionedCell;
+      }
+    )[CellType.Provisioned];
+    const zomehubCellId = zomeHubCell.cell_id;
     if (!zomehubCellId) throw new Error('zome_hub CellId undefined.');
 
     for (const zome_manifest of bundle.manifest.integrity.zomes) {

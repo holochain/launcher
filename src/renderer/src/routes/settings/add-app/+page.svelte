@@ -39,6 +39,7 @@
 <form
 	class="modal-form mx-auto flex w-full max-w-xs flex-col space-y-4 pt-4"
 	on:submit|preventDefault={async () => {
+		console.log(appData);
 		if (isAppDataValid(appData)) {
 			$publishHappMutation.mutate(appData, {
 				onSuccess: () => {
