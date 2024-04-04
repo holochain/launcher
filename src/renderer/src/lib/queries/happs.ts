@@ -77,7 +77,7 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 			devHubClient.appHubZomeClient.createWebappPackageLinkToVersion({
 				version,
 				webapp_package_id: webappPackage.id,
-				webapp_package_version_addr: webappPackageVersion.id
+				webapp_package_version_addr: webappPackageVersion.action
 			});
 
 			const publishers = await appStoreClient.appstoreZomeClient.getMyPublishers();
