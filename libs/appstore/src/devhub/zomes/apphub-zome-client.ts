@@ -81,7 +81,7 @@ export class AppHubZomeClient extends ZomeClient {
   }
 
   async createWebapp(input: CreateWebAppInput): Promise<Entity<WebAppEntry>> {
-    return this.callZome('create_web_app', input);
+    return this.callZome('create_webapp', input);
   }
 
   async getWebappEntry(address: AnyDhtHash): Promise<Entity<WebAppEntry>> {

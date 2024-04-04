@@ -25,26 +25,34 @@ export class AppstoreAppClient {
   }
 
   async createPublisher(input: CreatePublisherFrontendInput): Promise<Entity<PublisherEntry>> {
-    const iconAddress = await this.mereMemoryZomeClient.saveBytes(input.icon);
+    const iconBytes = await this.mereMemoryZomeClient.saveBytes(input.icon);
     return this.appstoreZomeClient.createPublisher({
       ...input,
-      icon: iconAddress,
+      icon: iconBytes,
     });
   }
 
   async updatePublisher(
     input: UpdateEntityInput<UpdatePublisherFrontendInput>,
   ): Promise<Entity<PublisherEntry>> {
-    if (input.properties.icon) {
-      const iconAddress = await this.mereMemoryZomeClient.saveBytes(input.properties.icon);
-      input.properties.icon = iconAddress;
-    }
-    return this.appstoreZomeClient.updatePublisher(input);
+    const iconBytes = input.properties.icon
+      ? await this.mereMemoryZomeClient.saveBytes(input.properties.icon)
+      : null;
+    const updatedInput = {
+      ...input,
+      properties: {
+        ...input.properties,
+        ...(iconBytes && { icon: iconBytes }),
+      },
+    };
+    return this.appstoreZomeClient.updatePublisher(updatedInput);
   }
 
   async createApp(input: CreateAppFrontendInput): Promise<Entity<AppEntry>> {
-    const iconAddress = await this.mereMemoryZomeClient.saveBytes(input.icon);
-    input.icon = iconAddress;
-    return this.appstoreZomeClient.createApp(input);
+    const iconBytes = await this.mereMemoryZomeClient.saveBytes(input.icon);
+    return this.appstoreZomeClient.createApp({
+      ...input,
+      icon: iconBytes,
+    });
   }
 }

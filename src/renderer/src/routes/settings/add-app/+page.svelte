@@ -23,30 +23,23 @@
 		icon: undefined as Uint8Array | undefined,
 		bytes: undefined as Uint8Array | undefined
 	};
-	let isPending = false;
-
-	const handleIconUpload = async (file: File): Promise<void> => {
-		const arrayBuffer = await file.arrayBuffer();
-		appData = { ...appData, icon: new Uint8Array(arrayBuffer) };
-	};
-
-	const handleAppUpload = async (file: File): Promise<void> => {
-		const arrayBuffer = await file.arrayBuffer();
-		appData = { ...appData, bytes: new Uint8Array(arrayBuffer) };
-	};
+	const handleFileUpload =
+		(key: 'icon' | 'bytes') =>
+		async (file: File): Promise<void> => {
+			const arrayBuffer = await file.arrayBuffer();
+			appData = { ...appData, [key]: new Uint8Array(arrayBuffer) };
+		};
 </script>
 
 <form
 	class="modal-form mx-auto flex w-full max-w-xs flex-col space-y-4 pt-4"
 	on:submit|preventDefault={async () => {
-		console.log(appData);
 		if (isAppDataValid(appData)) {
 			$publishHappMutation.mutate(appData, {
 				onSuccess: () => {
 					$closeSettings.mutate(APP_STORE);
 				},
 				onError: (error) => {
-					console.error(error);
 					showModalError({
 						modalStore,
 						errorTitle: $i18n.t('appError'),
@@ -57,7 +50,7 @@
 		}
 	}}
 >
-	<IconInput bind:icon={appData.icon} handleFileUpload={handleIconUpload} />
+	<IconInput bind:icon={appData.icon} handleFileUpload={handleFileUpload('icon')} />
 	<InputWithLabel bind:value={appData.title} id="happName" label={$i18n.t('nameYourHapp')} />
 	<InputWithLabel
 		bind:value={appData.subtitle}
@@ -70,7 +63,11 @@
 		label={$i18n.t('description')}
 		maxLength={500}
 	/>
-	<InputWithLabel handleFileUpload={handleAppUpload} id="webbhapp" label={$i18n.t('webbhapp')} />
+	<InputWithLabel
+		handleFileUpload={handleFileUpload('bytes')}
+		id="webbhapp"
+		label={$i18n.t('webbhapp')}
+	/>
 	<InputWithLabel
 		bind:value={appData.version}
 		id="version"
@@ -80,16 +77,13 @@
 	<footer class="modal-footer flex justify-between gap-2">
 		<Button
 			props={{
-				disabled: isPending,
+				disabled: $publishHappMutation.isPending || !isAppDataValid(appData),
 				type: 'submit',
 				class: 'btn bg-add-happ-button flex-1'
 			}}
 		>
-			{#if isPending}
-				<span>{$i18n.t('adding')}</span><ProgressRadial stroke={100} width="w-6" />
-			{:else}
-				<span>{$i18n.t('add')}</span>
-			{/if}
+			<span>{$i18n.t($publishHappMutation.isPending ? 'adding' : 'add')}</span>
+			{#if $publishHappMutation.isPending}<ProgressRadial stroke={100} width="w-6" />{/if}
 		</Button>
 	</footer>
 </form>

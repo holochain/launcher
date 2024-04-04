@@ -79,18 +79,18 @@ export type AppRoleManifest = {
 export type RoleName = string;
 
 export type Ui = {
-  mere_memory_address: EntryHash;
+  mere_memory_addr: EntryHash;
   file_size: number;
   bytes: Uint8Array;
 };
 
 export type UiEntry = {
-  mere_memory_address: EntryHash;
+  mere_memory_addr: EntryHash;
   file_size: number;
 };
 
 export type CreateUiEntryInput = {
-  mere_memory_address: EntryHash;
+  mere_memory_addr: EntryHash;
 };
 
 export type CreateLinkWebAppPackageVersionInput = {
@@ -131,9 +131,9 @@ export type CreateWebAppPackageFrontendInput = {
   subtitle: string;
   description: string;
   icon: Uint8Array;
-  metadata: any;
-  maintainer: any; // enum Authority with variant Agent(AgentPubKey)
-  source_code_uri: string | undefined;
+  metadata?: any;
+  maintainer?: any; // enum Authority with variant Agent(AgentPubKey)
+  source_code_uri?: string;
 };
 
 export type CreateWebAppPackageInput = {
@@ -275,14 +275,14 @@ export type BundleAddr = EntryHash;
 
 export type Wasm = {
   wasm_type: WasmType;
-  mere_memory_address: EntryHash;
+  mere_memory_addr: EntryHash;
   file_size: number;
   bytes: Uint8Array;
 };
 
 export type WasmEntry = {
   wasm_type: WasmType;
-  mere_memory_address: EntryHash;
+  mere_memory_addr: EntryHash;
   file_size: number;
 };
 
@@ -293,7 +293,7 @@ export enum WasmType {
 
 export type CreateWasmEntryInput = {
   wasm_type: WasmType;
-  mere_memory_address: EntryHash;
+  mere_memory_addr: EntryHash;
 };
 
 // DNA HUB

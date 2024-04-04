@@ -15,6 +15,7 @@ import {
 import type { AppData } from '$types';
 
 export const PUBLISHERS_QUERY_KEY = 'publishers';
+export const APP_STORE_HAPPS_QUERY_KEY = 'appstore-happs';
 type ClientType = DevhubAppClient | AppstoreAppClient;
 
 const getClientOrThrow = <T extends ClientType>(
@@ -40,6 +41,13 @@ export const createPublishersQuery = () => {
 	});
 };
 
+export const createAppStoreHappsQuery = () => {
+	return createQuery({
+		queryKey: [APP_STORE_HAPPS_QUERY_KEY],
+		queryFn: () => getAppStoreClientOrThrow().appstoreZomeClient.getMyApps()
+	});
+};
+
 export const createPublisherMutation = (queryClient: QueryClient) => {
 	return createMutation({
 		mutationFn: (createPublisherInput: CreatePublisherFrontendInput) =>
@@ -48,13 +56,13 @@ export const createPublisherMutation = (queryClient: QueryClient) => {
 	});
 };
 
-export const createPublishHappMutation = () => {
+export const createPublishHappMutation = (queryClient: QueryClient) => {
 	return createMutation({
 		mutationFn: async ({ title, subtitle, description, icon, bytes, version }: AppData) => {
 			const devHubClient = getDevHubClientOrThrow();
 			const appStoreClient = getAppStoreClientOrThrow();
 			const appEntry = await devHubClient.saveWebapp(bytes);
-			const webappPackage = await devHubClient.appHubZomeClient.createWebappPackage({
+			const webappPackage = await devHubClient.createWebappPackage({
 				title,
 				subtitle,
 				description,
@@ -69,7 +77,7 @@ export const createPublishHappMutation = () => {
 			devHubClient.appHubZomeClient.createWebappPackageLinkToVersion({
 				version,
 				webapp_package_id: webappPackage.id,
-				webapp_package_version_addr: webappPackageVersion.address
+				webapp_package_version_addr: webappPackageVersion.id
 			});
 
 			const publishers = await appStoreClient.appstoreZomeClient.getMyPublishers();
@@ -77,7 +85,7 @@ export const createPublishHappMutation = () => {
 				throw new Error(NO_PUBLISHERS_AVAILABLE_ERROR);
 			}
 
-			await appStoreClient.appstoreZomeClient.createApp({
+			await appStoreClient.createApp({
 				title,
 				subtitle,
 				description,
@@ -88,6 +96,7 @@ export const createPublishHappMutation = () => {
 					target: webappPackage.address
 				}
 			});
-		}
+		},
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: [APP_STORE_HAPPS_QUERY_KEY] })
 	});
 };

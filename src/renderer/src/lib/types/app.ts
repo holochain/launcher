@@ -1,3 +1,5 @@
+import { isNonEmptyString, isUint8Array } from '$helpers';
+
 export type AppData = {
 	icon: Uint8Array;
 	title: string;
@@ -11,6 +13,14 @@ export const isAppDataValid = (data: unknown): data is AppData =>
 	typeof data === 'object' &&
 	data !== null &&
 	'bytes' in data &&
-	data.bytes instanceof Uint8Array &&
+	isUint8Array(data.bytes) &&
 	'icon' in data &&
-	data.icon instanceof Uint8Array;
+	isUint8Array(data.icon) &&
+	'title' in data &&
+	isNonEmptyString(data.title) &&
+	'subtitle' in data &&
+	isNonEmptyString(data.subtitle) &&
+	'description' in data &&
+	isNonEmptyString(data.description) &&
+	'version' in data &&
+	isNonEmptyString(data.version);

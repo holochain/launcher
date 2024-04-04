@@ -69,7 +69,7 @@ export class DevhubAppClient {
     const mereMemoryAddress = await this.zomeHubMereMemoryZomeClient.saveBytes(bytes);
     return this.zomeHubZomeClient.createWasm({
       wasm_type: WasmType.Integrity,
-      mere_memory_address: mereMemoryAddress,
+      mere_memory_addr: mereMemoryAddress,
     });
   }
 
@@ -77,7 +77,7 @@ export class DevhubAppClient {
     const mereMemoryAddress = await this.zomeHubMereMemoryZomeClient.saveBytes(bytes);
     return this.zomeHubZomeClient.createWasm({
       wasm_type: WasmType.Coordinator,
-      mere_memory_address: mereMemoryAddress,
+      mere_memory_addr: mereMemoryAddress,
     });
   }
 
@@ -85,11 +85,11 @@ export class DevhubAppClient {
     const wasmEntryEntity = await this.zomeHubZomeClient.getWasmEntry(addr);
     const wasmEntry = wasmEntryEntity.content;
     const wasmBytes = await this.zomeHubMereMemoryZomeClient.getMereMemoryBytes(
-      wasmEntry.mere_memory_address,
+      wasmEntry.mere_memory_addr,
     );
     return {
       wasm_type: wasmEntry.wasm_type,
-      mere_memory_address: wasmEntry.mere_memory_address,
+      mere_memory_addr: wasmEntry.mere_memory_addr,
       file_size: wasmEntry.file_size,
       bytes: wasmBytes,
     };
@@ -167,7 +167,7 @@ export class DevhubAppClient {
 
       zome_manifest.wasm_hrl = {
         dna: zomehubCellId[0],
-        target: wasm.content.mere_memory_address,
+        target: wasm.content.mere_memory_addr,
       };
 
       delete zome_manifest.bundled;
@@ -180,7 +180,7 @@ export class DevhubAppClient {
 
       zome_manifest.wasm_hrl = {
         dna: zomehubCellId[0],
-        target: wasmEntity.content.mere_memory_address,
+        target: wasmEntity.content.mere_memory_addr,
       };
 
       delete zome_manifest.bundled;
@@ -204,7 +204,7 @@ export class DevhubAppClient {
 
       const devhubAppInfo = await this.client.appInfo();
       if (!devhubAppInfo) throw new Error('Failed to get app info of devhub');
-      const dnaHubCell = devhubAppInfo.cell_info.zome_hub;
+      const dnaHubCell = devhubAppInfo.cell_info.zomehub;
       const dnaHubCellProvisioned = dnaHubCell.find((cellInfo) => 'provisioned' in cellInfo);
       if (!dnaHubCellProvisioned) throw new Error('No zome_hub cell found.');
       const dnaHubCellId = getCellId(dnaHubCellProvisioned);
@@ -228,17 +228,17 @@ export class DevhubAppClient {
 
   async saveUi(bytes: Uint8Array): Promise<Entity<UiEntry>> {
     const mereMemoryAddress = await this.appHubMereMemoryZomeClient.saveBytes(bytes);
-    return this.appHubZomeClient.createUi({ mere_memory_address: mereMemoryAddress });
+    return this.appHubZomeClient.createUi({ mere_memory_addr: mereMemoryAddress });
   }
 
   async getUi(address: AnyDhtHash): Promise<Ui> {
     const uiEntryEntity = await this.appHubZomeClient.getUiEntry(address);
     const uiEntry = uiEntryEntity.content;
     const uiBytes = await this.appHubMereMemoryZomeClient.getMereMemoryBytes(
-      uiEntry.mere_memory_address,
+      uiEntry.mere_memory_addr,
     );
     return {
-      mere_memory_address: uiEntry.mere_memory_address,
+      mere_memory_addr: uiEntry.mere_memory_addr,
       file_size: uiEntry.file_size,
       bytes: uiBytes,
     };
@@ -247,7 +247,7 @@ export class DevhubAppClient {
   async getUiBytes(address: AnyDhtHash): Promise<Uint8Array> {
     const uiEntryEntity = await this.appHubZomeClient.getUiEntry(address);
     return this.appHubMereMemoryZomeClient.getMereMemoryBytes(
-      uiEntryEntity.content.mere_memory_address,
+      uiEntryEntity.content.mere_memory_addr,
     );
   }
 
@@ -255,8 +255,8 @@ export class DevhubAppClient {
     input: CreateWebAppPackageFrontendInput,
   ): Promise<Entity<WebAppPackageEntry>> {
     const iconAddress = await this.appHubMereMemoryZomeClient.saveBytes(input.icon);
-    input.icon = iconAddress;
-    return this.appHubZomeClient.createWebappPackage(input);
+    const updatedInput = { ...input, icon: iconAddress };
+    return this.appHubZomeClient.createWebappPackage(updatedInput);
   }
 
   async saveWebapp(bytes: Uint8Array): Promise<Entity<WebAppEntry>> {

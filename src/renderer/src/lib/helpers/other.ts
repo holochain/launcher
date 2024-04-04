@@ -18,6 +18,11 @@ export const getCellId = (cellInfo: unknown): CellId | undefined => {
 		: parsedCellInfo.data.cloned.cell_id;
 };
 
+export const isNonEmptyString = (value: unknown): value is string =>
+	typeof value === 'string' && value.trim() !== '';
+
+export const isUint8Array = (value: unknown): value is Uint8Array => value instanceof Uint8Array;
+
 export const validateApp = (app: unknown): app is ExtendedAppInfo =>
 	ExtendedAppInfoSchema.safeParse(app).success;
 

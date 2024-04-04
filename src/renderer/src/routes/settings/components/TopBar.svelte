@@ -33,7 +33,6 @@
 			buttonClass={clsx('p-2', isAddAppPage && 'bg-black rounded-md')}
 			onClick={() => {
 				if (!$publishersQuery.isSuccess) return;
-				console.log($publishersQuery.data);
 				if ($publishersQuery.data.length < 1) {
 					return modalStore.trigger(modal);
 				}
