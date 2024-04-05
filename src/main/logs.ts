@@ -3,7 +3,6 @@ import type winston from 'winston';
 import { createLogger, format, transports } from 'winston';
 
 import type { HolochainData } from '$shared/types';
-
 import {
   HOLOCHAIN_ERROR,
   HOLOCHAIN_LOG,
@@ -11,7 +10,8 @@ import {
   LAIR_LOG,
   LAUNCHER_ERROR,
   WASM_LOG,
-} from '../shared/types';
+} from '$shared/types';
+
 import type { LauncherFileSystem } from './filesystem';
 import type { LauncherEmitter } from './launcherEmitter';
 
