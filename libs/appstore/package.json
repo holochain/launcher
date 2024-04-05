@@ -22,6 +22,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@spartan-hc/bundles": "0.2.2"
+    "@spartan-hc/bundles": "0.2.2",
+    "fflate": "^0.8.2"
   }
 }
