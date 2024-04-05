@@ -14,7 +14,8 @@ import {
   LAUNCH_LAIR_KEYSTORE_ERROR,
   LOADING_PROGRESS_UPDATE,
   WRONG_PASSWORD,
-} from '../types';
+} from '$shared/types';
+
 import type { LauncherEmitter } from './launcherEmitter';
 import { getErrorMessage, throwTRPCErrorError } from './utils';
 

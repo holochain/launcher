@@ -1,3 +1,2 @@
 export * from './display';
-export * from './holochain';
-export * from './validate';
+export * from './other';

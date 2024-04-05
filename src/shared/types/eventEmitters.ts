@@ -28,3 +28,5 @@ export type EventMap = {
   [HOLOCHAIN_LOG]: HolochainData;
   [WASM_LOG]: HolochainData;
 };
+
+export type EventKeys = keyof EventMap;

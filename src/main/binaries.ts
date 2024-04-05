@@ -3,7 +3,7 @@ import fs from 'fs';
 import { readFileSync } from 'fs';
 import * as path from 'path';
 
-import { HolochainLairVersionSchema } from '../types';
+import { HolochainLairVersionSchema } from '$shared/types';
 
 const getFilePath = (relativePath: string) => path.join(app.getAppPath(), relativePath);
 

@@ -6,12 +6,14 @@
 	export let name: string;
 	export let isApp = false;
 	export let isSelected = false;
+	export let background = 'bg-white/25';
 </script>
 
 <button
-	class={clsx('flex cursor-pointer items-center px-4 py-2', {
-		'rounded-md bg-white/25': isSelected
-	})}
+	class={clsx(
+		'flex cursor-pointer items-center px-4 py-2',
+		isSelected && `rounded-md ${background}`
+	)}
 	on:click={onClick}
 	aria-label={`Select ${name}`}
 >
@@ -25,6 +27,7 @@
 			rounded="rounded-sm"
 		/>
 	{/if}
+	<slot name="leading" />
 	<span
 		class={clsx('text-base', {
 			'font-light opacity-80': !isSelected,

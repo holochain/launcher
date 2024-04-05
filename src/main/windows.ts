@@ -14,8 +14,9 @@ import serve from 'electron-serve';
 import path from 'path';
 import url from 'url';
 
-import type { ExtendedAppInfo, Screen } from '../types';
-import { LAUNCHER_ERROR, MAIN_SCREEN, SETTINGS_SCREEN } from '../types';
+import type { ExtendedAppInfo, Screen } from '$shared/types';
+import { LAUNCHER_ERROR, MAIN_SCREEN, SETTINGS_SCREEN } from '$shared/types';
+
 import { SEARCH_HEIGH, WINDOW_SIZE } from './const';
 import type { LauncherFileSystem } from './filesystem';
 import { type UiHashes } from './holochainManager';
@@ -39,7 +40,14 @@ const loadVite = (window: BrowserWindow, query: Record<string, string> = {}): vo
 
 export const loadOrServe = is.dev ? loadVite : serveURL;
 
-const createBrowserWindow = (title: string) =>
+/**
+ * Admin windows have special priviledges when it comes to zome call signing. Normal happs must run
+ * in happ windows with lower priviledges.
+ *
+ * @param title
+ * @returns
+ */
+const createAdminWindow = (title: string) =>
   new BrowserWindow({
     frame: false,
     width: WINDOW_SIZE,
@@ -52,24 +60,54 @@ const createBrowserWindow = (title: string) =>
     },
   });
 
+export const focusVisibleWindow = (launcherWindows: Record<Screen, BrowserWindow>) => {
+  const windows = Object.values(launcherWindows);
+  const anyVisible = windows.some((window) => !window.isMinimized() && window.isVisible());
+
+  if (!anyVisible) {
+    launcherWindows[MAIN_SCREEN].show();
+  } else {
+    windows.find((window) => !window.isMinimized() && window.isVisible())?.focus();
+  }
+};
+
 export const setupAppWindows = () => {
   let isQuitting = false;
   // Create the browser window.
-  const mainWindow = createBrowserWindow('Holochain Launcher');
+  const mainWindow = createAdminWindow('Holochain Launcher');
 
-  const settingsWindow = createBrowserWindow('Holochain Launcher Settings');
+  const settingsWindow = createAdminWindow('Holochain Launcher Settings');
 
   const icon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '16x16.png'));
   const tray = new Tray(icon);
+
+  loadOrServe(mainWindow, { screen: MAIN_SCREEN });
+
+  const windows: Record<Screen, BrowserWindow> = {
+    [MAIN_SCREEN]: mainWindow,
+    [SETTINGS_SCREEN]: settingsWindow,
+  };
 
   const contextMenu = Menu.buildFromTemplate([
     {
       label: 'Open',
       type: 'normal',
       click() {
-        mainWindow.show();
+        focusVisibleWindow(windows);
       },
     },
+    ...(is.dev
+      ? [
+          {
+            label: 'Open dev tools',
+            type: 'normal' as const,
+            click: () =>
+              Object.values(windows)
+                .filter((window) => !window.isMinimized() && window.isVisible())
+                .forEach((window) => window.webContents.openDevTools()),
+          },
+        ]
+      : []),
     {
       label: 'Quit',
       type: 'normal',
@@ -82,16 +120,9 @@ export const setupAppWindows = () => {
   tray.setToolTip('Holochain Launcher');
   tray.setContextMenu(contextMenu);
 
-  loadOrServe(mainWindow, { screen: MAIN_SCREEN });
-
-  const windows: Record<Screen, BrowserWindow> = {
-    [MAIN_SCREEN]: mainWindow,
-    [SETTINGS_SCREEN]: settingsWindow,
-  };
-
   globalShortcut.register('CommandOrControl+Shift+L', () => {
     mainWindow.setSize(WINDOW_SIZE, SEARCH_HEIGH);
-    mainWindow.show();
+    focusVisibleWindow(windows);
   });
 
   app.on('will-quit', () => {

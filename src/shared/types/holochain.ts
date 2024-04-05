@@ -132,4 +132,13 @@ export type LoadingProgressUpdate =
   | 'initializingLairKeystore'
   | 'startingLairKeystore'
   | 'startingHolochain'
+  | 'installingAppStore'
+  | 'installingDevHub'
   | '';
+
+export type AppToInstall = {
+  id: string;
+  sha256: string;
+  name: string;
+  progressUpdate: LoadingProgressUpdate;
+};

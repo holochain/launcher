@@ -3,16 +3,11 @@
 
 	import { goto } from '$app/navigation';
 	import { IconButton, Input } from '$components';
+	import { SELECTED_ICON_STYLE } from '$const';
 	import { Gear, Home, Rocket } from '$icons';
 	import { i18n, trpc } from '$services';
+	import { ANIMATION_DURATION, APP_STORE, APPS_VIEW, type MainScreenRoute } from '$shared/types';
 	import { navigationStore } from '$stores';
-
-	import {
-		ANIMATION_DURATION,
-		APP_STORE,
-		APPS_VIEW,
-		type MainScreenRoute
-	} from '../../../../../types';
 
 	const client = trpc();
 
@@ -69,9 +64,9 @@
 		/>
 		<div class="absolute left-2 top-2 z-10">
 			{#if type === APPS_VIEW}
-				<Rocket fillColor="fill-light-primary dark:fill-white" />
+				<Rocket fillColor={SELECTED_ICON_STYLE} />
 			{:else}
-				<Home fillColor="fill-light-primary dark:fill-white" />
+				<Home fillColor={SELECTED_ICON_STYLE} />
 			{/if}
 		</div>
 	</div>

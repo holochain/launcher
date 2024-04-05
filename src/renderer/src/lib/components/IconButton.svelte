@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { Button } from '$components';
 	export let onClick: (() => void) | undefined = undefined;
-	export let buttonClass: string = '';
+	export let buttonClass: string = 'p-2';
 </script>
 
 <Button
 	props={{
-		class: `p-2 app-region-no-drag ${buttonClass}`,
+		class: `app-region-no-drag ${buttonClass}`,
 		onClick
 	}}
 >

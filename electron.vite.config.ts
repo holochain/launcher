@@ -3,6 +3,11 @@ import { resolve } from 'path';
 
 export default defineConfig({
   main: {
+    resolve: {
+      alias: {
+        $shared: resolve(__dirname, './src/shared'),
+      },
+    },
     plugins: [externalizeDepsPlugin({ exclude: ['@holochain/client', 'nanoid'] })],
   },
   preload: {

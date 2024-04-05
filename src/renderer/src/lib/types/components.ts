@@ -1,3 +1,5 @@
+import { MODAL_ADD_PUBLISHER, MODAL_INSTALL_FROM_FILE, MODAL_INSTALL_KANDO } from '$const';
+
 type CommonInputProps = {
 	id?: string;
 	class?: string;
@@ -5,13 +7,19 @@ type CommonInputProps = {
 };
 
 type FileProps = {
-	accept: '.webhapp';
+	accept: '.webhapp' | 'image/*';
 };
 
 type TextProps = {
 	placeholder?: string;
 	required?: boolean;
+	maxlength?: number;
 };
+
+export type Modals =
+	| typeof MODAL_INSTALL_FROM_FILE
+	| typeof MODAL_INSTALL_KANDO
+	| typeof MODAL_ADD_PUBLISHER;
 
 export type InputProps =
 	| (CommonInputProps & TextProps & { type: 'text' })
