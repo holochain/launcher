@@ -17,7 +17,13 @@ import os from 'os';
 import path from 'path';
 import z from 'zod';
 
-import { APP_STORE_APP_ID, DEVHUB_APP_ID } from '$shared/const';
+import {
+  ANIMATION_DURATION,
+  APP_STORE_APP_ID,
+  DEVHUB_APP_ID,
+  MAIN_SCREEN,
+  SETTINGS_SCREEN,
+} from '$shared/const';
 import type {
   HolochainDataRoot,
   HolochainPartition,
@@ -25,19 +31,16 @@ import type {
   WindowInfoRecord,
 } from '$shared/types';
 import {
-  ANIMATION_DURATION,
   CHECK_INITIALIZED_KEYSTORE_ERROR,
   ExtendedAppInfoSchema,
   FILE_UNDEFINED_ERROR,
   InstallHappInputSchema,
   InstallKandoSchema,
   LOADING_PROGRESS_UPDATE,
-  MAIN_SCREEN,
   MAIN_SCREEN_ROUTE,
   MainScreenRouteSchema,
   MISSING_BINARIES,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
-  SETTINGS_SCREEN,
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '$shared/types';
 

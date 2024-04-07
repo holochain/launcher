@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { APP_STORE } from '$shared/types';
+	import { APP_STORE } from '$shared/const';
 
 	import MainHeader from '../components/MainHeader.svelte';
 	import { AppCard, InstallFromDeviceCard } from './components';

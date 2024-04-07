@@ -7,6 +7,7 @@
 	import { SYSTEM_SETTINGS } from '$const';
 	import { getCellId, validateApp } from '$helpers';
 	import { i18n, trpc } from '$services';
+	import { SETTINGS_SCREEN } from '$shared/const';
 
 	const client = trpc();
 
@@ -31,7 +32,7 @@
 						$uninstallApp.mutate(selectedApp, {
 							onSuccess: () => {
 								$installedApps.refetch();
-								goto('/settings');
+								goto(`/${SETTINGS_SCREEN}`);
 							}
 						}),
 					class: 'btn-app-store variant-filled'

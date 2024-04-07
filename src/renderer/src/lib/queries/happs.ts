@@ -6,6 +6,7 @@ import type {
 } from 'appstore-tools';
 import { get, type Writable } from 'svelte/store';
 
+import { APP_STORE_MY_HAPPS_QUERY_KEY, PUBLISHERS_QUERY_KEY } from '$const';
 import { getAppStoreClient, getDevHubClient } from '$services';
 import {
 	APP_STORE_CLIENT_NOT_INITIALIZED_ERROR,
@@ -14,8 +15,6 @@ import {
 } from '$shared/types';
 import type { AppData } from '$types';
 
-export const PUBLISHERS_QUERY_KEY = 'publishers';
-export const APP_STORE_HAPPS_QUERY_KEY = 'appstore-happs';
 type ClientType = DevhubAppClient | AppstoreAppClient;
 
 const getClientOrThrow = <T extends ClientType>(
@@ -41,9 +40,9 @@ export const createPublishersQuery = () => {
 	});
 };
 
-export const createAppStoreHappsQuery = () => {
+export const createAppStoreMyHappsQuery = () => {
 	return createQuery({
-		queryKey: [APP_STORE_HAPPS_QUERY_KEY],
+		queryKey: [APP_STORE_MY_HAPPS_QUERY_KEY],
 		queryFn: () => getAppStoreClientOrThrow().appstoreZomeClient.getMyApps()
 	});
 };
@@ -97,6 +96,6 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 				}
 			});
 		},
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: [APP_STORE_HAPPS_QUERY_KEY] })
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: [APP_STORE_MY_HAPPS_QUERY_KEY] })
 	});
 };

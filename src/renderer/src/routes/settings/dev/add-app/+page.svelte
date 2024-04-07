@@ -5,7 +5,7 @@
 	import { showModalError } from '$helpers';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
-	import { APP_STORE } from '$shared/types';
+	import { APP_STORE } from '$shared/const';
 	import { isAppDataValid } from '$types';
 
 	const client = trpc();

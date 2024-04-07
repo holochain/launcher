@@ -4,7 +4,7 @@
 	import { page } from '$app/stores';
 	import { validateApp } from '$helpers';
 	import { trpc } from '$services';
-	import { APPS_VIEW } from '$shared/types';
+	import { APPS_VIEW } from '$shared/const';
 
 	import MainHeader from '../components/MainHeader.svelte';
 	import ListOfApps from './components/ListOfApps.svelte';

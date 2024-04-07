@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
-	import { APPS_VIEW } from '$shared/types';
+	import { APPS_VIEW } from '$shared/const';
 
 	import ModalInstallForm from './ModalInstallForm.svelte';
 
@@ -49,5 +49,5 @@
 			}
 		)}
 	isPending={$installHappMutation.isPending}
-	acceptFileType={true}
+	acceptFileType
 />
