@@ -193,6 +193,11 @@ jobs:
           echo "sha512 after code signing"
           CertUtil -hashfile "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" SHA512
 
+          # Overwrite the latest.yml with one containing the sha512 of the code signed setup.exe file
+          node ./scripts/latest-yaml.js
+          gh release upload "latest.yml" "latest.yml" --clobber
+
+          # Overwrite the setup.exe file with the code signed one
           gh release upload "v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" --clobber
   mark-as-prerelease:
     needs: [publish, create-draft-release]
