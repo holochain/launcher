@@ -10,11 +10,13 @@ import { initTRPC } from '@trpc/server';
 import * as childProcess from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
-import { app, ipcMain, protocol } from 'electron';
+import { app, dialog, ipcMain, protocol } from 'electron';
 import { createIPCHandler } from 'electron-trpc/main';
+import { autoUpdater } from 'electron-updater';
 import type { ZomeCallSigner, ZomeCallUnsignedNapi } from 'hc-launcher-rust-utils';
 import os from 'os';
 import path from 'path';
+import semver from 'semver';
 import z from 'zod';
 
 import { APP_STORE_APP_ID, DEVHUB_APP_ID } from '$shared/const';
@@ -246,6 +248,50 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('sign-zome-call', handleSignZomeCall);
   ipcMain.handle('sign-zome-call-legacy', handleSignZomeCallLegacy);
+
+  // Check for updates
+  if (app.isPackaged) {
+    autoUpdater.allowPrerelease = true;
+    autoUpdater.autoDownload = false;
+
+    const updateCheckResult = await autoUpdater.checkForUpdates();
+
+    console.log('updateCheckResult: ', updateCheckResult);
+
+    // We only install semver compatible updates
+    const appVersion = app.getVersion();
+    if (
+      updateCheckResult &&
+      breakingVersion(updateCheckResult.updateInfo.version) === breakingVersion(appVersion) &&
+      semver.gt(updateCheckResult.updateInfo.version, appVersion)
+    ) {
+      const userDecision = await dialog.showMessageBox({
+        title: 'Update Available',
+        type: 'question',
+        buttons: ['Deny', 'Install and Restart'],
+        defaultId: 0,
+        cancelId: 0,
+        message: `A new compatible version of Launcher is available (${updateCheckResult.updateInfo.version}). Do you want to install it?`,
+      });
+      if (userDecision.response === 1) {
+        // downloading means that with the next start of the application it's automatically going to be installed
+        await autoUpdater.downloadUpdate();
+        const options: Electron.RelaunchOptions = {
+          args: process.argv,
+        };
+        // https://github.com/electron-userland/electron-builder/issues/1727#issuecomment-769896927
+        if (process.env.APPIMAGE) {
+          options.args!.unshift('--appimage-extract-and-run');
+          options.execPath = process.env.APPIMAGE.replace(
+            appVersion,
+            updateCheckResult.updateInfo.version,
+          );
+        }
+        app.relaunch(options);
+        app.exit(0);
+      }
+    }
+  }
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

@@ -51,6 +51,7 @@
     "commander": "12.0.0",
     "electron-serve": "^1.2.0",
     "electron-trpc": "^0.5.2",
+    "electron-updater": "6.1.8",
     "elliptic": "6.5.5",
     "hc-launcher-rust-utils": "file:./rust-utils/dist",
     "js-sha256": "^0.11.0",
