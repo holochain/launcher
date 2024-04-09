@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { ADD_APP_PAGE } from '$const';
+	import { page } from '$app/stores';
+	import { ADD_APP_PAGE, DEV_PAGE, VIEW } from '$const';
+	import { getRawQueryParam } from '$helpers';
 	import { Plus } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
@@ -8,21 +10,31 @@
 	import MenuEntry from './MenuEntry.svelte';
 
 	const { appStoreMyHappsQuery } = createAppQueries();
+
+	const selectView = (view: string) => goto(`/${DEV_PAGE}${view ? `?${VIEW}=${view}` : ''}`);
+
+	$: view = getRawQueryParam($page.url.href, VIEW);
 </script>
 
 <MenuEntry
 	background="bg-app-button-gradient"
 	name={$i18n.t('addhApp')}
-	onClick={() => goto(`${ADD_APP_PAGE}`)}
+	onClick={() => goto(`/${DEV_PAGE}/${ADD_APP_PAGE}`)}
 	isSelected
 >
 	<div slot="leading" class="pr-2">
 		<Plus />
 	</div>
 </MenuEntry>
-
+<div class="!my-2 h-px w-full bg-tertiary-800"></div>
+<span class="text-[10px] font-light opacity-50">{$i18n.t('yourHapps').toUpperCase()}</span>
 {#if $appStoreMyHappsQuery.isSuccess}
 	{#each $appStoreMyHappsQuery.data as app (app.id)}
-		<MenuEntry isApp name={app.content.title} onClick={() => {}} isSelected={false} />
+		<MenuEntry
+			isApp
+			isSelected={view === app.id}
+			name={app.title}
+			onClick={() => selectView(app.id)}
+		/>
 	{/each}
 {/if}

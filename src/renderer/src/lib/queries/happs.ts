@@ -7,6 +7,7 @@ import type {
 import { get, type Writable } from 'svelte/store';
 
 import { APP_STORE_MY_HAPPS_QUERY_KEY, PUBLISHERS_QUERY_KEY } from '$const';
+import { uint8ArrayToURIComponent } from '$helpers';
 import { getAppStoreClient, getDevHubClient } from '$services';
 import {
 	APP_STORE_CLIENT_NOT_INITIALIZED_ERROR,
@@ -43,7 +44,21 @@ export const createPublishersQuery = () => {
 export const createAppStoreMyHappsQuery = () => {
 	return createQuery({
 		queryKey: [APP_STORE_MY_HAPPS_QUERY_KEY],
-		queryFn: () => getAppStoreClientOrThrow().appstoreZomeClient.getMyApps()
+		queryFn: async () => {
+			const myApps = await getAppStoreClientOrThrow().appstoreZomeClient.getMyApps();
+			return Promise.all(
+				myApps.map(async (app) => {
+					// const icon = await getDevHubClientOrThrow().getUiBytes(app.content.icon);
+					console.log(uint8ArrayToURIComponent(app.id));
+					console.log(app);
+					return {
+						id: uint8ArrayToURIComponent(app.id),
+						title: app.content.title,
+						subtitle: app.content.subtitle
+					};
+				})
+			);
+		}
 	});
 };
 

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { SYSTEM_INFORMATION, SYSTEM_SETTINGS } from '$const';
+	import { SYSTEM_INFORMATION, SYSTEM_SETTINGS, VIEW } from '$const';
 	import { validateApp } from '$helpers';
 	import { i18n, trpc } from '$services';
 	import { SETTINGS_SCREEN } from '$shared/const';
@@ -12,9 +12,9 @@
 
 	const installedApps = client.getInstalledApps.createQuery();
 
-	const selectView = (view: string) => goto(`/${SETTINGS_SCREEN}${view ? `?view=${view}` : ''}`);
+	const selectView = (view: string) => goto(`/${SETTINGS_SCREEN}${view ? `?${VIEW}=${view}` : ''}`);
 
-	$: view = $page.url.searchParams.get('view');
+	$: view = $page.url.searchParams.get(VIEW);
 
 	const systemViews = [SYSTEM_INFORMATION, SYSTEM_SETTINGS];
 </script>
