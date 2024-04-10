@@ -1,3 +1,5 @@
+import { encodeHashToBase64 } from '@holochain/client';
+
 import { createAppStoreClient, createDevHubClient } from '$services';
 import {
 	type CellId,
@@ -27,7 +29,7 @@ export const validateApp = (app: unknown): app is ExtendedAppInfo =>
 	ExtendedAppInfoSchema.safeParse(app).success;
 
 export const uint8ArrayToURIComponent = (bytes: Uint8Array) =>
-	encodeURIComponent(btoa(String.fromCharCode(...bytes)));
+	encodeURIComponent(encodeHashToBase64(bytes));
 
 export const getRawQueryParam = (url: string, param: string): string | null => {
 	const queryString = url.split('?')[1];
