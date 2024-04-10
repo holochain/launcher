@@ -7,7 +7,7 @@
 	import { CenterProgressRadial } from '$components';
 	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
-	import { SETTINGS_SCREEN } from '$shared/types';
+	import { SETTINGS_SCREEN } from '$shared/const';
 
 	const client = trpc();
 
@@ -19,7 +19,7 @@
 		const url = $page.url;
 
 		if (url.searchParams.get('screen') === SETTINGS_SCREEN) {
-			return goto('/settings');
+			return goto(`/${SETTINGS_SCREEN}`);
 		}
 
 		return lairSetupRequired.subscribe((setupData) => {

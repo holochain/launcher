@@ -2,11 +2,16 @@
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import clsx from 'clsx';
 
+	import { createImageUrl } from '$helpers';
+
 	export let onClick = () => {};
 	export let name: string;
 	export let isApp = false;
 	export let isSelected = false;
 	export let background = 'bg-white/25';
+	export let icon: Uint8Array | undefined = undefined;
+
+	$: imageUrl = createImageUrl(icon);
 </script>
 
 <button
@@ -19,6 +24,7 @@
 >
 	{#if isApp}
 		<Avatar
+			src={imageUrl}
 			initials={name.substring(0, 2).toUpperCase()}
 			fill="fill-current text-white"
 			background="dark:bg-app-gradient"

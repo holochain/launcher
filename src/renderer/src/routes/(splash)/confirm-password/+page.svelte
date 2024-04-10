@@ -5,7 +5,7 @@
 	import { showModalError } from '$helpers';
 	import { Warning } from '$icons';
 	import { i18n, trpc } from '$services';
-	import { APP_STORE } from '$shared/types';
+	import { APP_STORE } from '$shared/const';
 	import { appPassword } from '$stores';
 
 	import { PasswordForm, SetupProgressWrapper } from '../components';

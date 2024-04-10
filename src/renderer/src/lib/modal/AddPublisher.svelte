@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { getModalStore, ProgressRadial } from '@skeletonlabs/skeleton';
+	import { getModalStore } from '@skeletonlabs/skeleton';
 	import type { CreatePublisherFrontendInput } from 'appstore-tools';
 
 	import { goto } from '$app/navigation';
-	import { Button, IconInput } from '$components';
-	import { ADD_APP_PAGE } from '$const';
+	import { AddTypeModalFooter, IconInput } from '$components';
+	import { ADD_APP_PAGE, DEV_PAGE } from '$const';
 	import { base64ToArrayBuffer } from '$helpers';
 	import { defaultIcon } from '$icons';
 	import { createAppQueries } from '$queries';
@@ -22,7 +22,6 @@
 		website: { url: '', context: undefined },
 		icon: base64ToArrayBuffer(defaultIcon)
 	};
-	let isPending = false;
 
 	const handleFileUpload = async (file: File): Promise<void> => {
 		publisherData.icon = new Uint8Array(await file.arrayBuffer());
@@ -42,7 +41,7 @@
 				$publisherMutation.mutate(publisherData, {
 					onSuccess: () => {
 						modalStore.close();
-						goto(`/settings/${ADD_APP_PAGE}`);
+						goto(`/${DEV_PAGE}/${ADD_APP_PAGE}`);
 					}
 				});
 			}}
@@ -69,31 +68,12 @@
 				id="publisherWebsite"
 				label={$i18n.t('website')}
 			/>
-			<footer class="modal-footer flex justify-between gap-2">
-				<Button
-					props={{
-						type: 'reset',
-						onClick: modalStore.close,
-						class: 'btn-app-store-modal-secondary flex-1',
-						disabled: isPending
-					}}
-				>
-					{$i18n.t('cancel')}
-				</Button>
-				<Button
-					props={{
-						disabled: isPending,
-						type: 'submit',
-						class: 'btn-app-store-modal flex-1'
-					}}
-				>
-					{#if isPending}
-						<span>{$i18n.t('adding')}</span><ProgressRadial stroke={100} width="w-6" />
-					{:else}
-						<span>{$i18n.t('add')}</span>
-					{/if}
-				</Button>
-			</footer>
+
+			<AddTypeModalFooter
+				isPending={$publisherMutation.isPending}
+				isValid={publisherData.name.length > 0}
+				onCancel={modalStore.close}
+			/>
 		</form>
 	</div>
 {/if}

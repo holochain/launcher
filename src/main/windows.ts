@@ -14,8 +14,9 @@ import serve from 'electron-serve';
 import path from 'path';
 import url from 'url';
 
+import { MAIN_SCREEN, SETTINGS_SCREEN } from '$shared/const';
 import type { ExtendedAppInfo, Screen } from '$shared/types';
-import { LAUNCHER_ERROR, MAIN_SCREEN, SETTINGS_SCREEN } from '$shared/types';
+import { LAUNCHER_ERROR } from '$shared/types';
 
 import { SEARCH_HEIGH, WINDOW_SIZE } from './const';
 import type { LauncherFileSystem } from './filesystem';

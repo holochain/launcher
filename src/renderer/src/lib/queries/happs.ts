@@ -6,16 +6,20 @@ import type {
 } from 'appstore-tools';
 import { get, type Writable } from 'svelte/store';
 
+import {
+	APP_STORE_MY_HAPPS_QUERY_KEY,
+	MY_HAPPS_ALL_VERSIONS_QUERY_KEY,
+	PUBLISHERS_QUERY_KEY
+} from '$const';
+import { uint8ArrayToURIComponent } from '$helpers';
 import { getAppStoreClient, getDevHubClient } from '$services';
 import {
 	APP_STORE_CLIENT_NOT_INITIALIZED_ERROR,
 	DEV_HUB_CLIENT_NOT_INITIALIZED_ERROR,
 	NO_PUBLISHERS_AVAILABLE_ERROR
 } from '$shared/types';
-import type { AppData } from '$types';
+import type { AppData, PublishNewVersionData } from '$types';
 
-export const PUBLISHERS_QUERY_KEY = 'publishers';
-export const APP_STORE_HAPPS_QUERY_KEY = 'appstore-happs';
 type ClientType = DevhubAppClient | AppstoreAppClient;
 
 const getClientOrThrow = <T extends ClientType>(
@@ -41,10 +45,45 @@ export const createPublishersQuery = () => {
 	});
 };
 
-export const createAppStoreHappsQuery = () => {
+export const createAppVersionsQuery = () => (apphub_hrl: Uint8Array) => {
 	return createQuery({
-		queryKey: [APP_STORE_HAPPS_QUERY_KEY],
-		queryFn: () => getAppStoreClientOrThrow().appstoreZomeClient.getMyApps()
+		queryKey: [MY_HAPPS_ALL_VERSIONS_QUERY_KEY, apphub_hrl],
+		queryFn: async () => {
+			const devHubClient = getDevHubClientOrThrow();
+			const webappPackageEntryEntity =
+				await devHubClient.appHubZomeClient.getWebappPackageEntry(apphub_hrl);
+
+			const versions = await devHubClient.appHubZomeClient.getWebappPackageVersions(
+				webappPackageEntryEntity.id
+			);
+
+			return { versions, webapp_package_id: webappPackageEntryEntity.id };
+		}
+	});
+};
+
+export const createAppStoreMyHappsQuery = () => {
+	return createQuery({
+		queryKey: [APP_STORE_MY_HAPPS_QUERY_KEY],
+		queryFn: async () => {
+			const myApps = await getAppStoreClientOrThrow().appstoreZomeClient.getMyApps();
+			const appsWithIcons = await Promise.all(
+				myApps.map(async (app) => {
+					const icon = await getDevHubClientOrThrow().appHubMereMemoryZomeClient.getMereMemoryBytes(
+						app.content.icon
+					);
+
+					return {
+						id: uint8ArrayToURIComponent(app.id),
+						apphubHrlTarget: app.content.apphub_hrl.target,
+						title: app.content.title,
+						subtitle: app.content.subtitle,
+						icon
+					};
+				})
+			);
+			return appsWithIcons;
+		}
 	});
 };
 
@@ -97,6 +136,28 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 				}
 			});
 		},
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: [APP_STORE_HAPPS_QUERY_KEY] })
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: [APP_STORE_MY_HAPPS_QUERY_KEY] })
+	});
+};
+
+export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
+	return createMutation({
+		mutationFn: async ({ bytes, version, webappPackageId }: PublishNewVersionData) => {
+			const devHubClient = getDevHubClientOrThrow();
+
+			const appEntry = await devHubClient.saveWebapp(bytes);
+			const webappPackageVersion = await devHubClient.appHubZomeClient.createWebappPackageVersion({
+				for_package: webappPackageId,
+				version,
+				webapp: appEntry.address
+			});
+
+			await devHubClient.appHubZomeClient.createWebappPackageLinkToVersion({
+				version,
+				webapp_package_id: webappPackageId,
+				webapp_package_version_addr: webappPackageVersion.action
+			});
+		},
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: [MY_HAPPS_ALL_VERSIONS_QUERY_KEY] })
 	});
 };

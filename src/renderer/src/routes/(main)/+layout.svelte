@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { initializeAppPortSubscription } from '$helpers';
 	import { trpc } from '$services';
-	import { APPS_VIEW } from '$shared/types';
+	import { APPS_VIEW } from '$shared/const';
 
 	const client = trpc();
 

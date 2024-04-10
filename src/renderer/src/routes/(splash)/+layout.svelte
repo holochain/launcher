@@ -24,7 +24,7 @@
 	{#if displayBackButton}
 		<Button
 			props={{
-				class: 'btn-secondary z-10 self-start m-4',
+				class: 'btn-secondary z-10 self-start m-4 font-semibold',
 				onClick: goBack
 			}}
 		>

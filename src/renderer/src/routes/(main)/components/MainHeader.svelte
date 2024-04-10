@@ -6,7 +6,8 @@
 	import { SELECTED_ICON_STYLE } from '$const';
 	import { Gear, Home, Rocket } from '$icons';
 	import { i18n, trpc } from '$services';
-	import { ANIMATION_DURATION, APP_STORE, APPS_VIEW, type MainScreenRoute } from '$shared/types';
+	import { ANIMATION_DURATION, APP_STORE, APPS_VIEW } from '$shared/const';
+	import { type MainScreenRoute } from '$shared/types';
 	import { navigationStore } from '$stores';
 
 	const client = trpc();

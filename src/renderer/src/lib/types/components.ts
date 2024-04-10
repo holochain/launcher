@@ -1,4 +1,9 @@
-import { MODAL_ADD_PUBLISHER, MODAL_INSTALL_FROM_FILE, MODAL_INSTALL_KANDO } from '$const';
+import {
+	MODAL_ADD_NEW_HAPP_VERSION,
+	MODAL_ADD_PUBLISHER,
+	MODAL_INSTALL_FROM_FILE,
+	MODAL_INSTALL_KANDO
+} from '$const';
 
 type CommonInputProps = {
 	id?: string;
@@ -19,7 +24,8 @@ type TextProps = {
 export type Modals =
 	| typeof MODAL_INSTALL_FROM_FILE
 	| typeof MODAL_INSTALL_KANDO
-	| typeof MODAL_ADD_PUBLISHER;
+	| typeof MODAL_ADD_PUBLISHER
+	| typeof MODAL_ADD_NEW_HAPP_VERSION;
 
 export type InputProps =
 	| (CommonInputProps & TextProps & { type: 'text' })
