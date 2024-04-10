@@ -45,6 +45,9 @@ export const base64ToArrayBuffer = (base64: string) => {
 	return new Uint8Array([...binaryString].map((char) => char.charCodeAt(0)));
 };
 
+export const createImageUrl = (icon?: Uint8Array) =>
+	icon ? URL.createObjectURL(new File([icon], 'icon')) : undefined;
+
 export const initializeAppPortSubscription = (appPort: {
 	subscribe: (
 		callback: (arg: { isSuccess: boolean; data: number | undefined }) => Promise<void>

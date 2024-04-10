@@ -17,7 +17,7 @@
 </script>
 
 <MenuEntry
-	background="bg-app-button-gradient"
+	background={view ? 'bg-white/10' : 'bg-app-button-gradient'}
 	name={$i18n.t('addhApp')}
 	onClick={() => goto(`/${DEV_PAGE}/${ADD_APP_PAGE}`)}
 	isSelected
@@ -28,10 +28,13 @@
 </MenuEntry>
 <div class="!my-2 h-px w-full bg-tertiary-800"></div>
 <span class="text-[10px] font-light opacity-50">{$i18n.t('yourHapps').toUpperCase()}</span>
-{#if $appStoreMyHappsQuery.isSuccess}
+{#if $appStoreMyHappsQuery.isError}
+	<p>{$appStoreMyHappsQuery.error}</p>
+{:else if $appStoreMyHappsQuery.isSuccess}
 	{#each $appStoreMyHappsQuery.data as app (app.id)}
 		<MenuEntry
 			isApp
+			icon={app.icon}
 			isSelected={view === app.id}
 			name={app.title}
 			onClick={() => selectView(app.id)}

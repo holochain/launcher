@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { Avatar } from '@skeletonlabs/skeleton';
 
+	import { createImageUrl } from '$helpers';
 	import { UploadImage } from '$icons';
 	import { i18n } from '$services';
 
 	export let icon: Uint8Array | undefined = undefined;
 
 	export let handleFileUpload: (file: File) => void;
-	$: imageUrl = icon
-		? URL.createObjectURL(new File([icon], 'defaultIcon.png', { type: 'image/png' }))
-		: undefined;
+	$: imageUrl = createImageUrl(icon);
 
 	const createInputAndTriggerClick = () => {
 		const input = document.createElement('input');
@@ -26,7 +25,7 @@
 
 <button
 	type="button"
-	class="mx-auto flex-shrink"
+	class="mx-auto flex-shrink focus:outline-none"
 	on:click={createInputAndTriggerClick}
 	aria-label="Upload Image"
 >

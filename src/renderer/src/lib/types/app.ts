@@ -24,3 +24,19 @@ export const isAppDataValid = (data: unknown): data is AppData =>
 	isNonEmptyString(data.description) &&
 	'version' in data &&
 	isNonEmptyString(data.version);
+
+export type PublishNewVersionData = {
+	bytes: Uint8Array;
+	version: string;
+	webappPackageId: Uint8Array;
+};
+
+export const isPublishNewVersionDataValid = (data: unknown): data is PublishNewVersionData =>
+	typeof data === 'object' &&
+	data !== null &&
+	'bytes' in data &&
+	isUint8Array(data.bytes) &&
+	'version' in data &&
+	isNonEmptyString(data.version) &&
+	'webappPackageId' in data &&
+	isUint8Array(data.webappPackageId);

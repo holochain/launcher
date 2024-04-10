@@ -1,6 +1,7 @@
 {
 	"add": "Add",
 	"addApps": "Add Apps",
+	"addNewRelease": "Add new release",
 	"addPublisher": "Add Publisher",
 	"addhApp": "Add a hApp",
 	"adding": "Adding",
@@ -45,6 +46,7 @@
 	"passwordWarning": "Your password can not be reset, recovered or changed. Write it down and store it in a secure location.",
 	"passwordsDontMatch": "Passwords don't match!",
 	"region": "Region",
+	"releases": "Releases",
 	"searchForApps": "Search for apps",
 	"setYourPassword": "Set your password",
 	"setupError": "Setup Error",

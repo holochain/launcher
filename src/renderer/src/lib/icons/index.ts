@@ -1,5 +1,6 @@
 export { default as ArrowLeft } from './ArrowLeft.svelte';
 export { default as ArrowRight } from './ArrowRight.svelte';
+export { default as Check } from './Check.svelte';
 export { default as defaultIcon } from './default-icon.png?base64';
 export { default as Gear } from './Gear.svelte';
 export { default as Home } from './Home.svelte';
