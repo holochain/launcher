@@ -55,5 +55,5 @@ pub struct ZomeCallNapi {
 #[napi(object)]
 pub struct HappAndUiBytes {
     pub happ_bytes: Vec<u8>,
-    pub ui_bytes: Vec<u8>,
+    pub ui_bytes: Option<Vec<u8>>,
 }

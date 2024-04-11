@@ -18,14 +18,14 @@
 	};
 
 	const installedApps = client.getInstalledApps.createQuery();
-	const installHappMutation = client.installHapp.createMutation();
+	const installHappFromPathMutation = client.installHappFromPath.createMutation();
 </script>
 
 <ModalInstallForm
 	bind:formData
 	bind:files
 	onSubmit={() =>
-		$installHappMutation.mutate(
+		$installHappFromPathMutation.mutate(
 			{
 				appId: formData.appId,
 				networkSeed: formData.networkSeed,
@@ -48,6 +48,6 @@
 				}
 			}
 		)}
-	isPending={$installHappMutation.isPending}
+	isPending={$installHappFromPathMutation.isPending}
 	acceptFileType
 />
