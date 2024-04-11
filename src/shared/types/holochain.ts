@@ -63,15 +63,21 @@ export const AppInfoSchema = z.object({
 
 export const CommonAppSchema = z.object({
   appId: z.string().min(1),
-});
-
-export const InstallKandoSchema = CommonAppSchema.extend({
   networkSeed: z.string(),
+  // TODO add membrane proofs here
 });
 
-export type InstallKando = z.infer<typeof InstallKandoSchema>;
+export const InstallDefaultAppSchema = CommonAppSchema.extend({
+  name: z.string(), // name of the default app file (e.g. kando.webhapp or devhub.happ)
+});
 
-export const InstallHappInputSchema = InstallKandoSchema.extend({
+export type InstallDefaultApp = z.infer<typeof InstallDefaultAppSchema>;
+
+export const InstallHappInputSchema = CommonAppSchema.extend({
+  bytes: z.instanceof(Uint8Array),
+});
+
+export const InstallHappFromPathSchema = CommonAppSchema.extend({
   filePath: z.string(),
 });
 

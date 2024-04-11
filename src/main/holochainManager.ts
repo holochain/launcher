@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import type { AppInfo } from '@holochain/client';
+import type { AppInfo, MembraneProof } from '@holochain/client';
 import { AdminWebsocket } from '@holochain/client';
 import AdmZip from 'adm-zip';
 import * as childProcess from 'child_process';
 import crypto from 'crypto';
 import fs from 'fs';
 import getPort from 'get-port';
+import { type HappAndUiBytes } from 'hc-launcher-rust-utils';
 import * as rustUtils from 'hc-launcher-rust-utils';
 import path from 'path';
 import split from 'split';
@@ -261,10 +262,13 @@ export class HolochainManager {
   }
 
   // TODO Add option to install happ without UI
-  async installWebHapp(webHappPath: string, appId: string, networkSeed?: string) {
-    // Decode webhapp into .happ bytes and ui.zip bytes
-    // TODO Option to install headless app
-    const happAndUiBytes = await rustUtils.readAndDecodeWebhapp(webHappPath);
+  async installWebHapp(
+    happAndUiBytes: HappAndUiBytes,
+    appId: string,
+    networkSeed?: string,
+    membrane_proofs?: { [key: string]: MembraneProof },
+  ) {
+    if (!happAndUiBytes.uiBytes) throw new Error('UI bytes undefined.');
 
     // write [sha256].happ to happs directory
     const happHasher = crypto.createHash('sha256');
@@ -301,7 +305,7 @@ export class HolochainManager {
     const appInfo = await this.adminWebsocket.installApp({
       agent_key: pubKey,
       installed_app_id: appId,
-      membrane_proofs: {},
+      membrane_proofs: membrane_proofs ? membrane_proofs : {},
       path: happFilePath,
       network_seed: networkSeed,
     });
@@ -345,17 +349,23 @@ export class HolochainManager {
   }
 
   async installHeadlessHapp(
-    happPath: string,
+    happBytes: Array<number>,
     appId: string,
-    happSha256: string,
     networkSeed?: string,
+    membrane_proofs?: { [key: string]: MembraneProof },
   ) {
+    // write [sha256].happ to happs directory
+    const happHasher = crypto.createHash('sha256');
+    const happSha256 = happHasher.update(Buffer.from(happBytes)).digest('hex');
+    const happFilePath = path.join(this.fs.happsDir(this.holochainDataRoot), `${happSha256}.happ`);
+    writeFile(happFilePath, Buffer.from(happBytes));
+
     const pubKey = await this.adminWebsocket.generateAgentPubKey();
     const appInfo = await this.adminWebsocket.installApp({
       agent_key: pubKey,
       installed_app_id: appId,
-      membrane_proofs: {},
-      path: happPath,
+      membrane_proofs: membrane_proofs ? membrane_proofs : {},
+      path: happFilePath,
       network_seed: networkSeed,
     });
 

@@ -13,7 +13,9 @@ import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
 import { app, dialog, ipcMain, protocol } from 'electron';
 import { createIPCHandler } from 'electron-trpc/main';
 import { autoUpdater } from 'electron-updater';
+import fs from 'fs';
 import type { ZomeCallSigner, ZomeCallUnsignedNapi } from 'hc-launcher-rust-utils';
+import * as rustUtils from 'hc-launcher-rust-utils';
 import os from 'os';
 import path from 'path';
 import semver from 'semver';
@@ -35,9 +37,9 @@ import type {
 import {
   CHECK_INITIALIZED_KEYSTORE_ERROR,
   ExtendedAppInfoSchema,
-  FILE_UNDEFINED_ERROR,
+  InstallDefaultAppSchema,
+  InstallHappFromPathSchema,
   InstallHappInputSchema,
-  InstallKandoSchema,
   LOADING_PROGRESS_UPDATE,
   MAIN_SCREEN_ROUTE,
   MainScreenRouteSchema,
@@ -68,8 +70,6 @@ import {
 import { createHappWindow, focusVisibleWindow, loadOrServe, setupAppWindows } from './windows';
 
 const t = initTRPC.create({ isServer: true });
-
-const rustUtils = require('hc-launcher-rust-utils');
 
 const cli = new Command();
 
@@ -143,11 +143,11 @@ if (!isFirstInstance) {
 }
 
 app.on('second-instance', () => {
-  focusVisibleWindow(LAUNCHER_WINDOWS);
+  focusVisibleWindow(PRIVILEDGED_LAUNCHER_WINDOWS);
 });
 
 app.on('activate', () => {
-  focusVisibleWindow(LAUNCHER_WINDOWS);
+  focusVisibleWindow(PRIVILEDGED_LAUNCHER_WINDOWS);
 });
 
 protocol.registerSchemesAsPrivileged([
@@ -173,27 +173,30 @@ let APP_PORT: number | undefined;
 let HOLOCHAIN_DATA_ROOT: HolochainDataRoot | undefined;
 const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
 let LAIR_HANDLE: childProcess.ChildProcessWithoutNullStreams | undefined;
-let LAUNCHER_WINDOWS: Record<Screen, BrowserWindow>;
+let PRIVILEDGED_LAUNCHER_WINDOWS: Record<Screen, BrowserWindow>; // Admin windows with special zome call signing priviledges
 const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
 
 const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeRequest) => {
   // TODO check here that cellId belongs to the installedAppId that the window belongs to
   const windowInfo = WINDOW_INFO_MAP[e.sender.id];
+  let authorized = false;
   if (
     windowInfo &&
-    request.provenance.toString() !== Array.from(windowInfo.agentPubKey).toString()
+    request.provenance.toString() === Array.from(windowInfo.agentPubKey).toString()
   ) {
-    return Promise.reject('Agent public key unauthorized.');
+    authorized = true;
   } else {
     // Launcher admin windows get a wildcard to have any zome calls signed
     if (
-      !Object.values(LAUNCHER_WINDOWS)
+      Object.values(PRIVILEDGED_LAUNCHER_WINDOWS)
         .map((window) => window.webContents.id)
         .includes(e.sender.id)
     ) {
-      return Promise.reject('Agent public key unauthorized.');
+      authorized = true;
     }
   }
+
+  if (!authorized) return Promise.reject('Agent public key unauthorized.');
 
   const zomeCallUnsignedNapi: ZomeCallUnsignedNapi = {
     provenance: Array.from(request.provenance),
@@ -219,7 +222,6 @@ const handleSignZomeCallLegacy = async (e: IpcMainInvokeEvent, request: ZomeCall
   const windowInfo = WINDOW_INFO_MAP[e.sender.id];
   if (request.provenance.toString() !== Array.from(windowInfo.agentPubKey).toString())
     return Promise.reject('Agent public key unauthorized.');
-
   if (windowInfo && windowInfo.adminPort) {
     // In case of externally running binaries we need to use a custom zome call signer
     const zomeCallSigner = CUSTOM_ZOME_CALL_SIGNERS[windowInfo.adminPort];
@@ -245,9 +247,9 @@ app.whenReady().then(async () => {
 
   console.log('BEING RUN IN __dirnmane: ', __dirname);
 
-  LAUNCHER_WINDOWS = setupAppWindows();
+  PRIVILEDGED_LAUNCHER_WINDOWS = setupAppWindows();
 
-  createIPCHandler({ router, windows: Object.values(LAUNCHER_WINDOWS) });
+  createIPCHandler({ router, windows: Object.values(PRIVILEDGED_LAUNCHER_WINDOWS) });
 
   ipcMain.handle('sign-zome-call', handleSignZomeCall);
   ipcMain.handle('sign-zome-call-legacy', handleSignZomeCallLegacy);
@@ -327,7 +329,8 @@ app.on('quit', () => {
 // code. You can also put them in separate files and import them here.
 
 async function handleSetupAndLaunch(password: string) {
-  if (!LAUNCHER_WINDOWS) throw new Error('Main window needs to exist before launching.');
+  if (!PRIVILEDGED_LAUNCHER_WINDOWS)
+    throw new Error('Main window needs to exist before launching.');
 
   if (VALIDATED_CLI_ARGS.holochainVersion.type !== 'running-external') {
     const lairHandleTemp = childProcess.spawnSync(VALIDATED_CLI_ARGS.lairBinaryPath, ['--version']);
@@ -377,7 +380,8 @@ async function handleLaunch(password: string) {
 
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingHolochain');
 
-  if (!LAUNCHER_WINDOWS) throw new Error('Main window needs to exist before launching.');
+  if (!PRIVILEDGED_LAUNCHER_WINDOWS)
+    throw new Error('Main window needs to exist before launching.');
 
   const nonDefaultPartition: HolochainPartition =
     VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external'
@@ -412,20 +416,16 @@ async function handleLaunch(password: string) {
     ? `launcher-${breakingVersion(app.getVersion())}`
     : `launcher-dev-${os.hostname()}`;
 
-  APPS_TO_INSTALL.forEach(async ({ id, sha256, name, progressUpdate }) => {
+  APPS_TO_INSTALL.forEach(async ({ id, name, progressUpdate }) => {
     if (!holochainManager.installedApps.map((app) => app.installed_app_id).includes(id)) {
       LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, progressUpdate);
-      await holochainManager.installHeadlessHapp(
-        path.join(DEFAULT_APPS_DIRECTORY, name),
-        id,
-        sha256,
-        defaultAppsNetworkSeed,
-      );
+      const happBytes = fs.readFileSync(path.join(DEFAULT_APPS_DIRECTORY, name));
+      await holochainManager.installHeadlessHapp(Array.from(happBytes), id, defaultAppsNetworkSeed);
     }
   });
 
-  LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE, SEARCH_HEIGH, true);
-  loadOrServe(LAUNCHER_WINDOWS[SETTINGS_SCREEN], { screen: SETTINGS_SCREEN });
+  PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE, SEARCH_HEIGH, true);
+  loadOrServe(PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN], { screen: SETTINGS_SCREEN });
   return;
 }
 
@@ -450,18 +450,18 @@ const getHolochainManager = (dataRootName: string) => {
 
 const router = t.router({
   openSettings: t.procedure.mutation(() => {
-    LAUNCHER_WINDOWS[MAIN_SCREEN].hide();
-    LAUNCHER_WINDOWS[SETTINGS_SCREEN].show();
+    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].hide();
+    PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN].show();
   }),
   closeSettings: t.procedure.input(MainScreenRouteSchema).mutation(async (opts) => {
     LAUNCHER_EMITTER.emit(MAIN_SCREEN_ROUTE, opts.input);
-    LAUNCHER_WINDOWS[SETTINGS_SCREEN].hide();
+    PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN].hide();
     setTimeout(() => {
-      LAUNCHER_WINDOWS[MAIN_SCREEN].show();
+      PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].show();
     }, ANIMATION_DURATION);
   }),
   hideApp: t.procedure.mutation(() => {
-    LAUNCHER_WINDOWS[MAIN_SCREEN].hide();
+    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].hide();
   }),
   openApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
     const { appInfo, holochainDataRoot } = opts.input;
@@ -485,6 +485,10 @@ const router = t.router({
           ? VALIDATED_CLI_ARGS.holochainVersion.adminPort
           : undefined,
     };
+    console.log(
+      'WINDOW_INFO_MAP[happWindow.webContents.id]: ',
+      WINDOW_INFO_MAP[happWindow.webContents.id],
+    );
     happWindow.on('close', () => {
       delete WINDOW_INFO_MAP[happWindow.webContents.id];
     });
@@ -494,24 +498,46 @@ const router = t.router({
     const holochainManager = getHolochainManager(holochainDataRoot.name);
     await holochainManager.uninstallApp(appInfo.installed_app_id);
   }),
-  installHapp: t.procedure.input(InstallHappInputSchema).mutation(async (opts) => {
+  installHappFromPath: t.procedure.input(InstallHappFromPathSchema).mutation(async (opts) => {
     const { filePath, appId, networkSeed } = opts.input;
 
+    const happAndUiBytes = await rustUtils.readAndDecodeHappOrWebhapp(filePath);
+
     const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
-    if (!filePath) {
-      throwTRPCErrorError({
-        message: FILE_UNDEFINED_ERROR,
-      });
+
+    if (happAndUiBytes.uiBytes) {
+      await holochainManager.installWebHapp(happAndUiBytes, appId, networkSeed);
+    } else {
+      await holochainManager.installHeadlessHapp(happAndUiBytes.happBytes, appId, networkSeed);
     }
-    await holochainManager.installWebHapp(filePath, appId, networkSeed);
   }),
-  installKando: t.procedure.input(InstallKandoSchema).mutation(async (opts) => {
-    const { appId, networkSeed } = opts.input;
+  installHappFromBytes: t.procedure.input(InstallHappInputSchema).mutation(async (opts) => {
+    const { bytes, appId, networkSeed } = opts.input;
 
-    const filePath = path.join(DEFAULT_APPS_DIRECTORY, 'kando.webhapp');
+    const happAndUiBytes = await rustUtils.decodeHappOrWebhapp(Array.from(bytes));
 
     const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
-    await holochainManager.installWebHapp(filePath, appId, networkSeed);
+
+    if (happAndUiBytes.uiBytes) {
+      await holochainManager.installWebHapp(happAndUiBytes, appId, networkSeed);
+    } else {
+      await holochainManager.installHeadlessHapp(happAndUiBytes.happBytes, appId, networkSeed);
+    }
+  }),
+  installDefaultApp: t.procedure.input(InstallDefaultAppSchema).mutation(async (opts) => {
+    const { name, appId, networkSeed } = opts.input;
+
+    const filePath = path.join(DEFAULT_APPS_DIRECTORY, name);
+
+    const happAndUiBytes = await rustUtils.readAndDecodeHappOrWebhapp(filePath);
+
+    const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+
+    if (happAndUiBytes.uiBytes) {
+      await holochainManager.installWebHapp(happAndUiBytes, appId, networkSeed);
+    } else {
+      await holochainManager.installHeadlessHapp(happAndUiBytes.happBytes, appId, networkSeed);
+    }
   }),
   lairSetupRequired: t.procedure.query(() => {
     const holochainLairBinariesExist = checkHolochainLairBinariesExist();

@@ -1,35 +1,20 @@
 use std::path::PathBuf;
 use std::fs;
+use holochain_types::app::AppBundle;
 use holochain_types::web_app::WebAppBundle;
 use crate::types::HappAndUiBytes;
 
 
-
-
 #[napi]
-pub async fn read_and_decode_webhapp(path: String) -> napi::Result<HappAndUiBytes> {
-    let webhapp_bytes = fs::read(path)?;
-    let web_app_bundle = WebAppBundle::decode(&webhapp_bytes)
-        .map_err(|e| napi::Error::from_reason(format!("Failed to decode WebAppBundle: {}", e)))?;
-
-    // extracting happ bundle
-    let app_bundle = web_app_bundle.happ_bundle().await
-        .map_err(|e| napi::Error::from_reason(format!("Failed to get happ bundle from webapp bundle bytes: {}", e)))?;
-
-    let app_bundle_bytes = app_bundle.encode()
-        .map_err(|e| napi::Error::from_reason(format!("Failed to encode AppBundle: {}", e)))?;
-
-    // extracting ui.zip bytes
-    let web_ui_zip_bytes = web_app_bundle.web_ui_zip_bytes().await
-        .map_err(|e| napi::Error::from_reason(format!("Failed to extract ui zip bytes: {}", e)))?;
-
-
-    Ok(HappAndUiBytes {
-        happ_bytes: app_bundle_bytes,
-        ui_bytes: web_ui_zip_bytes.to_vec(),
-    })
+pub async fn decode_happ_or_webhapp(happ_or_webhapp_bytes: Vec<u8>) -> napi::Result<HappAndUiBytes> {
+    decode_bytes(happ_or_webhapp_bytes).await
 }
 
+#[napi]
+pub async fn read_and_decode_happ_or_webhapp(path: String) -> napi::Result<HappAndUiBytes> {
+    let webhapp_bytes = fs::read(path)?;
+    decode_bytes(webhapp_bytes).await
+}
 
 #[napi]
 pub async fn save_webhapp(path: String, ui_target_dir: String) -> napi::Result<String> {
@@ -76,6 +61,46 @@ pub async fn save_webhapp(path: String, ui_target_dir: String) -> napi::Result<S
         None => Err(napi::Error::from_reason("Failed to convert temp folder path to string."))
     }
 }
+
+/// Decodes bytes of a happ or webhapp file
+pub async fn decode_bytes(bytes: Vec<u8>) -> napi::Result<HappAndUiBytes> {
+
+    let (app_bundle_bytes, maybe_ui_zip_bytes) = match WebAppBundle::decode(&bytes) {
+        Ok(web_app_bundle) => {
+            // extract happ bundle
+            let app_bundle = web_app_bundle.happ_bundle().await
+                .map_err(|e| napi::Error::from_reason(format!("Failed to get happ bundle from webapp bundle bytes: {}", e)))?;
+
+            let app_bundle_bytes = app_bundle.encode()
+                .map_err(|e| napi::Error::from_reason(format!("Failed to encode AppBundle: {}", e)))?;
+
+            // extracting ui.zip bytes
+            let web_ui_zip_bytes = web_app_bundle.web_ui_zip_bytes().await
+                .map_err(|e| napi::Error::from_reason(format!("Failed to extract ui zip bytes: {}", e)))?;
+
+            (app_bundle_bytes, Some(web_ui_zip_bytes.to_vec()))
+        },
+        Err(web_app_decode_error) => {
+            // Try to decode happ bundle
+            match AppBundle::decode(&bytes) {
+                Ok(app_bundle) => {
+                    let app_bundle_bytes = app_bundle.encode()
+                        .map_err(|e| napi::Error::from_reason(format!("Failed to encode AppBundle: {}", e)))?;
+                    (app_bundle_bytes, None)
+                },
+                Err(app_decode_error) => {
+                    return Err(napi::Error::from_reason(format!("Failed to decode bytes to either happ or webhapp bundle. Errors:\n{}\n{}", web_app_decode_error, app_decode_error)))
+                }
+            }
+        }
+    };
+
+    Ok(HappAndUiBytes {
+        happ_bytes: app_bundle_bytes,
+        ui_bytes: maybe_ui_zip_bytes,
+    })
+}
+
 
 pub fn path_exists(path: &PathBuf) -> bool {
     std::path::Path::new(path).exists()

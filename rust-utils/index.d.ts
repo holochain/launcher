@@ -5,7 +5,8 @@
 
 export function overwriteConfig(adminPort: number, keystoreConnectionUrl: string, bootstrapServerUrl: string | undefined | null, signalingServerUrl: string | undefined | null, configPath: string): string
 export function defaultConductorConfig(adminPort: number, keystoreConnectionUrl: string, bootstrapServerUrl: string, signalingServerUrl: string, conductorEnvironmentPath: string): string
-export function readAndDecodeWebhapp(path: string): Promise<HappAndUiBytes>
+export function decodeHappOrWebhapp(happOrWebhappBytes: Array<number>): Promise<HappAndUiBytes>
+export function readAndDecodeHappOrWebhapp(path: string): Promise<HappAndUiBytes>
 export function saveWebhapp(path: string, uiTargetDir: string): Promise<string>
 export interface ZomeCallUnsignedNapi {
   cellId: Array<Array<number>>
@@ -30,7 +31,7 @@ export interface ZomeCallNapi {
 }
 export interface HappAndUiBytes {
   happBytes: Array<number>
-  uiBytes: Array<number>
+  uiBytes?: Array<number>
 }
 export type JsZomeCallSigner = ZomeCallSigner
 export class ZomeCallSigner {

@@ -18,14 +18,15 @@
 	};
 
 	const installedApps = client.getInstalledApps.createQuery();
-	const installKandoMutation = client.installKando.createMutation();
+	const installDefaultAppMutation = client.installDefaultApp.createMutation();
 </script>
 
 <ModalInstallForm
 	bind:formData
 	onSubmit={() =>
-		$installKandoMutation.mutate(
+		$installDefaultAppMutation.mutate(
 			{
+				name: 'kando.webhapp',
 				appId: formData.appId,
 				networkSeed: formData.networkSeed
 			},
@@ -46,7 +47,7 @@
 				}
 			}
 		)}
-	isPending={$installKandoMutation.isPending}
+	isPending={$installDefaultAppMutation.isPending}
 >
 	<slot name="avatar">
 		<Avatar initials={'kn'} rounded="rounded-2xl" background="dark:bg-app-gradient" width="w-20" />
