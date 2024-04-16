@@ -7,13 +7,14 @@ import type {
 import { get, type Writable } from 'svelte/store';
 
 import {
-	APP_DETAILS_QUERY_KEY,
 	APP_STORE_HAPPS_QUERY_KEY,
 	APP_STORE_MY_HAPPS_QUERY_KEY,
+	APP_VERSIONS_DETAILS_QUERY_KEY,
 	MY_HAPPS_ALL_VERSIONS_QUERY_KEY,
 	PUBLISHERS_QUERY_KEY
 } from '$const';
 import { uint8ArrayToURIComponent } from '$helpers';
+import { happVersionsSchema } from '$schemas';
 import { getAppStoreClient, getDevHubClient } from '$services';
 import {
 	APP_STORE_CLIENT_NOT_INITIALIZED_ERROR,
@@ -90,9 +91,9 @@ export const createAppStoreMyHappsQuery = () => {
 	});
 };
 
-export const createAppDetailsQuery = () => (apphub_hrl: Uint8Array) => {
+export const createAppVersionsDetailsQuery = () => (apphub_hrl: Uint8Array) => {
 	return createQuery({
-		queryKey: [APP_DETAILS_QUERY_KEY, apphub_hrl],
+		queryKey: [APP_VERSIONS_DETAILS_QUERY_KEY, apphub_hrl],
 		queryFn: async () => {
 			const appStoreClient = getAppStoreClientOrThrow();
 			const devHubClient = getDevHubClientOrThrow();
@@ -131,7 +132,9 @@ export const createAppDetailsQuery = () => (apphub_hrl: Uint8Array) => {
 				4000
 			);
 
-			return webAppPackageVersionEntries;
+			const parsedResult = happVersionsSchema.safeParse(webAppPackageVersionEntries);
+
+			return parsedResult.success ? Object.keys(parsedResult.data) : [];
 		}
 	});
 };

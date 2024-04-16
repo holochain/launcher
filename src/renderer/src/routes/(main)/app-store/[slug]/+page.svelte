@@ -1,22 +1,36 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { createAppQueries } from '$queries';
+	import { i18n } from '$services';
 
-	const { appStoreHappsQuery, appDetailsQueryFunction } = createAppQueries();
+	const { appStoreHappsQuery, appVersionsDetailsQueryFunction } = createAppQueries();
 
 	const slug: string = $page.params.slug;
 	const app = $appStoreHappsQuery.data?.find(({ id }) => id === slug);
 
-	$: appDetailsQuery = app ? appDetailsQueryFunction(app.apphubHrlTarget) : undefined;
+	$: appVersionsDetailsQuery = app
+		? appVersionsDetailsQueryFunction(app.apphubHrlTarget)
+		: undefined;
 </script>
 
 {#if app}
-	<span>{app.title}</span>
-	<span>{$appDetailsQuery?.data}</span>
-{:else}
-	<span>App not found</span>
+	<div class="flex flex-col p-4">
+		<h2 class="text-lg font-bold">{app.title}</h2>
+		<span>{`${$i18n.t('releases')}:`}</span>
+		{#if $appVersionsDetailsQuery?.data}
+			{#each $appVersionsDetailsQuery.data as version}
+				<div class="flex items-center pt-2">
+					<h4 class="font-semibold">{version}</h4>
+				</div>
+			{/each}
+		{/if}
+	</div>
 {/if}
 
-{#if $appDetailsQuery && $appDetailsQuery.isError}
-	<span>{$appDetailsQuery.error?.message}</span>
+{#if $appVersionsDetailsQuery && $appVersionsDetailsQuery.isError}
+	<div class="mt-8">
+		<div class="card flex flex-col p-4">
+			<span class="text-error">{$appVersionsDetailsQuery.error?.message}</span>
+		</div>
+	</div>
 {/if}
