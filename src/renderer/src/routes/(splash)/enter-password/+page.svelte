@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
-	import { APP_STORE } from '$shared/const';
+	import { APPS_VIEW } from '$shared/const';
 
 	import { PasswordForm, SetupProgressWrapper } from '../components';
 
@@ -21,7 +21,7 @@
 			{ password: passwordInput },
 			{
 				onSuccess: () => {
-					goto(`/${APP_STORE}`);
+					goto(`/${APPS_VIEW}`);
 				},
 				onError: (error) => {
 					showModalError({

@@ -1,45 +1,33 @@
 <script lang="ts">
 	import { Avatar, getModalStore } from '@skeletonlabs/skeleton';
 
-	import { Button } from '$components';
+	import { goto } from '$app/navigation';
 	import { MODAL_INSTALL_KANDO } from '$const';
-	import { createModalParams } from '$helpers';
-	import { i18n, trpc } from '$services';
-	import { APPS_VIEW } from '$shared/const';
-	import { navigationStore } from '$stores';
+	import { createImageUrl, createModalParams } from '$helpers';
+	import { i18n } from '$services';
+	import { APP_STORE } from '$shared/const';
 
-	const client = trpc();
+	export let icon: Uint8Array | undefined = undefined;
+	export let title: string = $i18n.t('kando');
+	export let id: string | undefined = undefined;
+	export let subtitle: string =
+		'Holochain hApp for collaborative KanBan boards. Real-time collaboration delivered by syn';
 
 	const modalStore = getModalStore();
 
-	const installedApps = client.getInstalledApps.createQuery();
-
 	const modal = createModalParams(MODAL_INSTALL_KANDO);
+
+	$: imageUrl = createImageUrl(icon);
 </script>
 
-<div class="card flex items-center p-4 dark:variant-soft-warning">
-	<Avatar initials={'kn'} rounded="rounded-2xl" background="dark:bg-app-gradient" />
+<button
+	on:click={() => (id === undefined ? modalStore.trigger(modal) : goto(`/${APP_STORE}/${id}`))}
+	class="cursor-pointera card flex items-center p-4 dark:variant-soft-warning"
+>
+	<Avatar src={imageUrl} initials={'kn'} rounded="rounded-2xl" background="dark:bg-app-gradient" />
 
-	<div class="ml-4 mr-2 flex-1">
-		<h3 class="h3">{$i18n.t('kando')}</h3>
-		<p class="line-clamp-2 text-xs leading-[0.8rem] opacity-60">
-			Holochain hApp for collaborative KanBan boards. Real-time collaboration delivered by syn
-		</p>
+	<div class="ml-4 mr-2 flex flex-col items-start">
+		<h3 class="h3">{title}</h3>
+		<p class="line-clamp-2 text-left text-xs leading-[0.8rem] opacity-60">{subtitle}</p>
 	</div>
-	<div class="flex flex-col items-center">
-		{#if $installedApps.isSuccess && $installedApps.data.length > 0}
-			<Button
-				props={{
-					onClick: () => navigationStore.set(APPS_VIEW),
-					class: 'btn-app-store variant-ringed-warning mb-2'
-				}}>{$i18n.t('launch')}</Button
-			>
-		{/if}
-		<Button
-			props={{
-				onClick: () => modalStore.trigger(modal),
-				class: 'btn-app-store variant-filled'
-			}}>{$i18n.t('install')}</Button
-		>
-	</div>
-</div>
+</button>

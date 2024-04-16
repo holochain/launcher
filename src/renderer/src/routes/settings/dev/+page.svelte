@@ -13,7 +13,7 @@
 	$: view = getRawQueryParam($page.url.href, VIEW);
 </script>
 
-<div>
+<div class="p-8">
 	{#if $appStoreMyHappsQuery.isSuccess}
 		{@const app = $appStoreMyHappsQuery.data.find((app) => app.id === view)}
 		{#if app}

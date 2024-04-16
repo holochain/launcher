@@ -6,7 +6,14 @@
 	import { SELECTED_ICON_STYLE } from '$const';
 	import { Gear, Home, Rocket } from '$icons';
 	import { i18n, trpc } from '$services';
-	import { ANIMATION_DURATION, APP_STORE, APPS_VIEW } from '$shared/const';
+	import {
+		ANIMATION_DURATION,
+		APP_STORE,
+		APPS_VIEW,
+		SEARCH_HEIGH,
+		WINDOW_SIZE,
+		WINDOW_SIZE_LARGE
+	} from '$shared/const';
 	import { type MainScreenRoute } from '$shared/types';
 	import { navigationStore } from '$stores';
 
@@ -36,7 +43,14 @@
 	const clearSearchInput = () => (searchInput = '');
 	const handleNavigationWithAnimationDelay = (destination: MainScreenRoute) => () => {
 		inputExpanded = false;
-		setTimeout(() => goto(destination), ANIMATION_DURATION);
+		setTimeout(() => {
+			const windowSize =
+				destination === APPS_VIEW
+					? { width: WINDOW_SIZE, height: SEARCH_HEIGH }
+					: { width: WINDOW_SIZE_LARGE, height: WINDOW_SIZE };
+			window.resizeTo(windowSize.width, windowSize.height);
+			goto(destination);
+		}, ANIMATION_DURATION);
 	};
 </script>
 

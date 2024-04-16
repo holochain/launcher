@@ -26,7 +26,9 @@ import {
   APP_STORE_APP_ID,
   DEVHUB_APP_ID,
   MAIN_SCREEN,
+  SEARCH_HEIGH,
   SETTINGS_SCREEN,
+  WINDOW_SIZE,
 } from '$shared/const';
 import type {
   HolochainDataRoot,
@@ -50,7 +52,7 @@ import {
 
 import { checkHolochainLairBinariesExist } from './binaries';
 import { validateArgs } from './cli';
-import { APPS_TO_INSTALL, SEARCH_HEIGH, WINDOW_SIZE } from './const';
+import { APPS_TO_INSTALL } from './const';
 import { LauncherFileSystem } from './filesystem';
 import { HolochainManager } from './holochainManager';
 import { IntegrityChecker } from './integrityChecker';

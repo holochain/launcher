@@ -13,7 +13,7 @@
 
 	const modalStore = getModalStore();
 
-	const appVersionsQuery = appVersionsQueryFunction(apphubHrlTarget);
+	$: appVersionsQuery = appVersionsQueryFunction(apphubHrlTarget);
 </script>
 
 {#if $appVersionsQuery.isSuccess}

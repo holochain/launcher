@@ -15,23 +15,12 @@ export class PortalZomeClient extends ZomeClient {
   }
 
   async customRemoteCall<T>(input: CustomRemoteCallInput): Promise<T> {
-    const response = await this.callZome('custom_remote_call', input);
-
-    if (response.type === 'success') {
-      if (response.payload.type === 'success') {
-        return response.payload.payload;
-      } else {
-        return Promise.reject(
-          `remote call for function '${input.call.function}' of zome '${input.call.zome}' failed: ${JSON.stringify(
-            response.payload.payload,
-          )}`,
-        );
-      }
-    } else {
-      return Promise.reject(
-        `remote call for function '${input.call.function}' of zome '${input.call.zome}' failed: ${JSON.stringify(
-          response.payload,
-        )}`,
+    try {
+      const response = await this.callZome('custom_remote_call', input);
+      return response;
+    } catch (e) {
+      throw new Error(
+        `Failed to call remote function '${input.call.function}' of zome '${input.call.zome}': ${e}`,
       );
     }
   }

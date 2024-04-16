@@ -36,7 +36,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="grid-row-[1fr_auto] grid p-8">
+	<div class="grid-row-[1fr_auto] grid">
 		<slot />
 	</div>
 </div>
