@@ -23,12 +23,14 @@ import z from 'zod';
 
 import {
   ANIMATION_DURATION,
+  APP_STORE,
   APP_STORE_APP_ID,
   DEVHUB_APP_ID,
   MAIN_SCREEN,
   SEARCH_HEIGH,
   SETTINGS_SCREEN,
   WINDOW_SIZE,
+  WINDOW_SIZE_LARGE,
 } from '$shared/const';
 import type {
   HolochainDataRoot,
@@ -455,9 +457,12 @@ const router = t.router({
     PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].hide();
     PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN].show();
   }),
-  closeSettings: t.procedure.input(MainScreenRouteSchema).mutation(async (opts) => {
-    LAUNCHER_EMITTER.emit(MAIN_SCREEN_ROUTE, opts.input);
+  closeSettings: t.procedure.input(MainScreenRouteSchema).mutation(async ({ input: page }) => {
+    LAUNCHER_EMITTER.emit(MAIN_SCREEN_ROUTE, page);
     PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN].hide();
+    if (page === APP_STORE) {
+      PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE_LARGE, WINDOW_SIZE, true);
+    }
     setTimeout(() => {
       PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].show();
     }, ANIMATION_DURATION);
