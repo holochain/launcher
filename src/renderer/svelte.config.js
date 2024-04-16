@@ -31,6 +31,7 @@ const config = {
 			$const: path.resolve('./src/lib/const'),
 			$modal: path.resolve('./src/lib/modal'),
 			$queries: path.resolve('./src/lib/queries'),
+			$schemas: path.resolve('./src/lib/schemas'),
 			$shared: path.resolve('../shared')
 		}
 	}
