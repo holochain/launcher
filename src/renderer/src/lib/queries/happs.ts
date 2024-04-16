@@ -1,9 +1,13 @@
+// @ts-expect-error the @spartan-hc/bundles package has no typescript types
+import { Bundle } from '@spartan-hc/bundles';
 import { createMutation, createQuery, QueryClient } from '@tanstack/svelte-query';
 import type {
 	AppstoreAppClient,
+	BundleHashes,
 	CreatePublisherFrontendInput,
 	DevhubAppClient
 } from 'appstore-tools';
+import { sha256 } from 'js-sha256';
 import { get, type Writable } from 'svelte/store';
 
 import {
@@ -59,6 +63,10 @@ export const createAppVersionsQuery = () => (apphub_hrl: Uint8Array) => {
 			const versions = await devHubClient.appHubZomeClient.getWebappPackageVersions(
 				webappPackageEntryEntity.id
 			);
+
+			// TODO distinguish here between version that are only stored in devhub vs. versions
+			// that are also stored in appstore. Currently we assume that all versions stored in
+			// devhub
 
 			return { versions, webapp_package_id: webappPackageEntryEntity.id };
 		}
@@ -176,6 +184,21 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 		mutationFn: async ({ title, subtitle, description, icon, bytes, version }: AppData) => {
 			const devHubClient = getDevHubClientOrThrow();
 			const appStoreClient = getAppStoreClientOrThrow();
+			// TODO validate that the bytes are of a valid webhapp format
+
+			// Compute hashes before saving to ensure to not save the bytes if hashing fails
+			const webhappHash = sha256.hex(bytes);
+			const webappBundle = new Bundle(bytes, 'webhapp');
+			const uiHash = sha256.hex(webappBundle.ui());
+			const happHash = sha256.hex(
+				webappBundle.resources[webappBundle.manifest.happ_manifest.bundled]
+			);
+			const hashes: BundleHashes = {
+				hash: webhappHash,
+				ui_hash: uiHash,
+				happ_hash: happHash
+			};
+
 			const appEntry = await devHubClient.saveWebapp(bytes);
 			const webappPackage = await devHubClient.createWebappPackage({
 				title,
@@ -195,21 +218,42 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 				webapp_package_version_addr: webappPackageVersion.action
 			});
 
+			// TODO takes this as an input to the query instead of deriving it here
+			// in order to have it work in case of multiple publishers
 			const publishers = await appStoreClient.appstoreZomeClient.getMyPublishers();
 			if (publishers.length === 0) {
 				throw new Error(NO_PUBLISHERS_AVAILABLE_ERROR);
 			}
 
-			await appStoreClient.createApp({
+			// Compute bundle hashes
+			const apphubDnaHash = await devHubClient.apphubDnaHash();
+
+			// TODO add icon size validation before attempting a zome call in the first place, e.g.
+			// crop the image to the maximum size of 200KB
+
+			const appEntryEntity = await appStoreClient.createApp({
 				title,
 				subtitle,
 				description,
 				icon,
 				publisher: publishers[0].id,
 				apphub_hrl: {
-					dna: await devHubClient.apphubDnaHash(),
+					dna: apphubDnaHash,
 					target: webappPackage.id
-				}
+				},
+				// This entry hash needs to be verified upon receiving the WebAppPackage entry via remote calls
+				apphub_hrl_hash: webappPackage.address
+			});
+
+			await appStoreClient.appstoreZomeClient.createAppVersion({
+				version,
+				for_app: appEntryEntity.id,
+				apphub_hrl: {
+					dna: apphubDnaHash,
+					target: webappPackageVersion.id
+				},
+				apphub_hrl_hash: webappPackageVersion.address,
+				bundle_hashes: hashes
 			});
 		},
 		onSuccess: () =>

@@ -45,6 +45,7 @@
     "@electron/notarize": "2.3.0",
     "@holochain/client": "^0.17.0-dev.8",
     "@msgpack/msgpack": "^2.8.0",
+    "@spartan-hc/bundles": "0.2.2",
     "@trpc/client": "^10.44.1",
     "@trpc/server": "^10.44.1",
     "adm-zip": "0.5.12",

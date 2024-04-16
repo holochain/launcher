@@ -4,7 +4,9 @@ import type { Entity, UpdateEntityInput } from '../../devhub/types';
 import { ZomeClient } from '../../zome-client/zome-client';
 import type {
   AppEntry,
+  AppVersionEntry,
   CreateAppInput,
+  CreateAppVersionInput,
   CreatePublisherInput,
   DeprecateInput,
   PublisherEntry,
@@ -73,6 +75,18 @@ export class AppstoreZomeClient extends ZomeClient {
 
   async getAllApps(): Promise<Array<Entity<AppEntry>>> {
     return this.callZome('get_all_apps', null);
+  }
+
+  async createAppVersion(input: CreateAppVersionInput): Promise<Entity<AppVersionEntry>> {
+    return this.callZome('create_app_version', input);
+  }
+
+  async getAppVersion(actionHash: ActionHash): Promise<Entity<AppVersionEntry>> {
+    return this.callZome('get_app_version', actionHash);
+  }
+
+  async getAppVersionsForApp(actionHash: ActionHash): Promise<Array<Entity<AppVersionEntry>>> {
+    return this.callZome('get_app_versions_for_app', actionHash);
   }
 
   protected callZome(fn_name: string, payload: unknown) {

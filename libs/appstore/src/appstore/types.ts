@@ -18,12 +18,12 @@ export type AppEntry = {
   icon: EntryHash;
   publisher: EntityId;
   apphub_hrl: HRL;
-  editors: Array<AgentPubKey>;
+  apphub_hrl_hash: EntryHash;
 
-  author: AgentPubKey;
-  published_at: number;
-  last_updated: number;
-  metadata: any;
+  editors: Array<AgentPubKey>;
+  published_at?: number;
+  last_updated?: number;
+  metadata?: any;
 
   deprecation?: DeprecationNotice;
 };
@@ -35,6 +35,8 @@ export type CreateAppFrontendInput = {
   icon: Uint8Array; // icon bytes
   publisher: EntityId;
   apphub_hrl: HRL;
+  apphub_hrl_hash: EntryHash;
+
   editors?: Array<AgentPubKey>;
 
   published_at?: number;
@@ -49,8 +51,46 @@ export type CreateAppInput = {
   icon: EntryHash;
   publisher: EntityId;
   apphub_hrl: HRL;
+  apphub_hrl_hash: EntryHash;
+
   editors?: Array<AgentPubKey>;
 
+  published_at?: number;
+  last_updated?: number;
+  metadata?: any;
+};
+
+export type AppVersionEntry = {
+  version: string;
+  for_app: EntityId;
+  /**
+   * HRL to WebappPackageVersion record in devhub where the target being ist action hash (EntityId)
+   */
+  apphub_hrl: HRL;
+  /**
+   * Entry hash (EntityAddress) of the WebappPackageVersion entry in devhub
+   */
+  apphub_hrl_hash: EntryHash;
+  bundle_hashes: BundleHashes;
+
+  // common fields
+  author: AgentPubKey;
+  published_at: number;
+  last_updated: number;
+  metadata: any;
+};
+
+export type CreateAppVersionInput = {
+  version: string;
+  for_app: EntityId;
+  apphub_hrl: HRL;
+  /**
+   * Entry hash (EntityAddress) of the WebappPackageVersion entry in devhub
+   */
+  apphub_hrl_hash: EntryHash;
+  bundle_hashes: BundleHashes;
+
+  // common fields
   published_at?: number;
   last_updated?: number;
   metadata?: any;
@@ -152,6 +192,12 @@ export type WebAddress = {
 export type DeprecationNotice = {
   message: string;
   recommended_alternatives: Array<ActionHash>;
+};
+
+export type BundleHashes = {
+  hash: string;
+  ui_hash: string;
+  happ_hash: string;
 };
 
 export type DnaZomeFunction = {
