@@ -58,7 +58,7 @@ export type CreateAppInput = {
 
 export type PublisherEntry = {
   name: string;
-  location: LocationTriplet;
+  location: string;
   website: WebAddress;
   icon: EntryHash;
   editors: Array<AgentPubKey>;
@@ -75,12 +75,12 @@ export type PublisherEntry = {
 
 export type CreatePublisherInput = {
   name: string;
-  location: LocationTriplet;
+  location: string;
   website: WebAddress;
-  icon: EntryHash;
 
   description?: string;
   email?: string;
+  icon: EntryHash | undefined;
   editors?: Array<AgentPubKey>;
 
   published_at?: number;
@@ -90,7 +90,7 @@ export type CreatePublisherInput = {
 
 export type CreatePublisherFrontendInput = {
   name: string;
-  location: LocationTriplet;
+  location: string;
   website: WebAddress;
   icon: Uint8Array;
 
@@ -105,7 +105,7 @@ export type CreatePublisherFrontendInput = {
 
 export type UpdatePublisherFrontendInput = {
   name?: string;
-  location?: LocationTriplet;
+  location?: string;
   website?: WebAddress;
   icon?: Uint8Array;
 
@@ -121,7 +121,7 @@ export type UpdatePublisherFrontendInput = {
 
 export type UpdatePublisherInput = {
   name?: string;
-  location?: LocationTriplet;
+  location?: string;
   website?: WebAddress;
   icon?: EntryHash;
 
@@ -142,12 +142,6 @@ export type DeprecateInput = {
 
 export type UndeprecateInput = {
   base: ActionHash;
-};
-
-export type LocationTriplet = {
-  country: string;
-  region: string;
-  city: string;
 };
 
 export type WebAddress = {
