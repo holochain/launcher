@@ -7,6 +7,8 @@ import type {
 import { get, type Writable } from 'svelte/store';
 
 import {
+	APP_DETAILS_QUERY_KEY,
+	APP_STORE_HAPPS_QUERY_KEY,
 	APP_STORE_MY_HAPPS_QUERY_KEY,
 	MY_HAPPS_ALL_VERSIONS_QUERY_KEY,
 	PUBLISHERS_QUERY_KEY
@@ -16,6 +18,7 @@ import { getAppStoreClient, getDevHubClient } from '$services';
 import {
 	APP_STORE_CLIENT_NOT_INITIALIZED_ERROR,
 	DEV_HUB_CLIENT_NOT_INITIALIZED_ERROR,
+	NO_AVAILABLE_HOST_FOR_REMOTE_CALL,
 	NO_PUBLISHERS_AVAILABLE_ERROR
 } from '$shared/types';
 import type { AppData, PublishNewVersionData } from '$types';
@@ -87,6 +90,79 @@ export const createAppStoreMyHappsQuery = () => {
 	});
 };
 
+export const createAppDetailsQuery = () => (apphub_hrl: Uint8Array) => {
+	return createQuery({
+		queryKey: [APP_DETAILS_QUERY_KEY, apphub_hrl],
+		queryFn: async () => {
+			const appStoreClient = getAppStoreClientOrThrow();
+			const devHubClient = getDevHubClientOrThrow();
+			const devHubDnaHash = await devHubClient.apphubDnaHash();
+
+			const webPackageZomeFunctionDetails = {
+				dna: devHubDnaHash,
+				zome: 'apphub_csr',
+				function: 'get_webapp_package_versions'
+			};
+
+			const availableHost = await appStoreClient.portalZomeClient.getAvailableHostForZomeFunction(
+				webPackageZomeFunctionDetails
+			);
+
+			if (!availableHost) {
+				throw new Error(NO_AVAILABLE_HOST_FOR_REMOTE_CALL);
+			}
+
+			const webAppPackageEntryAddress = apphub_hrl;
+
+			const webAppPackageVersionEntries = await appStoreClient.portalZomeClient.tryWithHosts(
+				async (host) => {
+					const callInput = {
+						host,
+						call: {
+							dna: devHubDnaHash,
+							zome: 'apphub_csr',
+							function: 'get_webapp_package_versions',
+							payload: webAppPackageEntryAddress
+						}
+					};
+					return appStoreClient.portalZomeClient.customRemoteCall(callInput);
+				},
+				webPackageZomeFunctionDetails,
+				4000
+			);
+
+			return webAppPackageVersionEntries;
+		}
+	});
+};
+
+export const createAppStoreHappsQuery = () => {
+	return createQuery({
+		queryKey: [APP_STORE_HAPPS_QUERY_KEY],
+		queryFn: async () => {
+			const appStoreClient = getAppStoreClientOrThrow();
+			const myApps = await appStoreClient.appstoreZomeClient.getAllApps();
+
+			const appsWithIcons = await Promise.all(
+				myApps.map(async (app) => {
+					const icon = await appStoreClient.mereMemoryZomeClient.getMereMemoryBytes(
+						app.content.icon
+					);
+
+					return {
+						title: app.content.title,
+						subtitle: app.content.subtitle,
+						icon,
+						id: uint8ArrayToURIComponent(app.id),
+						apphubHrlTarget: app.content.apphub_hrl.target
+					};
+				})
+			);
+			return appsWithIcons;
+		}
+	});
+};
+
 export const createPublisherMutation = (queryClient: QueryClient) => {
 	return createMutation({
 		mutationFn: (createPublisherInput: CreatePublisherFrontendInput) =>
@@ -132,11 +208,14 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 				publisher: publishers[0].id,
 				apphub_hrl: {
 					dna: await devHubClient.apphubDnaHash(),
-					target: webappPackage.address
+					target: webappPackage.id
 				}
 			});
 		},
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: [APP_STORE_MY_HAPPS_QUERY_KEY] })
+		onSuccess: () =>
+			queryClient.invalidateQueries({
+				queryKey: [APP_STORE_MY_HAPPS_QUERY_KEY, APP_STORE_HAPPS_QUERY_KEY]
+			})
 	});
 };
 

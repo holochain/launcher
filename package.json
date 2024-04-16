@@ -24,7 +24,7 @@
     "start": "electron-vite preview",
     "dev": "concurrently -p \"[{time}] [{name}]\" -n=sveltekit,electron -c=red,blue \"electron-vite dev --watch\" \"yarn run dev:sveltekit\"",
     "build": "yarn test && yarn build:sveltekit && yarn typecheck && electron-vite build",
-    "rebuild-appstore-lib": "cd libs/appstore && yarn build && cd ../.. && rimraf node_modules && cd src/renderer && rimraf node_modules && cd ../.. && yarn cache clean && yarn install",
+    "rebuild-appstore-lib": "yarn workspace appstore-tools build && rimraf ./node_modules ./src/renderer/node_modules && yarn cache clean && yarn install",
     "setup": "cd rust-utils && yarn && yarn build && cd .. && yarn build:libs",
     "build:libs": "yarn workspace appstore-tools install && yarn workspace appstore-tools build",
     "fetch:default-apps": "curl -L --output resources/default-apps/kando.webhapp https://github.com/holochain-apps/kando/releases/download/v0.8.18/kando.webhapp && curl -L --output resources/default-apps/devhub.happ https://drive.switch.ch/index.php/s/UA39yHFs514ZLC3/download && curl -L --output resources/default-apps/appstore.happ https://drive.switch.ch/index.php/s/9C4j1WruDoRxXSn/download",

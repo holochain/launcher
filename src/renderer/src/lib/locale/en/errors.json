@@ -6,9 +6,9 @@
 	"initializeLairKeystoreError": "Error initializing lair keystore",
 	"launchLairKeystoreError": "Error launching lair keystore",
 	"missingBinaries": "There are missing holochain or lair keystore binaries",
+	"noAvailableHostForRemoteCall": "No available host for remote call",
 	"noRunningHolochainManagerError": "No running Holochain manager",
 	"unknownError": "Unknown error",
 	"wrongInstalledAppStructure": "Wrong installed app structure",
-	"wrongPassword": "Wrong password",
-	"youNeedToSetupAtLeastOnePublisher": "You need to setup at least one publisher"
+	"wrongPassword": "Wrong password"
 }

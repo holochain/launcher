@@ -14,11 +14,10 @@ import serve from 'electron-serve';
 import path from 'path';
 import url from 'url';
 
-import { MAIN_SCREEN, SETTINGS_SCREEN } from '$shared/const';
+import { MAIN_SCREEN, SEARCH_HEIGH, SETTINGS_SCREEN, WINDOW_SIZE } from '$shared/const';
 import type { ExtendedAppInfo, Screen } from '$shared/types';
 import { LAUNCHER_ERROR } from '$shared/types';
 
-import { SEARCH_HEIGH, WINDOW_SIZE } from './const';
 import type { LauncherFileSystem } from './filesystem';
 import { type UiHashes } from './holochainManager';
 import { type LauncherEmitter } from './launcherEmitter';

@@ -61,12 +61,12 @@ body {
 }
 
 .input-base {
-	@apply rounded py-2.5 leading-5 focus:outline-none dark:!bg-black;
+	@apply rounded py-2.5 leading-5 dark:!bg-black;
 }
 
 .input,
 .input-modal {
-	@apply input-base;
+	@apply input-base !outline-none;
 }
 
 .input {
@@ -74,7 +74,7 @@ body {
 }
 
 .input-modal {
-	@apply w-full rounded-full border-4 !border-primary-900 bg-transparent text-center !outline-none;
+	@apply w-full rounded-full border-4 !border-primary-900 bg-transparent text-center;
 }
 
 .app-region-drag {
