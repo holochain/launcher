@@ -8,7 +8,7 @@ const appStoreClientStore = writable<AppstoreAppClient | null>(null);
 const devHubClientStore = writable<DevhubAppClient | null>(null);
 
 const createClient = (port: number, appId: string) =>
-	AppAgentWebsocket.connect(new URL(`ws://127.0.0.1:${port}`), appId, 100000);
+	AppAgentWebsocket.connect(appId, { url: new URL(`ws://127.0.0.1:${port}`) });
 
 const createAppClient = async <T>(
 	port: number,

@@ -1,17 +1,15 @@
 #![deny(clippy::all)]
 
 use holochain_conductor_api::{
-  conductor::{ConductorConfig, KeystoreConfig},
+  conductor::{paths::DataRootPath, ConductorConfig, KeystoreConfig},
   AdminInterfaceConfig, InterfaceDriver,
 };
-use holochain_p2p::kitsune_p2p::{
-  dependencies::kitsune_p2p_types::config::tuning_params_struct::KitsuneP2pTuningParams,
-  KitsuneP2pConfig, TransportConfig,
-};
+use holochain_p2p::kitsune_p2p::dependencies::kitsune_p2p_types::config::{tuning_params_struct::KitsuneP2pTuningParams, KitsuneP2pConfig, TransportConfig};
+use holochain_types::websocket::AllowedOrigins;
 use napi::{Error, Result, Status};
 use napi_derive::napi;
 use serde_yaml::{Mapping, Value};
-use std::path::{Path, PathBuf};
+use std::{collections::HashSet, path::PathBuf};
 
 fn create_error(msg: &str) -> Error {
   Error::new(Status::GenericFailure, String::from(msg))
@@ -36,6 +34,7 @@ pub fn overwrite_config(
   bootstrap_server_url: Option<String>,
   signaling_server_url: Option<String>,
   config_path: String,
+  allowed_origin: String,
 ) -> Result<String> {
   let mut config = std::fs::read_to_string(&PathBuf::from(config_path))
     .map_err(|_| create_error("Failed to read file"))
@@ -52,6 +51,7 @@ pub fn overwrite_config(
   let websocket_interface = create_mapping_with_entries(vec![
     ("type", Value::String(String::from("websocket"))),
     ("port", Value::Number(admin_port.into())),
+    ("allowed_origins", Value::String(allowed_origin)),
   ]);
 
   let admin_interface =
@@ -114,6 +114,7 @@ pub fn default_conductor_config(
   bootstrap_server_url: String,
   signaling_server_url: String,
   conductor_environment_path: String,
+  allowed_origin: String,
 ) -> Result<String> {
   let mut network_config = KitsuneP2pConfig::default();
   network_config.bootstrap_service = Some(url2::url2!("{}", bootstrap_server_url));
@@ -125,19 +126,22 @@ pub fn default_conductor_config(
     signal_url: signaling_server_url,
   });
 
+  let mut allowed_origins_map = HashSet::new();
+  allowed_origins_map.insert(allowed_origin);
+
   let config = ConductorConfig {
-    environment_path: Path::new(&conductor_environment_path).into(),
+    data_root_path: Some(DataRootPath::from(PathBuf::from(conductor_environment_path))),
     dpki: None,
     keystore: KeystoreConfig::LairServer {
       connection_url: url2::url2!("{}", keystore_connection_url),
     },
     admin_interfaces: Some(vec![AdminInterfaceConfig {
-      driver: InterfaceDriver::Websocket { port: admin_port },
+        driver: InterfaceDriver::Websocket { port: admin_port, allowed_origins: AllowedOrigins::Origins(allowed_origins_map) },
     }]),
-    network: Some(network_config),
+    network: network_config,
     db_sync_strategy: Default::default(),
     tracing_override: None,
-    tracing_scope: None,
+    tuning_params: None,
   };
 
   serde_yaml::to_string(&config)

@@ -1,6 +1,6 @@
 {
   "name": "holochain-launcher-electron",
-  "version": "0.0.16-alpha.1",
+  "version": "0.300.0-alpha.0",
   "private": true,
   "description": "Holochain Launcher Electron (Prototype)",
   "author": "Holochain Foundation <info@holochain.org> (http://holochain.org)",
@@ -43,7 +43,7 @@
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
     "@electron/notarize": "2.3.0",
-    "@holochain/client": "^0.16.10",
+    "@holochain/client": "^0.17.0-dev.8",
     "@msgpack/msgpack": "^2.8.0",
     "@trpc/client": "^10.44.1",
     "@trpc/server": "^10.44.1",

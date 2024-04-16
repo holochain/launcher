@@ -621,10 +621,10 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.57.0.tgz#a5417ae8427873f1dd08b70b3574b453e67b5f7f"
   integrity sha512-Ys+3g2TaW7gADOJzPt83SJtCDhMjndcDMFVQ/Tj9iA1BfJzFKD9mAUXT3OenpuPHbI6P/myECxRJrofUsDx/5g==
 
-"@holochain/client@^0.16.10":
-  version "0.16.10"
-  resolved "https://registry.yarnpkg.com/@holochain/client/-/client-0.16.10.tgz#7ef9019922edfea4ceda7bb8d3eaae7beddc98e3"
-  integrity sha512-Urgx6vXNux2XD/4+eOxou2FKwlUBu/g/BxUSZLX6wEaYWH9wDYXR5f3VToUrAhXGF5ssc08jb8jLiQZ23k62EQ==
+"@holochain/client@^0.17.0-dev.8":
+  version "0.17.0-dev.8"
+  resolved "https://registry.yarnpkg.com/@holochain/client/-/client-0.17.0-dev.8.tgz#cb60a271629cd50756ce626a82a3598a2c8fb6ce"
+  integrity sha512-npFoEoQd5Pai1a6B5sB0azbO9fEoZgGTY4k74cHCbtLS31Q0dSIwhrxTO6+XUVt2eyq64l6t4hJljCYIqGZVjQ==
   dependencies:
     "@bitgo/blake2b" "^3.2.4"
     "@holochain/serialization" "^0.1.0-beta-rc.3"
