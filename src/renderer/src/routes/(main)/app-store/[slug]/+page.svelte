@@ -1,16 +1,20 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { uint8ArrayToURIComponent } from '$helpers';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
 
-	const { appStoreHappsQuery, appVersionsDetailsQueryFunction } = createAppQueries();
+	const { appStoreHappsQuery, appVersionsDetailsQueryFunction, appVersionsAppstoreQueryFunction } =
+		createAppQueries();
 
 	const slug: string = $page.params.slug;
-	const app = $appStoreHappsQuery.data?.find(({ id }) => id === slug);
+	const app = $appStoreHappsQuery.data?.find(({ id }) => uint8ArrayToURIComponent(id) === slug);
 
 	$: appVersionsDetailsQuery = app
 		? appVersionsDetailsQueryFunction(app.apphubHrlTarget)
 		: undefined;
+
+	$: newAppVersionsDetailsQuery = app ? appVersionsAppstoreQueryFunction(app.id) : undefined;
 </script>
 
 {#if app}
@@ -19,6 +23,13 @@
 		<span>{`${$i18n.t('releases')}:`}</span>
 		{#if $appVersionsDetailsQuery?.data}
 			{#each $appVersionsDetailsQuery.data as version}
+				<div class="flex items-center pt-2">
+					<h4 class="font-semibold">{version}</h4>
+				</div>
+			{/each}
+		{/if}
+		{#if $newAppVersionsDetailsQuery?.data}
+			{#each $newAppVersionsDetailsQuery.data as version}
 				<div class="flex items-center pt-2">
 					<h4 class="font-semibold">{version}</h4>
 				</div>

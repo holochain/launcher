@@ -19,7 +19,6 @@ import {
 	APP_VERSIONS_DETAILS_QUERY_KEY,
 	PUBLISHERS_QUERY_KEY
 } from '$const';
-import { uint8ArrayToURIComponent } from '$helpers';
 import { happVersionsSchema } from '$schemas';
 import { getAppStoreClient, getDevHubClient } from '$services';
 import {
@@ -64,7 +63,11 @@ export const createAppVersionsAppstoreQuery = () => (appEntryId: ActionHash) => 
 		queryKey: [ALL_APP_VERSIONS_APPSTORE_QUERY_KEY, appEntryId],
 		queryFn: async () => {
 			const appstoreClient = getAppStoreClientOrThrow();
-			return appstoreClient.appstoreZomeClient.getAppVersionsForApp(appEntryId);
+
+			const appVersions = await appstoreClient.appstoreZomeClient.getAppVersionsForApp(appEntryId);
+
+			console.log(appVersions);
+			return appVersions;
 		}
 	});
 };
@@ -106,7 +109,7 @@ export const createAppStoreMyHappsQuery = () => {
 					);
 
 					return {
-						id: uint8ArrayToURIComponent(app.id),
+						id: app.id,
 						apphubHrlTarget: app.content.apphub_hrl.target,
 						title: app.content.title,
 						subtitle: app.content.subtitle,
@@ -184,7 +187,7 @@ export const createAppStoreHappsQuery = () => {
 						title: app.content.title,
 						subtitle: app.content.subtitle,
 						icon,
-						id: uint8ArrayToURIComponent(app.id),
+						id: app.id,
 						apphubHrlTarget: app.content.apphub_hrl.target
 					};
 				})
@@ -269,16 +272,20 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 				apphub_hrl_hash: webappPackage.address
 			});
 
-			await appStoreClient.appstoreZomeClient.createAppVersion({
-				version,
-				for_app: appEntryEntity.id,
-				apphub_hrl: {
-					dna: apphubDnaHash,
-					target: webappPackageVersion.id
-				},
-				apphub_hrl_hash: webappPackageVersion.address,
-				bundle_hashes: hashes
-			});
+			try {
+				await appStoreClient.appstoreZomeClient.createAppVersion({
+					version,
+					for_app: appEntryEntity.id,
+					apphub_hrl: {
+						dna: apphubDnaHash,
+						target: webappPackageVersion.id
+					},
+					apphub_hrl_hash: webappPackageVersion.address,
+					bundle_hashes: hashes
+				});
+			} catch (error) {
+				console.error(error);
+			}
 		},
 		onSuccess: () =>
 			queryClient.invalidateQueries({
@@ -321,16 +328,24 @@ export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 				webapp_package_version_addr: webappPackageVersion.action
 			});
 
-			await appStoreClient.appstoreZomeClient.createAppVersion({
-				version,
-				for_app: appEntryEntity.id,
-				apphub_hrl: {
-					dna: await devHubClient.apphubDnaHash(),
-					target: webappPackageVersion.id
-				},
-				apphub_hrl_hash: webappPackageVersion.address,
-				bundle_hashes: hashes
-			});
+			const apphubDnaHash = await devHubClient.apphubDnaHash();
+
+			console.log('apphubDnaHash', apphubDnaHash);
+
+			try {
+				await appStoreClient.appstoreZomeClient.createAppVersion({
+					version,
+					for_app: appEntryEntity.id,
+					apphub_hrl: {
+						dna: apphubDnaHash,
+						target: webappPackageVersion.id
+					},
+					apphub_hrl_hash: webappPackageVersion.address,
+					bundle_hashes: hashes
+				});
+			} catch (error) {
+				console.error(error);
+			}
 		},
 		onSuccess: () =>
 			queryClient.invalidateQueries({

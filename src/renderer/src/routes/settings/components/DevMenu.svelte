@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { ADD_APP_PAGE, DEV_PAGE, VIEW } from '$const';
-	import { getRawQueryParam } from '$helpers';
+	import { getRawQueryParam, uint8ArrayToURIComponent } from '$helpers';
 	import { Plus } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
@@ -32,12 +32,13 @@
 	<p>{$appStoreMyHappsQuery.error}</p>
 {:else if $appStoreMyHappsQuery.isSuccess}
 	{#each $appStoreMyHappsQuery.data as app (app.id)}
+		{@const appIdString = uint8ArrayToURIComponent(app.id)}
 		<MenuEntry
 			isApp
 			icon={app.icon}
-			isSelected={view === app.id}
+			isSelected={view === appIdString}
 			name={app.title}
-			onClick={() => selectView(app.id)}
+			onClick={() => selectView(appIdString)}
 		/>
 	{/each}
 {/if}

@@ -1,20 +1,19 @@
 <script lang="ts">
-	import type { ActionHash } from '@holochain/client';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { Button } from '$components';
-	import { Check } from '$icons';
+	// import { Check } from '$icons';
 	import AddNewHappVersion from '$modal/AddNewHappVersion.svelte';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
 
-	export let apphubHrlTarget: ActionHash;
+	export let id: Uint8Array;
 
-	const { appVersionsDevhubQueryFunction } = createAppQueries();
+	const { appVersionsAppstoreQueryFunction } = createAppQueries();
 
 	const modalStore = getModalStore();
 
-	$: appVersionsQuery = appVersionsDevhubQueryFunction(apphubHrlTarget);
+	$: appVersionsQuery = appVersionsAppstoreQueryFunction(id);
 </script>
 
 {#if $appVersionsQuery.isSuccess}
@@ -33,7 +32,7 @@
 							type: 'component',
 							component: {
 								ref: AddNewHappVersion,
-								props: { webappPackageId: $appVersionsQuery.data?.webapp_package_id }
+								props: { webappPackageId: '1' }
 							}
 						}),
 					class: 'btn-secondary mx-4'
@@ -41,12 +40,12 @@
 			>
 				{'+  ' + $i18n.t('addNewRelease')}
 			</Button>
-			{#each Object.entries($appVersionsQuery.data.versions) as [version]}
+			<!-- {#each $appVersionsQuery.data.versions as { version }
 				<div class="flex items-center pt-2">
 					<Check />
 					<h4 class="ml-2 font-semibold">{version}</h4>
 				</div>
-			{/each}
+			{/each} -->
 		</div>
 	</div>
 {/if}
