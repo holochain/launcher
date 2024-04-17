@@ -420,13 +420,23 @@ async function handleLaunch(password: string) {
     ? `launcher-${breakingVersion(app.getVersion())}`
     : `launcher-dev-${os.hostname()}`;
 
-  APPS_TO_INSTALL.forEach(async ({ id, name, progressUpdate }) => {
-    if (!holochainManager.installedApps.map((app) => app.installed_app_id).includes(id)) {
-      LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, progressUpdate);
-      const happBytes = fs.readFileSync(path.join(DEFAULT_APPS_DIRECTORY, name));
-      await holochainManager.installHeadlessHapp(Array.from(happBytes), id, defaultAppsNetworkSeed);
-    }
-  });
+  await Promise.all(
+    APPS_TO_INSTALL.map(async ({ id, name, progressUpdate }) => {
+      const isAppInstalled = holochainManager.installedApps.some(
+        (app) => app.installed_app_id === id,
+      );
+      if (!isAppInstalled) {
+        LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, progressUpdate);
+        const happPath = path.join(DEFAULT_APPS_DIRECTORY, name);
+        const happBytes = fs.readFileSync(happPath);
+        await holochainManager.installHeadlessHapp(
+          Array.from(happBytes),
+          id,
+          defaultAppsNetworkSeed,
+        );
+      }
+    }),
+  );
 
   PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE, SEARCH_HEIGH, true);
   loadOrServe(PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN], { screen: SETTINGS_SCREEN });
