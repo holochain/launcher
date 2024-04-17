@@ -16,15 +16,12 @@ import {
 	ALL_APP_VERSIONS_DEVHUB_QUERY_KEY,
 	APP_STORE_HAPPS_QUERY_KEY,
 	APP_STORE_MY_HAPPS_QUERY_KEY,
-	APP_VERSIONS_DETAILS_QUERY_KEY,
 	PUBLISHERS_QUERY_KEY
 } from '$const';
-import { happVersionsSchema } from '$schemas';
 import { getAppStoreClient, getDevHubClient } from '$services';
 import {
 	APP_STORE_CLIENT_NOT_INITIALIZED_ERROR,
 	DEV_HUB_CLIENT_NOT_INITIALIZED_ERROR,
-	NO_AVAILABLE_HOST_FOR_REMOTE_CALL,
 	NO_PUBLISHERS_AVAILABLE_ERROR
 } from '$shared/types';
 import type { AppData, PublishNewVersionData } from '$types';
@@ -66,7 +63,6 @@ export const createAppVersionsAppstoreQuery = () => (appEntryId: ActionHash) => 
 
 			const appVersions = await appstoreClient.appstoreZomeClient.getAppVersionsForApp(appEntryId);
 
-			console.log(appVersions);
 			return appVersions;
 		}
 	});
@@ -110,7 +106,6 @@ export const createAppStoreMyHappsQuery = () => {
 
 					return {
 						id: app.id,
-						apphubHrlTarget: app.content.apphub_hrl.target,
 						title: app.content.title,
 						subtitle: app.content.subtitle,
 						icon
@@ -118,54 +113,6 @@ export const createAppStoreMyHappsQuery = () => {
 				})
 			);
 			return appsWithIcons;
-		}
-	});
-};
-
-export const createAppVersionsDetailsQuery = () => (apphub_hrl: Uint8Array) => {
-	return createQuery({
-		queryKey: [APP_VERSIONS_DETAILS_QUERY_KEY, apphub_hrl],
-		queryFn: async () => {
-			const appStoreClient = getAppStoreClientOrThrow();
-			const devHubClient = getDevHubClientOrThrow();
-			const devHubDnaHash = await devHubClient.apphubDnaHash();
-
-			const webPackageZomeFunctionDetails = {
-				dna: devHubDnaHash,
-				zome: 'apphub_csr',
-				function: 'get_webapp_package_versions'
-			};
-
-			const availableHost = await appStoreClient.portalZomeClient.getAvailableHostForZomeFunction(
-				webPackageZomeFunctionDetails
-			);
-
-			if (!availableHost) {
-				throw new Error(NO_AVAILABLE_HOST_FOR_REMOTE_CALL);
-			}
-
-			const webAppPackageEntryAddress = apphub_hrl;
-
-			const webAppPackageVersionEntries = await appStoreClient.portalZomeClient.tryWithHosts(
-				async (host) => {
-					const callInput = {
-						host,
-						call: {
-							dna: devHubDnaHash,
-							zome: 'apphub_csr',
-							function: 'get_webapp_package_versions',
-							payload: webAppPackageEntryAddress
-						}
-					};
-					return appStoreClient.portalZomeClient.customRemoteCall(callInput);
-				},
-				webPackageZomeFunctionDetails,
-				4000
-			);
-
-			const parsedResult = happVersionsSchema.safeParse(webAppPackageVersionEntries);
-
-			return parsedResult.success ? Object.keys(parsedResult.data) : [];
 		}
 	});
 };
@@ -316,6 +263,7 @@ export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 			};
 
 			const appEntryEntity = await devHubClient.saveWebapp(bytes);
+
 			const webappPackageVersion = await devHubClient.appHubZomeClient.createWebappPackageVersion({
 				for_package: webappPackageId,
 				version,
