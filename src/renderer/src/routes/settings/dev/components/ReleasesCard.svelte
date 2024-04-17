@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { ActionHash } from '@holochain/client';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { Button } from '$components';
@@ -8,6 +9,7 @@
 	import { i18n } from '$services';
 
 	export let id: Uint8Array;
+	export let apphubHrlTarget: ActionHash;
 
 	const { appVersionsAppstoreQueryFunction } = createAppQueries();
 
@@ -29,13 +31,12 @@
 					props={{
 						type: 'reset',
 						onClick: () => {
-							const webappPackageId = $appVersionsQuery.data?.[0].content.apphub_hrl.target;
-							if (webappPackageId) {
+							if (apphubHrlTarget) {
 								modalStore.trigger({
 									type: 'component',
 									component: {
 										ref: AddNewHappVersion,
-										props: { webappPackageId }
+										props: { webappPackageId: apphubHrlTarget }
 									}
 								});
 							}

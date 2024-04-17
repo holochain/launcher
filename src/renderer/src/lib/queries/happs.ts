@@ -108,7 +108,8 @@ export const createAppStoreMyHappsQuery = () => {
 						id: app.id,
 						title: app.content.title,
 						subtitle: app.content.subtitle,
-						icon
+						icon,
+						apphubHrlTarget: app.content.apphub_hrl.target
 					};
 				})
 			);

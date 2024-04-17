@@ -30,7 +30,7 @@
 				/>
 				<h2 class="text-lg font-bold">{app.title}</h2>
 			</div>
-			<ReleasesCard id={app.id} />
+			<ReleasesCard apphubHrlTarget={app.apphubHrlTarget} id={app.id} />
 		{/if}
 	{/if}
 </div>
