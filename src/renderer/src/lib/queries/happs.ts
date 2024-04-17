@@ -234,16 +234,20 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 				console.error(error);
 			}
 		},
-		onSuccess: () =>
+		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: [APP_STORE_MY_HAPPS_QUERY_KEY, APP_STORE_HAPPS_QUERY_KEY]
-			})
+				queryKey: [APP_STORE_MY_HAPPS_QUERY_KEY]
+			});
+			queryClient.invalidateQueries({
+				queryKey: [APP_STORE_HAPPS_QUERY_KEY]
+			});
+		}
 	});
 };
 
 export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 	return createMutation({
-		mutationFn: async ({ bytes, version, webappPackageId }: PublishNewVersionData) => {
+		mutationFn: async ({ bytes, version, webappPackageId, appEntryId }: PublishNewVersionData) => {
 			const devHubClient = getDevHubClientOrThrow();
 			const appStoreClient = getAppStoreClientOrThrow();
 
@@ -262,12 +266,12 @@ export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 				happ_hash: happHash
 			};
 
-			const appEntryEntity = await devHubClient.saveWebapp(bytes);
+			const devhubAppEntryEntity = await devHubClient.saveWebapp(bytes);
 
 			const webappPackageVersion = await devHubClient.appHubZomeClient.createWebappPackageVersion({
 				for_package: webappPackageId,
 				version,
-				webapp: appEntryEntity.address
+				webapp: devhubAppEntryEntity.address
 			});
 
 			await devHubClient.appHubZomeClient.createWebappPackageLinkToVersion({
@@ -278,26 +282,20 @@ export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 
 			const apphubDnaHash = await devHubClient.apphubDnaHash();
 
-			console.log('apphubDnaHash', apphubDnaHash);
-
-			try {
-				await appStoreClient.appstoreZomeClient.createAppVersion({
-					version,
-					for_app: appEntryEntity.id,
-					apphub_hrl: {
-						dna: apphubDnaHash,
-						target: webappPackageVersion.id
-					},
-					apphub_hrl_hash: webappPackageVersion.address,
-					bundle_hashes: hashes
-				});
-			} catch (error) {
-				console.error(error);
-			}
+			await appStoreClient.appstoreZomeClient.createAppVersion({
+				version,
+				for_app: appEntryId,
+				apphub_hrl: {
+					dna: apphubDnaHash,
+					target: webappPackageVersion.id
+				},
+				apphub_hrl_hash: webappPackageVersion.address,
+				bundle_hashes: hashes
+			});
 		},
-		onSuccess: () =>
-			queryClient.invalidateQueries({
-				queryKey: [ALL_APP_VERSIONS_DEVHUB_QUERY_KEY, ALL_APP_VERSIONS_APPSTORE_QUERY_KEY]
-			})
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: [ALL_APP_VERSIONS_DEVHUB_QUERY_KEY] });
+			queryClient.invalidateQueries({ queryKey: [ALL_APP_VERSIONS_APPSTORE_QUERY_KEY] });
+		}
 	});
 };

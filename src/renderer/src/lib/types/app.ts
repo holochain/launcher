@@ -29,6 +29,7 @@ export type PublishNewVersionData = {
 	bytes: Uint8Array;
 	version: string;
 	webappPackageId: Uint8Array;
+	appEntryId: Uint8Array;
 };
 
 export const isPublishNewVersionDataValid = (data: unknown): data is PublishNewVersionData =>
@@ -39,4 +40,6 @@ export const isPublishNewVersionDataValid = (data: unknown): data is PublishNewV
 	'version' in data &&
 	isNonEmptyString(data.version) &&
 	'webappPackageId' in data &&
-	isUint8Array(data.webappPackageId);
+	isUint8Array(data.webappPackageId) &&
+	'appEntryId' in data &&
+	isUint8Array(data.appEntryId);

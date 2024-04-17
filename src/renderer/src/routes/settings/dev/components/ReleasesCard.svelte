@@ -36,7 +36,7 @@
 									type: 'component',
 									component: {
 										ref: AddNewHappVersion,
-										props: { webappPackageId: apphubHrlTarget }
+										props: { webappPackageId: apphubHrlTarget, appEntryId: id }
 									}
 								});
 							}

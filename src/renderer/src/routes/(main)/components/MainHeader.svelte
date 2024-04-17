@@ -2,8 +2,9 @@
 	import { onMount } from 'svelte';
 
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { IconButton, Input } from '$components';
-	import { SELECTED_ICON_STYLE } from '$const';
+	import { SEARCH_URL_QUERY, SELECTED_ICON_STYLE } from '$const';
 	import { Gear, Home, Rocket } from '$icons';
 	import { i18n, trpc } from '$services';
 	import {
@@ -23,15 +24,20 @@
 
 	export let handlePress: (event: CustomEvent) => void = () => {};
 	export let autocomplete: string | null = null;
-	export let searchInput: string;
 
-	export let type: MainScreenRoute;
+	$: searchInput = $page.url.searchParams.get(SEARCH_URL_QUERY) || '';
+
+	$: type = $page.url.pathname.includes(`/${APP_STORE}/`)
+		? 'other'
+		: $page.url.pathname.includes(APP_STORE)
+			? APP_STORE
+			: APPS_VIEW;
 
 	let inputExpanded = false;
 
-	onMount(() => {
-		inputExpanded = true;
+	$: if (type) inputExpanded = true;
 
+	onMount(() => {
 		return navigationStore.subscribe((value) => {
 			if (value !== null) {
 				handleNavigationWithAnimationDelay(value)();
@@ -49,43 +55,54 @@
 					? { width: WINDOW_SIZE, height: SEARCH_HEIGH }
 					: { width: WINDOW_SIZE_LARGE, height: WINDOW_SIZE };
 			window.resizeTo(windowSize.width, windowSize.height);
-			goto(destination);
+			goto(`/${destination}`);
 		}, ANIMATION_DURATION);
+	};
+
+	const setSearchInput = (event: CustomEvent) => {
+		const target = event.detail.target;
+
+		if (!target.value) return;
+
+		goto(`?${SEARCH_URL_QUERY}=${target.value}`);
 	};
 </script>
 
 <div class="app-region-drag flex justify-between p-3 dark:bg-apps-input-dark-gradient">
-	{#if type === APPS_VIEW}
+	{#if type !== APP_STORE}
 		<IconButton onClick={handleNavigationWithAnimationDelay(APP_STORE)}><Home /></IconButton>
 	{/if}
 
-	<div
-		class="app-region-no-drag relative mx-2 max-w-md flex-grow origin-left transition-transform"
-		class:duration-{ANIMATION_DURATION}={inputExpanded}
-		class:scale-x-100={inputExpanded}
-		class:scale-x-0={!inputExpanded}
-	>
-		<Input
-			bind:value={searchInput}
-			bind:autocomplete
-			on:keydown={handlePress}
-			props={{
-				class: 'pl-10 input rounded text-base font-medium',
-				type: 'text',
-				placeholder:
-					type === APP_STORE ? $i18n.t('whatDoYouWantToInstall') : $i18n.t('searchForApps'),
-				autofocus: true
-			}}
-		/>
-		<div class="absolute left-2 top-2 z-10">
-			{#if type === APPS_VIEW}
-				<Rocket fillColor={SELECTED_ICON_STYLE} />
-			{:else}
-				<Home fillColor={SELECTED_ICON_STYLE} />
-			{/if}
+	{#if type === APP_STORE || type === APPS_VIEW}
+		<div
+			class="app-region-no-drag relative mx-2 max-w-md flex-grow origin-left transition-transform"
+			class:duration-{ANIMATION_DURATION}={inputExpanded}
+			class:scale-x-100={inputExpanded}
+			class:scale-x-0={!inputExpanded}
+		>
+			<Input
+				value={searchInput}
+				bind:autocomplete
+				on:keydown={handlePress}
+				on:input={setSearchInput}
+				props={{
+					class: 'pl-10 input rounded text-base font-medium',
+					type: 'text',
+					placeholder:
+						type === APP_STORE ? $i18n.t('whatDoYouWantToInstall') : $i18n.t('searchForApps'),
+					autofocus: true
+				}}
+			/>
+			<div class="absolute left-2 top-2 z-10">
+				{#if type === APPS_VIEW}
+					<Rocket fillColor={SELECTED_ICON_STYLE} />
+				{:else}
+					<Home fillColor={SELECTED_ICON_STYLE} />
+				{/if}
+			</div>
 		</div>
-	</div>
-	{#if type == APP_STORE}
+	{/if}
+	{#if type !== APPS_VIEW}
 		<IconButton onClick={handleNavigationWithAnimationDelay(APPS_VIEW)} buttonClass="ml-auto">
 			<Rocket />
 		</IconButton>

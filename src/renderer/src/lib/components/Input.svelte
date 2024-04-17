@@ -34,6 +34,7 @@
 		on:blur={handleEvent('blur')}
 		bind:this={inputElement}
 		on:keydown={handleEvent('keydown')}
+		on:input={handleEvent('input')}
 		bind:value
 		{...props}
 		class={iptClass}
