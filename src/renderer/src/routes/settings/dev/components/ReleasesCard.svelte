@@ -1,19 +1,21 @@
 <script lang="ts">
+	import type { ActionHash } from '@holochain/client';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { Button } from '$components';
 	import { Check } from '$icons';
-	import AddNewHappVersion from '$modal/AddNewHappVersion.svelte';
+	import { AddNewHappVersion } from '$modal';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
 
-	export let apphubHrlTarget: Uint8Array;
+	export let id: Uint8Array;
+	export let apphubHrlTarget: ActionHash;
 
-	const { appVersionsQueryFunction } = createAppQueries();
+	const { appVersionsAppstoreQueryFunction } = createAppQueries();
 
 	const modalStore = getModalStore();
 
-	$: appVersionsQuery = appVersionsQueryFunction(apphubHrlTarget);
+	$: appVersionsQuery = appVersionsAppstoreQueryFunction(id);
 </script>
 
 {#if $appVersionsQuery.isSuccess}
@@ -24,28 +26,33 @@
 			</div>
 		</div>
 		<div class="card flex flex-col p-4">
-			<Button
-				props={{
-					type: 'reset',
-					onClick: () =>
-						modalStore.trigger({
-							type: 'component',
-							component: {
-								ref: AddNewHappVersion,
-								props: { webappPackageId: $appVersionsQuery.data?.webapp_package_id }
+			{#if $appVersionsQuery.data.length > 0}
+				<Button
+					props={{
+						type: 'reset',
+						onClick: () => {
+							if (apphubHrlTarget) {
+								modalStore.trigger({
+									type: 'component',
+									component: {
+										ref: AddNewHappVersion,
+										props: { webappPackageId: apphubHrlTarget, appEntryId: id }
+									}
+								});
 							}
-						}),
-					class: 'btn-secondary mx-4'
-				}}
-			>
-				{'+  ' + $i18n.t('addNewRelease')}
-			</Button>
-			{#each Object.entries($appVersionsQuery.data.versions) as [version]}
-				<div class="flex items-center pt-2">
-					<Check />
-					<h4 class="ml-2 font-semibold">{version}</h4>
-				</div>
-			{/each}
+						},
+						class: 'btn-secondary mx-4'
+					}}
+				>
+					{'+  ' + $i18n.t('addNewRelease')}
+				</Button>
+				{#each $appVersionsQuery.data as versionEntity}
+					<div class="flex items-center pt-2">
+						<Check />
+						<h4 class="ml-2 font-semibold">{versionEntity.content.version}</h4>
+					</div>
+				{/each}
+			{/if}
 		</div>
 	</div>
 {/if}

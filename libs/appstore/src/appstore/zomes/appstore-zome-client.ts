@@ -1,10 +1,22 @@
-import type { ActionHash, AgentPubKey, AppAgentCallZomeRequest } from '@holochain/client';
+import type {
+  ActionHash,
+  AgentPubKey,
+  AppAgentCallZomeRequest,
+  EntryHash,
+} from '@holochain/client';
 
-import type { Entity, UpdateEntityInput } from '../../devhub/types';
+import type {
+  Entity,
+  UpdateEntityInput,
+  WebAppEntry,
+  WebAppPackageVersionEntry,
+} from '../../devhub/types';
 import { ZomeClient } from '../../zome-client/zome-client';
 import type {
   AppEntry,
+  AppVersionEntry,
   CreateAppInput,
+  CreateAppVersionInput,
   CreatePublisherInput,
   DeprecateInput,
   PublisherEntry,
@@ -73,6 +85,29 @@ export class AppstoreZomeClient extends ZomeClient {
 
   async getAllApps(): Promise<Array<Entity<AppEntry>>> {
     return this.callZome('get_all_apps', null);
+  }
+
+  async createAppVersion(input: CreateAppVersionInput): Promise<Entity<AppVersionEntry>> {
+    return this.callZome('create_app_version', input);
+  }
+
+  async getAppVersion(actionHash: ActionHash): Promise<Entity<AppVersionEntry>> {
+    return this.callZome('get_app_version', actionHash);
+  }
+
+  async getAppVersionsForApp(actionHash: ActionHash): Promise<Array<Entity<AppVersionEntry>>> {
+    return this.callZome('get_app_versions_for_app', { for_app: actionHash });
+  }
+
+  //
+  // Hashing of entries
+  //
+  async hashWebappPackageVersionEntry(input: WebAppPackageVersionEntry): Promise<EntryHash> {
+    return this.callZome('hash_webapp_package_version_entry', input);
+  }
+
+  async hashWebappEntry(input: WebAppEntry): Promise<EntryHash> {
+    return this.callZome('hash_webapp_entry', input);
   }
 
   protected callZome(fn_name: string, payload: unknown) {

@@ -3,8 +3,7 @@ import { useQueryClient } from '@tanstack/svelte-query';
 import {
 	createAppStoreHappsQuery,
 	createAppStoreMyHappsQuery,
-	createAppVersionsDetailsQuery,
-	createAppVersionsQuery,
+	createAppVersionsAppstoreQuery,
 	createPublisherMutation,
 	createPublishersQuery,
 	createPublishHappMutation,
@@ -16,8 +15,7 @@ export function createAppQueries() {
 	const publishersQuery = createPublishersQuery();
 	const appStoreMyHappsQuery = createAppStoreMyHappsQuery();
 	const appStoreHappsQuery = createAppStoreHappsQuery();
-	const appVersionsQueryFunction = createAppVersionsQuery();
-	const appVersionsDetailsQueryFunction = createAppVersionsDetailsQuery();
+	const appVersionsAppstoreQueryFunction = createAppVersionsAppstoreQuery();
 	const publisherMutation = createPublisherMutation(queryClient);
 	const publishHappMutation = createPublishHappMutation(queryClient);
 	const publishNewVersionMutation = createPublishNewVersionMutation(queryClient);
@@ -27,8 +25,7 @@ export function createAppQueries() {
 		publisherMutation,
 		publishHappMutation,
 		appStoreMyHappsQuery,
-		appVersionsQueryFunction,
-		appVersionsDetailsQueryFunction,
+		appVersionsAppstoreQueryFunction,
 		publishNewVersionMutation,
 		appStoreHappsQuery
 	};

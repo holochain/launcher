@@ -11,6 +11,7 @@
 	const modalStore = getModalStore();
 
 	export let webappPackageId: Uint8Array;
+	export let appEntryId: Uint8Array;
 	let version = '';
 	let bytes = undefined as Uint8Array | undefined;
 
@@ -32,7 +33,8 @@
 				const publishNewVersionData = {
 					webappPackageId,
 					version,
-					bytes
+					bytes,
+					appEntryId
 				};
 				if (isPublishNewVersionDataValid(publishNewVersionData)) {
 					$publishNewVersionMutation.mutate(publishNewVersionData, {
@@ -52,7 +54,7 @@
 			{/if}
 			<AddTypeModalFooter
 				isPending={$publishNewVersionMutation.isPending}
-				isValid={isPublishNewVersionDataValid({ webappPackageId, version, bytes })}
+				isValid={isPublishNewVersionDataValid({ webappPackageId, version, bytes, appEntryId })}
 				onCancel={modalStore.close}
 			/>
 		</form>

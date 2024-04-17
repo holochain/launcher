@@ -3,7 +3,7 @@
 
 	import { page } from '$app/stores';
 	import { VIEW } from '$const';
-	import { createImageUrl, getRawQueryParam } from '$helpers';
+	import { createImageUrl, getRawQueryParam, uint8ArrayToURIComponent } from '$helpers';
 	import { createAppQueries } from '$queries';
 
 	import { ReleasesCard } from './components';
@@ -15,7 +15,9 @@
 
 <div class="p-8">
 	{#if $appStoreMyHappsQuery.isSuccess}
-		{@const app = $appStoreMyHappsQuery.data.find((app) => app.id === view)}
+		{@const app = $appStoreMyHappsQuery.data.find(
+			(app) => uint8ArrayToURIComponent(app.id) === view
+		)}
 		{#if app}
 			{@const imageUrl = createImageUrl(app.icon)}
 			<div class="flex items-center space-x-4 pb-4">
@@ -28,7 +30,7 @@
 				/>
 				<h2 class="text-lg font-bold">{app.title}</h2>
 			</div>
-			<ReleasesCard apphubHrlTarget={app.apphubHrlTarget} />
+			<ReleasesCard apphubHrlTarget={app.apphubHrlTarget} id={app.id} />
 		{/if}
 	{/if}
 </div>

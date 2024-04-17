@@ -25,7 +25,7 @@
 
 <button
 	type="button"
-	class="mx-auto flex-shrink outline-none"
+	class="mx-auto flex-shrink !outline-none"
 	on:click={createInputAndTriggerClick}
 	aria-label="Upload Image"
 >

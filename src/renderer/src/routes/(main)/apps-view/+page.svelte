@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { PRESEARCH_URL_QUERY, SEARCH_URL_QUERY } from '$const';
 	import { validateApp } from '$helpers';
 	import { trpc } from '$services';
-	import { APPS_VIEW } from '$shared/const';
 
 	import MainHeader from '../components/MainHeader.svelte';
 	import ListOfApps from './components/ListOfApps.svelte';
@@ -14,11 +15,11 @@
 	const installedApps = client.getInstalledApps.createQuery();
 	const openApp = client.openApp.createMutation();
 
-	let searchInput = '';
-
 	onMount(() => {
-		searchInput = $page.url.searchParams.get('presearch') || '';
+		goto(`?${SEARCH_URL_QUERY}=${$page.url.searchParams.get(PRESEARCH_URL_QUERY) || ''}`);
 	});
+
+	$: searchInput = $page.url.searchParams.get(SEARCH_URL_QUERY) || '';
 
 	$: filteredInstalledApps =
 		$installedApps?.data
@@ -43,25 +44,25 @@
 
 		if (key === 'Tab') {
 			event.detail.preventDefault();
-			searchInput = autocomplete;
+			goto(`?${SEARCH_URL_QUERY}=${autocomplete}`);
 			return;
 		}
 
 		if (key === 'Escape' && searchInput !== '') {
 			event.detail.stopPropagation();
-			searchInput = '';
+			goto(`?${SEARCH_URL_QUERY}=`);
 		}
 	}
 </script>
 
-<MainHeader {handlePress} bind:searchInput type={APPS_VIEW} bind:autocomplete />
+<MainHeader {handlePress} bind:autocomplete />
 
 {#if $installedApps.isSuccess}
 	<ListOfApps
 		isSearchInputFilled={searchInput !== ''}
 		installedApps={filteredInstalledApps}
 		openAppCallback={() => {
-			searchInput = '';
+			goto(`?${SEARCH_URL_QUERY}=`);
 		}}
 	/>
 {/if}

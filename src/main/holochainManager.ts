@@ -4,6 +4,7 @@ import { AdminWebsocket } from '@holochain/client';
 import AdmZip from 'adm-zip';
 import * as childProcess from 'child_process';
 import crypto from 'crypto';
+import { app } from 'electron';
 import fs from 'fs';
 import getPort from 'get-port';
 import { type HappAndUiBytes } from 'hc-launcher-rust-utils';
@@ -122,9 +123,12 @@ export class HolochainManager {
         //   .replace('connectionUrl:', '')
         //   .trim()
         //   .replaceAll('"', '');
-        const adminWebsocket = await AdminWebsocket.connect(
-          new URL(`ws://127.0.0.1:${version.adminPort}`),
-        );
+        const adminWebsocket = await AdminWebsocket.connect({
+          url: new URL(`ws://localhost:${version.adminPort}`),
+          wsClientOptions: {
+            origin: 'holochain-launcher',
+          },
+        });
         console.log(
           `Connected to admin websocket of externally running conductor (port ${version.adminPort}).`,
         );
@@ -132,14 +136,15 @@ export class HolochainManager {
         console.log('Installed apps: ', installedApps);
         const appInterfaces = await adminWebsocket.listAppInterfaces();
         console.log('Got appInterfaces: ', appInterfaces);
-        let appPort;
-        if (appInterfaces.length > 0) {
-          appPort = appInterfaces[0];
-        } else {
-          const attachAppInterfaceResponse = await adminWebsocket.attachAppInterface({});
-          console.log('Attached app interface port: ', attachAppInterfaceResponse);
-          appPort = attachAppInterfaceResponse.port;
-        }
+
+        const attachAppInterfaceResponse = await adminWebsocket.attachAppInterface({
+          allowed_origins: app.isPackaged
+            ? 'app://-,webhapp://webhappwindow'
+            : 'http://localhost:5173,webhapp://webhappwindow',
+        });
+        console.log('Attached app interface port: ', attachAppInterfaceResponse);
+        const appPort = attachAppInterfaceResponse.port;
+
         return [
           new HolochainManager(
             undefined,
@@ -171,7 +176,14 @@ export class HolochainManager {
     const configExists = fs.existsSync(configPath);
 
     const overwriteConfig = () =>
-      rustUtils.overwriteConfig(adminPort, lairUrl, undefined, undefined, configPath);
+      rustUtils.overwriteConfig(
+        adminPort,
+        lairUrl,
+        undefined,
+        undefined,
+        configPath,
+        'holochain-launcher',
+      );
 
     const defaultConductorConfig = () =>
       rustUtils.defaultConductorConfig(
@@ -180,6 +192,7 @@ export class HolochainManager {
         bootstrapUrl || DEFAULT_BOOTSTRAP_SERVER,
         signalingUrl || DEFAULT_SIGNALING_SERVER,
         conductorEnvironmentPath,
+        'holochain-launcher',
       );
 
     const conductorConfig = configExists ? overwriteConfig() : defaultConductorConfig();
@@ -226,21 +239,25 @@ export class HolochainManager {
           );
         }
         if (line.includes('Conductor ready.')) {
-          const adminWebsocket = await AdminWebsocket.connect(
-            new URL(`ws://127.0.0.1:${adminPort}`),
-          );
+          const adminWebsocket = await AdminWebsocket.connect({
+            url: new URL(`ws://localhost:${adminPort}`),
+            wsClientOptions: {
+              origin: 'holochain-launcher',
+            },
+          });
           console.log('Connected to admin websocket.');
           const installedApps = await adminWebsocket.listApps({});
           const appInterfaces = await adminWebsocket.listAppInterfaces();
           console.log('Got appInterfaces: ', appInterfaces);
-          let appPort;
-          if (appInterfaces.length > 0) {
-            appPort = appInterfaces[0];
-          } else {
-            const attachAppInterfaceResponse = await adminWebsocket.attachAppInterface({});
-            console.log('Attached app interface port: ', attachAppInterfaceResponse);
-            appPort = attachAppInterfaceResponse.port;
-          }
+
+          const attachAppInterfaceResponse = await adminWebsocket.attachAppInterface({
+            allowed_origins: app.isPackaged
+              ? 'app://-,webhapp://webhappwindow'
+              : 'http://localhost:5173,webhapp://webhappwindow',
+          });
+          console.log('Attached app interface port: ', attachAppInterfaceResponse);
+          const appPort = attachAppInterfaceResponse.port;
+
           resolve([
             new HolochainManager(
               conductorHandle,

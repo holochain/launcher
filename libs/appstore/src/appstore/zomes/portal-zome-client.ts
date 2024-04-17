@@ -111,7 +111,7 @@ export class PortalZomeClient extends ZomeClient {
   }
 
   async tryWithHosts<T>(
-    fn: (host: AgentPubKey) => T,
+    fn: (host: AgentPubKey) => Promise<T>,
     dnaZomeFunction: DnaZomeFunction,
     pingTimeout: number = 3000,
   ): Promise<T> {

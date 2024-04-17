@@ -18,7 +18,7 @@
 
 	let publisherData: CreatePublisherFrontendInput = {
 		name: '',
-		location: { country: '', region: '', city: '' },
+		location: '',
 		website: { url: '', context: undefined },
 		icon: base64ToArrayBuffer(defaultIcon)
 	};
@@ -49,19 +49,9 @@
 			<IconInput bind:icon={publisherData.icon} {handleFileUpload} />
 			<InputModal bind:value={publisherData.name} id="publisherName" label={$i18n.t('name')} />
 			<InputModal
-				bind:value={publisherData.location.country}
-				id="publisherCountry"
-				label={$i18n.t('country')}
-			/>
-			<InputModal
-				bind:value={publisherData.location.region}
-				id="publisherRegion"
-				label={$i18n.t('region')}
-			/>
-			<InputModal
-				bind:value={publisherData.location.city}
-				id="publisherCity"
-				label={$i18n.t('city')}
+				bind:value={publisherData.location}
+				id="publisherLocation"
+				label={$i18n.t('location')}
 			/>
 			<InputModal
 				bind:value={publisherData.website.url}

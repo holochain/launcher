@@ -2,6 +2,7 @@
 	import { Avatar, getModalStore } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
+	import { PRESEARCH_URL_QUERY } from '$const';
 	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
 	import { APPS_VIEW } from '$shared/const';
@@ -33,7 +34,7 @@
 			{
 				onSuccess: () => {
 					$installedApps.refetch();
-					goto(`${APPS_VIEW}?presearch=${formData.appId}`);
+					goto(`${APPS_VIEW}?${PRESEARCH_URL_QUERY}=${formData.appId}`);
 					modalStore.close();
 				},
 				onError: (error) => {
