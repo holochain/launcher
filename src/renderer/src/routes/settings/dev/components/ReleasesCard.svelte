@@ -6,14 +6,15 @@
 	import AddNewHappVersion from '$modal/AddNewHappVersion.svelte';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
+	import type { ActionHash } from '@holochain/client';
 
-	export let apphubHrlTarget: Uint8Array;
+	export let apphubHrlTarget: ActionHash;
 
-	const { appVersionsQueryFunction } = createAppQueries();
+	const { appVersionsDevhubQueryFunction } = createAppQueries();
 
 	const modalStore = getModalStore();
 
-	$: appVersionsQuery = appVersionsQueryFunction(apphubHrlTarget);
+	$: appVersionsQuery = appVersionsDevhubQueryFunction(apphubHrlTarget);
 </script>
 
 {#if $appVersionsQuery.isSuccess}

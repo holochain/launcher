@@ -169,15 +169,7 @@ export type WebAppPackageVersionEntry = {
   metadata: any;
 };
 
-export type WebAppPackageVersionEntryInput = {
-  for_package: EntityId;
-  maintainer: any;
-  webapp: BundleAddr;
-  webapp_token: WebAppToken;
-  changelog: string | undefined;
-  source_code_revision_uri: string | undefined;
-  metadata: any;
-};
+export type WebAppPackageVersionEntryInput = WebAppPackageVersionEntry;
 
 export type CreateWebAppPackageVersionInput = {
   for_package: EntityId;

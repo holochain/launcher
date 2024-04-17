@@ -1,3 +1,4 @@
+import type { ActionHash } from '@holochain/client';
 // @ts-expect-error the @spartan-hc/bundles package has no typescript types
 import { Bundle } from '@spartan-hc/bundles';
 import { createMutation, createQuery, QueryClient } from '@tanstack/svelte-query';
@@ -11,10 +12,11 @@ import { sha256 } from 'js-sha256';
 import { get, type Writable } from 'svelte/store';
 
 import {
+	ALL_APP_VERSIONS_APPSTORE_QUERY_KEY,
+	ALL_APP_VERSIONS_DEVHUB_QUERY_KEY,
 	APP_STORE_HAPPS_QUERY_KEY,
 	APP_STORE_MY_HAPPS_QUERY_KEY,
 	APP_VERSIONS_DETAILS_QUERY_KEY,
-	MY_HAPPS_ALL_VERSIONS_QUERY_KEY,
 	PUBLISHERS_QUERY_KEY
 } from '$const';
 import { uint8ArrayToURIComponent } from '$helpers';
@@ -53,13 +55,31 @@ export const createPublishersQuery = () => {
 	});
 };
 
-export const createAppVersionsQuery = () => (apphub_hrl: Uint8Array) => {
+/**
+ * Gets the versions that have been published to app store
+ * @returns
+ */
+export const createAppVersionsAppstoreQuery = () => (appEntryId: ActionHash) => {
 	return createQuery({
-		queryKey: [MY_HAPPS_ALL_VERSIONS_QUERY_KEY, apphub_hrl],
+		queryKey: [ALL_APP_VERSIONS_APPSTORE_QUERY_KEY, appEntryId],
+		queryFn: async () => {
+			const appstoreClient = getAppStoreClientOrThrow();
+			return appstoreClient.appstoreZomeClient.getAppVersionsForApp(appEntryId);
+		}
+	});
+};
+
+/**
+ * Get the versions that have been created in devhub
+ * @returns
+ */
+export const createAppVersionsDevhubQuery = () => (webappPackageEntryId: ActionHash) => {
+	return createQuery({
+		queryKey: [ALL_APP_VERSIONS_DEVHUB_QUERY_KEY, webappPackageEntryId],
 		queryFn: async () => {
 			const devHubClient = getDevHubClientOrThrow();
 			const webappPackageEntryEntity =
-				await devHubClient.appHubZomeClient.getWebappPackageEntry(apphub_hrl);
+				await devHubClient.appHubZomeClient.getWebappPackageEntry(webappPackageEntryId);
 
 			const versions = await devHubClient.appHubZomeClient.getWebappPackageVersions(
 				webappPackageEntryEntity.id
@@ -187,6 +207,7 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 		mutationFn: async ({ title, subtitle, description, icon, bytes, version }: AppData) => {
 			const devHubClient = getDevHubClientOrThrow();
 			const appStoreClient = getAppStoreClientOrThrow();
+
 			// TODO validate that the bytes are of a valid webhapp format
 
 			// Compute hashes before saving to ensure to not save the bytes if hashing fails
@@ -270,12 +291,28 @@ export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 	return createMutation({
 		mutationFn: async ({ bytes, version, webappPackageId }: PublishNewVersionData) => {
 			const devHubClient = getDevHubClientOrThrow();
+			const appStoreClient = getAppStoreClientOrThrow();
 
-			const appEntry = await devHubClient.saveWebapp(bytes);
+			// TODO validate that the bytes are of a valid webhapp format
+
+			// Compute hashes before saving to ensure to not save the bytes if hashing fails
+			const webhappHash = sha256.hex(bytes);
+			const webappBundle = new Bundle(bytes, 'webhapp');
+			const uiHash = sha256.hex(webappBundle.ui());
+			const happHash = sha256.hex(
+				webappBundle.resources[webappBundle.manifest.happ_manifest.bundled]
+			);
+			const hashes: BundleHashes = {
+				hash: webhappHash,
+				ui_hash: uiHash,
+				happ_hash: happHash
+			};
+
+			const appEntryEntity = await devHubClient.saveWebapp(bytes);
 			const webappPackageVersion = await devHubClient.appHubZomeClient.createWebappPackageVersion({
 				for_package: webappPackageId,
 				version,
-				webapp: appEntry.address
+				webapp: appEntryEntity.address
 			});
 
 			await devHubClient.appHubZomeClient.createWebappPackageLinkToVersion({
@@ -283,7 +320,21 @@ export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 				webapp_package_id: webappPackageId,
 				webapp_package_version_addr: webappPackageVersion.action
 			});
+
+			await appStoreClient.appstoreZomeClient.createAppVersion({
+				version,
+				for_app: appEntryEntity.id,
+				apphub_hrl: {
+					dna: await devHubClient.apphubDnaHash(),
+					target: webappPackageVersion.id
+				},
+				apphub_hrl_hash: webappPackageVersion.address,
+				bundle_hashes: hashes
+			});
 		},
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: [MY_HAPPS_ALL_VERSIONS_QUERY_KEY] })
+		onSuccess: () =>
+			queryClient.invalidateQueries({
+				queryKey: [ALL_APP_VERSIONS_DEVHUB_QUERY_KEY, ALL_APP_VERSIONS_APPSTORE_QUERY_KEY]
+			})
 	});
 };

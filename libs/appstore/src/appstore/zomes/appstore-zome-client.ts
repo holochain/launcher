@@ -1,6 +1,16 @@
-import type { ActionHash, AgentPubKey, AppAgentCallZomeRequest } from '@holochain/client';
+import type {
+  ActionHash,
+  AgentPubKey,
+  AppAgentCallZomeRequest,
+  EntryHash,
+} from '@holochain/client';
 
-import type { Entity, UpdateEntityInput } from '../../devhub/types';
+import type {
+  Entity,
+  UpdateEntityInput,
+  WebAppEntry,
+  WebAppPackageVersionEntry,
+} from '../../devhub/types';
 import { ZomeClient } from '../../zome-client/zome-client';
 import type {
   AppEntry,
@@ -87,6 +97,17 @@ export class AppstoreZomeClient extends ZomeClient {
 
   async getAppVersionsForApp(actionHash: ActionHash): Promise<Array<Entity<AppVersionEntry>>> {
     return this.callZome('get_app_versions_for_app', actionHash);
+  }
+
+  //
+  // Hashing of entries
+  //
+  async hashWebappPackageVersionEntry(input: WebAppPackageVersionEntry): Promise<EntryHash> {
+    return this.callZome('hash_webapp_package_version_entry', input);
+  }
+
+  async hashWebappEntry(input: WebAppEntry): Promise<EntryHash> {
+    return this.callZome('hash_webapp_entry', input);
   }
 
   protected callZome(fn_name: string, payload: unknown) {
