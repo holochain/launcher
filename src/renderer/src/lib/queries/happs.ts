@@ -134,8 +134,7 @@ export const createAppStoreHappsQuery = () => {
 						title: app.content.title,
 						subtitle: app.content.subtitle,
 						icon,
-						id: app.id,
-						apphubHrlTarget: app.content.apphub_hrl.target
+						id: app.id
 					};
 				})
 			);
