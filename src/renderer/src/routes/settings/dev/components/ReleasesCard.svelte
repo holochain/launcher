@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { ActionHash } from '@holochain/client';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { Button } from '$components';
@@ -6,7 +7,6 @@
 	import AddNewHappVersion from '$modal/AddNewHappVersion.svelte';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
-	import type { ActionHash } from '@holochain/client';
 
 	export let apphubHrlTarget: ActionHash;
 

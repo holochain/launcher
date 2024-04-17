@@ -546,6 +546,11 @@ const router = t.router({
       await holochainManager.installHeadlessHapp(happAndUiBytes.happBytes, appId, networkSeed);
     }
   }),
+  getKandoBytes: t.procedure.query(async () => {
+    const filePath = path.join(DEFAULT_APPS_DIRECTORY, 'kando.webhapp');
+    const kandoBytesBuffer = fs.readFileSync(filePath);
+    return new Uint8Array(kandoBytesBuffer);
+  }),
   lairSetupRequired: t.procedure.query(() => {
     const holochainLairBinariesExist = checkHolochainLairBinariesExist();
 
