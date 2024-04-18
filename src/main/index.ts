@@ -534,6 +534,14 @@ const router = t.router({
       );
     }
   }),
+  isHappAvailableAndValid: t.procedure.input(z.string()).mutation(async (opts) => {
+    const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+    return holochainManager.isHappAvailableAndValid(opts.input);
+  }),
+  isUiAvailable: t.procedure.input(z.string()).mutation(async (opts) => {
+    const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+    return holochainManager.isUiAvailable(opts.input);
+  }),
   storeUiBytes: t.procedure.input(BytesSchema).mutation(async (opts) => {
     const { bytes } = opts.input;
     const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
