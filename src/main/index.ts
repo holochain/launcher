@@ -39,11 +39,13 @@ import type {
   WindowInfoRecord,
 } from '$shared/types';
 import {
+  BytesSchema,
   CHECK_INITIALIZED_KEYSTORE_ERROR,
   ExtendedAppInfoSchema,
   InstallDefaultAppSchema,
   InstallHappFromPathSchema,
-  InstallHappInputSchema,
+  InstallHappOrWebhappFromBytesSchema,
+  InstallWebhappFromHashesSchema,
   LOADING_PROGRESS_UPDATE,
   MAIN_SCREEN_ROUTE,
   MainScreenRouteSchema,
@@ -429,7 +431,7 @@ async function handleLaunch(password: string) {
         LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, progressUpdate);
         const happPath = path.join(DEFAULT_APPS_DIRECTORY, name);
         const happBytes = fs.readFileSync(happPath);
-        await holochainManager.installHeadlessHapp(
+        await holochainManager.installHeadlessHappFromBytes(
           Array.from(happBytes),
           id,
           defaultAppsNetworkSeed,
@@ -523,24 +525,59 @@ const router = t.router({
     const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
 
     if (happAndUiBytes.uiBytes) {
-      await holochainManager.installWebHapp(happAndUiBytes, appId, networkSeed);
+      await holochainManager.installWebHappFromBytes(happAndUiBytes, appId, networkSeed);
     } else {
-      await holochainManager.installHeadlessHapp(happAndUiBytes.happBytes, appId, networkSeed);
+      await holochainManager.installHeadlessHappFromBytes(
+        happAndUiBytes.happBytes,
+        appId,
+        networkSeed,
+      );
     }
   }),
-  installHappFromBytes: t.procedure.input(InstallHappInputSchema).mutation(async (opts) => {
-    const { bytes, appId, networkSeed } = opts.input;
-
-    const happAndUiBytes = await rustUtils.decodeHappOrWebhapp(Array.from(bytes));
-
+  isHappAvailableAndValid: t.procedure.input(z.string()).mutation(async (opts) => {
     const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
-
-    if (happAndUiBytes.uiBytes) {
-      await holochainManager.installWebHapp(happAndUiBytes, appId, networkSeed);
-    } else {
-      await holochainManager.installHeadlessHapp(happAndUiBytes.happBytes, appId, networkSeed);
-    }
+    return holochainManager.isHappAvailableAndValid(opts.input);
   }),
+  isUiAvailable: t.procedure.input(z.string()).mutation(async (opts) => {
+    const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+    return holochainManager.isUiAvailable(opts.input);
+  }),
+  storeUiBytes: t.procedure.input(BytesSchema).mutation(async (opts) => {
+    const { bytes } = opts.input;
+    const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+    return holochainManager.storeUiIfNecessary(Array.from(bytes));
+  }),
+  storeHappBytes: t.procedure.input(BytesSchema).mutation(async (opts) => {
+    const { bytes } = opts.input;
+    const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+    return holochainManager.storeHapp(Array.from(bytes));
+  }),
+  installWebhappFromHashes: t.procedure
+    .input(InstallWebhappFromHashesSchema) // TODO: need metadata input as well here like name and action hash of app and app version in app store
+    .mutation(async (opts) => {
+      const { happSha256, uiZipSha256, appId, networkSeed } = opts.input;
+      const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+      await holochainManager.installWebhappFromHashes(happSha256, uiZipSha256, appId, networkSeed);
+    }),
+  installWebhappFromBytes: t.procedure
+    .input(InstallHappOrWebhappFromBytesSchema)
+    .mutation(async (opts) => {
+      const { bytes, appId, networkSeed } = opts.input;
+
+      const happAndUiBytes = await rustUtils.decodeHappOrWebhapp(Array.from(bytes));
+
+      const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+
+      if (happAndUiBytes.uiBytes) {
+        await holochainManager.installWebHappFromBytes(happAndUiBytes, appId, networkSeed);
+      } else {
+        await holochainManager.installHeadlessHappFromBytes(
+          happAndUiBytes.happBytes,
+          appId,
+          networkSeed,
+        );
+      }
+    }),
   installDefaultApp: t.procedure.input(InstallDefaultAppSchema).mutation(async (opts) => {
     const { name, appId, networkSeed } = opts.input;
 
@@ -551,9 +588,13 @@ const router = t.router({
     const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
 
     if (happAndUiBytes.uiBytes) {
-      await holochainManager.installWebHapp(happAndUiBytes, appId, networkSeed);
+      await holochainManager.installWebHappFromBytes(happAndUiBytes, appId, networkSeed);
     } else {
-      await holochainManager.installHeadlessHapp(happAndUiBytes.happBytes, appId, networkSeed);
+      await holochainManager.installHeadlessHappFromBytes(
+        happAndUiBytes.happBytes,
+        appId,
+        networkSeed,
+      );
     }
   }),
   getKandoBytes: t.procedure.query(async () => {

@@ -278,8 +278,7 @@ export class HolochainManager {
     });
   }
 
-  // TODO Add option to install happ without UI
-  async installWebHapp(
+  async installWebHappFromBytes(
     happAndUiBytes: HappAndUiBytes,
     appId: string,
     networkSeed?: string,
@@ -287,85 +286,19 @@ export class HolochainManager {
   ) {
     if (!happAndUiBytes.uiBytes) throw new Error('UI bytes undefined.');
 
-    // write [sha256].happ to happs directory
-    const happHasher = crypto.createHash('sha256');
-    const happSha256 = happHasher.update(Buffer.from(happAndUiBytes.happBytes)).digest('hex');
-    const happFilePath = path.join(this.fs.happsDir(this.holochainDataRoot), `${happSha256}.happ`);
-    writeFile(happFilePath, Buffer.from(happAndUiBytes.happBytes));
+    const happSha256 = this.storeHapp(happAndUiBytes.happBytes);
+    const uiZipSha256 = this.storeUiIfNecessary(happAndUiBytes.uiBytes);
 
-    // compute UI hash
-    const uiZipHasher = crypto.createHash('sha256');
-    const uiZipSha256 = uiZipHasher.update(Buffer.from(happAndUiBytes.uiBytes)).digest('hex');
-
-    const uiDir = path.join(this.fs.uisDir(this.holochainDataRoot), uiZipSha256);
-    // here we assume that if the uiDir exists, the hashes.json exists as well.
-    if (!fs.existsSync(path.join(uiDir, 'assets'))) {
-      fs.mkdirSync(uiDir, { recursive: true });
-
-      const hashes: Record<string, string> = {};
-      const zip = new AdmZip(Buffer.from(happAndUiBytes.uiBytes));
-      zip.getEntries().forEach((entry) => {
-        // console.log(entry.entryName);
-        const hasher = crypto.createHash('sha256');
-        const data = entry.getData();
-        hasher.update(data);
-        const hash = hasher.digest('hex');
-        hashes[entry.entryName] = hash;
-      });
-
-      this.integrityChecker.storeToSignedJSON(path.join(uiDir, 'hashes.json'), hashes);
-      zip.extractAllTo(path.join(uiDir, 'assets'));
-    }
-
-    // install happ file into conductor
-    const pubKey = await this.adminWebsocket.generateAgentPubKey();
-    const appInfo = await this.adminWebsocket.installApp({
-      agent_key: pubKey,
-      installed_app_id: appId,
-      membrane_proofs: membrane_proofs ? membrane_proofs : {},
-      path: happFilePath,
-      network_seed: networkSeed,
-    });
-
-    // store app metadata to installed app directory
-    const metaData: AppMetadata<AppMetadataV1> = {
-      formatVersion: 1,
-      data: {
-        type: 'webhapp',
-        happ: {
-          sha256: happSha256,
-        },
-        ui: {
-          location: {
-            type: 'filesystem',
-            sha256: uiZipSha256,
-          },
-        },
-      },
-    };
-
-    if (!fs.existsSync(this.fs.appMetadataDir(appId, this.holochainDataRoot))) {
-      fs.mkdirSync(this.fs.appMetadataDir(appId, this.holochainDataRoot), { recursive: true });
-    }
-
-    // TODO potentially back up existing one to allow for undoing updates
-    this.integrityChecker.storeToSignedJSON(
-      path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json'),
-      metaData,
+    await this.installWebhappFromHashes(
+      happSha256,
+      uiZipSha256,
+      appId,
+      networkSeed,
+      membrane_proofs,
     );
-
-    await this.adminWebsocket.enableApp({ installed_app_id: appId });
-    const installedApps = await this.adminWebsocket.listApps({});
-    // console.log('Installed apps: ', installedApps);
-    this.installedApps = installedApps;
-    this.launcherEmitter.emit(APP_INSTALLED, {
-      version: this.version,
-      holochainDataRoot: this.holochainDataRoot,
-      data: appInfo,
-    });
   }
 
-  async installHeadlessHapp(
+  async installHeadlessHappFromBytes(
     happBytes: Array<number>,
     appId: string,
     networkSeed?: string,
@@ -407,7 +340,7 @@ export class HolochainManager {
     );
 
     await this.adminWebsocket.enableApp({ installed_app_id: appId });
-    console.log('Insalled app.');
+    console.log('Installed app.');
     const installedApps = await this.adminWebsocket.listApps({});
     // console.log('Installed apps: ', installedApps);
     this.installedApps = installedApps;
@@ -417,6 +350,130 @@ export class HolochainManager {
       data: appInfo,
     });
   }
+
+  async installWebhappFromHashes(
+    happSha256: string,
+    uiZipSha256: string,
+    appId: string,
+    networkSeed?: string,
+    membrane_proofs?: { [key: string]: MembraneProof },
+  ): Promise<void> {
+    if (!this.isUiAvailable(uiZipSha256)) {
+      throw new Error('UI not found for this hash. UI needs to be stored from bytes first.');
+    }
+    if (!this.isHappAvailableAndValid(happSha256)) {
+      throw new Error(
+        'happ file not found for this hash or its sha256 is invalid. happ file needs to be stored from bytes first.',
+      );
+    }
+
+    // install happ into conductor
+    const pubKey = await this.adminWebsocket.generateAgentPubKey();
+    const appInfo = await this.adminWebsocket.installApp({
+      agent_key: pubKey,
+      installed_app_id: appId,
+      membrane_proofs: membrane_proofs ? membrane_proofs : {},
+      path: this.happFilePath(happSha256),
+      network_seed: networkSeed,
+    });
+
+    // store app metadata to installed app directory
+    const metaData: AppMetadata<AppMetadataV1> = {
+      formatVersion: 1,
+      data: {
+        type: 'webhapp',
+        happ: {
+          sha256: happSha256,
+        },
+        ui: {
+          location: {
+            type: 'filesystem',
+            sha256: uiZipSha256,
+          },
+        },
+      },
+    };
+
+    if (!fs.existsSync(this.fs.appMetadataDir(appId, this.holochainDataRoot))) {
+      fs.mkdirSync(this.fs.appMetadataDir(appId, this.holochainDataRoot), { recursive: true });
+    }
+
+    // TODO potentially back up existing one to allow for undoing updates
+    this.integrityChecker.storeToSignedJSON(
+      path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json'),
+      metaData,
+    );
+
+    await this.adminWebsocket.enableApp({ installed_app_id: appId });
+    const installedApps = await this.adminWebsocket.listApps({});
+    // console.log('Installed apps: ', installedApps);
+    this.installedApps = installedApps;
+    this.launcherEmitter.emit(APP_INSTALLED, {
+      version: this.version,
+      holochainDataRoot: this.holochainDataRoot,
+      data: appInfo,
+    });
+  }
+
+  /**
+   * Stores happ bytes to a [sha256].happ file in the happs directory
+   * @param happBytes
+   * @returns
+   */
+  storeHapp(happBytes: Array<number>): string {
+    const happHasher = crypto.createHash('sha256');
+    const happSha256 = happHasher.update(Buffer.from(happBytes)).digest('hex');
+    const happFilePath = this.happFilePath(happSha256);
+    writeFile(happFilePath, Buffer.from(happBytes));
+    return happSha256;
+  }
+
+  /**
+   * Extracts and stores ui.zip bytes to a directory named after the sha256 of the bytes
+   * if that directory does not exist yet.
+   *
+   * @param uiBytes
+   * @returns
+   */
+  storeUiIfNecessary(uiBytes: Array<number>): string {
+    // compute UI hash
+    const uiZipHasher = crypto.createHash('sha256');
+    const uiZipSha256 = uiZipHasher.update(Buffer.from(uiBytes)).digest('hex');
+
+    const uiDir = path.join(this.fs.uisDir(this.holochainDataRoot), uiZipSha256);
+    // here we assume that if the uiDir exists, the hashes.json exists as well.
+    if (!fs.existsSync(path.join(uiDir, 'assets'))) {
+      fs.mkdirSync(uiDir, { recursive: true });
+
+      const hashes: Record<string, string> = {};
+      const zip = new AdmZip(Buffer.from(uiBytes));
+      zip.getEntries().forEach((entry) => {
+        // console.log(entry.entryName);
+        const hasher = crypto.createHash('sha256');
+        const data = entry.getData();
+        hasher.update(data);
+        const hash = hasher.digest('hex');
+        hashes[entry.entryName] = hash;
+      });
+
+      this.integrityChecker.storeToSignedJSON(path.join(uiDir, 'hashes.json'), hashes);
+      zip.extractAllTo(path.join(uiDir, 'assets'));
+    }
+    return uiZipSha256;
+  }
+
+  happFilePath(happSha256: string): string {
+    return path.join(this.fs.happsDir(this.holochainDataRoot), `${happSha256}.happ`);
+  }
+
+  // /**
+  //  * Updates the UI of an existing app
+  //  */
+  // async updateUi(
+  //   appId: string,
+  //   sha256Ui: string,
+  //   appstoreAppVersionEntryHash: ActionHash,
+  // ): Promise<void> {}
 
   async uninstallApp(appId: string) {
     await this.adminWebsocket.uninstallApp({ installed_app_id: appId });
@@ -430,6 +487,45 @@ export class HolochainManager {
     // other app instance anymore. This would mean however that happ and UI would need
     // to be fetched over the network again if the same happ and UI shall be installed
     // at a later time
+  }
+
+  /**
+   * Checks whether a UI with this hash is already stored on disk. If yes, it does not need
+   * to be fetched from devhub
+   *
+   * @param sha256Ui sha256 hash of the zipped UI assets
+   */
+  isUiAvailable(uiZipSha256: string): boolean {
+    const uiDir = path.join(this.fs.uisDir(this.holochainDataRoot), uiZipSha256);
+    // here we assume that if the uiDir exists, the hashes.json exists as well.
+    return fs.existsSync(path.join(uiDir, 'assets'));
+  }
+
+  /**
+   * Checks whether a .happ file with this hash is already stored on disk. If yes, it does not
+   * need to be fetched from devhub
+   *
+   * @param happSha256 sha256 of the .happ file
+   */
+  isHappAvailableAndValid(happSha256: string): boolean {
+    const happFilePath = this.happFilePath(happSha256);
+    if (!fs.existsSync(happFilePath)) {
+      return false;
+    }
+    const happBytes = fs.readFileSync(happFilePath);
+    const happHasher = crypto.createHash('sha256');
+    const happSha256Actual = happHasher.update(Buffer.from(happBytes)).digest('hex');
+    if (happSha256Actual !== happSha256) {
+      this.launcherEmitter.emit(
+        'launcher-error',
+        `Found corrupted .happ file on disk. Expected sha256: ${happSha256}. Actual sha256: ${happSha256Actual}. The corrupted file will likely get overwritten with a valid one.`,
+      );
+      console.warn(
+        `Found corrupted .happ file on disk. Expected sha256: ${happSha256}. Actual sha256: ${happSha256Actual}`,
+      );
+      return false;
+    }
+    return true;
   }
 }
 
