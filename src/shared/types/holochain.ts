@@ -73,7 +73,7 @@ export const InstallDefaultAppSchema = CommonAppSchema.extend({
 
 export type InstallDefaultApp = z.infer<typeof InstallDefaultAppSchema>;
 
-export const InstallHappInputSchema = CommonAppSchema.extend({
+export const InstallHappOrWebhappFromBytesSchema = CommonAppSchema.extend({
   bytes: z.instanceof(Uint8Array),
 });
 
@@ -81,7 +81,16 @@ export const InstallHappFromPathSchema = CommonAppSchema.extend({
   filePath: z.string(),
 });
 
-export type InstallHappInput = z.infer<typeof InstallHappInputSchema>;
+export const InstallWebhappFromHashesSchema = CommonAppSchema.extend({
+  happSha256: z.string(),
+  uiZipSha256: z.string(),
+});
+
+export type InstallHappOrWebhappInput = z.infer<typeof InstallHappOrWebhappFromBytesSchema>;
+
+export const BytesSchema = z.object({
+  bytes: z.instanceof(Uint8Array),
+});
 
 const HolochainDataRootSchema = z.union([
   z.object({
