@@ -61,37 +61,6 @@ export const AppInfoSchema = z.object({
   status: InstalledAppInfoStatusSchema,
 });
 
-export const CommonAppSchema = z.object({
-  appId: z.string().min(1),
-  networkSeed: z.string(),
-  // TODO add membrane proofs here
-});
-
-export const InstallDefaultAppSchema = CommonAppSchema.extend({
-  name: z.string(), // name of the default app file (e.g. kando.webhapp or devhub.happ)
-});
-
-export type InstallDefaultApp = z.infer<typeof InstallDefaultAppSchema>;
-
-export const InstallHappOrWebhappFromBytesSchema = CommonAppSchema.extend({
-  bytes: z.instanceof(Uint8Array),
-});
-
-export const InstallHappFromPathSchema = CommonAppSchema.extend({
-  filePath: z.string(),
-});
-
-export const InstallWebhappFromHashesSchema = CommonAppSchema.extend({
-  happSha256: z.string(),
-  uiZipSha256: z.string(),
-});
-
-export type InstallHappOrWebhappInput = z.infer<typeof InstallHappOrWebhappFromBytesSchema>;
-
-export const BytesSchema = z.object({
-  bytes: z.instanceof(Uint8Array),
-});
-
 const HolochainDataRootSchema = z.union([
   z.object({
     type: z.literal('partition'),

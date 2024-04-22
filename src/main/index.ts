@@ -33,6 +33,7 @@ import {
   WINDOW_SIZE_LARGE,
 } from '$shared/const';
 import type {
+  DistributionInfoV1,
   HolochainDataRoot,
   HolochainPartition,
   Screen,
@@ -56,7 +57,7 @@ import {
 
 import { checkHolochainLairBinariesExist } from './binaries';
 import { validateArgs } from './cli';
-import { APPS_TO_INSTALL } from './const';
+import { DEFAULT_APPS_TO_INSTALL } from './const';
 import { LauncherFileSystem } from './filesystem';
 import { HolochainManager } from './holochainManager';
 import { IntegrityChecker } from './integrityChecker';
@@ -423,7 +424,7 @@ async function handleLaunch(password: string) {
     : `launcher-dev-${os.hostname()}`;
 
   await Promise.all(
-    APPS_TO_INSTALL.map(async ({ id, name, progressUpdate }) => {
+    DEFAULT_APPS_TO_INSTALL.map(async ({ id, name, progressUpdate }) => {
       const isAppInstalled = holochainManager.installedApps.some(
         (app) => app.installed_app_id === id,
       );
@@ -434,6 +435,7 @@ async function handleLaunch(password: string) {
         await holochainManager.installHeadlessHappFromBytes(
           Array.from(happBytes),
           id,
+          { type: 'default-app' },
           defaultAppsNetworkSeed,
         );
       }
@@ -524,12 +526,22 @@ const router = t.router({
 
     const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
 
+    const distributionInfo: DistributionInfoV1 = {
+      type: 'filesystem',
+    };
+
     if (happAndUiBytes.uiBytes) {
-      await holochainManager.installWebHappFromBytes(happAndUiBytes, appId, networkSeed);
+      await holochainManager.installWebHappFromBytes(
+        happAndUiBytes,
+        appId,
+        distributionInfo,
+        networkSeed,
+      );
     } else {
       await holochainManager.installHeadlessHappFromBytes(
         happAndUiBytes.happBytes,
         appId,
+        distributionInfo,
         networkSeed,
       );
     }
@@ -555,25 +567,37 @@ const router = t.router({
   installWebhappFromHashes: t.procedure
     .input(InstallWebhappFromHashesSchema) // TODO: need metadata input as well here like name and action hash of app and app version in app store
     .mutation(async (opts) => {
-      const { happSha256, uiZipSha256, appId, networkSeed } = opts.input;
+      const { happSha256, uiZipSha256, appId, distributionInfo, networkSeed } = opts.input;
       const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
-      await holochainManager.installWebhappFromHashes(happSha256, uiZipSha256, appId, networkSeed);
+      await holochainManager.installWebhappFromHashes(
+        happSha256,
+        uiZipSha256,
+        appId,
+        distributionInfo,
+        networkSeed,
+      );
     }),
   installWebhappFromBytes: t.procedure
     .input(InstallHappOrWebhappFromBytesSchema)
     .mutation(async (opts) => {
-      const { bytes, appId, networkSeed } = opts.input;
+      const { bytes, appId, distributionInfo, networkSeed } = opts.input;
 
       const happAndUiBytes = await rustUtils.decodeHappOrWebhapp(Array.from(bytes));
 
       const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
 
       if (happAndUiBytes.uiBytes) {
-        await holochainManager.installWebHappFromBytes(happAndUiBytes, appId, networkSeed);
+        await holochainManager.installWebHappFromBytes(
+          happAndUiBytes,
+          appId,
+          distributionInfo,
+          networkSeed,
+        );
       } else {
         await holochainManager.installHeadlessHappFromBytes(
           happAndUiBytes.happBytes,
           appId,
+          distributionInfo,
           networkSeed,
         );
       }
@@ -587,12 +611,22 @@ const router = t.router({
 
     const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
 
+    const distributionInfo: DistributionInfoV1 = {
+      type: 'default-app',
+    };
+
     if (happAndUiBytes.uiBytes) {
-      await holochainManager.installWebHappFromBytes(happAndUiBytes, appId, networkSeed);
+      await holochainManager.installWebHappFromBytes(
+        happAndUiBytes,
+        appId,
+        distributionInfo,
+        networkSeed,
+      );
     } else {
       await holochainManager.installHeadlessHappFromBytes(
         happAndUiBytes.happBytes,
         appId,
+        distributionInfo,
         networkSeed,
       );
     }

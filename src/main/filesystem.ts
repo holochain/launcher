@@ -2,7 +2,7 @@ import type { App } from 'electron';
 import fs from 'fs';
 import path from 'path';
 
-import type { HolochainDataRoot } from '$shared/types';
+import type { DistributionInfoV1, HolochainDataRoot } from '$shared/types';
 
 import { type IntegrityChecker } from './integrityChecker';
 import { breakingVersion } from './utils';
@@ -29,6 +29,14 @@ export type AppMetadataV1 = {
           port: number;
         };
   };
+  /**
+   * Alias for that app in case user wants to change the name of this app displayed after installation
+   */
+  alias?: string;
+  /**
+   * Info about where the app has been installed from
+   */
+  distributionInfo: DistributionInfoV1;
 };
 
 export type AppMetadata<T> = {

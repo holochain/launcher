@@ -12,7 +12,12 @@ import * as rustUtils from 'hc-launcher-rust-utils';
 import path from 'path';
 import split from 'split';
 
-import type { HolochainDataRoot, HolochainPartition, HolochainVersion } from '$shared/types';
+import type {
+  DistributionInfoV1,
+  HolochainDataRoot,
+  HolochainPartition,
+  HolochainVersion,
+} from '$shared/types';
 import { APP_INSTALLED, HOLOCHAIN_ERROR, HOLOCHAIN_LOG } from '$shared/types';
 
 import { DEFAULT_HOLOCHAIN_VERSION, HOLOCHAIN_BINARIES } from './binaries';
@@ -281,6 +286,7 @@ export class HolochainManager {
   async installWebHappFromBytes(
     happAndUiBytes: HappAndUiBytes,
     appId: string,
+    distributionInfo: DistributionInfoV1,
     networkSeed?: string,
     membrane_proofs?: { [key: string]: MembraneProof },
   ) {
@@ -293,6 +299,7 @@ export class HolochainManager {
       happSha256,
       uiZipSha256,
       appId,
+      distributionInfo,
       networkSeed,
       membrane_proofs,
     );
@@ -301,6 +308,7 @@ export class HolochainManager {
   async installHeadlessHappFromBytes(
     happBytes: Array<number>,
     appId: string,
+    distributionInfo: DistributionInfoV1,
     networkSeed?: string,
     membrane_proofs?: { [key: string]: MembraneProof },
   ) {
@@ -327,6 +335,7 @@ export class HolochainManager {
         happ: {
           sha256: happSha256,
         },
+        distributionInfo,
       },
     };
 
@@ -355,6 +364,7 @@ export class HolochainManager {
     happSha256: string,
     uiZipSha256: string,
     appId: string,
+    distributionInfo: DistributionInfoV1,
     networkSeed?: string,
     membrane_proofs?: { [key: string]: MembraneProof },
   ): Promise<void> {
@@ -391,6 +401,7 @@ export class HolochainManager {
             sha256: uiZipSha256,
           },
         },
+        distributionInfo,
       },
     };
 
