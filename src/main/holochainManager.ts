@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import type { AppInfo, MembraneProof } from '@holochain/client';
+import type { ActionHashB64, AppInfo, MembraneProof } from '@holochain/client';
 import { AdminWebsocket } from '@holochain/client';
 import AdmZip from 'adm-zip';
 import * as childProcess from 'child_process';
@@ -424,6 +424,80 @@ export class HolochainManager {
       holochainDataRoot: this.holochainDataRoot,
       data: appInfo,
     });
+  }
+
+  async updateUiFromHash(
+    uiZipSha256: string,
+    appId: string,
+    appVersionActionHash?: ActionHashB64,
+  ): Promise<void> {
+    if (!this.isUiAvailable(uiZipSha256)) {
+      throw new Error('UI not found for this hash. UI needs to be stored from bytes first.');
+    }
+
+    if (!fs.existsSync(this.fs.appMetadataDir(appId, this.holochainDataRoot))) {
+      fs.mkdirSync(this.fs.appMetadataDir(appId, this.holochainDataRoot), { recursive: true });
+    }
+
+    const metadata: AppMetadata<AppMetadataV1> = this.integrityChecker.readSignedJSON(
+      path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json'),
+    );
+
+    if (metadata.data.type !== 'webhapp') throw new Error('Headless apps cannot update a UI.');
+
+    switch (metadata.data.distributionInfo.type) {
+      case 'default-app':
+      case 'filesystem':
+        if (appVersionActionHash)
+          throw Error(
+            'Passing an appVersionActionHash is only allowed for apps initially installed from appstore.',
+          );
+        // back up previous metadata to allow undoing updates
+        this.integrityChecker.storeToSignedJSON(
+          path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json.previous'),
+          metadata,
+        );
+
+        metadata.data.ui = {
+          location: {
+            type: 'filesystem',
+            sha256: uiZipSha256,
+          },
+        };
+
+        this.integrityChecker.storeToSignedJSON(
+          path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json'),
+          metadata,
+        );
+        break;
+      case 'appstore':
+        if (!appVersionActionHash)
+          throw new Error(
+            'When updating the UI of an app installed via appstore, the appVersionActionHash field is required.',
+          );
+        // back up previous metadata to allow undoing updates
+        this.integrityChecker.storeToSignedJSON(
+          path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json.previous'),
+          metadata,
+        );
+
+        metadata.data.ui = {
+          location: {
+            type: 'filesystem',
+            sha256: uiZipSha256,
+          },
+        };
+
+        metadata.data.distributionInfo.appVersionActionHash = appVersionActionHash;
+
+        this.integrityChecker.storeToSignedJSON(
+          path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json'),
+          metadata,
+        );
+        break;
+      default:
+        throw new Error('Invalid existing distribution info type.');
+    }
   }
 
   /**

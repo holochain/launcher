@@ -86,3 +86,9 @@ export const InstallWebhappFromHashesSchema = CommonAppSchema.extend({
   uiZipSha256: z.string(),
   distributionInfo: DistributionInfoV1Schema,
 });
+
+export const UpdateUiFromHashSchema = z.object({
+  uiZipSha256: z.string(),
+  appId: z.string(),
+  appVersionActionHash: z.optional(z.string({ description: 'ActionHashB64' })),
+});

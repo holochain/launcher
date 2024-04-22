@@ -52,6 +52,7 @@ import {
   MainScreenRouteSchema,
   MISSING_BINARIES,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
+  UpdateUiFromHashSchema,
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '$shared/types';
 
@@ -630,6 +631,11 @@ const router = t.router({
         networkSeed,
       );
     }
+  }),
+  updateUiFromHash: t.procedure.input(UpdateUiFromHashSchema).mutation((opts) => {
+    const { uiZipSha256, appId, appVersionActionHash } = opts.input;
+    const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+    holochainManager.updateUiFromHash(uiZipSha256, appId, appVersionActionHash);
   }),
   getKandoBytes: t.procedure.query(async () => {
     const filePath = path.join(DEFAULT_APPS_DIRECTORY, 'kando.webhapp');
