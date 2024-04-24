@@ -1,7 +1,9 @@
 export { default as AddTypeModalFooter } from './AddTypeModalFooter.svelte';
+export { default as AppDetailsPanel } from './AppDetailsPanel.svelte';
 export { default as Button } from './Button.svelte';
 export { default as CenterProgressRadial } from './CenterProgressRadial.svelte';
 export { default as IconButton } from './IconButton.svelte';
 export { default as IconInput } from './IconInput.svelte';
 export { default as Input } from './Input.svelte';
 export { default as InputWithLabel } from './InputWithLabel.svelte';
+export { default as TopBar } from './TopBar.svelte';

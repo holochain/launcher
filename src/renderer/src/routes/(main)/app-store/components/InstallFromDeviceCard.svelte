@@ -11,7 +11,7 @@
 	const modal = createModalParams(MODAL_INSTALL_FROM_FILE);
 </script>
 
-<div class="card flex items-center p-4 dark:variant-soft-warning">
+<div class="card flex items-center p-4 dark:variant-soft-tertiary">
 	<Avatar
 		border="border-4 border-white border-opacity-20"
 		fontSize={250}

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { ADD_APP_PAGE, DEV_PAGE, VIEW } from '$const';
-	import { getRawQueryParam, uint8ArrayToURIComponent } from '$helpers';
+	import { DEV_PAGE } from '$const';
+	import { uint8ArrayToURIComponent } from '$helpers';
 	import { Plus } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
@@ -11,15 +11,15 @@
 
 	const { appStoreMyHappsQuery } = createAppQueries();
 
-	const selectView = (view: string) => goto(`/${DEV_PAGE}${view ? `?${VIEW}=${view}` : ''}`);
+	const selectView = (view: string) => goto(`/${DEV_PAGE}/${view}`);
 
-	$: view = getRawQueryParam($page.url.href, VIEW);
+	$: view = $page.params.slug;
 </script>
 
 <MenuEntry
 	background={view ? 'bg-white/10' : 'bg-app-button-gradient'}
 	name={$i18n.t('addhApp')}
-	onClick={() => goto(`/${DEV_PAGE}/${ADD_APP_PAGE}`)}
+	onClick={() => goto(`/${DEV_PAGE}`)}
 	isSelected
 >
 	<div slot="leading" class="pr-2">

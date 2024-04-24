@@ -31,17 +31,6 @@ export const validateApp = (app: unknown): app is ExtendedAppInfo =>
 export const uint8ArrayToURIComponent = (bytes: Uint8Array) =>
 	encodeURIComponent(encodeHashToBase64(bytes));
 
-export const getRawQueryParam = (url: string, param: string): string | null => {
-	const queryString = url.split('?')[1];
-	if (!queryString) return null;
-
-	return (
-		queryString
-			.split('&')
-			.map((pair) => pair.split('='))
-			.find(([key]) => key === param)?.[1] || null
-	);
-};
 export const base64ToArrayBuffer = (base64: string) => {
 	const binaryString = window.atob(base64);
 	return new Uint8Array([...binaryString].map((char) => char.charCodeAt(0)));

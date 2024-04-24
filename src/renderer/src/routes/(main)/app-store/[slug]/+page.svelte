@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { uint8ArrayToURIComponent } from '$helpers';
+	import { AppDetailsPanel } from '$components';
+	import { createImageUrl, uint8ArrayToURIComponent } from '$helpers';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
 
@@ -13,23 +14,17 @@
 </script>
 
 {#if app}
-	<div class="flex flex-col p-4">
-		<h2 class="text-lg font-bold">{app.title}</h2>
-		<span>{`${$i18n.t('releases')}:`}</span>
-		{#if $appVersionsDetailsQuery?.data}
-			{#each $appVersionsDetailsQuery.data as versionEntry}
-				<div class="flex items-center pt-2">
-					<h4 class="font-semibold">{versionEntry.content.version}</h4>
-				</div>
-			{/each}
-		{/if}
-	</div>
+	<AppDetailsPanel
+		imageUrl={createImageUrl(app.icon)}
+		title={app.title}
+		buttons={[$i18n.t('Version History')]}
+	/>
 {/if}
 
-{#if $appVersionsDetailsQuery && $appVersionsDetailsQuery.isError}
-	<div class="mt-8">
-		<div class="card flex flex-col p-4">
-			<span class="text-error">{$appVersionsDetailsQuery.error?.message}</span>
+{#if $appVersionsDetailsQuery?.data}
+	{#each $appVersionsDetailsQuery.data as versionEntry}
+		<div class="flex items-center pl-8 pt-2">
+			<h4 class="font-semibold">{versionEntry.content.version}</h4>
 		</div>
-	</div>
+	{/each}
 {/if}

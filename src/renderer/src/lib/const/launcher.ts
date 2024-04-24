@@ -8,7 +8,6 @@ export const MODAL_ADD_NEW_HAPP_VERSION = 'modalAddNewHappVersion';
 export const SELECTED_ICON_STYLE = 'fill-light-primary dark:fill-white';
 
 export const DEV_PAGE = `${SETTINGS_SCREEN}/dev`;
-export const ADD_APP_PAGE = 'add-app';
 
 export const SEARCH_URL_QUERY = 'search';
 export const PRESEARCH_URL_QUERY = 'presearch';

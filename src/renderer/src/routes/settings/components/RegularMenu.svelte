@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { SYSTEM_INFORMATION, SYSTEM_SETTINGS, VIEW } from '$const';
+	import { SYSTEM_INFORMATION, SYSTEM_SETTINGS } from '$const';
 	import { validateApp } from '$helpers';
 	import { i18n, trpc } from '$services';
 	import { SETTINGS_SCREEN } from '$shared/const';
@@ -12,20 +12,17 @@
 
 	const installedApps = client.getInstalledApps.createQuery();
 
-	const selectView = (view: string) => goto(`/${SETTINGS_SCREEN}${view ? `?${VIEW}=${view}` : ''}`);
+	const selectView = (view: string) => goto(`/${SETTINGS_SCREEN}/${view}`);
 
-	$: view = $page.url.searchParams.get(VIEW);
-
-	const systemViews = [SYSTEM_INFORMATION, SYSTEM_SETTINGS];
+	$: view = $page.params.slug;
 </script>
 
-{#each systemViews as systemView}
-	<MenuEntry
-		name={$i18n.t(systemView)}
-		onClick={() => selectView(systemView)}
-		isSelected={view === systemView || (!view && systemView === SYSTEM_INFORMATION)}
-	/>
-{/each}
+<MenuEntry name={$i18n.t(SYSTEM_INFORMATION)} onClick={() => selectView('')} isSelected={!view} />
+<MenuEntry
+	name={$i18n.t(SYSTEM_SETTINGS)}
+	onClick={() => selectView(SYSTEM_SETTINGS)}
+	isSelected={view === SYSTEM_SETTINGS}
+/>
 <div class="!my-2 h-px w-full bg-tertiary-800"></div>
 {#if $installedApps.isLoading}
 	<p>{$i18n.t('loading')}</p>

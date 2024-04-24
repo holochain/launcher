@@ -22,7 +22,7 @@
 
 <button
 	on:click={() => (id === undefined ? modalStore.trigger(modal) : goto(`/${APP_STORE}/${id}`))}
-	class="card flex cursor-pointer items-center p-4 dark:variant-soft-warning"
+	class="card flex cursor-pointer items-center p-4 dark:variant-soft-tertiary"
 >
 	<div class="min-w-16">
 		<Avatar

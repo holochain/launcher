@@ -1,36 +1,89 @@
 <script lang="ts">
-	import { Avatar } from '@skeletonlabs/skeleton';
+	import { getModalStore, ProgressRadial } from '@skeletonlabs/skeleton';
 
-	import { page } from '$app/stores';
-	import { VIEW } from '$const';
-	import { createImageUrl, getRawQueryParam, uint8ArrayToURIComponent } from '$helpers';
+	import { Button, IconInput, InputWithLabel } from '$components';
+	import { showModalError } from '$helpers';
 	import { createAppQueries } from '$queries';
+	import { i18n, trpc } from '$services';
+	import { APP_STORE } from '$shared/const';
+	import { isAppDataValid } from '$types';
 
-	import { ReleasesCard } from './components';
+	const client = trpc();
+	const closeSettings = client.closeSettings.createMutation();
 
-	const { appStoreMyHappsQuery } = createAppQueries();
+	const { publishHappMutation } = createAppQueries();
 
-	$: view = getRawQueryParam($page.url.href, VIEW);
+	const modalStore = getModalStore();
+
+	let appData = {
+		title: '',
+		subtitle: '',
+		description: '',
+		version: '0.0.1',
+		icon: undefined as Uint8Array | undefined,
+		bytes: undefined as Uint8Array | undefined
+	};
+	const handleFileUpload =
+		(key: 'icon' | 'bytes') =>
+		async (file: File): Promise<void> => {
+			const arrayBuffer = await file.arrayBuffer();
+			appData = { ...appData, [key]: new Uint8Array(arrayBuffer) };
+		};
 </script>
 
-<div class="p-8">
-	{#if $appStoreMyHappsQuery.isSuccess}
-		{@const app = $appStoreMyHappsQuery.data.find(
-			(app) => uint8ArrayToURIComponent(app.id) === view
-		)}
-		{#if app}
-			{@const imageUrl = createImageUrl(app.icon)}
-			<div class="flex items-center space-x-4 pb-4">
-				<Avatar
-					src={imageUrl}
-					initials={app.title}
-					fill="fill-current text-white"
-					background="dark:bg-app-gradient"
-					rounded="rounded-sm"
-				/>
-				<h2 class="text-lg font-bold">{app.title}</h2>
-			</div>
-			<ReleasesCard apphubHrlTarget={app.apphubHrlTarget} id={app.id} />
-		{/if}
-	{/if}
-</div>
+<form
+	class="modal-form mx-auto flex w-full max-w-xs flex-col space-y-4 pt-4"
+	on:submit|preventDefault={async () => {
+		if (isAppDataValid(appData)) {
+			$publishHappMutation.mutate(appData, {
+				onSuccess: () => {
+					$closeSettings.mutate(APP_STORE);
+				},
+				onError: (error) => {
+					showModalError({
+						modalStore,
+						errorTitle: $i18n.t('appError'),
+						errorMessage: $i18n.t(error.message)
+					});
+				}
+			});
+		}
+	}}
+>
+	<IconInput bind:icon={appData.icon} handleFileUpload={handleFileUpload('icon')} />
+	<InputWithLabel bind:value={appData.title} id="happName" label={$i18n.t('nameYourHapp')} />
+	<InputWithLabel
+		bind:value={appData.subtitle}
+		id="happDescription"
+		label={$i18n.t('oneLineDescription')}
+	/>
+	<InputWithLabel
+		bind:value={appData.description}
+		id="description"
+		label={$i18n.t('description')}
+		maxLength={500}
+	/>
+	<InputWithLabel
+		handleFileUpload={handleFileUpload('bytes')}
+		id="webbhapp"
+		label={$i18n.t('webbhapp')}
+	/>
+	<InputWithLabel
+		bind:value={appData.version}
+		id="version"
+		label={$i18n.t('version')}
+		maxLength={10}
+	/>
+	<footer class="modal-footer flex justify-between gap-2">
+		<Button
+			props={{
+				disabled: $publishHappMutation.isPending || !isAppDataValid(appData),
+				type: 'submit',
+				class: 'btn bg-add-happ-button flex-1'
+			}}
+		>
+			<span>{$i18n.t($publishHappMutation.isPending ? 'adding' : 'add')}</span>
+			{#if $publishHappMutation.isPending}<ProgressRadial stroke={100} width="w-6" />{/if}
+		</Button>
+	</footer>
+</form>
