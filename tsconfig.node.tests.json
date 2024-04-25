@@ -1,6 +1,6 @@
 {
   "extends": "@electron-toolkit/tsconfig/tsconfig.node.json",
-  "include": ["src/main/integrityChecker.ts"],
+  "include": ["src/main/tests/*.ts", "src/main/integrityChecker.ts"],
   "compilerOptions": {
     "composite": true,
     "outDir": "out-tests",
