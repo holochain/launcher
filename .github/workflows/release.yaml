@@ -82,7 +82,10 @@ jobs:
 
       - name: Conditionally Setup rust-utils
         if: steps.cache-rust-utils.outputs.cache-hit != 'true'
-        run: yarn setup
+        run: yarn setupForCI
+
+      - name: build and install libs
+        run: yarn build:libs
 
       - name: install app dependencies
         run: yarn
