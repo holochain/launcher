@@ -1,28 +1,20 @@
 <script lang="ts">
 	import { getModalStore, ProgressRadial } from '@skeletonlabs/skeleton';
 
+	import { goto } from '$app/navigation';
 	import { Button, IconInput, InputWithLabel } from '$components';
+	import { DEV_PAGE, EMPTY_APP_DATA } from '$const';
 	import { showModalError } from '$helpers';
 	import { createAppQueries } from '$queries';
-	import { i18n, trpc } from '$services';
-	import { APP_STORE } from '$shared/const';
+	import { i18n } from '$services';
 	import { isAppDataValid } from '$types';
-
-	const client = trpc();
-	const closeSettings = client.closeSettings.createMutation();
 
 	const { publishHappMutation } = createAppQueries();
 
 	const modalStore = getModalStore();
 
-	let appData = {
-		title: '',
-		subtitle: '',
-		description: '',
-		version: '0.0.1',
-		icon: undefined as Uint8Array | undefined,
-		bytes: undefined as Uint8Array | undefined
-	};
+	let appData = EMPTY_APP_DATA;
+
 	const handleFileUpload =
 		(key: 'icon' | 'bytes') =>
 		async (file: File): Promise<void> => {
@@ -36,8 +28,9 @@
 	on:submit|preventDefault={async () => {
 		if (isAppDataValid(appData)) {
 			$publishHappMutation.mutate(appData, {
-				onSuccess: () => {
-					$closeSettings.mutate(APP_STORE);
+				onSuccess: (id) => {
+					appData = EMPTY_APP_DATA;
+					goto(`/${DEV_PAGE}/${id}`);
 				},
 				onError: (error) => {
 					showModalError({

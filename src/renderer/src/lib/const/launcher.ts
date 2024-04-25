@@ -11,3 +11,12 @@ export const DEV_PAGE = `${SETTINGS_SCREEN}/dev`;
 
 export const SEARCH_URL_QUERY = 'search';
 export const PRESEARCH_URL_QUERY = 'presearch';
+
+export const EMPTY_APP_DATA = {
+	title: '',
+	subtitle: '',
+	description: '',
+	version: '0.0.1',
+	icon: undefined as Uint8Array | undefined,
+	bytes: undefined as Uint8Array | undefined
+};
