@@ -5,7 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { IconButton } from '$components';
-	import { ADD_APP_PAGE, DEV_PAGE, MODAL_ADD_PUBLISHER, SELECTED_ICON_STYLE } from '$const';
+	import { DEV_PAGE, MODAL_ADD_PUBLISHER, SELECTED_ICON_STYLE } from '$const';
 	import { createModalParams } from '$helpers';
 	import { Gear, Home, Rocket, Upload } from '$icons';
 	import { createAppQueries } from '$queries';
@@ -37,7 +37,7 @@
 				if ($publishersQuery.data.length < 1) {
 					return modalStore.trigger(modal);
 				}
-				goto(isDevPage ? `/${SETTINGS_SCREEN}` : `${DEV_PAGE}/${ADD_APP_PAGE}`);
+				goto(isDevPage ? `/${SETTINGS_SCREEN}` : `${DEV_PAGE}`);
 			}}
 		>
 			{#if isDevPage}

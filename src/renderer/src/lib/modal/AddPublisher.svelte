@@ -4,7 +4,7 @@
 
 	import { goto } from '$app/navigation';
 	import { AddTypeModalFooter, IconInput } from '$components';
-	import { ADD_APP_PAGE, DEV_PAGE } from '$const';
+	import { DEV_PAGE } from '$const';
 	import { base64ToArrayBuffer } from '$helpers';
 	import { defaultIcon } from '$icons';
 	import { createAppQueries } from '$queries';
@@ -41,7 +41,7 @@
 				$publisherMutation.mutate(publisherData, {
 					onSuccess: () => {
 						modalStore.close();
-						goto(`/${DEV_PAGE}/${ADD_APP_PAGE}`);
+						goto(`/${DEV_PAGE}`);
 					}
 				});
 			}}

@@ -26,10 +26,11 @@ export default {
 				'apps-input-dark-gradient': 'linear-gradient(to right, rgb(56, 52, 60), rgb(40, 40, 40))',
 				'apps-list-dark-gradient':
 					'linear-gradient(10deg, rgb(47, 45, 48) 15%, rgb(14, 17, 19) 45%)',
-				'settings-dark-gradient': `linear-gradient(350deg, rgba(0, 82, 205, 0.15) 5.32%, rgba(0, 0, 0, 0) 88.82%), linear-gradient(0deg, rgb(32, 33, 34), rgb(14, 17, 19)), linear-gradient(0deg, rgb(14, 17, 19), rgb(14, 17, 19))`,
+				'app-dark-gradient': `linear-gradient(350deg, rgba(0, 82, 205, 0.15) 5.32%, rgba(0, 0, 0, 0) 88.82%), linear-gradient(0deg, rgb(32, 33, 34), rgb(14, 17, 19)), linear-gradient(0deg, rgb(14, 17, 19), rgb(14, 17, 19))`,
 				'add-happ-button': `linear-gradient(92.56deg, rgb(7, 194, 69) 20%, rgb(12, 142, 156) 84%)`,
 				'app-button-gradient':
-					'linear-gradient(92.56deg, #584BA8 -0.56%, rgba(158, 0, 255, 0.51) 97.18%)'
+					'linear-gradient(92.56deg, #584BA8 -0.56%, rgba(158, 0, 255, 0.51) 97.18%)',
+				'app-details-gradient': `linear-gradient(to top, rgba(0, 0, 0, 5) 0%, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.2) 21%), linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.2) 10%, rgba(0, 0, 0, 0.3) 48%), linear-gradient(90deg, rgba(100, 24, 160, 0.5) 0%, rgba(36, 9, 58, 0.5) 92%), linear-gradient(300.65deg, rgba(0, 209, 255, 0) 35.32%, rgba(0, 209, 255, 0.3) 72.93%)`
 			},
 			boxShadow: {
 				'3xl': '0 35px 60px -15px rgba(0, 0, 0)'

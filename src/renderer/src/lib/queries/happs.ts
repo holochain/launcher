@@ -18,6 +18,7 @@ import {
 	APP_STORE_MY_HAPPS_QUERY_KEY,
 	PUBLISHERS_QUERY_KEY
 } from '$const';
+import { uint8ArrayToURIComponent } from '$helpers';
 import { getAppStoreClient, getDevHubClient } from '$services';
 import {
 	APP_STORE_CLIENT_NOT_INITIALIZED_ERROR,
@@ -219,20 +220,18 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 				apphub_hrl_hash: webappPackage.address
 			});
 
-			try {
-				await appStoreClient.appstoreZomeClient.createAppVersion({
-					version,
-					for_app: appEntryEntity.id,
-					apphub_hrl: {
-						dna: apphubDnaHash,
-						target: webappPackageVersion.id
-					},
-					apphub_hrl_hash: webappPackageVersion.address,
-					bundle_hashes: hashes
-				});
-			} catch (error) {
-				console.error(error);
-			}
+			await appStoreClient.appstoreZomeClient.createAppVersion({
+				version,
+				for_app: appEntryEntity.id,
+				apphub_hrl: {
+					dna: apphubDnaHash,
+					target: webappPackageVersion.id
+				},
+				apphub_hrl_hash: webappPackageVersion.address,
+				bundle_hashes: hashes
+			});
+
+			return uint8ArrayToURIComponent(appEntryEntity.id);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({
