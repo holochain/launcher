@@ -11,6 +11,7 @@ import * as childProcess from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
 import { app, dialog, ipcMain, protocol } from 'electron';
+import contextMenu from 'electron-context-menu';
 import { createIPCHandler } from 'electron-trpc/main';
 import { autoUpdater } from 'electron-updater';
 import fs from 'fs';
@@ -140,6 +141,12 @@ if (process.env.NODE_ENV === 'development') {
   console.log('APP IS RUN IN DEVELOPMENT MODE');
   app.setName(appName + '-dev');
 }
+
+contextMenu({
+  showSaveImageAs: true,
+  showSearchWithGoogle: false,
+  showInspectElement: true,
+});
 
 console.log('APP PATH: ', app.getAppPath());
 console.log('RUNNING ON PLATFORM: ', process.platform);
