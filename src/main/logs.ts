@@ -27,9 +27,11 @@ export function setupLogs(
   launcherFileSystem: LauncherFileSystem,
 ) {
   const logFilePath = path.join(launcherFileSystem.profileLogsDir, 'launcher.log');
-  // with file rotation set maxsize. But then we require logic to garbage collect old files...
-  // const logFileTransport = new transports.File({ filename: logFilePath, maxsize: 50_000_000, maxfiles: 5 });
-  const logFileTransport = new transports.File({ filename: logFilePath });
+  const logFileTransport = new transports.File({
+    filename: logFilePath,
+    maxsize: 50_000_000,
+    maxFiles: 5,
+  });
   const launcherLogger = createLauncherLogger(logFileTransport);
   const lairLogger = createLairLogger(logFileTransport);
 
