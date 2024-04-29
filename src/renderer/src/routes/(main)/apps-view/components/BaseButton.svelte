@@ -2,6 +2,7 @@
 	import { Avatar } from '@skeletonlabs/skeleton';
 	export let onClick = () => {};
 	export let initials: string = '';
+	export let src: string | undefined = undefined;
 	export let border: string = 'border-4 border-white border-opacity-20';
 	export let fontSize: number | undefined = undefined;
 	export let fill: string = 'fill-white';
@@ -18,6 +19,6 @@
 		if (!isDisabled) onClick();
 	}}
 >
-	<Avatar rounded="rounded-2xl" {initials} {border} {fontSize} {fill} {background} />
+	<Avatar rounded="rounded-2xl" {src} {initials} {border} {fontSize} {fill} {background} />
 	<slot />
 </button>

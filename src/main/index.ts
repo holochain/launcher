@@ -681,11 +681,15 @@ const router = t.router({
   getInstalledApps: t.procedure.query(() => {
     const filterHeadlessApps = (app: { installed_app_id: string }) =>
       ![DEVHUB_APP_ID, APP_STORE_APP_ID].includes(app.installed_app_id);
-    const mapAppInfo = (manager: HolochainManager) => (app: AppInfo) => ({
-      appInfo: app,
-      version: manager.version,
-      holochainDataRoot: manager.holochainDataRoot,
-    });
+    const mapAppInfo = (manager: HolochainManager) => (app: AppInfo) => {
+      const icon = manager.appIcon(app.installed_app_id);
+      return {
+        appInfo: app,
+        version: manager.version,
+        holochainDataRoot: manager.holochainDataRoot,
+        icon,
+      };
+    };
 
     const installedApps = Object.values(HOLOCHAIN_MANAGERS).flatMap((manager) =>
       manager.installedApps.filter(filterHeadlessApps).map(mapAppInfo(manager)),
