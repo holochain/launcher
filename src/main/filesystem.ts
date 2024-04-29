@@ -179,7 +179,7 @@ export class LauncherFileSystem {
    * @param holochainDataRoot
    * @returns
    */
-  appUiDir(appId: string, holochainDataRoot: HolochainDataRoot) {
+  appUiDir(appId: string, holochainDataRoot: HolochainDataRoot): string {
     if (!this.integrityChecker) throw new Error('IntegrityCheker not set.');
     const metadataPath = path.join(this.appMetadataDir(appId, holochainDataRoot), 'info.json');
     const appMetaData =

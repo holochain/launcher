@@ -23,6 +23,7 @@
 	onClick={() => {
 		if (!isDisabled) onClick();
 	}}
+	src={app.icon}
 	initials={app.appInfo.installed_app_id}
 	border={borderClasses}
 	background="dark:bg-app-gradient"

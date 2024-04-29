@@ -96,6 +96,7 @@ export const ExtendedAppInfoSchema = z.object({
   appInfo: AppInfoSchema,
   version: HolochainVersionSchema,
   holochainDataRoot: HolochainDataRootSchema,
+  icon: z.string().optional(),
 });
 
 export type ExtendedAppInfo = z.infer<typeof ExtendedAppInfoSchema>;

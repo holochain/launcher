@@ -283,17 +283,31 @@ export class HolochainManager {
     });
   }
 
+  /**
+   * Installs a webhapp from bytes and stores all relevant data and metadata on disk.
+   * If an icon is provided, this icon will be stored alongside with the UI assets.
+   * If no icon is passed but an icon.png file is present in the UI assets,
+   * this icon gets stored instead.
+   *
+   * @param happAndUiBytes
+   * @param appId
+   * @param distributionInfo
+   * @param networkSeed
+   * @param membrane_proofs
+   * @param icon
+   */
   async installWebHappFromBytes(
     happAndUiBytes: HappAndUiBytes,
     appId: string,
     distributionInfo: DistributionInfoV1,
     networkSeed?: string,
     membrane_proofs?: { [key: string]: MembraneProof },
+    icon?: string,
   ) {
     if (!happAndUiBytes.uiBytes) throw new Error('UI bytes undefined.');
 
     const happSha256 = this.storeHapp(happAndUiBytes.happBytes);
-    const uiZipSha256 = this.storeUiIfNecessary(happAndUiBytes.uiBytes);
+    const uiZipSha256 = this.storeUiIfNecessary(happAndUiBytes.uiBytes, icon);
 
     await this.installWebhappFromHashes(
       happSha256,
@@ -516,11 +530,16 @@ export class HolochainManager {
   /**
    * Extracts and stores ui.zip bytes to a directory named after the sha256 of the bytes
    * if that directory does not exist yet.
+   * If an icon is passed, the icon gets stored alongside the UI assets.
+   * If no icon is passed but an icon.png file is present in the UI assets,
+   * this icon gets stored instead.
    *
    * @param uiBytes
    * @returns
    */
-  storeUiIfNecessary(uiBytes: Array<number>): string {
+  storeUiIfNecessary(uiBytes: Array<number>, icon?: string): string {
+    if (icon && typeof icon !== 'string') throw new Error('Icon must of type string.');
+
     // compute UI hash
     const uiZipHasher = crypto.createHash('sha256');
     const uiZipSha256 = uiZipHasher.update(Buffer.from(uiBytes)).digest('hex');
@@ -544,21 +563,30 @@ export class HolochainManager {
       this.integrityChecker.storeToSignedJSON(path.join(uiDir, 'hashes.json'), hashes);
       zip.extractAllTo(path.join(uiDir, 'assets'));
     }
+    if (icon) {
+      fs.writeFileSync(path.join(uiDir, 'icon'), icon);
+    } else {
+      const maybeIconPngPath = path.join(uiDir, 'assets', 'icon.png');
+      if (fs.existsSync(maybeIconPngPath)) {
+        const iconBytes = fs.readFileSync(maybeIconPngPath);
+        if (iconBytes.byteLength > 1100000) {
+          this.launcherEmitter.emit(
+            'launcher-error',
+            `icon.png of the passed UI is too big and won't be stored. Icons need to be 1024x1024 pixel.`,
+          );
+          console.warn("Icon is too large and won't be stored.");
+        } else {
+          const iconString = iconBytes.toString('base64');
+          fs.writeFileSync(path.join(uiDir, 'icon'), `data:image/png;base64,${iconString}`);
+        }
+      }
+    }
     return uiZipSha256;
   }
 
   happFilePath(happSha256: string): string {
     return path.join(this.fs.happsDir(this.holochainDataRoot), `${happSha256}.happ`);
   }
-
-  // /**
-  //  * Updates the UI of an existing app
-  //  */
-  // async updateUi(
-  //   appId: string,
-  //   sha256Ui: string,
-  //   appstoreAppVersionEntryHash: ActionHash,
-  // ): Promise<void> {}
 
   async uninstallApp(appId: string) {
     await this.adminWebsocket.uninstallApp({ installed_app_id: appId });
@@ -611,6 +639,28 @@ export class HolochainManager {
       return false;
     }
     return true;
+  }
+
+  appIcon(appId: string): string | undefined {
+    const metadata: AppMetadata<AppMetadataV1> = this.integrityChecker.readSignedJSON(
+      path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json'),
+    );
+
+    if (
+      metadata.data.type === 'webhapp' &&
+      metadata.data.ui &&
+      metadata.data.ui.location.type === 'filesystem'
+    ) {
+      const iconPath = path.join(
+        this.fs.uisDir(this.holochainDataRoot),
+        metadata.data.ui.location.sha256,
+        'icon',
+      );
+      if (fs.existsSync(iconPath)) {
+        return fs.readFileSync(iconPath, 'utf-8');
+      }
+    }
+    return undefined;
   }
 }
 
