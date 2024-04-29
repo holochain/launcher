@@ -286,6 +286,8 @@ export class HolochainManager {
   /**
    * Installs a webhapp from bytes and stores all relevant data and metadata on disk.
    * If an icon is provided, this icon will be stored alongside with the UI assets.
+   * If no icon is passed but an icon.png file is present in the UI assets,
+   * this icon gets stored instead.
    *
    * @param happAndUiBytes
    * @param appId
