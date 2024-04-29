@@ -295,20 +295,8 @@ app.whenReady().then(async () => {
       });
       if (userDecision.response === 1) {
         // downloading means that with the next start of the application it's automatically going to be installed
+        autoUpdater.on('update-downloaded', () => autoUpdater.quitAndInstall());
         await autoUpdater.downloadUpdate();
-        const options: Electron.RelaunchOptions = {
-          args: process.argv,
-        };
-        // https://github.com/electron-userland/electron-builder/issues/1727#issuecomment-769896927
-        if (process.env.APPIMAGE) {
-          options.args!.unshift('--appimage-extract-and-run');
-          options.execPath = process.env.APPIMAGE.replace(
-            appVersion,
-            updateCheckResult.updateInfo.version,
-          );
-        }
-        app.relaunch(options);
-        app.exit(0);
       }
     }
   }
