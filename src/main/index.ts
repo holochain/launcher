@@ -659,18 +659,17 @@ const router = t.router({
   getInstalledApps: t.procedure.query(() => {
     const filterHeadlessApps = (app: { installed_app_id: string }) =>
       ![DEVHUB_APP_ID, APP_STORE_APP_ID].includes(app.installed_app_id);
-    const defaultManager = HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION];
-    const mapAppInfo = (app: AppInfo) => {
-      const icon = defaultManager.appIcon(app.installed_app_id);
-      return {
-        appInfo: app,
-        version: defaultManager.version,
-        holochainDataRoot: defaultManager.holochainDataRoot,
-        icon,
-      };
-    };
 
-    const installedApps = defaultManager.installedApps.filter(filterHeadlessApps).map(mapAppInfo);
+    const createAppInfo = (manager: HolochainManager) => (app: AppInfo) => ({
+      appInfo: app,
+      version: manager.version,
+      holochainDataRoot: manager.holochainDataRoot,
+      icon: manager.appIcon(app.installed_app_id),
+    });
+
+    const installedApps = Object.values(HOLOCHAIN_MANAGERS).flatMap((manager) =>
+      manager.installedApps.filter(filterHeadlessApps).map(createAppInfo(manager)),
+    );
 
     return validateWithZod({
       schema: z.array(ExtendedAppInfoSchema),
