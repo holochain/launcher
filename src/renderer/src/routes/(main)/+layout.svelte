@@ -18,8 +18,9 @@
 
 	const client = trpc();
 
+	const utlis = client.createUtils();
+
 	const hideApp = client.hideApp.createMutation();
-	const appPortAndIsDevHubInstalled = client.getAppPortAndIsDevHubInstalled.createQuery();
 	const installedApps = client.getInstalledApps.createQuery();
 	const openApp = client.openApp.createMutation();
 
@@ -50,15 +51,6 @@
 	$: if (type) inputExpanded = true;
 
 	const handleNavigation = handleNavigationWithAnimationDelay(() => (inputExpanded = false));
-
-	onMount(() => {
-		return navigationStore.subscribe((value) => {
-			if (value !== null) {
-				handleNavigation(value)();
-				navigationStore.set(null);
-			}
-		});
-	});
 
 	const handlePress = (event: CustomEvent): void => {
 		if (!(event.detail instanceof KeyboardEvent)) return;
@@ -96,11 +88,29 @@
 		}
 	});
 
+	const waitForAppPortAndDevHubInfo = async () => {
+		const [isDevhubInstalled, getAppPort] = await Promise.all([
+			utlis.isDevhubInstalled.fetch(),
+			utlis.getAppPort.fetch()
+		]);
+
+		initializeAppPortSubscription(isDevhubInstalled, getAppPort);
+	};
+
 	onMount(() => {
-		initializeAppPortSubscription(appPortAndIsDevHubInstalled);
+		const unsubscribe = navigationStore.subscribe((value) => {
+			if (value !== null) {
+				handleNavigation(value)();
+				navigationStore.set(null);
+			}
+		});
+
+		waitForAppPortAndDevHubInfo();
 
 		window.addEventListener('keydown', handleEscapeKey);
+
 		return () => {
+			unsubscribe();
 			window.removeEventListener('keydown', handleEscapeKey);
 		};
 	});

@@ -679,10 +679,7 @@ const router = t.router({
   }),
   handleSetupAndLaunch: handlePasswordInput(handleSetupAndLaunch),
   launch: handlePasswordInput(handleLaunch),
-  getAppPortAndIsDevHubInstalled: t.procedure.query(() => ({
-    appPort: APP_PORT,
-    isDevHubInstalled: isDevhubInstalled(HOLOCHAIN_MANAGERS),
-  })),
+  getAppPort: t.procedure.query(() => APP_PORT),
   installDevhub: t.procedure.mutation(async () => {
     await processHeadlessAppInstallation({
       holochainManager: HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION],

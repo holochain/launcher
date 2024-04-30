@@ -10,12 +10,15 @@
 
 	const client = trpc();
 
-	const appPortAndIsDevHubInstalled = client.getAppPortAndIsDevHubInstalled.createQuery();
+	const utlis = client.createUtils();
 
 	$: isDevPage = $page.url.pathname.includes(DEV_PAGE);
 
-	onMount(() => {
-		initializeAppPortSubscription(appPortAndIsDevHubInstalled);
+	onMount(async () => {
+		initializeAppPortSubscription(
+			await utlis.isDevhubInstalled.fetch(),
+			await utlis.getAppPort.fetch()
+		);
 	});
 </script>
 

@@ -71,11 +71,8 @@
 					{$i18n.t('install')}
 				</Button>
 				<div class="text-sm">
-					<div>
-						<span class="font-normal">{$i18n.t('developerToolsAllow')}</span>
-						<span class="font-semibold">{$i18n.t('uploadAndPublish')}</span>
-					</div>
-					<span class="font-normal italic opacity-50">{$i18n.t('installsDevHub')}</span>
+					<span class="font-normal">{$i18n.t('developerToolsAllow')}</span>
+					<span class="font-semibold">{$i18n.t('uploadAndPublish')}</span>
 				</div>
 			{/if}
 		</div>
