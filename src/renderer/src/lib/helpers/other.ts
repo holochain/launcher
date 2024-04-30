@@ -39,16 +39,26 @@ export const base64ToArrayBuffer = (base64: string) => {
 export const createImageUrl = (icon?: Uint8Array) =>
 	icon ? URL.createObjectURL(new File([icon], 'icon')) : undefined;
 
-export const initializeAppPortSubscription = (appPort: {
+export const initializeAppPortSubscription = (appPortAndIsDevHubInstalled: {
 	subscribe: (
-		callback: (arg: { isSuccess: boolean; data: number | undefined }) => Promise<void>
+		callback: (arg: {
+			isSuccess: boolean;
+			data?: { isDevHubInstalled: boolean; appPort?: number };
+		}) => Promise<void>
 	) => () => void;
 }) => {
-	const unsubscribe = appPort.subscribe(async ({ isSuccess, data }) => {
-		if (isSuccess && data) {
-			await createAppStoreClient(data);
-			await createDevHubClient(data);
+	const unsubscribe = appPortAndIsDevHubInstalled.subscribe(async ({ isSuccess, data }) => {
+		if (isSuccess && data?.appPort) {
+			await createAppStoreClient(data.appPort);
+			if (data.isDevHubInstalled) {
+				await createDevHubClient(data.appPort);
+			}
 			unsubscribe();
 		}
 	});
+};
+
+export const convertFileToUint8Array = async (file: File): Promise<Uint8Array> => {
+	const buffer = await file.arrayBuffer();
+	return new Uint8Array(buffer);
 };

@@ -12,6 +12,13 @@ body {
 @font-face {
 	font-family: 'Figtree';
 	src: url('/fonts/Figtree-VariableFont_wght.ttf');
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Figtree';
+	src: url('/fonts/Figtree-Italic-VariableFont_wght.ttf');
+	font-style: italic;
 }
 
 .heading {
@@ -32,16 +39,34 @@ body {
 }
 
 .btn {
-	@apply mb-2 rounded;
+	@apply rounded !outline-none;
+}
+
+.btn-primary,
+.btn-next,
+.btn-secondary,
+.btn-app-store,
+.btn-app-store-modal,
+.btn-app-store-modal-secondary {
+	@apply btn mb-2;
 }
 
 .btn-primary,
 .btn-next {
-	@apply btn bg-button-gradient font-semibold;
+	@apply bg-button-gradient font-semibold;
+}
+
+.btn-secondary,
+.btn-install {
+	@apply border border-surface-400 bg-transparent !text-sm;
 }
 
 .btn-secondary {
-	@apply btn border border-surface-400 bg-transparent pl-2 pr-4 text-sm;
+	@apply pl-2 pr-4 font-semibold;
+}
+
+.btn-install {
+	@apply btn mr-2 px-2;
 }
 
 .btn-next {
@@ -52,12 +77,17 @@ body {
 	@apply btn-sm min-w-20 rounded-full font-semibold;
 }
 
+.btn-app-store-modal,
+.btn-app-store-modal-secondary {
+	@apply !rounded-full;
+}
+
 .btn-app-store-modal {
-	@apply btn !rounded-full bg-app-gradient;
+	@apply bg-app-gradient;
 }
 
 .btn-app-store-modal-secondary {
-	@apply btn !rounded-full border-4 border-primary-900;
+	@apply border-4 border-primary-900;
 }
 
 .input-base {

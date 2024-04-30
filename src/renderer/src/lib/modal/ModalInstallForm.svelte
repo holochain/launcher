@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getModalStore, ProgressRadial } from '@skeletonlabs/skeleton';
+	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { Button, Input } from '$components';
 	import { i18n } from '$services';
@@ -53,14 +53,11 @@
 					props={{
 						disabled: formData.appId.length === 0 || isPending,
 						type: 'submit',
+						isLoading: isPending,
 						class: 'btn-app-store-modal flex-1'
 					}}
 				>
-					{#if isPending}
-						<span>{$i18n.t('installing')}</span><ProgressRadial stroke={100} width="w-6" />
-					{:else}
-						<span>{$i18n.t('install')}</span>
-					{/if}
+					<span>{$i18n.t('install')}</span>
 				</Button>
 			</footer>
 		</form>

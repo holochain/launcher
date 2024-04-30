@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { ProgressRadial } from '@skeletonlabs/skeleton';
-
 	import { i18n } from '$services';
 
 	import Button from './Button.svelte';
@@ -23,11 +21,11 @@
 	<Button
 		props={{
 			disabled: isPending || !isValid,
+			isLoading: isPending,
 			type: 'submit',
 			class: 'btn-app-store-modal flex-1'
 		}}
 	>
-		<span>{$i18n.t(isPending ? 'adding' : 'add')}</span>
-		{#if isPending}<ProgressRadial stroke={100} width="w-6" />{/if}
+		<span>{$i18n.t('add')}</span>
 	</Button>
 </footer>

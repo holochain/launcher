@@ -57,9 +57,9 @@ import {
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '$shared/types';
 
-import { checkHolochainLairBinariesExist } from './binaries';
+import { checkHolochainLairBinariesExist, DEFAULT_HOLOCHAIN_VERSION } from './binaries';
 import { validateArgs } from './cli';
-import { DEFAULT_APPS_TO_INSTALL } from './const';
+import { DEFAULT_APPS_TO_INSTALL, DEVHUB_INSTALL } from './const';
 import { LauncherFileSystem } from './filesystem';
 import { HolochainManager } from './holochainManager';
 import { IntegrityChecker } from './integrityChecker';
@@ -71,7 +71,9 @@ import { DEFAULT_APPS_DIRECTORY } from './paths';
 import {
   breakingVersion,
   createObservable,
+  isDevhubInstalled,
   isHappAlreadyOpened,
+  processHeadlessAppInstallation,
   signZomeCall,
   throwTRPCErrorError,
   validateWithZod,
@@ -174,6 +176,10 @@ protocol.registerSchemesAsPrivileged([
 
 const LAUNCHER_FILE_SYSTEM = LauncherFileSystem.connect(app, VALIDATED_CLI_ARGS.profile);
 const LAUNCHER_EMITTER = new LauncherEmitter();
+
+const DEFAULT_APPS_NETWORK_SEED = app.isPackaged
+  ? `launcher-${breakingVersion(app.getVersion())}`
+  : `launcher-dev-${os.hostname()}`;
 
 setupLogs(LAUNCHER_EMITTER, LAUNCHER_FILE_SYSTEM);
 
@@ -415,27 +421,15 @@ async function handleLaunch(password: string) {
   // Install default apps if necessary
   // TODO check sha256 hashes
   // TODO Do not install devhub on startup
-  const defaultAppsNetworkSeed = app.isPackaged
-    ? `launcher-${breakingVersion(app.getVersion())}`
-    : `launcher-dev-${os.hostname()}`;
 
   await Promise.all(
-    DEFAULT_APPS_TO_INSTALL.map(async ({ id, name, progressUpdate }) => {
-      const isAppInstalled = holochainManager.installedApps.some(
-        (app) => app.installed_app_id === id,
-      );
-      if (!isAppInstalled) {
-        LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, progressUpdate);
-        const happPath = path.join(DEFAULT_APPS_DIRECTORY, name);
-        const happBytes = fs.readFileSync(happPath);
-        await holochainManager.installHeadlessHappFromBytes(
-          Array.from(happBytes),
-          id,
-          { type: 'default-app' },
-          defaultAppsNetworkSeed,
-        );
-      }
-    }),
+    DEFAULT_APPS_TO_INSTALL.map(
+      processHeadlessAppInstallation({
+        holochainManager,
+        defaultAppsNetworkSeed: DEFAULT_APPS_NETWORK_SEED,
+        launcherEmitter: LAUNCHER_EMITTER,
+      }),
+    ),
   );
 
   PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE, SEARCH_HEIGH, true);
@@ -658,30 +652,23 @@ const router = t.router({
 
     return !isInitializedValidated;
   }),
-  holochainVersion: t.procedure.query(
-    () => HOLOCHAIN_MANAGERS[Object.keys(HOLOCHAIN_MANAGERS)[0]].version,
-  ),
-  isDevhubInstalled: t.procedure.query(() =>
-    Object.values(HOLOCHAIN_MANAGERS)
-      .flatMap((manager) => manager.installedApps)
-      .some((app) => app.installed_app_id === DEVHUB_APP_ID),
-  ),
+  holochainVersion: t.procedure.query(() => HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION].version),
+  isDevhubInstalled: t.procedure.query(() => isDevhubInstalled(HOLOCHAIN_MANAGERS)),
   getInstalledApps: t.procedure.query(() => {
     const filterHeadlessApps = (app: { installed_app_id: string }) =>
       ![DEVHUB_APP_ID, APP_STORE_APP_ID].includes(app.installed_app_id);
-    const mapAppInfo = (manager: HolochainManager) => (app: AppInfo) => {
-      const icon = manager.appIcon(app.installed_app_id);
+    const defaultManager = HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION];
+    const mapAppInfo = (app: AppInfo) => {
+      const icon = defaultManager.appIcon(app.installed_app_id);
       return {
         appInfo: app,
-        version: manager.version,
-        holochainDataRoot: manager.holochainDataRoot,
+        version: defaultManager.version,
+        holochainDataRoot: defaultManager.holochainDataRoot,
         icon,
       };
     };
 
-    const installedApps = Object.values(HOLOCHAIN_MANAGERS).flatMap((manager) =>
-      manager.installedApps.filter(filterHeadlessApps).map(mapAppInfo(manager)),
-    );
+    const installedApps = defaultManager.installedApps.filter(filterHeadlessApps).map(mapAppInfo);
 
     return validateWithZod({
       schema: z.array(ExtendedAppInfoSchema),
@@ -691,7 +678,19 @@ const router = t.router({
   }),
   handleSetupAndLaunch: handlePasswordInput(handleSetupAndLaunch),
   launch: handlePasswordInput(handleLaunch),
-  getAppPort: t.procedure.query(() => APP_PORT),
+  getAppPortAndIsDevHubInstalled: t.procedure.query(() => ({
+    appPort: APP_PORT,
+    isDevHubInstalled: isDevhubInstalled(HOLOCHAIN_MANAGERS),
+  })),
+  installDevhub: t.procedure.mutation(async () => {
+    await processHeadlessAppInstallation({
+      holochainManager: HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION],
+      defaultAppsNetworkSeed: DEFAULT_APPS_NETWORK_SEED,
+      launcherEmitter: LAUNCHER_EMITTER,
+    })(DEVHUB_INSTALL);
+
+    return APP_PORT;
+  }),
   onSetupProgressUpdate: t.procedure.subscription(() => {
     return createObservable(LAUNCHER_EMITTER, LOADING_PROGRESS_UPDATE);
   }),

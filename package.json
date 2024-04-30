@@ -17,8 +17,8 @@
   "scripts": {
     "format": "prettier . \"!src/renderer\" --write",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
-    "lintAndFormat": "yarn lint || true && yarn format || true",
-    "lintAndFormatAll": "yarn lintAndFormat && cd src/renderer && yarn run check || true && yarn lintAndFormat && cd ../..",
+    "lintAndFormat": "concurrently \"yarn lint\" \"yarn format\"",
+    "lintAndFormatAll": "concurrently \"yarn lintAndFormat\" \"cd src/renderer && yarn run check || true && yarn lint || true && yarn format && cd ../..\"",
     "lintAndFormatAllPrePush": "yarn lint && yarn format && cd src/renderer && yarn run check && yarn lint && yarn format && cd ../..",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "typecheck": "npm run typecheck:node",

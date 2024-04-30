@@ -19,7 +19,7 @@
 	const client = trpc();
 
 	const hideApp = client.hideApp.createMutation();
-	const appPort = client.getAppPort.createQuery();
+	const appPortAndIsDevHubInstalled = client.getAppPortAndIsDevHubInstalled.createQuery();
 	const installedApps = client.getInstalledApps.createQuery();
 	const openApp = client.openApp.createMutation();
 
@@ -97,7 +97,7 @@
 	});
 
 	onMount(() => {
-		initializeAppPortSubscription(appPort);
+		initializeAppPortSubscription(appPortAndIsDevHubInstalled);
 
 		window.addEventListener('keydown', handleEscapeKey);
 		return () => {

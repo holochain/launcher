@@ -7,7 +7,7 @@
 
 <div class="p-4">
 	<div>
-		<h2 class="text-lg font-bold">{$i18n.t('holochainVersion')}</h2>
+		<h3 class="h3">{$i18n.t('holochainVersion')}</h3>
 		{#if $holochainVersion.data}
 			<p>
 				{$holochainVersion.data.type}{#if 'version' in $holochainVersion.data}: {$holochainVersion

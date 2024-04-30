@@ -3,13 +3,26 @@ import { TRPCError } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
 import { BrowserWindow } from 'electron';
 import { shell } from 'electron';
+import fs from 'fs';
 import type { ZomeCallNapi, ZomeCallSigner, ZomeCallUnsignedNapi } from 'hc-launcher-rust-utils';
+import path from 'path';
 import semver from 'semver';
 import type { ZodSchema } from 'zod';
 
-import type { ErrorWithMessage, EventKeys, EventMap, WindowInfoRecord } from '$shared/types';
+import { DEVHUB_APP_ID } from '$shared/const';
+import type { AppToInstall } from '$shared/types';
+import {
+  type ErrorWithMessage,
+  type EventKeys,
+  type EventMap,
+  LOADING_PROGRESS_UPDATE,
+  type WindowInfoRecord,
+} from '$shared/types';
 
+import { DEFAULT_HOLOCHAIN_VERSION } from './binaries';
+import type { HolochainManager } from './holochainManager';
 import type { LauncherEmitter } from './launcherEmitter';
+import { DEFAULT_APPS_DIRECTORY } from './paths';
 
 export function encodeQuery(query: Record<string, string>) {
   return Object.entries(query)
@@ -88,6 +101,42 @@ export function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
     typeof (error as Record<string, unknown>).message === 'string'
   );
 }
+
+export const isDevhubInstalled = (
+  HOLOCHAIN_MANAGERS: Record<string, HolochainManager>,
+): boolean => {
+  return HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION].installedApps.some(
+    (app) => app.installed_app_id === DEVHUB_APP_ID,
+  );
+};
+
+export const processHeadlessAppInstallation =
+  ({
+    holochainManager,
+    defaultAppsNetworkSeed,
+    launcherEmitter,
+  }: {
+    holochainManager: HolochainManager;
+    defaultAppsNetworkSeed: string;
+    launcherEmitter: LauncherEmitter;
+  }) =>
+  async ({ id, name, progressUpdate }: AppToInstall): Promise<void> => {
+    const isAppInstalled = holochainManager.installedApps.some(
+      (app) => app.installed_app_id === id,
+    );
+
+    if (!isAppInstalled) {
+      launcherEmitter.emit(LOADING_PROGRESS_UPDATE, progressUpdate);
+      const happPath = path.join(DEFAULT_APPS_DIRECTORY, name);
+      const happBytes = fs.readFileSync(happPath);
+      await holochainManager.installHeadlessHappFromBytes(
+        Array.from(happBytes),
+        id,
+        { type: 'default-app' },
+        defaultAppsNetworkSeed,
+      );
+    }
+  };
 
 function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
   if (isErrorWithMessage(maybeError)) return maybeError;
