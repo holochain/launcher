@@ -652,7 +652,9 @@ const router = t.router({
 
     return !isInitializedValidated;
   }),
-  holochainVersion: t.procedure.query(() => HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION].version),
+  defaultHolochainVersion: t.procedure.query(
+    () => HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION].version,
+  ),
   isDevhubInstalled: t.procedure.query(() => isDevhubInstalled(HOLOCHAIN_MANAGERS)),
   getInstalledApps: t.procedure.query(() => {
     const filterHeadlessApps = (app: { installed_app_id: string }) =>
