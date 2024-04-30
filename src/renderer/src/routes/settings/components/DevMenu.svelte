@@ -34,7 +34,6 @@
 	{#each $appStoreMyHappsQuery.data as app (app.id)}
 		{@const appIdString = uint8ArrayToURIComponent(app.id)}
 		<MenuEntry
-			isApp
 			icon={app.icon}
 			isSelected={view === appIdString}
 			name={app.title}

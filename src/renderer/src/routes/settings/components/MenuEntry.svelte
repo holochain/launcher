@@ -6,12 +6,9 @@
 
 	export let onClick = () => {};
 	export let name: string;
-	export let isApp = false;
 	export let isSelected = false;
 	export let background = 'bg-white/25';
 	export let icon: Uint8Array | undefined = undefined;
-
-	$: imageUrl = createImageUrl(icon);
 </script>
 
 <button
@@ -22,18 +19,17 @@
 	on:click={onClick}
 	aria-label={`Select ${name}`}
 >
-	{#if isApp}
+	<slot name="leading">
 		<Avatar
-			src={imageUrl}
+			src={createImageUrl(icon)}
 			initials={name.substring(0, 2).toUpperCase()}
 			fill="fill-current text-white"
 			background="dark:bg-app-gradient"
 			fontSize={250}
-			width="w-4 mr-4"
+			width="w-5 mr-4"
 			rounded="rounded-sm"
 		/>
-	{/if}
-	<slot name="leading" />
+	</slot>
 	<span
 		class={clsx('text-base', {
 			'font-light opacity-80': !isSelected,

@@ -14,7 +14,13 @@ import serve from 'electron-serve';
 import path from 'path';
 import url from 'url';
 
-import { MAIN_SCREEN, SEARCH_HEIGH, SETTINGS_SCREEN, WINDOW_SIZE } from '$shared/const';
+import {
+  MAIN_SCREEN,
+  SEARCH_HEIGH,
+  SETTINGS_SCREEN,
+  SETTINGS_SIZE,
+  WINDOW_SIZE,
+} from '$shared/const';
 import type { ExtendedAppInfo, Screen } from '$shared/types';
 import { LAUNCHER_ERROR } from '$shared/types';
 
@@ -47,11 +53,11 @@ export const loadOrServe = is.dev ? loadVite : serveURL;
  * @param title
  * @returns
  */
-const createAdminWindow = (title: string) =>
+const createAdminWindow = (title: string, optWidth?: number) =>
   new BrowserWindow({
     frame: false,
-    width: WINDOW_SIZE,
-    minWidth: WINDOW_SIZE,
+    width: optWidth || WINDOW_SIZE,
+    minWidth: optWidth || WINDOW_SIZE,
     height: WINDOW_SIZE,
     title: title,
     show: false,
@@ -76,7 +82,7 @@ export const setupAppWindows = () => {
   // Create the browser window.
   const mainWindow = createAdminWindow('Holochain Launcher');
 
-  const settingsWindow = createAdminWindow('Holochain Launcher Settings');
+  const settingsWindow = createAdminWindow('Holochain Launcher Settings', SETTINGS_SIZE);
 
   const icon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '16x16.png'));
   const tray = new Tray(icon);
@@ -96,18 +102,6 @@ export const setupAppWindows = () => {
         focusVisibleWindow(windows);
       },
     },
-    ...(is.dev
-      ? [
-          {
-            label: 'Open dev tools',
-            type: 'normal' as const,
-            click: () =>
-              Object.values(windows)
-                .filter((window) => !window.isMinimized() && window.isVisible())
-                .forEach((window) => window.webContents.openDevTools()),
-          },
-        ]
-      : []),
     {
       label: 'Restart',
       type: 'normal',

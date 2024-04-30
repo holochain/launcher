@@ -1,6 +1,7 @@
 import {
 	MODAL_ADD_NEW_HAPP_VERSION,
 	MODAL_ADD_PUBLISHER,
+	MODAL_DEVHUB_INSTALLATION_CONFIRMATION,
 	MODAL_INSTALL_FROM_FILE,
 	MODAL_INSTALL_KANDO
 } from '$const';
@@ -25,7 +26,8 @@ export type Modals =
 	| typeof MODAL_INSTALL_FROM_FILE
 	| typeof MODAL_INSTALL_KANDO
 	| typeof MODAL_ADD_PUBLISHER
-	| typeof MODAL_ADD_NEW_HAPP_VERSION;
+	| typeof MODAL_ADD_NEW_HAPP_VERSION
+	| typeof MODAL_DEVHUB_INSTALLATION_CONFIRMATION;
 
 export type InputProps =
 	| (CommonInputProps & TextProps & { type: 'text' })
@@ -36,6 +38,7 @@ export type ButtonProps = {
 	onClick?: (event: MouseEvent) => void;
 	class?: string;
 	disabled?: boolean;
+	isLoading?: boolean;
 	type?: 'submit' | 'button' | 'reset';
 };
 

@@ -18,7 +18,7 @@
 			background="dark:bg-app-gradient"
 			rounded="rounded-sm"
 		/>
-		<h2 class="text-lg font-bold">{title}</h2>
+		<h3 class="h3">{title}</h3>
 	</div>
 	{#each buttons as button}
 		<Button

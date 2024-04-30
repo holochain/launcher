@@ -6,6 +6,7 @@
 	"initializeLairKeystoreError": "Error initializing lair keystore",
 	"launchLairKeystoreError": "Error launching lair keystore",
 	"missingBinaries": "There are missing holochain or lair keystore binaries",
+	"noAppPortProvidedError": "No app port provided",
 	"noAvailableHostForRemoteCall": "No available host for remote call",
 	"noRunningHolochainManagerError": "No running Holochain manager",
 	"unknownError": "Unknown error",

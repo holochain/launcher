@@ -5,12 +5,10 @@
 	export let maxLength: number | undefined = undefined;
 	export let id: string;
 	export let label: string;
-	export let handleFileUpload: ((file: File) => void) | undefined = undefined;
+	export let files: FileList | null = null;
 
-	let files: FileList | null = null;
 	let isFocused = false;
 
-	$: files && handleFileUpload?.(files[0]);
 	$: wordCount = value?.length || 0;
 </script>
 
@@ -30,7 +28,7 @@
 		class:bg-transparent={!isFocused}
 		class:bg-app-gradient={isFocused}
 	>
-		{#if handleFileUpload}
+		{#if value == undefined}
 			<Input
 				bind:files
 				on:focus={() => (isFocused = true)}

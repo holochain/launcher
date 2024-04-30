@@ -11,4 +11,5 @@ export const ANIMATION_DURATION = 300;
 
 export const WINDOW_SIZE = 600;
 export const WINDOW_SIZE_LARGE = 780;
+export const SETTINGS_SIZE = 850;
 export const SEARCH_HEIGH = 200;

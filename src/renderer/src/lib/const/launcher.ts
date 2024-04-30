@@ -4,6 +4,7 @@ export const MODAL_INSTALL_FROM_FILE = 'modalInstallFromFile';
 export const MODAL_INSTALL_KANDO = 'modalInstallKando';
 export const MODAL_ADD_PUBLISHER = 'modalAddPublisher';
 export const MODAL_ADD_NEW_HAPP_VERSION = 'modalAddNewHappVersion';
+export const MODAL_DEVHUB_INSTALLATION_CONFIRMATION = 'modalDevHubInstallationConfirmation';
 
 export const SELECTED_ICON_STYLE = 'fill-light-primary dark:fill-white';
 

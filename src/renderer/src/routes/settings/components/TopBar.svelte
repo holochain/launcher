@@ -37,7 +37,7 @@
 				if ($publishersQuery.data.length < 1) {
 					return modalStore.trigger(modal);
 				}
-				goto(isDevPage ? `/${SETTINGS_SCREEN}` : `${DEV_PAGE}`);
+				goto(isDevPage ? `/${SETTINGS_SCREEN}` : `/${DEV_PAGE}`);
 			}}
 		>
 			{#if isDevPage}

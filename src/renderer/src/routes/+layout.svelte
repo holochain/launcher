@@ -4,15 +4,26 @@
 	import { initializeStores, Modal, type ModalComponent } from '@skeletonlabs/skeleton';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 
-	import { MODAL_ADD_PUBLISHER, MODAL_INSTALL_FROM_FILE, MODAL_INSTALL_KANDO } from '$const';
-	import { AddPublisher, InstallFromFile, InstallKando } from '$modal';
+	import {
+		MODAL_ADD_PUBLISHER,
+		MODAL_DEVHUB_INSTALLATION_CONFIRMATION,
+		MODAL_INSTALL_FROM_FILE,
+		MODAL_INSTALL_KANDO
+	} from '$const';
+	import {
+		AddPublisher,
+		DevHubInstallationConfirmation,
+		InstallFromFile,
+		InstallKando
+	} from '$modal';
 
 	const queryClient = new QueryClient();
 
 	const modalRegistry: Record<string, ModalComponent> = {
 		[MODAL_INSTALL_FROM_FILE]: { ref: InstallFromFile },
 		[MODAL_INSTALL_KANDO]: { ref: InstallKando },
-		[MODAL_ADD_PUBLISHER]: { ref: AddPublisher }
+		[MODAL_ADD_PUBLISHER]: { ref: AddPublisher },
+		[MODAL_DEVHUB_INSTALLATION_CONFIRMATION]: { ref: DevHubInstallationConfirmation }
 	};
 
 	initializeStores();

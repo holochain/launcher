@@ -4,7 +4,6 @@
 	import { createImageUrl } from '$helpers';
 	import { UploadImage } from '$icons';
 	import { i18n } from '$services';
-
 	export let icon: Uint8Array | undefined = undefined;
 
 	export let handleFileUpload: (file: File) => void;

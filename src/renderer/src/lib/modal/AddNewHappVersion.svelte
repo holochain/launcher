@@ -2,6 +2,7 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { AddTypeModalFooter, InputWithLabel } from '$components';
+	import { convertFileToUint8Array } from '$helpers';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
 	import { isPublishNewVersionDataValid } from '$types';
@@ -12,12 +13,15 @@
 
 	export let webappPackageId: Uint8Array;
 	export let appEntryId: Uint8Array;
+	let files: FileList | null = null;
 	let version = '';
-	let bytes = undefined as Uint8Array | undefined;
+	let bytes: Uint8Array | undefined;
 
-	const handleFileUpload = async (file: File): Promise<void> => {
-		bytes = new Uint8Array(await file.arrayBuffer());
+	const setAppDataBytes = async (files: FileList | null) => {
+		bytes = files && files.length > 0 ? await convertFileToUint8Array(files[0]) : undefined;
 	};
+
+	$: setAppDataBytes(files);
 </script>
 
 {#if $modalStore[0]}
@@ -45,7 +49,7 @@
 				}
 			}}
 		>
-			<InputWithLabel {handleFileUpload} id="webbhapp" label={$i18n.t('webbhapp')} />
+			<InputWithLabel bind:files id="webbhapp" label={$i18n.t('webbhapp')} />
 			<InputWithLabel bind:value={version} id="version" label={$i18n.t('version')} maxLength={10} />
 			{#if $publishNewVersionMutation.error}
 				<div class="flex items-center justify-center">

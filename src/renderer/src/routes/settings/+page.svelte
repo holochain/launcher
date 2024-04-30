@@ -2,15 +2,15 @@
 	import { i18n, trpc } from '$services';
 
 	const client = trpc();
-	const holochainVersion = client.holochainVersion.createQuery();
+	const defaultHolochainVersion = client.defaultHolochainVersion.createQuery();
 </script>
 
 <div class="p-4">
 	<div>
-		<h2 class="text-lg font-bold">{$i18n.t('holochainVersion')}</h2>
-		{#if $holochainVersion.data}
+		<h3 class="h3">{$i18n.t('holochainVersion')}</h3>
+		{#if $defaultHolochainVersion.data}
 			<p>
-				{$holochainVersion.data.type}{#if 'version' in $holochainVersion.data}: {$holochainVersion
+				{$defaultHolochainVersion.data.type}{#if 'version' in $defaultHolochainVersion.data}: {$defaultHolochainVersion
 						.data.version}{/if}
 			</p>
 		{/if}
