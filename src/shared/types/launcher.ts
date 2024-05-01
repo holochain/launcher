@@ -62,6 +62,7 @@ export type DistributionInfoV1 =
       appstoreDnaHash: DnaHashB64;
       appEntryActionHash: ActionHashB64;
       appVersionActionHash: ActionHashB64;
+      appVersion: string;
     };
 
 export const DistributionInfoV1Schema = z.union([
@@ -73,6 +74,7 @@ export const DistributionInfoV1Schema = z.union([
     appstoreDnaHash: z.string({ description: 'DnaHashB64' }),
     appEntryActionHash: z.string({ description: 'ActionHashB64' }),
     appVersionActionHash: z.string({ description: 'ActionHashB64' }),
+    appVersion: z.string({ description: 'version name' }),
   }),
 ]);
 
