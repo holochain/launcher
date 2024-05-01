@@ -53,7 +53,7 @@ import {
   MAIN_SCREEN_ROUTE,
   MainScreenRouteSchema,
   MISSING_BINARIES,
-  NO_AUTHENTICATION_TOKEN_FOUND,
+  NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
   UpdateUiFromHashSchema,
   WRONG_INSTALLED_APP_STRUCTURE,
@@ -716,19 +716,19 @@ const router = t.router({
   }),
   handleSetupAndLaunch: handlePasswordInput(handleSetupAndLaunch),
   launch: handlePasswordInput(handleLaunch),
-  getAppPort: t.procedure.query(() => APP_PORT),
-  getAppAuthenticationToken: t.procedure
-    .input(z.string({ description: 'installed_app_id' }))
-    .query((opts) => {
-      const appId = opts.input;
-      const authenticationToken = APP_AUTHENTICATION_TOKENS[appId];
-      if (!authenticationToken) {
-        return throwTRPCErrorError({
-          message: NO_AUTHENTICATION_TOKEN_FOUND,
-        });
-      }
-      return authenticationToken;
-    }),
+  getAppPort: t.procedure.query(() => {
+    const appstoreToken = APP_AUTHENTICATION_TOKENS[APP_STORE_APP_ID];
+    if (!appstoreToken) {
+      return throwTRPCErrorError({
+        message: NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND,
+      });
+    }
+    return {
+      appPort: APP_PORT,
+      appstoreAuthenticationToken: appstoreToken,
+      devhubAuthenticationToken: APP_AUTHENTICATION_TOKENS[DEVHUB_APP_ID],
+    };
+  }),
   installDevhub: t.procedure.mutation(async () => {
     const defaultHolochainManager = HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION];
     await processHeadlessAppInstallation({

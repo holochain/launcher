@@ -89,18 +89,14 @@
 	});
 
 	const waitForAppPortAndDevHubInfo = async () => {
-		const [isDevhubInstalled, appPort, appstoreToken] = await Promise.all([
-			utils.isDevhubInstalled.fetch(),
-			utils.getAppPort.fetch(),
-			utils.getAppAuthenticationToken.fetch(APP_STORE_APP_ID)
-		]);
+		const [isDevhubInstalled, { appPort, appstoreAuthenticationToken, devhubAuthenticationToken }] =
+			await Promise.all([utils.isDevhubInstalled.fetch(), utils.getAppPort.fetch()]);
 
-		let devhubToken;
-		if (isDevhubInstalled) {
-			devhubToken = await utils.getAppAuthenticationToken.fetch(DEVHUB_APP_ID);
+		if (isDevhubInstalled && !devhubAuthenticationToken) {
+			throw new Error('DevHub authentication token undefined despite DevHub being installed.');
 		}
 
-		initializeAppPortSubscription(appPort, appstoreToken, devhubToken);
+		initializeAppPortSubscription(appPort, appstoreAuthenticationToken, devhubAuthenticationToken);
 	};
 
 	onMount(() => {
