@@ -705,6 +705,7 @@ const router = t.router({
       version: manager.version,
       holochainDataRoot: manager.holochainDataRoot,
       icon: manager.appIcon(app.installed_app_id),
+      distributionInfo: manager.appDistributionInfo(app.installed_app_id),
     });
 
     const installedApps = Object.values(HOLOCHAIN_MANAGERS).flatMap((manager) =>

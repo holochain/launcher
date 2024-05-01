@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { DistributionInfoV1Schema } from './launcher';
+
 export const HolochainVersionSchema = z.union([
   z.object({
     type: z.literal('built-in'),
@@ -97,6 +99,7 @@ export const ExtendedAppInfoSchema = z.object({
   version: HolochainVersionSchema,
   holochainDataRoot: HolochainDataRootSchema,
   icon: z.string().optional(),
+  distributionInfo: DistributionInfoV1Schema,
 });
 
 export const InitializeAppPortsSchema = z.object({
