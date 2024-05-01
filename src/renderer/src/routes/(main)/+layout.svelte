@@ -13,7 +13,7 @@
 	} from '$helpers';
 	import { Gear, Home, Rocket } from '$icons';
 	import { i18n, trpc } from '$services';
-	import { APP_STORE, APP_STORE_APP_ID, APPS_VIEW, DEVHUB_APP_ID } from '$shared/const';
+	import { APP_STORE, APPS_VIEW } from '$shared/const';
 	import { navigationStore } from '$stores';
 
 	const client = trpc();

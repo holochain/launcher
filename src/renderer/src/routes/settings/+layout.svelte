@@ -5,7 +5,6 @@
 	import { DEV_PAGE } from '$const';
 	import { initializeAppPortSubscription } from '$helpers';
 	import { trpc } from '$services';
-	import { APP_STORE_APP_ID, DEVHUB_APP_ID } from '$shared/const';
 
 	import { DevMenu, RegularMenu, TopBar } from './components';
 
