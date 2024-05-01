@@ -1,5 +1,5 @@
 import {
-  type AppAgentCallZomeRequest,
+  type AppCallZomeRequest,
   decodeHashFromBase64,
   encodeHashToBase64,
   type EntryHash,
@@ -119,7 +119,7 @@ export class MereMemoryZomeClient extends ZomeClient {
   }
 
   protected callZome(fn_name: string, payload: unknown) {
-    const req: AppAgentCallZomeRequest = {
+    const req: AppCallZomeRequest = {
       role_name: this.roleName,
       zome_name: this.zomeName,
       fn_name,

@@ -1,9 +1,4 @@
-import type {
-  ActionHash,
-  AgentPubKey,
-  AppAgentCallZomeRequest,
-  EntryHash,
-} from '@holochain/client';
+import type { ActionHash, AgentPubKey, AppCallZomeRequest, EntryHash } from '@holochain/client';
 
 import type {
   Entity,
@@ -111,7 +106,7 @@ export class AppstoreZomeClient extends ZomeClient {
   }
 
   protected callZome(fn_name: string, payload: unknown) {
-    const req: AppAgentCallZomeRequest = {
+    const req: AppCallZomeRequest = {
       role_name: this.roleName,
       zome_name: this.zomeName,
       fn_name,

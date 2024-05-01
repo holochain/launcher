@@ -1,10 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type {
-  ActionHash,
-  AgentPubKey,
-  AnyDhtHash,
-  AppAgentCallZomeRequest,
-} from '@holochain/client';
+import type { ActionHash, AgentPubKey, AnyDhtHash, AppCallZomeRequest } from '@holochain/client';
 
 import { ZomeClient } from '../../zome-client/zome-client';
 import type {
@@ -51,7 +46,7 @@ export class DnaHubZomeClient extends ZomeClient {
   }
 
   protected callZome(fn_name: string, payload: unknown) {
-    const req: AppAgentCallZomeRequest = {
+    const req: AppCallZomeRequest = {
       role_name: this.roleName,
       zome_name: this.zomeName,
       fn_name,
