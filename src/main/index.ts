@@ -45,6 +45,7 @@ import {
   BytesSchema,
   CHECK_INITIALIZED_KEYSTORE_ERROR,
   ExtendedAppInfoSchema,
+  InitializeAppPortsSchema,
   InstallDefaultAppSchema,
   InstallHappFromPathSchema,
   InstallHappOrWebhappFromBytesSchema,
@@ -53,7 +54,9 @@ import {
   MAIN_SCREEN_ROUTE,
   MainScreenRouteSchema,
   MISSING_BINARIES,
+  NO_APP_PORT_ERROR,
   NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND,
+  NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
   UpdateUiFromHashSchema,
   WRONG_INSTALLED_APP_STRUCTURE,
@@ -716,18 +719,28 @@ const router = t.router({
   }),
   handleSetupAndLaunch: handlePasswordInput(handleSetupAndLaunch),
   launch: handlePasswordInput(handleLaunch),
-  getAppPort: t.procedure.query(() => {
-    const appstoreToken = APP_AUTHENTICATION_TOKENS[APP_STORE_APP_ID];
-    if (!appstoreToken) {
+  initializeDefaultAppPorts: t.procedure.query(() => {
+    const appstoreAuthenticationToken = APP_AUTHENTICATION_TOKENS[APP_STORE_APP_ID];
+    const devhubAuthenticationToken = APP_AUTHENTICATION_TOKENS[DEVHUB_APP_ID];
+    if (!appstoreAuthenticationToken) {
       return throwTRPCErrorError({
         message: NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND,
       });
     }
-    return {
-      appPort: APP_PORT,
-      appstoreAuthenticationToken: appstoreToken,
-      devhubAuthenticationToken: APP_AUTHENTICATION_TOKENS[DEVHUB_APP_ID],
-    };
+    if (isDevhubInstalled(HOLOCHAIN_MANAGERS) && !devhubAuthenticationToken) {
+      return throwTRPCErrorError({
+        message: NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND,
+      });
+    }
+    return validateWithZod({
+      schema: InitializeAppPortsSchema,
+      data: {
+        appPort: APP_PORT,
+        appstoreAuthenticationToken,
+        devhubAuthenticationToken,
+      },
+      errorType: NO_APP_PORT_ERROR,
+    });
   }),
   installDevhub: t.procedure.mutation(async () => {
     const defaultHolochainManager = HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION];

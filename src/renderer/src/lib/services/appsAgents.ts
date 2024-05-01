@@ -1,4 +1,4 @@
-import { type AppAuthenticationToken, AppWebsocket } from '@holochain/client';
+import { AppWebsocket } from '@holochain/client';
 import { AppstoreAppClient, DevhubAppClient } from 'appstore-tools';
 import { type Writable, writable } from 'svelte/store';
 
@@ -7,7 +7,7 @@ const devHubClientStore = writable<DevhubAppClient | null>(null);
 
 const createAppClient = async <T>(
 	port: number,
-	token: AppAuthenticationToken,
+	token: number[],
 	clientConstructor: new (client: AppWebsocket) => T,
 	store: Writable<T | null>
 ): Promise<void> => {
@@ -16,12 +16,12 @@ const createAppClient = async <T>(
 	store.set(appClient);
 };
 
-export const createAppStoreClient = (port: number, token: AppAuthenticationToken) =>
+export const createAppStoreClient = (port: number, token: number[]) =>
 	createAppClient<AppstoreAppClient>(port, token, AppstoreAppClient, appStoreClientStore);
 
 export const getAppStoreClient = () => appStoreClientStore;
 
-export const createDevHubClient = (port: number, token: AppAuthenticationToken) =>
+export const createDevHubClient = (port: number, token: number[]) =>
 	createAppClient<DevhubAppClient>(port, token, DevhubAppClient, devHubClientStore);
 
 export const getDevHubClient = () => devHubClientStore;

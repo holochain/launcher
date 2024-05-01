@@ -41,7 +41,7 @@
 									showModalError({
 										modalStore,
 										errorTitle: $i18n.t('appError'),
-										errorMessage: $i18n.t('noAppPortProvidedError')
+										errorMessage: $i18n.t('noAppPortError')
 									});
 									return;
 								}

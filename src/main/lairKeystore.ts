@@ -5,6 +5,7 @@ import os from 'os';
 import path from 'path';
 import split from 'split';
 
+import { getErrorMessage } from '$shared/helpers';
 import {
   FAILED_TO_CREATE_SYMLINKED_LAIR_DIRECTORY_ERROR,
   INITIALIZE_LAIR_KEYSTORE_ERROR,
@@ -17,7 +18,7 @@ import {
 } from '$shared/types';
 
 import type { LauncherEmitter } from './launcherEmitter';
-import { getErrorMessage, throwTRPCErrorError } from './utils';
+import { throwTRPCErrorError } from './utils';
 
 function waitForLairKeystore(
   launcherEmitter: LauncherEmitter,

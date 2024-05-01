@@ -99,6 +99,14 @@ export const ExtendedAppInfoSchema = z.object({
   icon: z.string().optional(),
 });
 
+export const InitializeAppPortsSchema = z.object({
+  appPort: z.number(),
+  appstoreAuthenticationToken: z.array(z.number()),
+  devhubAuthenticationToken: z.array(z.number()).optional(),
+});
+
+export type InitializeAppPorts = z.infer<typeof InitializeAppPortsSchema>;
+
 export type ExtendedAppInfo = z.infer<typeof ExtendedAppInfoSchema>;
 
 export interface RunningHolochain {

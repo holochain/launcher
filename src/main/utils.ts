@@ -12,7 +12,6 @@ import type { ZodSchema } from 'zod';
 import { DEVHUB_APP_ID } from '$shared/const';
 import type { AppToInstall } from '$shared/types';
 import {
-  type ErrorWithMessage,
   type EventKeys,
   type EventMap,
   LOADING_PROGRESS_UPDATE,
@@ -93,15 +92,6 @@ export const validateWithZod = <T>({
   return result.data;
 };
 
-export function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'message' in error &&
-    typeof (error as Record<string, unknown>).message === 'string'
-  );
-}
-
 export const isDevhubInstalled = (
   HOLOCHAIN_MANAGERS: Record<string, HolochainManager>,
 ): boolean => {
@@ -137,22 +127,6 @@ export const processHeadlessAppInstallation =
       );
     }
   };
-
-function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
-  if (isErrorWithMessage(maybeError)) return maybeError;
-
-  try {
-    return new Error(JSON.stringify(maybeError));
-  } catch {
-    // fallback in case there's an error stringifying the maybeError
-    // like with circular references for example.
-    return new Error(String(maybeError));
-  }
-}
-
-export function getErrorMessage(error: unknown) {
-  return toErrorWithMessage(error).message;
-}
 
 export function isHappAlreadyOpened({
   installed_app_id,

@@ -1,12 +1,16 @@
 <script lang="ts">
+	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 
 	import { page } from '$app/stores';
 	import { DEV_PAGE } from '$const';
-	import { initializeAppPortSubscription } from '$helpers';
-	import { trpc } from '$services';
+	import { initializeDefaultAppPorts, showModalError } from '$helpers';
+	import { i18n, trpc } from '$services';
+	import { getErrorMessage } from '$shared/helpers';
 
 	import { DevMenu, RegularMenu, TopBar } from './components';
+
+	const modalStore = getModalStore();
 
 	const client = trpc();
 
@@ -15,14 +19,16 @@
 	$: isDevPage = $page.url.pathname.includes(DEV_PAGE);
 
 	onMount(async () => {
-		const [isDevhubInstalled, { appPort, appstoreAuthenticationToken, devhubAuthenticationToken }] =
-			await Promise.all([utils.isDevhubInstalled.fetch(), utils.getAppPort.fetch()]);
-
-		if (isDevhubInstalled && !devhubAuthenticationToken) {
-			throw new Error('DevHub authentication token undefined despite DevHub being installed.');
+		try {
+			const initializeDefaultAppPortsData = await utils.initializeDefaultAppPorts.fetch();
+			initializeDefaultAppPorts(initializeDefaultAppPortsData);
+		} catch (error) {
+			showModalError({
+				modalStore,
+				errorTitle: $i18n.t('appError'),
+				errorMessage: $i18n.t(getErrorMessage(error))
+			});
 		}
-
-		initializeAppPortSubscription(appPort, appstoreAuthenticationToken, devhubAuthenticationToken);
 	});
 </script>
 
