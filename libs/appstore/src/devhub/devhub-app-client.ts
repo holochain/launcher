@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { DnaHash, ProvisionedCell } from '@holochain/client';
-import { type AnyDhtHash, type AppAgentClient, CellType, type ZomeName } from '@holochain/client';
+import { type AnyDhtHash, type AppClient, CellType, type ZomeName } from '@holochain/client';
 import { Bundle } from '@spartan-hc/bundles';
 
 import { MereMemoryZomeClient } from '../mere-memory/zomes/mere-memory-zome-client';
@@ -32,7 +32,7 @@ export class DevhubAppClient {
 
   cachedApphubDnaHash: DnaHash | undefined;
 
-  constructor(public client: AppAgentClient) {
+  constructor(public client: AppClient) {
     this.zomeHubMereMemoryZomeClient = new MereMemoryZomeClient(
       client,
       'zomehub',

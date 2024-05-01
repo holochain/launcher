@@ -621,15 +621,14 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.57.0.tgz#a5417ae8427873f1dd08b70b3574b453e67b5f7f"
   integrity sha512-Ys+3g2TaW7gADOJzPt83SJtCDhMjndcDMFVQ/Tj9iA1BfJzFKD9mAUXT3OenpuPHbI6P/myECxRJrofUsDx/5g==
 
-"@holochain/client@^0.17.0-dev.8":
-  version "0.17.0-dev.8"
-  resolved "https://registry.yarnpkg.com/@holochain/client/-/client-0.17.0-dev.8.tgz#cb60a271629cd50756ce626a82a3598a2c8fb6ce"
-  integrity sha512-npFoEoQd5Pai1a6B5sB0azbO9fEoZgGTY4k74cHCbtLS31Q0dSIwhrxTO6+XUVt2eyq64l6t4hJljCYIqGZVjQ==
+"@holochain/client@0.17.0-dev.12":
+  version "0.17.0-dev.12"
+  resolved "https://registry.yarnpkg.com/@holochain/client/-/client-0.17.0-dev.12.tgz#27c3c98d855d3aa76ee3e0c612b2689df9004957"
+  integrity sha512-aEOkD4wtFeHAv5AiEkBfsiGeAujCyQf1yfvmtcdERnv73zgZhxCiZ0ZrEi46kdJhRHMXX/1Qkqo6VY8afrepfQ==
   dependencies:
     "@bitgo/blake2b" "^3.2.4"
     "@holochain/serialization" "^0.1.0-beta-rc.3"
     "@msgpack/msgpack" "^2.8.0"
-    "@tauri-apps/api" "^1.4.0"
     emittery "^1.0.1"
     isomorphic-ws "^5.0.0"
     js-base64 "^3.7.5"
@@ -942,11 +941,6 @@
   integrity sha512-xyby2xzBEd9ybsPRlzG6ge+vnO7MtCQ6a4gpn29W3GL2E5J7queYtY7C3EIBLqNlETdxwzSLlSSvg2z1ho6TxA==
   dependencies:
     "@tanstack/query-core" "5.28.13"
-
-"@tauri-apps/api@^1.4.0":
-  version "1.5.3"
-  resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-1.5.3.tgz#f7b362b1f30aadb0a8bbeb7ae111755c0ed33d73"
-  integrity sha512-zxnDjHHKjOsrIzZm6nO5Xapb/BxqUq1tc7cGkFXsFkGTsSWgCPH1D8mm0XS9weJY2OaR73I3k3S+b7eSzJDfqA==
 
 "@tootallnate/once@2":
   version "2.0.0"

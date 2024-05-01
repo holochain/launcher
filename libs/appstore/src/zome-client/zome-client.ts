@@ -1,14 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type {
-  AppAgentCallZomeRequest,
-  AppAgentClient,
-  RoleName,
-  ZomeName,
-} from '@holochain/client';
+import type { AppAgentCallZomeRequest, AppClient, RoleName, ZomeName } from '@holochain/client';
 
 export class ZomeClient {
   constructor(
-    public client: AppAgentClient,
+    public client: AppClient,
     public roleName: RoleName,
     public zomeName: ZomeName,
   ) {}

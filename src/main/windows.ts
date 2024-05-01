@@ -1,4 +1,5 @@
 import { is } from '@electron-toolkit/utils';
+import type { AppAuthenticationToken } from '@holochain/client';
 import crypto from 'crypto';
 import {
   app,
@@ -165,6 +166,7 @@ export const createHappWindow = (
   launcherFileSystem: LauncherFileSystem,
   launcherEmitter: LauncherEmitter,
   appPort: number | undefined,
+  appAuthenticationToken: AppAuthenticationToken,
   // TODO pass UI asset hashes here
 ): BrowserWindow => {
   // TODO create mapping between installed-app-id's and window ids
@@ -217,7 +219,7 @@ export const createHappWindow = (
       const indexHtml = bodyBuffer.toString('utf-8');
       let modifiedContent = indexHtml.replace(
         '<head>',
-        `<head><script type="module">window.__HC_LAUNCHER_ENV__ = { APP_INTERFACE_PORT: ${appPort}, INSTALLED_APP_ID: "${appId}", FRAMEWORK: "electron" };</script>`,
+        `<head><script type="module">window.__HC_LAUNCHER_ENV__ = { APP_INTERFACE_PORT: ${appPort}, INSTALLED_APP_ID: "${appId}", APP_INTERFACE_TOKEN: [${appAuthenticationToken}] };</script>`,
       );
       // remove title attribute to be able to set title to app id later
       modifiedContent = modifiedContent.replace(/<title>.*?<\/title>/i, '');

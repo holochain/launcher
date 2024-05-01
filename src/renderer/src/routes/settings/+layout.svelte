@@ -7,18 +7,27 @@
 	import { trpc } from '$services';
 
 	import { DevMenu, RegularMenu, TopBar } from './components';
+	import { APP_STORE_APP_ID, DEVHUB_APP_ID } from '$shared/const';
 
 	const client = trpc();
 
-	const utlis = client.createUtils();
+	const utils = client.createUtils();
 
 	$: isDevPage = $page.url.pathname.includes(DEV_PAGE);
 
 	onMount(async () => {
-		initializeAppPortSubscription(
-			await utlis.isDevhubInstalled.fetch(),
-			await utlis.getAppPort.fetch()
-		);
+		const [isDevhubInstalled, appPort, appstoreToken] = await Promise.all([
+			utils.isDevhubInstalled.fetch(),
+			utils.getAppPort.fetch(),
+			utils.getAppAuthenticationToken.fetch(APP_STORE_APP_ID)
+		]);
+
+		let devhubToken;
+		if (isDevhubInstalled) {
+			devhubToken = await utils.getAppAuthenticationToken.fetch(DEVHUB_APP_ID);
+		}
+
+		initializeAppPortSubscription(appPort, appstoreToken, devhubToken);
 	});
 </script>
 

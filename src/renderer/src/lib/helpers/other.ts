@@ -1,4 +1,4 @@
-import { encodeHashToBase64 } from '@holochain/client';
+import { type AppAuthenticationToken, encodeHashToBase64 } from '@holochain/client';
 
 import { createAppStoreClient, createDevHubClient } from '$services';
 import {
@@ -40,13 +40,14 @@ export const createImageUrl = (icon?: Uint8Array) =>
 	icon ? URL.createObjectURL(new File([icon], 'icon')) : undefined;
 
 export const initializeAppPortSubscription = async (
-	isDevhubInstalled: boolean,
-	appPort: number | undefined
+	appPort: number | undefined,
+	appstoreToken: AppAuthenticationToken,
+	devhubToken?: AppAuthenticationToken
 ) => {
 	if (appPort) {
-		await createAppStoreClient(appPort);
-		if (isDevhubInstalled) {
-			await createDevHubClient(appPort);
+		await createAppStoreClient(appPort, appstoreToken);
+		if (devhubToken) {
+			await createDevHubClient(appPort, devhubToken);
 		}
 	}
 };

@@ -13,12 +13,12 @@
 	} from '$helpers';
 	import { Gear, Home, Rocket } from '$icons';
 	import { i18n, trpc } from '$services';
-	import { APP_STORE, APPS_VIEW } from '$shared/const';
+	import { APP_STORE, APP_STORE_APP_ID, APPS_VIEW, DEVHUB_APP_ID } from '$shared/const';
 	import { navigationStore } from '$stores';
 
 	const client = trpc();
 
-	const utlis = client.createUtils();
+	const utils = client.createUtils();
 
 	const hideApp = client.hideApp.createMutation();
 	const installedApps = client.getInstalledApps.createQuery();
@@ -89,12 +89,18 @@
 	});
 
 	const waitForAppPortAndDevHubInfo = async () => {
-		const [isDevhubInstalled, getAppPort] = await Promise.all([
-			utlis.isDevhubInstalled.fetch(),
-			utlis.getAppPort.fetch()
+		const [isDevhubInstalled, appPort, appstoreToken] = await Promise.all([
+			utils.isDevhubInstalled.fetch(),
+			utils.getAppPort.fetch(),
+			utils.getAppAuthenticationToken.fetch(APP_STORE_APP_ID)
 		]);
 
-		initializeAppPortSubscription(isDevhubInstalled, getAppPort);
+		let devhubToken;
+		if (isDevhubInstalled) {
+			devhubToken = await utils.getAppAuthenticationToken.fetch(DEVHUB_APP_ID);
+		}
+
+		initializeAppPortSubscription(appPort, appstoreToken, devhubToken);
 	};
 
 	onMount(() => {
