@@ -2,13 +2,6 @@ import { type AppAuthenticationToken, AppWebsocket } from '@holochain/client';
 import { AppstoreAppClient, DevhubAppClient } from 'appstore-tools';
 import { type Writable, writable } from 'svelte/store';
 
-declare global {
-	interface Window {
-		__APPSTORE_APP_TOKEN__: AppAuthenticationToken;
-		__DEVHUB_APP_TOKEN__: AppAuthenticationToken;
-	}
-}
-
 const appStoreClientStore = writable<AppstoreAppClient | null>(null);
 const devHubClientStore = writable<DevhubAppClient | null>(null);
 
