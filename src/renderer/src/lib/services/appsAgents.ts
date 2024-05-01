@@ -1,37 +1,27 @@
-import { AppAgentWebsocket } from '@holochain/client';
+import { AppWebsocket } from '@holochain/client';
 import { AppstoreAppClient, DevhubAppClient } from 'appstore-tools';
 import { type Writable, writable } from 'svelte/store';
-
-import { APP_STORE_APP_ID, DEVHUB_APP_ID } from '$shared/const';
 
 const appStoreClientStore = writable<AppstoreAppClient | null>(null);
 const devHubClientStore = writable<DevhubAppClient | null>(null);
 
-const createClient = (port: number, appId: string) =>
-	AppAgentWebsocket.connect(appId, { url: new URL(`ws://127.0.0.1:${port}`) });
-
 const createAppClient = async <T>(
 	port: number,
-	appId: string,
-	clientConstructor: new (client: AppAgentWebsocket) => T,
+	token: number[],
+	clientConstructor: new (client: AppWebsocket) => T,
 	store: Writable<T | null>
 ): Promise<void> => {
-	const client = await createClient(port, appId);
+	const client = await AppWebsocket.connect({ url: new URL(`ws://127.0.0.1:${port}`), token });
 	const appClient = new clientConstructor(client);
 	store.set(appClient);
 };
 
-export const createAppStoreClient = (port: number) =>
-	createAppClient<AppstoreAppClient>(
-		port,
-		APP_STORE_APP_ID,
-		AppstoreAppClient,
-		appStoreClientStore
-	);
+export const createAppStoreClient = (port: number, token: number[]) =>
+	createAppClient<AppstoreAppClient>(port, token, AppstoreAppClient, appStoreClientStore);
 
 export const getAppStoreClient = () => appStoreClientStore;
 
-export const createDevHubClient = (port: number) =>
-	createAppClient<DevhubAppClient>(port, DEVHUB_APP_ID, DevhubAppClient, devHubClientStore);
+export const createDevHubClient = (port: number, token: number[]) =>
+	createAppClient<DevhubAppClient>(port, token, DevhubAppClient, devHubClientStore);
 
 export const getDevHubClient = () => devHubClientStore;

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { AppAgentClient, DnaHash } from '@holochain/client';
+import type { AppClient, DnaHash } from '@holochain/client';
 
 import type {
   Entity,
@@ -24,7 +24,7 @@ export class AppstoreAppClient {
   appstoreZomeClient: AppstoreZomeClient;
   portalZomeClient: PortalZomeClient;
 
-  constructor(public client: AppAgentClient) {
+  constructor(public client: AppClient) {
     this.mereMemoryZomeClient = new MereMemoryZomeClient(client, 'appstore', 'mere_memory_api');
     this.appstoreZomeClient = new AppstoreZomeClient(client, 'appstore', 'appstore_csr');
     this.portalZomeClient = new PortalZomeClient(client, 'portal', 'portal_csr');

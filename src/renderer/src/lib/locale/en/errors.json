@@ -1,15 +1,17 @@
 {
 	"appStoreClientNotInitializedError": "AppStoreClient not initialized",
 	"checkInitializedKeystoreError": "Error checking initialized keystore",
+	"devHubClientNotInitializedError": "DevHubClient not initialized",
 	"failedToCreateSymlinkedLairDirectoryError": "Failed to create symlinked lair directory",
 	"fileUndefinedError": "File undefined",
 	"initializeLairKeystoreError": "Error initializing lair keystore",
 	"launchLairKeystoreError": "Error launching lair keystore",
 	"missingBinaries": "There are missing holochain or lair keystore binaries",
-	"noAppPortProvidedError": "No app port provided",
-	"noAvailableHostForRemoteCall": "No available host for remote call",
+	"noAppPortError": "Can't find app port",
+	"noAppstoreAuthenticationTokenFound": "No authentication token found for appstore",
+	"noDevhubAuthenticationTokenFound": "No authentication token found for devhub",
+	"noPublishersAvailableError": "No publishers available",
 	"noRunningHolochainManagerError": "No running Holochain manager",
-	"unknownError": "Unknown error",
 	"wrongInstalledAppStructure": "Wrong installed app structure",
 	"wrongPassword": "Wrong password"
 }

@@ -1,13 +1,13 @@
 {
   "name": "holochain-launcher-electron",
-  "version": "0.300.0-alpha.0",
+  "version": "0.300.0-alpha.1",
   "private": true,
   "description": "Holochain Launcher Electron (Prototype)",
   "author": "Holochain Foundation <info@holochain.org> (http://holochain.org)",
   "license": "CAL-1.0",
   "main": "./out/main/index.js",
   "binaries": {
-    "holochain": "0.3.0-beta-dev.43",
+    "holochain": "0.3.0-beta-dev.48",
     "lair_keystore": "0.4.4"
   },
   "workspaces": [
@@ -45,7 +45,7 @@
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
     "@electron/notarize": "2.3.0",
-    "@holochain/client": "^0.17.0-dev.8",
+    "@holochain/client": "0.17.0-dev.12",
     "@msgpack/msgpack": "^2.8.0",
     "@spartan-hc/bundles": "0.2.2",
     "@trpc/client": "^10.44.1",

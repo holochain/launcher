@@ -1,4 +1,5 @@
 import { optimizer } from '@electron-toolkit/utils';
+import type { AppAuthenticationToken, InstalledAppId } from '@holochain/client';
 import {
   type AppInfo,
   type CallZomeRequest,
@@ -44,6 +45,7 @@ import {
   BytesSchema,
   CHECK_INITIALIZED_KEYSTORE_ERROR,
   ExtendedAppInfoSchema,
+  InitializeAppPortsSchema,
   InstallDefaultAppSchema,
   InstallHappFromPathSchema,
   InstallHappOrWebhappFromBytesSchema,
@@ -52,6 +54,9 @@ import {
   MAIN_SCREEN_ROUTE,
   MainScreenRouteSchema,
   MISSING_BINARIES,
+  NO_APP_PORT_ERROR,
+  NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND,
+  NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
   UpdateUiFromHashSchema,
   WRONG_INSTALLED_APP_STRUCTURE,
@@ -196,6 +201,7 @@ const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain ma
 let LAIR_HANDLE: childProcess.ChildProcessWithoutNullStreams | undefined;
 let PRIVILEDGED_LAUNCHER_WINDOWS: Record<Screen, BrowserWindow>; // Admin windows with special zome call signing priviledges
 const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
+const APP_AUTHENTICATION_TOKENS: Record<InstalledAppId, AppAuthenticationToken> = {};
 
 const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeRequest) => {
   // TODO check here that cellId belongs to the installedAppId that the window belongs to
@@ -432,6 +438,26 @@ async function handleLaunch(password: string) {
     ),
   );
 
+  // Issue authentication tokens for appstore and devhub
+  const appstoreTokenResponse = await holochainManager.adminWebsocket.issueAppAuthenticationToken({
+    installed_app_id: APP_STORE_APP_ID,
+    expiry_seconds: 9999999,
+    single_use: false,
+  });
+  APP_AUTHENTICATION_TOKENS[APP_STORE_APP_ID] = appstoreTokenResponse.token;
+  if (
+    holochainManager.installedApps
+      .map((appInfo) => appInfo.installed_app_id)
+      .includes(DEVHUB_APP_ID)
+  ) {
+    const devhubTokenResponse = await holochainManager.adminWebsocket.issueAppAuthenticationToken({
+      installed_app_id: DEVHUB_APP_ID,
+      expiry_seconds: 9999999,
+      single_use: false,
+    });
+    APP_AUTHENTICATION_TOKENS[DEVHUB_APP_ID] = devhubTokenResponse.token;
+  }
+
   PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE, SEARCH_HEIGH, true);
   loadOrServe(PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN], { screen: SETTINGS_SCREEN });
   return;
@@ -482,11 +508,25 @@ const router = t.router({
       return;
     }
 
+    const maybeExistingToken = APP_AUTHENTICATION_TOKENS[appInfo.installed_app_id];
+    const appAuthenticationToken = maybeExistingToken
+      ? maybeExistingToken
+      : (
+          await holochainManager.adminWebsocket.issueAppAuthenticationToken({
+            installed_app_id: appInfo.installed_app_id,
+            expiry_seconds: 9999999, // TODO set to zero once unlimited tokens are supported
+            single_use: false,
+          })
+        ).token;
+
+    APP_AUTHENTICATION_TOKENS[appInfo.installed_app_id] = appAuthenticationToken;
+
     const happWindow = createHappWindow(
       opts.input,
       LAUNCHER_FILE_SYSTEM,
       LAUNCHER_EMITTER,
       holochainManager.appPort,
+      appAuthenticationToken,
     );
     WINDOW_INFO_MAP[happWindow.webContents.id] = {
       installedAppId: appInfo.installed_app_id,
@@ -679,15 +719,48 @@ const router = t.router({
   }),
   handleSetupAndLaunch: handlePasswordInput(handleSetupAndLaunch),
   launch: handlePasswordInput(handleLaunch),
-  getAppPort: t.procedure.query(() => APP_PORT),
+  initializeDefaultAppPorts: t.procedure.query(() => {
+    const appstoreAuthenticationToken = APP_AUTHENTICATION_TOKENS[APP_STORE_APP_ID];
+    const devhubAuthenticationToken = APP_AUTHENTICATION_TOKENS[DEVHUB_APP_ID];
+    if (!appstoreAuthenticationToken) {
+      return throwTRPCErrorError({
+        message: NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND,
+      });
+    }
+    if (isDevhubInstalled(HOLOCHAIN_MANAGERS) && !devhubAuthenticationToken) {
+      return throwTRPCErrorError({
+        message: NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND,
+      });
+    }
+    return validateWithZod({
+      schema: InitializeAppPortsSchema,
+      data: {
+        appPort: APP_PORT,
+        appstoreAuthenticationToken,
+        devhubAuthenticationToken,
+      },
+      errorType: NO_APP_PORT_ERROR,
+    });
+  }),
   installDevhub: t.procedure.mutation(async () => {
+    const defaultHolochainManager = HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION];
     await processHeadlessAppInstallation({
-      holochainManager: HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION],
+      holochainManager: defaultHolochainManager,
       defaultAppsNetworkSeed: DEFAULT_APPS_NETWORK_SEED,
       launcherEmitter: LAUNCHER_EMITTER,
     })(DEVHUB_INSTALL);
 
-    return APP_PORT;
+    const authenticationTokenResponse =
+      await defaultHolochainManager.adminWebsocket.issueAppAuthenticationToken({
+        installed_app_id: DEVHUB_INSTALL.id,
+        expiry_seconds: 9999999,
+        single_use: false,
+      });
+
+    return {
+      appPort: APP_PORT,
+      authenticationToken: authenticationTokenResponse.token,
+    };
   }),
   onSetupProgressUpdate: t.procedure.subscription(() => {
     return createObservable(LAUNCHER_EMITTER, LOADING_PROGRESS_UPDATE);

@@ -5,7 +5,8 @@ import {
 	type CellId,
 	CellInfoSchema,
 	type ExtendedAppInfo,
-	ExtendedAppInfoSchema
+	ExtendedAppInfoSchema,
+	type InitializeAppPorts
 } from '$shared/types';
 
 export const getCellId = (cellInfo: unknown): CellId | undefined => {
@@ -39,15 +40,12 @@ export const base64ToArrayBuffer = (base64: string) => {
 export const createImageUrl = (icon?: Uint8Array) =>
 	icon ? URL.createObjectURL(new File([icon], 'icon')) : undefined;
 
-export const initializeAppPortSubscription = async (
-	isDevhubInstalled: boolean,
-	appPort: number | undefined
-) => {
-	if (appPort) {
-		await createAppStoreClient(appPort);
-		if (isDevhubInstalled) {
-			await createDevHubClient(appPort);
-		}
+export const initializeDefaultAppPorts = async (data: InitializeAppPorts) => {
+	const { appPort, appstoreAuthenticationToken, devhubAuthenticationToken } = data;
+
+	await createAppStoreClient(appPort, appstoreAuthenticationToken);
+	if (devhubAuthenticationToken) {
+		await createDevHubClient(appPort, devhubAuthenticationToken);
 	}
 };
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 
 	import { goto } from '$app/navigation';
@@ -7,18 +8,22 @@
 	import { SEARCH_URL_QUERY, SELECTED_ICON_STYLE } from '$const';
 	import {
 		handleNavigationWithAnimationDelay,
-		initializeAppPortSubscription,
+		initializeDefaultAppPorts,
 		setSearchInput,
+		showModalError,
 		validateApp
 	} from '$helpers';
 	import { Gear, Home, Rocket } from '$icons';
 	import { i18n, trpc } from '$services';
 	import { APP_STORE, APPS_VIEW } from '$shared/const';
+	import { getErrorMessage } from '$shared/helpers';
 	import { navigationStore } from '$stores';
 
 	const client = trpc();
 
-	const utlis = client.createUtils();
+	const modalStore = getModalStore();
+
+	const utils = client.createUtils();
 
 	const hideApp = client.hideApp.createMutation();
 	const installedApps = client.getInstalledApps.createQuery();
@@ -89,12 +94,16 @@
 	});
 
 	const waitForAppPortAndDevHubInfo = async () => {
-		const [isDevhubInstalled, getAppPort] = await Promise.all([
-			utlis.isDevhubInstalled.fetch(),
-			utlis.getAppPort.fetch()
-		]);
-
-		initializeAppPortSubscription(isDevhubInstalled, getAppPort);
+		try {
+			const initializeDefaultAppPortsData = await utils.initializeDefaultAppPorts.fetch();
+			initializeDefaultAppPorts(initializeDefaultAppPortsData);
+		} catch (error) {
+			showModalError({
+				modalStore,
+				errorTitle: $i18n.t('appError'),
+				errorMessage: $i18n.t(getErrorMessage(error))
+			});
+		}
 	};
 
 	onMount(() => {

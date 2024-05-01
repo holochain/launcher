@@ -1,24 +1,34 @@
 <script lang="ts">
+	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 
 	import { page } from '$app/stores';
 	import { DEV_PAGE } from '$const';
-	import { initializeAppPortSubscription } from '$helpers';
-	import { trpc } from '$services';
+	import { initializeDefaultAppPorts, showModalError } from '$helpers';
+	import { i18n, trpc } from '$services';
+	import { getErrorMessage } from '$shared/helpers';
 
 	import { DevMenu, RegularMenu, TopBar } from './components';
 
+	const modalStore = getModalStore();
+
 	const client = trpc();
 
-	const utlis = client.createUtils();
+	const utils = client.createUtils();
 
 	$: isDevPage = $page.url.pathname.includes(DEV_PAGE);
 
 	onMount(async () => {
-		initializeAppPortSubscription(
-			await utlis.isDevhubInstalled.fetch(),
-			await utlis.getAppPort.fetch()
-		);
+		try {
+			const initializeDefaultAppPortsData = await utils.initializeDefaultAppPorts.fetch();
+			initializeDefaultAppPorts(initializeDefaultAppPortsData);
+		} catch (error) {
+			showModalError({
+				modalStore,
+				errorTitle: $i18n.t('appError'),
+				errorMessage: $i18n.t(getErrorMessage(error))
+			});
+		}
 	});
 </script>
 
