@@ -35,7 +35,7 @@
 				props={{
 					onClick: () => {
 						$installDevhub.mutate(undefined, {
-							onSuccess: async (appPort) => {
+							onSuccess: async ({ appPort, authenticationToken }) => {
 								if (!appPort) {
 									modalStore.close();
 									showModalError({
@@ -46,7 +46,7 @@
 									return;
 								}
 
-								await createDevHubClient(appPort);
+								await createDevHubClient(appPort, authenticationToken);
 								$isDevhubInstalled.refetch();
 								modalStore.close();
 							}

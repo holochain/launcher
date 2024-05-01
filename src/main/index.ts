@@ -730,13 +730,24 @@ const router = t.router({
       return authenticationToken;
     }),
   installDevhub: t.procedure.mutation(async () => {
+    const defaultHolochainManager = HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION];
     await processHeadlessAppInstallation({
-      holochainManager: HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION],
+      holochainManager: defaultHolochainManager,
       defaultAppsNetworkSeed: DEFAULT_APPS_NETWORK_SEED,
       launcherEmitter: LAUNCHER_EMITTER,
     })(DEVHUB_INSTALL);
 
-    return APP_PORT;
+    const authenticationTokenResponse =
+      await defaultHolochainManager.adminWebsocket.issueAppAuthenticationToken({
+        installed_app_id: DEVHUB_INSTALL.id,
+        expiry_seconds: 9999999,
+        single_use: false,
+      });
+
+    return {
+      appPort: APP_PORT,
+      authenticationToken: authenticationTokenResponse.token,
+    };
   }),
   onSetupProgressUpdate: t.procedure.subscription(() => {
     return createObservable(LAUNCHER_EMITTER, LOADING_PROGRESS_UPDATE);
