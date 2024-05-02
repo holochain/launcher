@@ -1,4 +1,4 @@
-import type { CallZomeRequestSigned } from '@holochain/client';
+import type { AppInfo, CallZomeRequestSigned } from '@holochain/client';
 import { TRPCError } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
 import { BrowserWindow } from 'electron';
@@ -9,7 +9,7 @@ import path from 'path';
 import semver from 'semver';
 import type { ZodSchema } from 'zod';
 
-import { DEVHUB_APP_ID } from '$shared/const';
+import { APP_STORE_APP_ID, DEVHUB_APP_ID } from '$shared/const';
 import type { AppToInstall } from '$shared/types';
 import {
   type EventKeys,
@@ -208,3 +208,26 @@ export function createObservable<K extends EventKeys>(
     return !singleEmission ? () => emitter.off(eventName, handler) : undefined;
   });
 }
+
+export const filterHeadlessApps = (app: { installed_app_id: string }) =>
+  ![DEVHUB_APP_ID, APP_STORE_APP_ID].includes(app.installed_app_id);
+
+export const createAppInfo = (manager: HolochainManager) => (app: AppInfo) => {
+  const getVersion = (appID: string) => {
+    const distributionInfo = manager.appDistributionInfo(appID);
+    return distributionInfo.type === 'appstore' ? distributionInfo.appVersion : '1.2';
+  };
+
+  return {
+    appInfo: app,
+    holochainDataRoot: manager.holochainDataRoot,
+    icon: manager.appIcon(app.installed_app_id),
+    version: getVersion(app.installed_app_id),
+  };
+};
+
+export const getInstalledAppsInfo = (managers: Record<string, HolochainManager> = {}) => {
+  return Object.values(managers).flatMap((manager) =>
+    manager.installedApps.filter(filterHeadlessApps).map(createAppInfo(manager)),
+  );
+};

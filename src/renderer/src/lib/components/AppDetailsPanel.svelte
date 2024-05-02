@@ -1,31 +1,51 @@
 <script lang="ts">
 	import { Avatar } from '@skeletonlabs/skeleton';
+	import clsx from 'clsx';
 
 	import { Button } from '$components';
 
 	export let imageUrl: string | undefined = undefined;
 	export let title: string;
+	export let subtitle = '';
+	export let version: string = '';
+	export let selectedIndex = 0;
 	export let buttons: Array<string>;
 </script>
 
 <div class="bg-app-details-gradient p-8 pb-4">
-	<div class="flex items-center space-x-4 pb-4">
-		<Avatar
-			width="w-20"
-			src={imageUrl}
-			initials={title}
-			fill="fill-current text-white"
-			background="dark:bg-app-gradient"
-			rounded="rounded-sm"
-		/>
-		<h3 class="h3">{title}</h3>
+	<div class="flex justify-between">
+		<div class="flex items-center space-x-4 pb-4">
+			<Avatar
+				width="w-20"
+				src={imageUrl}
+				initials={title}
+				fill="fill-current text-white"
+				background="dark:bg-app-gradient"
+				rounded="rounded-sm"
+			/>
+			<div class="flex flex-col">
+				<div class="flex items-end">
+					<h3 class="h3">{title}</h3>
+					<p class="ml-2 text-xs">{version}</p>
+				</div>
+				{#if subtitle}
+					<p class="text-xs text-white/80">{subtitle}</p>
+				{/if}
+			</div>
+		</div>
+		<slot name="install" />
 	</div>
-	{#each buttons as button}
+	{#each buttons as button, index}
 		<Button
 			props={{
 				type: 'button',
-				onClick: () => {},
-				class: 'bg-white/25 rounded-sm px-6 py-2'
+				onClick: () => {
+					selectedIndex = index;
+				},
+				class: clsx(
+					'rounded-sm px-3 py-2 border-white/25 border mr-2 d',
+					index === selectedIndex ? 'bg-white/25 font-semibold' : 'bg-transparent text-white/80'
+				)
 			}}
 		>
 			{button}
