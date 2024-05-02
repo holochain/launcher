@@ -4,6 +4,7 @@ import { Bundle } from '@spartan-hc/bundles';
 import { createMutation, createQuery, QueryClient } from '@tanstack/svelte-query';
 import type {
 	AppstoreAppClient,
+	AppVersionEntry,
 	BundleHashes,
 	CreatePublisherFrontendInput,
 	DevhubAppClient
@@ -101,7 +102,7 @@ export const createAppStoreMyHappsQuery = () => {
 			const myApps = await getAppStoreClientOrThrow().appstoreZomeClient.getMyApps();
 			const appsWithIcons = await Promise.all(
 				myApps.map(async (app) => {
-					const icon = await getDevHubClientOrThrow().appHubMereMemoryZomeClient.getMereMemoryBytes(
+					const icon = await getDevHubClientOrThrow().appHubMereMemoryZomeClient.getMemoryBytes(
 						app.content.icon
 					);
 
@@ -128,9 +129,7 @@ export const createAppStoreHappsQuery = () => {
 
 			const appsWithIcons = await Promise.all(
 				myApps.map(async (app) => {
-					const icon = await appStoreClient.mereMemoryZomeClient.getMereMemoryBytes(
-						app.content.icon
-					);
+					const icon = await appStoreClient.mereMemoryZomeClient.getMemoryBytes(app.content.icon);
 
 					return {
 						title: app.content.title,
@@ -295,6 +294,24 @@ export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: [ALL_APP_VERSIONS_DEVHUB_QUERY_KEY] });
 			queryClient.invalidateQueries({ queryKey: [ALL_APP_VERSIONS_APPSTORE_QUERY_KEY] });
+		}
+	});
+};
+
+export const createFetchWebappBytesQuery = () => (appVersionEntry: AppVersionEntry) => {
+	return createQuery({
+		queryKey: ['webapp-bytes', appVersionEntry],
+		queryFn: async () => {
+			const appStoreClient = getAppStoreClientOrThrow();
+			return appStoreClient.fetchWebappBytes(appVersionEntry);
+		}
+	});
+};
+export const createFetchWebappBytesMutation = () => {
+	return createMutation({
+		mutationFn: async (appVersionEntry: AppVersionEntry) => {
+			const appStoreClient = getAppStoreClientOrThrow();
+			return appStoreClient.fetchWebappBytes(appVersionEntry);
 		}
 	});
 };

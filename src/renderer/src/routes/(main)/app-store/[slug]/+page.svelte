@@ -15,6 +15,7 @@
 
 {#if app}
 	<AppDetailsPanel
+		appVersions={$appVersionsDetailsQuery?.data}
 		imageUrl={createImageUrl(app.icon)}
 		title={app.title}
 		buttons={[$i18n.t('Version History')]}
