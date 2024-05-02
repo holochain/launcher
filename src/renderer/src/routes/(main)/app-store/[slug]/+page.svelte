@@ -1,10 +1,11 @@
 <script lang="ts">
+	import { getModalStore } from '@skeletonlabs/skeleton';
+
 	import { page } from '$app/stores';
 	import { AppDetailsPanel, Button } from '$components';
 	import { createImageUrl, showModalError, uint8ArrayToURIComponent } from '$helpers';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
-	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	const { appStoreHappsQuery, appVersionsAppstoreQueryFunction, fetchWebappBytesMutation } =
 		createAppQueries();
