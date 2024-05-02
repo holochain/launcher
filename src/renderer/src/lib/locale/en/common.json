@@ -60,8 +60,10 @@
 	"systemSettings": "System settings",
 	"theDeveloperToolkitSyncs": "The developer toolkit syncs with the app publishing network. Your local device will host files and potentially large amounts of data.",
 	"uninstall": "Uninstall",
+	"updateAvailable": "Update available",
 	"uploadAndPublish": "upload and publish apps",
 	"useWebhappFileToAddHapp": "Use a webhapp file to add your hApp",
+	"versionHistory": "Version History",
 	"website": "Website",
 	"whatDoYouWantToInstall": "What do you want to install?",
 	"yourHapps": "Your hApps"

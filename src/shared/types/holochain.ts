@@ -94,7 +94,7 @@ export type HolochainPartition = z.infer<typeof HolochainPartitionSchema>;
 
 export const ExtendedAppInfoSchema = z.object({
   appInfo: AppInfoSchema,
-  version: HolochainVersionSchema,
+  version: z.string(),
   holochainDataRoot: HolochainDataRootSchema,
   icon: z.string().optional(),
 });

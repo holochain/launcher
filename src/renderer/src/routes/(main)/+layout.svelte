@@ -27,6 +27,7 @@
 
 	const hideApp = client.hideApp.createMutation();
 	const installedApps = client.getInstalledApps.createQuery();
+	const checkForAppUiUpdates = client.checkForAppUiUpdates.createQuery();
 	const openApp = client.openApp.createMutation();
 
 	const openSettings = client.openSettings.createMutation();
@@ -163,7 +164,12 @@
 		</IconButton>
 	{/if}
 	<IconButton onClick={() => $openSettings.mutate(undefined)}>
-		<Gear />
+		<div class="relative">
+			<Gear />
+			{#if Object.values($checkForAppUiUpdates.data ?? {}).some(Boolean)}
+				<div class="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-warning-500"></div>
+			{/if}
+		</div>
 	</IconButton>
 </TopBar>
 

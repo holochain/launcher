@@ -662,6 +662,13 @@ export class HolochainManager {
     }
     return undefined;
   }
+
+  appDistributionInfo(appId: string): DistributionInfoV1 {
+    const metadata: AppMetadata<AppMetadataV1> = this.integrityChecker.readSignedJSON(
+      path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json'),
+    );
+    return metadata.data.distributionInfo;
+  }
 }
 
 function writeFile(filePath: string, contents: string | NodeJS.ArrayBufferView): void {

@@ -1,60 +1,51 @@
 <script lang="ts">
 	import { Avatar } from '@skeletonlabs/skeleton';
-	import type { AppVersionEntry, Entity } from 'appstore-tools';
+	import clsx from 'clsx';
 
 	import { Button } from '$components';
-	// import { createAppQueries } from '$queries';
 
-	// const { fetchWebappBytesQuery } = createAppQueries();
-
-	export let appVersions: Entity<AppVersionEntry>[] | undefined = undefined;
 	export let imageUrl: string | undefined = undefined;
 	export let title: string;
+	export let subtitle = '';
+	export let version: string = '';
+	export let selectedIndex = 0;
 	export let buttons: Array<string>;
-
-	let latestVersion: Entity<AppVersionEntry> | undefined;
-	if (appVersions) {
-		latestVersion = appVersions.sort((a, b) => a.content.published_at - b.content.published_at)[0];
-	}
-
-	async function installApp() {
-		// if (!latestVersion) throw new Error('No latest version defined.');
-		// const bytes = fetchWebappBytesQuery(latestVersion.content);
-		console.log('Got bytes: ');
-		console.log('Installing app.');
-	}
 </script>
 
 <div class="bg-app-details-gradient p-8 pb-4">
-	<div class="flex items-center space-x-4 pb-4">
-		<Avatar
-			width="w-20"
-			src={imageUrl}
-			initials={title}
-			fill="fill-current text-white"
-			background="dark:bg-app-gradient"
-			rounded="rounded-sm"
-		/>
-		<h3 class="h3">{title}</h3>
-		<span class="flex flex-1"></span>
+	<div class="flex justify-between">
+		<div class="flex items-center space-x-4 pb-4">
+			<Avatar
+				width="w-20"
+				src={imageUrl}
+				initials={title}
+				fill="fill-current text-white"
+				background="dark:bg-app-gradient"
+				rounded="rounded-sm"
+			/>
+			<div class="flex flex-col">
+				<div class="flex items-end">
+					<h3 class="h3">{title}</h3>
+					<p class="ml-2 text-xs">{version}</p>
+				</div>
+				{#if subtitle}
+					<p class="text-xs text-white/80">{subtitle}</p>
+				{/if}
+			</div>
+		</div>
+		<slot name="install" />
+	</div>
+	{#each buttons as button, index}
 		<Button
 			props={{
 				type: 'button',
 				onClick: () => {
-					installApp();
+					selectedIndex = index;
 				},
-				disabled: !latestVersion
-			}}
-		>
-			Install
-		</Button>
-	</div>
-	{#each buttons as button}
-		<Button
-			props={{
-				type: 'button',
-				onClick: () => {},
-				class: 'bg-white/25 rounded-sm px-6 py-2'
+				class: clsx(
+					'rounded-sm px-3 py-2 border-white/25 border mr-2 d',
+					index === selectedIndex ? 'bg-white/25 font-semibold' : 'bg-transparent text-white/80'
+				)
 			}}
 		>
 			{button}
