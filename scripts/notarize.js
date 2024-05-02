@@ -10,7 +10,7 @@ module.exports = async function (params) {
 
   console.log('afterSign hook triggered', params);
 
-  const appId = 'holochain.launcher.electron.prototype';
+  const appId = 'holochain.launcher.electron';
 
   const appPath = path.join(params.appOutDir, `${params.packager.appInfo.productFilename}.app`);
   if (!fs.existsSync(appPath)) {

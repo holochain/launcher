@@ -691,14 +691,6 @@ const router = t.router({
   defaultHolochainVersion: t.procedure.query(
     () => HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION].version,
   ),
-  checkForAppUiUpdates: t.procedure.query(() => {
-    const installedApps = getInstalledAppsInfo(HOLOCHAIN_MANAGERS);
-
-    return installedApps.reduce<Record<string, boolean>>((acc, appInfo) => {
-      acc[appInfo.appInfo.installed_app_id] = false;
-      return acc;
-    }, {});
-  }),
   isDevhubInstalled: t.procedure.query(() => isDevhubInstalled(HOLOCHAIN_MANAGERS)),
   getInstalledApps: t.procedure.query(() => {
     const installedApps = getInstalledAppsInfo(HOLOCHAIN_MANAGERS);

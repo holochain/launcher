@@ -18,8 +18,11 @@
 	import { APP_STORE, APPS_VIEW } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
 	import { navigationStore } from '$stores';
+	import { createAppQueries } from '$queries';
 
 	const client = trpc();
+
+	const { checkForAppUiUpdatesMutation } = createAppQueries();
 
 	const modalStore = getModalStore();
 
@@ -27,7 +30,6 @@
 
 	const hideApp = client.hideApp.createMutation();
 	const installedApps = client.getInstalledApps.createQuery();
-	const checkForAppUiUpdates = client.checkForAppUiUpdates.createQuery();
 	const openApp = client.openApp.createMutation();
 
 	const openSettings = client.openSettings.createMutation();

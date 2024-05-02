@@ -1,5 +1,5 @@
-appId: holochain.launcher.electron.prototype
-productName: Holochain Launcher Electron (Prototype)
+appId: holochain.launcher.electron
+productName: Holochain Launcher (0.3)
 directories:
   buildResources: build
 files:

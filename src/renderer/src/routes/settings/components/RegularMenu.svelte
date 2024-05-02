@@ -15,7 +15,6 @@
 	const client = trpc();
 
 	const installedApps = client.getInstalledApps.createQuery();
-	const checkForAppUiUpdates = client.checkForAppUiUpdates.createQuery();
 
 	const selectView = (view: string) => goto(`/${SETTINGS_SCREEN}/${view}`);
 

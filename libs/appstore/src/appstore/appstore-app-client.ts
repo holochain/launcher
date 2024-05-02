@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { AppClient } from '@holochain/client';
+import type { ActionHash, AppClient } from '@holochain/client';
 import { Bundle } from '@spartan-hc/bundles';
 
 import type {
@@ -63,6 +63,44 @@ export class AppstoreAppClient {
       ...input,
       icon: iconBytes,
     });
+  }
+
+  /**
+   * Checks whether a new update is available for a given AppVersionEntry action hash
+   *
+   * An update is considered valid if
+   * - the happ sha256 is identical to the happ sha256 of the existing AppVersionEntry
+   * - the ui sha256 is different from the ui sha256 of the existing AppVersionEntry
+   * - the AppVersionEntry is published later than the current AppVersionEntry
+   *
+   * @param appVersionActionHash
+   * @returns
+   */
+  async checkForUiUpdate(
+    appVersionActionHash: ActionHash,
+  ): Promise<Entity<AppVersionEntry> | undefined> {
+    // logic
+    // we need to check that there is a new version available and that the happ bundle hash is the same but the ui hash is different
+    const appVersionEntity = await this.appstoreZomeClient.getAppVersion(appVersionActionHash);
+    const appVersions = await this.appstoreZomeClient.getAppVersionsForApp(
+      appVersionEntity.content.for_app,
+    );
+    // Check for newer versions
+    const updateCandidates = appVersions
+      .filter((entity) => entity.content.published_at > appVersionEntity.content.published_at)
+      .filter(
+        (entity) =>
+          entity.content.bundle_hashes.happ_hash ===
+          appVersionEntity.content.bundle_hashes.happ_hash,
+      )
+      .filter(
+        (entity) =>
+          entity.content.bundle_hashes.ui_hash !== appVersionEntity.content.bundle_hashes.ui_hash,
+      )
+      .sort((a, b) => b.content.published_at - a.content.published_at);
+
+    if (updateCandidates.length > 0) return updateCandidates[0];
+    return undefined;
   }
 
   // async fetchHappBytes();
