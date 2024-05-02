@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { AppAgentCallZomeRequest, AppClient, RoleName, ZomeName } from '@holochain/client';
+import type { AppCallZomeRequest, AppClient, RoleName, ZomeName } from '@holochain/client';
 
 export class ZomeClient {
   constructor(
@@ -20,7 +20,7 @@ export class ZomeClient {
   // }
 
   protected callZome(fn_name: string, payload: unknown, timeoutMs?: number) {
-    const req: AppAgentCallZomeRequest = {
+    const req: AppCallZomeRequest = {
       role_name: this.roleName,
       zome_name: this.zomeName,
       fn_name,

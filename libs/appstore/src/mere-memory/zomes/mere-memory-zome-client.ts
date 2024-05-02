@@ -1,5 +1,5 @@
 import {
-  type AppAgentCallZomeRequest,
+  type AppCallZomeRequest,
   decodeHashFromBase64,
   encodeHashToBase64,
   type EntryHash,
@@ -91,7 +91,7 @@ export class MereMemoryZomeClient extends ZomeClient {
     });
   }
 
-  async getMereMemoryBytes(entryHash: EntryHash): Promise<Uint8Array> {
+  async getMemoryBytes(entryHash: EntryHash): Promise<Uint8Array> {
     const memoryEntry: MemoryEntry = await this.getMemoryEntry(entryHash);
 
     if (memoryEntry.compression !== 'gzip')
@@ -106,8 +106,27 @@ export class MereMemoryZomeClient extends ZomeClient {
       bytes.set(block.bytes, index);
       index += block.bytes.length;
     }
-    // TODO verify bytes
-    return gunzipSync(bytes);
+
+    const uncompressedBytes = gunzipSync(bytes);
+    if (memoryEntry.hash !== this.hashBytes(uncompressedBytes)) {
+      throw new Error('Hash of bytes does not match expected hash.');
+    }
+
+    return uncompressedBytes;
+  }
+
+  async getMemoryWithBytes(entryHash: EntryHash): Promise<[MemoryEntry, Uint8Array]> {
+    const [memoryEntry, compressedBytes] = await this.callZome('get_memory_with_bytes', entryHash);
+
+    if (memoryEntry.compression !== 'gzip')
+      throw new Error(`Got invalid compression type: ${memoryEntry.compression}`);
+
+    const bytes = gunzipSync(compressedBytes);
+    if (memoryEntry.hash !== this.hashBytes(bytes)) {
+      throw new Error('Hash of bytes does not match expected hash.');
+    }
+
+    return [memoryEntry, bytes];
   }
 
   async getMemoryEntry(entryHash: EntryHash): Promise<MemoryEntry> {
@@ -119,7 +138,7 @@ export class MereMemoryZomeClient extends ZomeClient {
   }
 
   protected callZome(fn_name: string, payload: unknown) {
-    const req: AppAgentCallZomeRequest = {
+    const req: AppCallZomeRequest = {
       role_name: this.roleName,
       zome_name: this.zomeName,
       fn_name,

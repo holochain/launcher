@@ -1,11 +1,16 @@
 <script lang="ts">
+	import { getModalStore } from '@skeletonlabs/skeleton';
+
 	import { page } from '$app/stores';
 	import { AppDetailsPanel, Button } from '$components';
-	import { createImageUrl, uint8ArrayToURIComponent } from '$helpers';
+	import { createImageUrl, showModalError, uint8ArrayToURIComponent } from '$helpers';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
 
-	const { appStoreHappsQuery, appVersionsAppstoreQueryFunction } = createAppQueries();
+	const { appStoreHappsQuery, appVersionsAppstoreQueryFunction, fetchWebappBytesMutation } =
+		createAppQueries();
+
+	const modalStore = getModalStore();
 
 	const slug: string = $page.params.slug;
 	let selectedIndex = 0;
@@ -14,7 +19,7 @@
 	$: appVersionsDetailsQuery = app ? appVersionsAppstoreQueryFunction(app.id) : undefined;
 </script>
 
-{#if app}
+{#if app && appVersionsDetailsQuery && $appVersionsDetailsQuery?.isSuccess}
 	<AppDetailsPanel
 		imageUrl={createImageUrl(app.icon)}
 		title={app.title}
@@ -26,7 +31,44 @@
 			<Button
 				props={{
 					class: 'btn-app-store variant-filled',
-					onClick: () => {}
+					onClick: async () => {
+						const appVersions = $appVersionsDetailsQuery.data;
+						const latestVersion = appVersions.sort(
+							(a, b) => a.content.published_at - b.content.published_at
+						)[0];
+						// check whether UI is already available
+
+						// check whether happ is already available
+
+						// if both available
+						// installWebhappFromHashses(latestVersion.content.bundle_hashes,...)
+
+						// if only happ available
+						// fetchUiBytesMutation
+						// storeUiBytes
+
+						$fetchWebappBytesMutation.mutate(latestVersion.content, {
+							onError: (error) => {
+								console.error(error);
+								showModalError({
+									modalStore,
+									errorTitle: $i18n.t('appError'),
+									errorMessage: $i18n.t(error.message)
+								});
+							},
+							onSuccess: (bytes) => {
+								console.log('GOT BYTES: ', bytes.length);
+								// const distributionInfo = {
+								// 	appName: app.title,
+								// 	appVersion: latestVersion.content.version,
+								// 	appVersionActionHash: latestVersion.id,
+								// 	appEntryActionHash: latestVersion.address,
+								// 	appstoreDnaHash: latestVersion.content.apphub_hrl.dna
+								// };
+							}
+						});
+					},
+					isLoading: $fetchWebappBytesMutation.isPending
 				}}
 			>
 				{$i18n.t('install')}

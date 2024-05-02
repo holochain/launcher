@@ -117,14 +117,15 @@ export class PortalZomeClient extends ZomeClient {
   ): Promise<T> {
     // try with first responding host
     const quickestHost: AgentPubKey = await this.getAvailableHostForZomeFunction(dnaZomeFunction);
-
+    console.log('got quickest host: ', quickestHost);
     try {
       // console.log("@tryWithHosts: trying with first responding host: ", encodeHashToBase64(host));
       const result = await fn(quickestHost);
       return result;
     } catch (e: unknown) {
+      console.log('Failed: ', e);
       const errors: Array<unknown> = [];
-      errors.push(e);
+      errors.push(JSON.stringify(e));
 
       // console.log("@tryWithHosts: Failed with first host: ", JSON.stringify(e));
       // if it fails with the first host, try other hosts

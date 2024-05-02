@@ -84,7 +84,7 @@ export class DevhubAppClient {
   async getWasm(addr: AnyDhtHash): Promise<Wasm> {
     const wasmEntryEntity = await this.zomeHubZomeClient.getWasmEntry(addr);
     const wasmEntry = wasmEntryEntity.content;
-    const wasmBytes = await this.zomeHubMereMemoryZomeClient.getMereMemoryBytes(
+    const [_memoryEntry, wasmBytes] = await this.zomeHubMereMemoryZomeClient.getMemoryWithBytes(
       wasmEntry.mere_memory_addr,
     );
     return {
@@ -106,7 +106,7 @@ export class DevhubAppClient {
         `DNA entry (${input.dnaEntryAddress}) does not have an integrity zome named '${input.name}'`,
       );
 
-    return this.getWasm(zomeManifest.wasm_hrl.target);
+    return this.getWasm(zomeManifest.zome_hrl!.target);
   }
 
   async getCoordinatorWasm(input: { dnaEntryAddress: AnyDhtHash; name: ZomeName }) {
@@ -120,7 +120,7 @@ export class DevhubAppClient {
         `DNA entry (${input.dnaEntryAddress}) does not have an coordinator zome named '${input.name}'`,
       );
 
-    return this.getWasm(zomeManifest.wasm_hrl.target);
+    return this.getWasm(zomeManifest.zome_hrl!.target);
   }
 
   async getDnaBundle(addr: AnyDhtHash) {
@@ -234,7 +234,7 @@ export class DevhubAppClient {
   async getUi(address: AnyDhtHash): Promise<Ui> {
     const uiEntryEntity = await this.appHubZomeClient.getUiEntry(address);
     const uiEntry = uiEntryEntity.content;
-    const uiBytes = await this.appHubMereMemoryZomeClient.getMereMemoryBytes(
+    const [_memoryEntry, uiBytes] = await this.appHubMereMemoryZomeClient.getMemoryWithBytes(
       uiEntry.mere_memory_addr,
     );
     return {
@@ -246,9 +246,9 @@ export class DevhubAppClient {
 
   async getUiBytes(address: AnyDhtHash): Promise<Uint8Array> {
     const uiEntryEntity = await this.appHubZomeClient.getUiEntry(address);
-    return this.appHubMereMemoryZomeClient.getMereMemoryBytes(
+    return this.appHubMereMemoryZomeClient.getMemoryWithBytes(
       uiEntryEntity.content.mere_memory_addr,
-    );
+    )[1];
   }
 
   async createWebappPackage(
