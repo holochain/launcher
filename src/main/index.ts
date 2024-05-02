@@ -695,7 +695,7 @@ const router = t.router({
     const installedApps = getInstalledAppsInfo(HOLOCHAIN_MANAGERS);
 
     return installedApps.reduce<Record<string, boolean>>((acc, appInfo) => {
-      acc[appInfo.appInfo.installed_app_id] = true;
+      acc[appInfo.appInfo.installed_app_id] = false;
       return acc;
     }, {});
   }),
