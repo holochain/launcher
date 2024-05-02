@@ -28,7 +28,7 @@
     "rebuild-appstore-lib": "yarn workspace appstore-tools build && rimraf ./node_modules ./src/renderer/node_modules && yarn cache clean && yarn install",
     "setupForCI": "cd rust-utils && yarn && yarn build && cd ..",
     "setup": "yarn setupForCI && yarn build:libs",
-    "build:libs": "yarn workspace appstore-tools install && yarn workspace appstore-tools build",
+    "build:libs": "yarn workspace appstore-tools install && yarn workspace appstore-tools build && rm -rf src/renderer/node_modules/.vite",
     "fetch:default-apps": "curl -L --fail --output resources/default-apps/kando.webhapp https://github.com/holochain-apps/kando/releases/download/v0.9.5/kando.webhapp && curl -L --fail --output resources/default-apps/devhub.happ https://drive.switch.ch/index.php/s/OSkIo8wWWrvlP39/download && curl -L --fail --output resources/default-apps/appstore.happ https://drive.switch.ch/index.php/s/ErATwmbm3m7LmWr/download",
     "fetch:binaries": "node ./scripts/fetch-binaries.mjs",
     "check:binaries": "node ./scripts/check-binaries.mjs",

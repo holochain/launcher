@@ -65,6 +65,10 @@ export class AppstoreAppClient {
     });
   }
 
+  // async fetchHappBytes();
+
+  // async fetchUiBytes();
+
   /**
    * Fetches the webhapp bytes for a given app version via sequential remote calls to devhub hosts
    * @param appVersion
@@ -94,6 +98,8 @@ export class AppstoreAppClient {
           );
         }
 
+        console.log('Got webapp package version: ', webappPackageVersion);
+
         // 2. Get webhapp bundle
         // happy path
         const webappAsset = await this.portalZomeClient.customRemoteCall<WebAppAsset>({
@@ -106,11 +112,15 @@ export class AppstoreAppClient {
           },
         });
 
+        console.log('Got webappAsset: ', webappAsset);
+
         // TODO verify assets
         // await this.appstoreZomeClient.verifyWebappAsset(webappAsset, webappPackageVersion.webapp);
 
         // Create webapp bundle
         const webappBundle = bundleFromWebappAsset(webappAsset);
+
+        console.log('Got webappBundle: ', webappBundle);
 
         return webappBundle.toBytes();
 

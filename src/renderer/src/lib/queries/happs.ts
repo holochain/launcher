@@ -298,15 +298,6 @@ export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 	});
 };
 
-export const createFetchWebappBytesQuery = () => (appVersionEntry: AppVersionEntry) => {
-	return createQuery({
-		queryKey: ['webapp-bytes', appVersionEntry],
-		queryFn: async () => {
-			const appStoreClient = getAppStoreClientOrThrow();
-			return appStoreClient.fetchWebappBytes(appVersionEntry);
-		}
-	});
-};
 export const createFetchWebappBytesMutation = () => {
 	return createMutation({
 		mutationFn: async (appVersionEntry: AppVersionEntry) => {

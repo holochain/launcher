@@ -1,4 +1,4 @@
-import type { ActionHashB64, AgentPubKey, DnaHashB64 } from '@holochain/client';
+import type { AgentPubKey } from '@holochain/client';
 import { z } from 'zod';
 
 import { APP_STORE, APPS_VIEW, type MAIN_SCREEN, type SETTINGS_SCREEN } from '../const';
@@ -46,25 +46,6 @@ export const BytesSchema = z.object({
   bytes: z.instanceof(Uint8Array),
 });
 
-export type DistributionInfoV1 =
-  | {
-      type: 'filesystem'; // app has been installed from filesystem
-    }
-  | {
-      type: 'default-app'; // app has been shipped with the launcher
-    }
-  | {
-      type: 'appstore';
-      /**
-       * Name of the app type in app store.
-       */
-      appName: string;
-      appstoreDnaHash: DnaHashB64;
-      appEntryActionHash: ActionHashB64;
-      appVersionActionHash: ActionHashB64;
-      appVersion: string;
-    };
-
 export const DistributionInfoV1Schema = z.union([
   z.object({ type: z.literal('filesystem') }),
   z.object({ type: z.literal('default-app') }),
@@ -77,6 +58,8 @@ export const DistributionInfoV1Schema = z.union([
     appVersion: z.string({ description: 'version name' }),
   }),
 ]);
+
+export type DistributionInfoV1 = z.infer<typeof DistributionInfoV1Schema>;
 
 export const InstallHappOrWebhappFromBytesSchema = CommonAppSchema.extend({
   bytes: z.instanceof(Uint8Array),
