@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { Avatar } from '@skeletonlabs/skeleton';
-	import { Button } from '$components';
 	import type { AppVersionEntry, Entity } from 'appstore-tools';
+
+	import { Button } from '$components';
 	import { createAppQueries } from '$queries';
 
 	const { fetchWebappBytesQuery } = createAppQueries();
@@ -17,8 +18,8 @@
 	}
 
 	async function installApp() {
-		if (!latestVersion) throw new Error('No latest version defined.');
-		const bytes = fetchWebappBytesQuery(latestVersion.content);
+		// if (!latestVersion) throw new Error('No latest version defined.');
+		// const bytes = fetchWebappBytesQuery(latestVersion.content);
 		console.log('Got bytes: ');
 		console.log('Installing app.');
 	}
