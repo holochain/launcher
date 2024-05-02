@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { ProgressRadial } from '@skeletonlabs/skeleton';
 	import clsx from 'clsx';
 
 	import { goto } from '$app/navigation';
@@ -14,6 +15,7 @@
 	const client = trpc();
 
 	const installedApps = client.getInstalledApps.createQuery();
+	const checkForAppUiUpdates = client.checkForAppUiUpdates.createQuery();
 
 	const selectView = (view: string) => goto(`/${SETTINGS_SCREEN}/${view}`);
 
@@ -33,11 +35,12 @@
 	</MenuEntry>
 {/each}
 <div class="!my-2 h-px w-full bg-tertiary-800"></div>
-{#if $installedApps.isLoading}
-	<p>{$i18n.t('loading')}</p>
+{#if $installedApps.isPending}
+	<ProgressRadial stroke={100} width="w-6" />
 {:else if $installedApps.isSuccess}
 	{#each $installedApps.data.filter(validateApp) as app (app.appInfo.installed_app_id)}
 		<MenuEntry
+			isUpdateAvailable={$checkForAppUiUpdates.data?.[app.appInfo.installed_app_id] ?? false}
 			name={app.appInfo.installed_app_id}
 			onClick={() => selectView(app.appInfo.installed_app_id)}
 			isSelected={view === app.appInfo.installed_app_id}

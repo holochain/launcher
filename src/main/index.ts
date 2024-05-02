@@ -1,11 +1,6 @@
 import { optimizer } from '@electron-toolkit/utils';
 import type { AppAuthenticationToken, InstalledAppId } from '@holochain/client';
-import {
-  type AppInfo,
-  type CallZomeRequest,
-  getNonceExpiration,
-  randomNonce,
-} from '@holochain/client';
+import { type CallZomeRequest, getNonceExpiration, randomNonce } from '@holochain/client';
 import { encode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
 import * as childProcess from 'child_process';
@@ -76,6 +71,7 @@ import { DEFAULT_APPS_DIRECTORY } from './paths';
 import {
   breakingVersion,
   createObservable,
+  getInstalledAppsInfo,
   isDevhubInstalled,
   isHappAlreadyOpened,
   processHeadlessAppInstallation,
@@ -695,22 +691,17 @@ const router = t.router({
   defaultHolochainVersion: t.procedure.query(
     () => HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION].version,
   ),
+  checkForAppUiUpdates: t.procedure.query(() => {
+    const installedApps = getInstalledAppsInfo(HOLOCHAIN_MANAGERS);
+
+    return installedApps.reduce<Record<string, boolean>>((acc, appInfo) => {
+      acc[appInfo.appInfo.installed_app_id] = true;
+      return acc;
+    }, {});
+  }),
   isDevhubInstalled: t.procedure.query(() => isDevhubInstalled(HOLOCHAIN_MANAGERS)),
   getInstalledApps: t.procedure.query(() => {
-    const filterHeadlessApps = (app: { installed_app_id: string }) =>
-      ![DEVHUB_APP_ID, APP_STORE_APP_ID].includes(app.installed_app_id);
-
-    const createAppInfo = (manager: HolochainManager) => (app: AppInfo) => ({
-      appInfo: app,
-      version: manager.version,
-      holochainDataRoot: manager.holochainDataRoot,
-      icon: manager.appIcon(app.installed_app_id),
-      distributionInfo: manager.appDistributionInfo(app.installed_app_id),
-    });
-
-    const installedApps = Object.values(HOLOCHAIN_MANAGERS).flatMap((manager) =>
-      manager.installedApps.filter(filterHeadlessApps).map(createAppInfo(manager)),
-    );
+    const installedApps = getInstalledAppsInfo(HOLOCHAIN_MANAGERS);
 
     return validateWithZod({
       schema: z.array(ExtendedAppInfoSchema),

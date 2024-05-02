@@ -7,6 +7,7 @@
 	export let onClick = () => {};
 	export let name: string;
 	export let isSelected = false;
+	export let isUpdateAvailable = false;
 	export let background = 'bg-white/25';
 	export let icon: Uint8Array | undefined = undefined;
 </script>
@@ -33,7 +34,10 @@
 	<span
 		class={clsx('text-base', {
 			'font-light opacity-80': !isSelected,
-			'font-semibold': isSelected
+			'font-semibold': isSelected || isUpdateAvailable
 		})}>{name}</span
 	>
+	{#if isUpdateAvailable}
+		<div class="ml-2 h-3 w-3 rounded-full bg-warning-500"></div>
+	{/if}
 </button>
