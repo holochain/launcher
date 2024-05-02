@@ -3,9 +3,9 @@
 	import type { AppVersionEntry, Entity } from 'appstore-tools';
 
 	import { Button } from '$components';
-	import { createAppQueries } from '$queries';
+	// import { createAppQueries } from '$queries';
 
-	const { fetchWebappBytesQuery } = createAppQueries();
+	// const { fetchWebappBytesQuery } = createAppQueries();
 
 	export let appVersions: Entity<AppVersionEntry>[] | undefined = undefined;
 	export let imageUrl: string | undefined = undefined;
