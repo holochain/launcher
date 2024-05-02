@@ -42,7 +42,7 @@
 				<h2 class="h2 text-warning-500">{$i18n.t('updateAvailable')}</h2>
 				<Button
 					props={{
-						onClick: () => modalStore.trigger(modal),
+						onClick: () => {},
 						class: 'btn bg-warning-500'
 					}}
 				>
