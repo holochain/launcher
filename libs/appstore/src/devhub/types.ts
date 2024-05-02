@@ -4,12 +4,14 @@ import type {
   ActionHash,
   AnyDhtHash,
   DnaHash,
+  DnaHashB64,
   EntryHash,
   WasmHashB64,
   ZomeName,
 } from '@holochain/client';
 
 import { type DeprecationNotice } from '../appstore';
+import type { MemoryEntry } from '../mere-memory';
 
 export type DevhubAppEntry = {
   manifest: AppManifestV1;
@@ -24,6 +26,11 @@ export type CreateDevhubAppInput = {
 export type DevhubAppEntryInput = {
   manifest: AppManifestV1;
   appToken: AppTokenInput;
+};
+
+export type AppAsset = {
+  app_entry: DevhubAppEntry;
+  dna_assets: Record<RoleName, DnaAsset>;
 };
 
 export type AppToken = {
@@ -73,7 +80,34 @@ export type AppManifestV1 = {
 export type AppRoleManifest = {
   name: RoleName;
   provisioning: any;
-  dna: any;
+  dna: AppRoleDnaManifest;
+};
+
+export type AppRoleDnaManifest = {
+  dna_hrl?: HRL;
+  bytes?: Uint8Array;
+  modifiers: any;
+  installed_hash: DnaHashB64 | undefined;
+  clone_limit: number;
+};
+
+export type AppManifestV1WithBytes = {
+  name: string;
+  description: string | undefined;
+  roles: Array<AppRoleManifestWithBytes>;
+};
+
+export type AppRoleManifestWithBytes = {
+  name: RoleName;
+  provisioning: any;
+  dna: AppRoleDnaManifest;
+};
+
+export type AppRoleDnaManifestWithBytes = {
+  bytes: Uint8Array;
+  modifiers: any;
+  installed_hash: DnaHashB64 | undefined;
+  clone_limit: number;
 };
 
 export type RoleName = string;
@@ -87,6 +121,12 @@ export type Ui = {
 export type UiEntry = {
   mere_memory_addr: EntryHash;
   file_size: number;
+};
+
+export type UiAsset = {
+  ui_entry: UiEntry;
+  memory_entry: MemoryEntry;
+  bytes: Uint8Array;
 };
 
 export type CreateUiEntryInput = {
@@ -209,18 +249,26 @@ export type WebAppEntryInput = {
   webapp_token: WebAppTokenInput;
 };
 
+export type WebAppAsset = {
+  webapp_entry: WebAppEntry;
+  app_asset: AppAsset;
+  ui_asset: UiAsset;
+};
+
 export type WebAppManifestV1 = {
   name: string;
   ui: WebUI;
-  happ_manifest: AppManifestLocation;
+  happ_manifest: AppManifestLocation | { bytes: Uint8Array };
 };
 
-export type WebUI = {
-  ui_entry: EntryHash;
-};
+export type WebUI =
+  | {
+      ui_entry: EntryHash;
+    }
+  | { bytes: Uint8Array };
 
 export type AppManifestLocation = {
-  appEntry: EntryHash;
+  app_entry: EntryHash;
 };
 
 export type WebAppToken = {
@@ -304,6 +352,26 @@ export type DnaEntryInput = {
   coordinators_token: CoordinatorsTokenInput;
 };
 
+export type DnaAsset = {
+  dna_entry: DnaEntry;
+  zome_assets: ZomeAssetMap;
+};
+
+export type ZomeAssetMap = Record<ZomeName, ZomeAsset>;
+
+export type ZomeAsset = {
+  zome_entry: ZomeEntry;
+  memory_entry: MemoryEntry;
+  bytes: Uint8Array;
+};
+
+export type ZomeEntry = {
+  zome_type: any;
+  mere_memory_addr: EntryHash;
+  file_size: number;
+  hash: string;
+};
+
 export type IntegritiesToken = Array<[string, Uint8Array]>;
 export type CoordinatorsToken = Array<[string, Uint8Array]>;
 
@@ -324,17 +392,41 @@ export type IntegrityManifest = {
   network_seed: string | undefined;
   properties: any | undefined;
   origin_time: any;
-  zomes: Array<ZomeManifest>;
+  zomes: Array<IntegrityZomeManifest>;
 };
 
 export type CoordinatorManifest = {
-  zomes: Array<ZomeManifest>;
+  zomes: Array<CoordinatorZomeManifest>;
 };
 
-export type ZomeManifest = {
+export type IntegrityZomeManifest = {
   name: ZomeName;
   hash: WasmHashB64 | undefined;
-  wasm_hrl: HRL;
+  zome_hrl?: HRL;
+  bytes?: Uint8Array;
+  dylib: any;
+};
+
+export type IntegrityZomeManifestWithBytes = {
+  name: ZomeName;
+  hash: WasmHashB64 | undefined;
+  bytes: Uint8Array;
+  dylib: any;
+};
+
+export type CoordinatorZomeManifest = {
+  name: ZomeName;
+  hash: WasmHashB64 | undefined;
+  zome_hrl?: HRL;
+  bytes?: Uint8Array;
+  dependencies: Array<ZomeDependency> | undefined;
+  dylib: any;
+};
+
+export type CoordinatorZomeManifestWithBytes = {
+  name: ZomeName;
+  hash: WasmHashB64 | undefined;
+  bytes: Uint8Array;
   dependencies: Array<ZomeDependency> | undefined;
   dylib: any;
 };

@@ -1,7 +1,9 @@
 import type { ActionHash, AgentPubKey, AppCallZomeRequest, EntryHash } from '@holochain/client';
 
 import type {
+  DevhubAppEntry,
   Entity,
+  UiEntry,
   UpdateEntityInput,
   WebAppEntry,
   WebAppPackageVersionEntry,
@@ -104,6 +106,55 @@ export class AppstoreZomeClient extends ZomeClient {
   async hashWebappEntry(input: WebAppEntry): Promise<EntryHash> {
     return this.callZome('hash_webapp_entry', input);
   }
+
+  async hashAppEntry(input: DevhubAppEntry): Promise<EntryHash> {
+    return this.callZome('hash_app_entry', input);
+  }
+
+  async hashUiEntry(input: UiEntry): Promise<EntryHash> {
+    return this.callZome('hash_ui_entry', input);
+  }
+
+  // async verifyWebappAsset(webappAsset: WebAppAsset, expectedHash: EntryHash): Promise<void> {
+  //   // We recursively check that all hashes match, starting with the hash of the WebAppEntry
+  //   const webappEntryHash = await this.hashWebappEntry(webappAsset.webapp_entry);
+  //   if (webappEntryHash.toString() !== expectedHash.toString())
+  //     throw new Error('WebAppEntry hash is invalid.');
+  //   // verify AppAsset
+  //   await this.verifyAppAsset(
+  //     webappAsset.app_asset,
+  //     webappAsset.webapp_entry.manifest.happ_manifest.appEntry,
+  //   );
+  //   // verify UiAsset
+  //   await this.verifyUiAsset(webappAsset.ui_asset, webappAsset.webapp_entry.manifest.ui.ui_entry);
+  // }
+
+  // async verifyUiAsset(uiAsset: UiAsset, expectedHash: EntryHash): Promise<void> {
+  //   const uiEntryHash = await this.hashUiEntry(uiAsset.ui_entry);
+  //   if (uiEntryHash.toString() !== expectedHash.toString())
+  //     throw new Error('UiEntry hash is invalid.');
+
+  //   uiAsset.ui_entry.mere_memory_addr
+  // }
+
+  // async verifyAppAsset(appAsset: AppAsset, expectedHash: EntryHash): Promise<void> {
+  //   const appEntryHash = this.hashAppEntry(appAsset.app_entry);
+  //   if (appEntryHash.toString() !== expectedHash.toString())
+  //     throw new Error('AppEntry hash is invalid.');
+
+  //   if (appAsset.app_entry.manifest.roles.length !== Object.keys(appAsset.dna_assets).length)
+  //     throw new Error('Wrong number of dna assets.');
+
+  //   // verify DnaAssets
+  //   for (const role of appAsset.app_entry.manifest.roles) {
+  //     const expectedDnaEntryHash = role.dna.dna_hrl.target;
+  //     await this.verifyDnaAsset(appAsset.dna_assets[role.name], expectedDnaEntryHash);
+  //   }
+  // }
+
+  // async verifyDnaAsset(dnaAsset: DnaAsset, expectedHash: EntryHash): Promise<void> {
+  //   const dnaEntrHash = this.hash;
+  // }
 
   protected callZome(fn_name: string, payload: unknown) {
     const req: AppCallZomeRequest = {

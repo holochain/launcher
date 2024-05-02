@@ -106,7 +106,7 @@ export class DevhubAppClient {
         `DNA entry (${input.dnaEntryAddress}) does not have an integrity zome named '${input.name}'`,
       );
 
-    return this.getWasm(zomeManifest.wasm_hrl.target);
+    return this.getWasm(zomeManifest.zome_hrl!.target);
   }
 
   async getCoordinatorWasm(input: { dnaEntryAddress: AnyDhtHash; name: ZomeName }) {
@@ -120,7 +120,7 @@ export class DevhubAppClient {
         `DNA entry (${input.dnaEntryAddress}) does not have an coordinator zome named '${input.name}'`,
       );
 
-    return this.getWasm(zomeManifest.wasm_hrl.target);
+    return this.getWasm(zomeManifest.zome_hrl!.target);
   }
 
   async getDnaBundle(addr: AnyDhtHash) {
