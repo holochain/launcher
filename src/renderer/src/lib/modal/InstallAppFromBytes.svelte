@@ -30,6 +30,7 @@
 </script>
 
 <ModalInstallForm
+	name={appName}
 	bind:formData
 	onSubmit={() =>
 		$installWebhappFromBytes.mutate(
