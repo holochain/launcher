@@ -13,3 +13,7 @@ export const WINDOW_SIZE = 600;
 export const WINDOW_SIZE_LARGE = 780;
 export const SETTINGS_SIZE = 850;
 export const SEARCH_HEIGH = 200;
+
+export const DISTRIBUTION_TYPE_APPSTORE = 'appstore';
+export const DISTRIBUTION_TYPE_FILESYSTEM = 'filesystem';
+export const DISTRIBUTION_TYPE_DEFAULT_APP = 'default-app';

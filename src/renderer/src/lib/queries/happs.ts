@@ -1,4 +1,4 @@
-import { type ActionHash, type ActionHashB64, decodeHashFromBase64 } from '@holochain/client';
+import { type ActionHash, decodeHashFromBase64 } from '@holochain/client';
 // @ts-expect-error the @spartan-hc/bundles package has no typescript types
 import { Bundle } from '@spartan-hc/bundles';
 import { createMutation, createQuery, QueryClient } from '@tanstack/svelte-query';
@@ -7,8 +7,7 @@ import type {
 	AppVersionEntry,
 	BundleHashes,
 	CreatePublisherFrontendInput,
-	DevhubAppClient,
-	Entity
+	DevhubAppClient
 } from 'appstore-tools';
 import { sha256 } from 'js-sha256';
 import { get, type Writable } from 'svelte/store';
@@ -18,6 +17,7 @@ import {
 	ALL_APP_VERSIONS_DEVHUB_QUERY_KEY,
 	APP_STORE_HAPPS_QUERY_KEY,
 	APP_STORE_MY_HAPPS_QUERY_KEY,
+	CHECK_FOR_APP_UI_UPDATES_QUERY_KEY,
 	PUBLISHERS_QUERY_KEY
 } from '$const';
 import { uint8ArrayToURIComponent } from '$helpers';
@@ -25,10 +25,9 @@ import { getAppStoreClient, getDevHubClient } from '$services';
 import {
 	APP_STORE_CLIENT_NOT_INITIALIZED_ERROR,
 	DEV_HUB_CLIENT_NOT_INITIALIZED_ERROR,
-	type ExtendedAppInfo,
 	NO_PUBLISHERS_AVAILABLE_ERROR
 } from '$shared/types';
-import type { AppData, PublishNewVersionData } from '$types';
+import { type AppData, type PublishNewVersionData } from '$types';
 
 type ClientType = DevhubAppClient | AppstoreAppClient;
 
@@ -309,30 +308,21 @@ export const createFetchWebappBytesMutation = () => {
 	});
 };
 
-export const createCheckForAppUiUpdatesMutation = () => {
-	return createMutation({
-		mutationFn: async (
-			installedApps: ExtendedAppInfo[]
-		): Promise<Record<ActionHashB64, Entity<AppVersionEntry>>> => {
+export const createCheckForAppUiUpdatesQuery = () => (appVersionActionHashes: string[]) => {
+	return createQuery({
+		staleTime: 1800000,
+		queryKey: [CHECK_FOR_APP_UI_UPDATES_QUERY_KEY, appVersionActionHashes],
+		queryFn: async () => {
 			const appStoreClient = getAppStoreClientOrThrow();
-			const distinctVersionHashes = installedApps
-				.filter((info) => info.distributionInfo.type === 'appstore')
-				.map((info) =>
-					info.distributionInfo.type === 'appstore'
-						? info.distributionInfo.appVersionActionHash
-						: undefined
-				);
-
-			const updates: Record<ActionHashB64, Entity<AppVersionEntry>> = {};
-
-			await Promise.all(
+			const distinctVersionHashes = appVersionActionHashes;
+			const updates = await Promise.all(
 				distinctVersionHashes.map(async (hash) => {
 					const maybeUpdate = await appStoreClient.checkForUiUpdate(decodeHashFromBase64(hash!));
-					if (maybeUpdate) updates[hash as string] = maybeUpdate;
+					return maybeUpdate ? { [hash]: maybeUpdate } : null;
 				})
 			);
 
-			return updates;
+			return updates.reduce((acc, update) => (update ? { ...acc, ...update } : acc), {});
 		}
 	});
 };

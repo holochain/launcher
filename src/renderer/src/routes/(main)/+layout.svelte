@@ -7,6 +7,8 @@
 	import { IconButton, Input, TopBar } from '$components';
 	import { SEARCH_URL_QUERY, SELECTED_ICON_STYLE } from '$const';
 	import {
+		filterHash,
+		getAppStoreDistributionHash,
 		handleNavigationWithAnimationDelay,
 		initializeDefaultAppPorts,
 		setSearchInput,
@@ -14,15 +16,15 @@
 		validateApp
 	} from '$helpers';
 	import { Gear, Home, Rocket } from '$icons';
+	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
 	import { APP_STORE, APPS_VIEW } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
 	import { navigationStore } from '$stores';
-	import { createAppQueries } from '$queries';
 
 	const client = trpc();
 
-	const { checkForAppUiUpdatesMutation } = createAppQueries();
+	const { checkForAppUiUpdatesQuery } = createAppQueries();
 
 	const modalStore = getModalStore();
 
@@ -57,6 +59,12 @@
 			: '';
 
 	$: if (type) inputExpanded = true;
+
+	$: uiUpdates = checkForAppUiUpdatesQuery(
+		$installedApps?.data
+			?.map((app) => getAppStoreDistributionHash(app.distributionInfo))
+			.filter(filterHash) ?? []
+	);
 
 	const handleNavigation = handleNavigationWithAnimationDelay(() => (inputExpanded = false));
 
@@ -168,7 +176,7 @@
 	<IconButton onClick={() => $openSettings.mutate(undefined)}>
 		<div class="relative">
 			<Gear />
-			{#if Object.values($checkForAppUiUpdates.data ?? {}).some(Boolean)}
+			{#if Object.values($uiUpdates.data ?? {}).some(Boolean)}
 				<div class="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-warning-500"></div>
 			{/if}
 		</div>

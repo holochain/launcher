@@ -9,7 +9,7 @@ import path from 'path';
 import semver from 'semver';
 import type { ZodSchema } from 'zod';
 
-import { APP_STORE_APP_ID, DEVHUB_APP_ID } from '$shared/const';
+import { APP_STORE_APP_ID, DEVHUB_APP_ID, DISTRIBUTION_TYPE_DEFAULT_APP } from '$shared/const';
 import type { AppToInstall } from '$shared/types';
 import {
   type EventKeys,
@@ -122,7 +122,7 @@ export const processHeadlessAppInstallation =
       await holochainManager.installHeadlessHappFromBytes(
         Array.from(happBytes),
         id,
-        { type: 'default-app' },
+        { type: DISTRIBUTION_TYPE_DEFAULT_APP },
         defaultAppsNetworkSeed,
       );
     }

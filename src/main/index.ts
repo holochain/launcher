@@ -23,6 +23,7 @@ import {
   APP_STORE,
   APP_STORE_APP_ID,
   DEVHUB_APP_ID,
+  DISTRIBUTION_TYPE_DEFAULT_APP,
   MAIN_SCREEN,
   SEARCH_HEIGH,
   SETTINGS_SCREEN,
@@ -637,22 +638,22 @@ const router = t.router({
 
     const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
 
-    const distributionInfo: DistributionInfoV1 = {
-      type: 'default-app',
-    };
-
     if (happAndUiBytes.uiBytes) {
       await holochainManager.installWebHappFromBytes(
         happAndUiBytes,
         appId,
-        distributionInfo,
+        {
+          type: DISTRIBUTION_TYPE_DEFAULT_APP,
+        },
         networkSeed,
       );
     } else {
       await holochainManager.installHeadlessHappFromBytes(
         happAndUiBytes.happBytes,
         appId,
-        distributionInfo,
+        {
+          type: DISTRIBUTION_TYPE_DEFAULT_APP,
+        },
         networkSeed,
       );
     }

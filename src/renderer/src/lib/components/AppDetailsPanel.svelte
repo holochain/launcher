@@ -3,11 +3,12 @@
 	import clsx from 'clsx';
 
 	import { Button } from '$components';
+	import type { DistributionInfoV1 } from '$shared/types';
 
 	export let imageUrl: string | undefined = undefined;
 	export let title: string;
 	export let subtitle = '';
-	export let version: string = '';
+	export let distributionInfo: DistributionInfoV1 | undefined = undefined;
 	export let selectedIndex = 0;
 	export let buttons: Array<string>;
 </script>
@@ -26,7 +27,9 @@
 			<div class="flex flex-col">
 				<div class="flex items-end">
 					<h3 class="h3">{title}</h3>
-					<p class="ml-2 text-xs">{version}</p>
+					{#if distributionInfo?.type === 'appstore'}
+						<p class="ml-2 text-xs">{distributionInfo.appVersion}</p>
+					{/if}
 				</div>
 				{#if subtitle}
 					<p class="text-xs text-white/80">{subtitle}</p>
