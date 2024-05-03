@@ -1,23 +1,23 @@
 import type { AgentPubKey, AnyDhtHash, AppCallZomeRequest } from '@holochain/client';
 
 import { ZomeClient } from '../../zome-client/zome-client';
-import type { CreateWasmEntryInput, Entity, WasmEntry } from '../types';
+import type { CreateZomeEntryInput, Entity, ZomeEntry } from '../types';
 
 export class ZomeHubZomeClient extends ZomeClient {
-  async createWasmEntry(input: WasmEntry): Promise<Entity<WasmEntry>> {
-    return this.callZome('create_wasm_entry', input);
+  async createZomeEntry(input: ZomeEntry): Promise<Entity<ZomeEntry>> {
+    return this.callZome('create_zome_entry', input);
   }
 
-  async createWasm(input: CreateWasmEntryInput): Promise<Entity<WasmEntry>> {
-    return this.callZome('create_wasm', input);
+  async createZome(input: CreateZomeEntryInput): Promise<Entity<ZomeEntry>> {
+    return this.callZome('create_zome', input);
   }
 
-  async getWasmEntry(address: AnyDhtHash): Promise<Entity<WasmEntry>> {
-    return this.callZome('get_wasm_entry', address);
+  async getZomeEntry(address: AnyDhtHash): Promise<Entity<ZomeEntry>> {
+    return this.callZome('get_zome_entry', address);
   }
 
-  async getWasmEntriesForAgent(agentPubKey?: AgentPubKey): Promise<Array<Entity<WasmEntry>>> {
-    return this.callZome('get_wasm_entries_for_agent', agentPubKey);
+  async getZomeEntriesForAgent(agentPubKey?: AgentPubKey): Promise<Array<Entity<ZomeEntry>>> {
+    return this.callZome('get_zome_entries_for_agent', agentPubKey);
   }
 
   protected callZome(fn_name: string, payload: unknown) {

@@ -5,6 +5,7 @@ import { Bundle } from '@spartan-hc/bundles';
 
 import { MereMemoryZomeClient } from '../mere-memory/zomes/mere-memory-zome-client';
 import { getCellId } from '../utils';
+import type { DnaAssetHashes, Zome, ZomeEntry } from './types';
 import {
   type CreateWebAppPackageFrontendInput,
   type DevhubAppEntry,
@@ -13,11 +14,9 @@ import {
   type Entity,
   type Ui,
   type UiEntry,
-  type Wasm,
-  type WasmEntry,
-  WasmType,
   type WebAppEntry,
   type WebAppPackageEntry,
+  ZomeType,
 } from './types';
 import { AppHubZomeClient } from './zomes/apphub-zome-client';
 import { DnaHubZomeClient } from './zomes/dnahub-zome-client';
@@ -65,37 +64,38 @@ export class DevhubAppClient {
     return apphubCell.cell_id[0];
   }
 
-  async saveIntegrityZome(bytes: Uint8Array): Promise<Entity<WasmEntry>> {
+  async saveIntegrityZome(bytes: Uint8Array): Promise<Entity<ZomeEntry>> {
     const mereMemoryAddress = await this.zomeHubMereMemoryZomeClient.saveBytes(bytes);
-    return this.zomeHubZomeClient.createWasm({
-      wasm_type: WasmType.Integrity,
+    return this.zomeHubZomeClient.createZome({
+      zome_type: ZomeType.Integrity,
       mere_memory_addr: mereMemoryAddress,
     });
   }
 
-  async saveCoordinatorZome(bytes: Uint8Array): Promise<Entity<WasmEntry>> {
+  async saveCoordinatorZome(bytes: Uint8Array): Promise<Entity<ZomeEntry>> {
     const mereMemoryAddress = await this.zomeHubMereMemoryZomeClient.saveBytes(bytes);
-    return this.zomeHubZomeClient.createWasm({
-      wasm_type: WasmType.Coordinator,
+    return this.zomeHubZomeClient.createZome({
+      zome_type: ZomeType.Coordinator,
       mere_memory_addr: mereMemoryAddress,
     });
   }
 
-  async getWasm(addr: AnyDhtHash): Promise<Wasm> {
-    const wasmEntryEntity = await this.zomeHubZomeClient.getWasmEntry(addr);
-    const wasmEntry = wasmEntryEntity.content;
-    const [_memoryEntry, wasmBytes] = await this.zomeHubMereMemoryZomeClient.getMemoryWithBytes(
-      wasmEntry.mere_memory_addr,
+  async getZome(addr: AnyDhtHash): Promise<Zome> {
+    const zomeEntryEntity = await this.zomeHubZomeClient.getZomeEntry(addr);
+    const zomeEntry = zomeEntryEntity.content;
+    const [_memoryEntry, zomeBytes] = await this.zomeHubMereMemoryZomeClient.getMemoryWithBytes(
+      zomeEntry.mere_memory_addr,
     );
     return {
-      wasm_type: wasmEntry.wasm_type,
-      mere_memory_addr: wasmEntry.mere_memory_addr,
-      file_size: wasmEntry.file_size,
-      bytes: wasmBytes,
+      zome_type: zomeEntry.zome_type,
+      mere_memory_addr: zomeEntry.mere_memory_addr,
+      file_size: zomeEntry.file_size,
+      hash: zomeEntry.hash,
+      bytes: zomeBytes,
     };
   }
 
-  async getIntegrityWasm(input: { dnaEntryAddress: AnyDhtHash; name: ZomeName }): Promise<Wasm> {
+  async getIntegritZome(input: { dnaEntryAddress: AnyDhtHash; name: ZomeName }): Promise<Zome> {
     const dnaEntryEntity = await this.dnaHubZomeClient.getDnaEntry(input.dnaEntryAddress);
     const zomeManifest = dnaEntryEntity.content.manifest.integrity.zomes.find(
       (zomeManifest) => zomeManifest.name === input.name,
@@ -106,10 +106,10 @@ export class DevhubAppClient {
         `DNA entry (${input.dnaEntryAddress}) does not have an integrity zome named '${input.name}'`,
       );
 
-    return this.getWasm(zomeManifest.zome_hrl!.target);
+    return this.getZome(zomeManifest.zome_hrl!.target);
   }
 
-  async getCoordinatorWasm(input: { dnaEntryAddress: AnyDhtHash; name: ZomeName }) {
+  async getCoordinatorZome(input: { dnaEntryAddress: AnyDhtHash; name: ZomeName }): Promise<Zome> {
     const dnaEntryEntity = await this.dnaHubZomeClient.getDnaEntry(input.dnaEntryAddress);
     const zomeManifest = dnaEntryEntity.content.manifest.coordinator.zomes.find(
       (zomeManifest) => zomeManifest.name === input.name,
@@ -120,22 +120,22 @@ export class DevhubAppClient {
         `DNA entry (${input.dnaEntryAddress}) does not have an coordinator zome named '${input.name}'`,
       );
 
-    return this.getWasm(zomeManifest.zome_hrl!.target);
+    return this.getZome(zomeManifest.zome_hrl!.target);
   }
 
   async getDnaBundle(addr: AnyDhtHash) {
     const dnaEntryEntity = await this.dnaHubZomeClient.getDnaEntry(addr);
 
     for (const zomeManifest of dnaEntryEntity.content.manifest.integrity.zomes as any) {
-      const wasm = await this.getWasm(zomeManifest.wasmHrl.target);
+      const wasm = await this.getZome(zomeManifest.wasmHrl.target);
       zomeManifest.bytes = wasm.bytes;
-      delete zomeManifest.wasm_hrl;
+      delete zomeManifest.zome_hrl;
     }
 
     for (const zomeManifest of dnaEntryEntity.content.manifest.coordinator.zomes as any) {
-      const wasm = await this.getWasm(zomeManifest.wasmHrl.target);
+      const wasm = await this.getZome(zomeManifest.wasmHrl.target);
       zomeManifest.bytes = wasm.bytes;
-      delete zomeManifest.wasm_hrl;
+      delete zomeManifest.zome_hrl;
     }
 
     const bundle = Bundle.createDna(dnaEntryEntity.content.manifest);
@@ -160,34 +160,43 @@ export class DevhubAppClient {
     const zomehubCellId = zomeHubCell.cell_id;
     if (!zomehubCellId) throw new Error('zome_hub CellId undefined.');
 
+    const dna_asset_hashes: DnaAssetHashes = {
+      integrity: {},
+      coordinator: {},
+    };
+
     for (const zome_manifest of bundle.manifest.integrity.zomes) {
       const rpath = zome_manifest.bundled;
-      const wasm_bytes = bundle.resources[rpath];
-      const wasm = await this.saveIntegrityZome(wasm_bytes);
+      const zome_bytes = bundle.resources[rpath];
+      const zomeEntity = await this.saveIntegrityZome(zome_bytes);
 
-      zome_manifest.wasm_hrl = {
+      zome_manifest.zome_hrl = {
         dna: zomehubCellId[0],
-        target: wasm.content.mere_memory_addr,
+        target: zomeEntity.content.mere_memory_addr,
       };
 
+      dna_asset_hashes.integrity[zome_manifest.name] = zomeEntity.content.hash;
       delete zome_manifest.bundled;
     }
 
     for (const zome_manifest of bundle.manifest.coordinator.zomes) {
       const rpath = zome_manifest.bundled;
-      const wasm_bytes = bundle.resources[rpath];
-      const wasmEntity = await this.saveCoordinatorZome(wasm_bytes);
+      const zome_bytes = bundle.resources[rpath];
+      const zomeEntity = await this.saveCoordinatorZome(zome_bytes);
 
-      zome_manifest.wasm_hrl = {
+      zome_manifest.zome_hrl = {
         dna: zomehubCellId[0],
-        target: wasmEntity.content.mere_memory_addr,
+        target: zomeEntity.content.mere_memory_addr,
       };
 
+      dna_asset_hashes.coordinator[zome_manifest.name] = zomeEntity.content.hash;
       delete zome_manifest.bundled;
     }
 
     return this.dnaHubZomeClient.createDna({
       manifest: bundle.manifest,
+      claimed_file_size: bytes.length,
+      asset_hashes: dna_asset_hashes,
     });
   }
 
@@ -223,6 +232,7 @@ export class DevhubAppClient {
     return await this.appHubZomeClient.createApp({
       manifest: bundle.manifest,
       roles_dna_tokens,
+      claimed_file_size: bytes.length,
     });
   }
 

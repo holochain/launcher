@@ -21,6 +21,7 @@ export type DevhubAppEntry = {
 export type CreateDevhubAppInput = {
   manifest: AppManifestV1;
   roles_dna_tokens: RolesDnaTokensInput;
+  claimed_file_size: number;
 };
 
 export type DevhubAppEntryInput = {
@@ -313,28 +314,30 @@ export type BundleAddr = EntryHash;
 
 // ZOME HUB
 
-export type Wasm = {
-  wasm_type: WasmType;
+export type ZomeEntry = {
+  zome_type: ZomeType;
   mere_memory_addr: EntryHash;
   file_size: number;
+  hash: string;
+};
+
+export type Zome = {
+  zome_type: ZomeType;
+  mere_memory_addr: EntryHash;
+  file_size: number;
+  hash: string;
   bytes: Uint8Array;
 };
 
-export type WasmEntry = {
-  wasm_type: WasmType;
+export type CreateZomeEntryInput = {
+  zome_type: ZomeType;
   mere_memory_addr: EntryHash;
-  file_size: number;
 };
 
-export enum WasmType {
+export enum ZomeType {
   Integrity = 'integrity',
   Coordinator = 'coordinator',
 }
-
-export type CreateWasmEntryInput = {
-  wasm_type: WasmType;
-  mere_memory_addr: EntryHash;
-};
 
 // DNA HUB
 
@@ -365,13 +368,6 @@ export type ZomeAsset = {
   bytes: Uint8Array;
 };
 
-export type ZomeEntry = {
-  zome_type: any;
-  mere_memory_addr: EntryHash;
-  file_size: number;
-  hash: string;
-};
-
 export type IntegritiesToken = Array<[string, Uint8Array]>;
 export type CoordinatorsToken = Array<[string, Uint8Array]>;
 
@@ -380,7 +376,16 @@ export type CoordinatorsTokenInput = Array<[string, Uint8Array]>;
 
 export type CreateDnaInput = {
   manifest: DnaManifestV1;
+  claimed_file_size: number;
+  asset_hashes: DnaAssetHashes;
 };
+
+export type DnaAssetHashes = {
+  integrity: AssetHashes;
+  coordinator: AssetHashes;
+};
+
+export type AssetHashes = Record<string, string>;
 
 export type DnaManifestV1 = {
   name: string;
