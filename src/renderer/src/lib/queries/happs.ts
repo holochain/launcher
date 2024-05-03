@@ -162,8 +162,11 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 			// TODO validate that the bytes are of a valid webhapp format
 
 			// Compute hashes before saving to ensure to not save the bytes if hashing fails
-			const webhappHash = sha256.hex(bytes);
+			let webhappHash = sha256.hex(bytes);
+			console.log('hash before bundling: ', webhappHash);
 			const webappBundle = new Bundle(bytes, 'webhapp');
+			webhappHash = sha256.hex(webappBundle.toBytes());
+			console.log('hash after bundling: ', webhappHash);
 			const uiHash = sha256.hex(webappBundle.ui());
 			const happHash = sha256.hex(
 				webappBundle.resources[webappBundle.manifest.happ_manifest.bundled]

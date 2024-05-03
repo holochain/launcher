@@ -172,7 +172,7 @@ export class DevhubAppClient {
 
       zome_manifest.zome_hrl = {
         dna: zomehubCellId[0],
-        target: zomeEntity.content.mere_memory_addr,
+        target: zomeEntity.address,
       };
 
       dna_asset_hashes.integrity[zome_manifest.name] = zomeEntity.content.hash;
@@ -186,7 +186,7 @@ export class DevhubAppClient {
 
       zome_manifest.zome_hrl = {
         dna: zomehubCellId[0],
-        target: zomeEntity.content.mere_memory_addr,
+        target: zomeEntity.address,
       };
 
       dna_asset_hashes.coordinator[zome_manifest.name] = zomeEntity.content.hash;
@@ -213,11 +213,11 @@ export class DevhubAppClient {
 
       const devhubAppInfo = await this.client.appInfo();
       if (!devhubAppInfo) throw new Error('Failed to get app info of devhub');
-      const dnaHubCell = devhubAppInfo.cell_info.zomehub;
+      const dnaHubCell = devhubAppInfo.cell_info.dnahub;
       const dnaHubCellProvisioned = dnaHubCell.find((cellInfo) => 'provisioned' in cellInfo);
-      if (!dnaHubCellProvisioned) throw new Error('No zome_hub cell found.');
+      if (!dnaHubCellProvisioned) throw new Error('No dna_hub cell found.');
       const dnaHubCellId = getCellId(dnaHubCellProvisioned);
-      if (!dnaHubCellId) throw new Error('zome_hub CellId undefined.');
+      if (!dnaHubCellId) throw new Error('dna_hub CellId undefined.');
 
       role.dna.dna_hrl = {
         dna: dnaHubCellId[0],

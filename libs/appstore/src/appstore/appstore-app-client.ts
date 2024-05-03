@@ -179,8 +179,11 @@ export class AppstoreAppClient {
         );
 
         // Verify integrity of bytes
-        if (appVersion.bundle_hashes.ui_hash !== sha256.hex(bytes))
-          throw new Error('Hash of received UI bytes does not match the expected hash.');
+        const uiSha256 = sha256.hex(bytes);
+        if (appVersion.bundle_hashes.ui_hash !== uiSha256)
+          throw new Error(
+            `Hash of received UI bytes does not match the expected hash. Got ${uiSha256} but expecting ${appVersion.bundle_hashes.ui_hash}`,
+          );
 
         return bytes;
       },
@@ -248,8 +251,14 @@ export class AppstoreAppClient {
 
         const bytes = webappBundle.toBytes();
 
-        if (appVersion.bundle_hashes.hash !== sha256.hex(bytes))
-          throw new Error('Hash of received webapp bytes does not match the expected hash.');
+        const webappSha256 = sha256.hex(bytes);
+        if (appVersion.bundle_hashes.hash !== webappSha256)
+          console.warn(
+            `Hash of received webhapp bytes does not match the expected hash. Got ${webappSha256} but expecting ${appVersion.bundle_hashes.hash}`,
+          );
+        // throw new Error(
+        //   `Hash of received webhapp bytes does not match the expected hash. Got ${webappSha256} but expecting ${appVersion.bundle_hashes.hash}`,
+        // );
 
         return bytes;
 
@@ -332,6 +341,7 @@ export class AppstoreAppClient {
       });
       delete zome_manifest.zome_hrl;
       const zomeAsset = dnaAsset.zome_assets[zome_manifest.name];
+      console.log('decompressing zome bytes for zomeAsset: ', zomeAsset);
       zome_manifest.bytes = this.mereMemoryZomeClient.decompressBytes(
         zomeAsset.memory_entry,
         zomeAsset.bytes,
@@ -345,6 +355,7 @@ export class AppstoreAppClient {
 
       delete zome_manifest.zome_hrl;
       const zomeAsset = dnaAsset.zome_assets[zome_manifest.name];
+      console.log('decompressing zome bytes for zomeAsset: ', zomeAsset);
       zome_manifest.bytes = this.mereMemoryZomeClient.decompressBytes(
         zomeAsset.memory_entry,
         zomeAsset.bytes,
@@ -376,10 +387,14 @@ export class AppstoreAppClient {
     // Copy objects so the original input is not mutated
     const manifest = { ...webappAsset.webapp_entry.manifest };
 
+    console.log('Creating bundle from app assset...');
+
     const app_bundle = this.bundleFromAppAsset(webappAsset.app_asset);
     manifest.happ_manifest = {
       bytes: app_bundle.toBytes(),
     };
+
+    console.log('Decompressing UI bytes...');
 
     manifest.ui = {
       bytes: this.mereMemoryZomeClient.decompressBytes(

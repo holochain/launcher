@@ -54,16 +54,19 @@ export class MereMemoryZomeClient extends ZomeClient {
   }
 
   async saveBytes(bytes: Uint8Array): Promise<EntryHash> {
+    console.log('SAVING BYTES...');
     const bytesHash = this.hashBytes(bytes);
 
     const uncompressedSize = bytes.length;
-
+    console.log('SAVING BYTES: UNCOMPRESSED: ', uncompressedSize);
     // TODO potentially check whether it already exists to not recreate the same entries
 
     // set modification time to 0 to produce consistent hashes (assumption)
     const compressedBytes = gzipSync(bytes, { mtime: 0 });
 
     const compressedSize = compressedBytes.length;
+
+    console.log('SAVING BYTES: COMPRESSED: ', compressedSize);
 
     const chunks = new Chunker(compressedBytes);
     const blockAddresses: Array<EntryHash> = [];
@@ -137,11 +140,11 @@ export class MereMemoryZomeClient extends ZomeClient {
     return this.callZome('get_memory_block_entry', blockAddress);
   }
 
-  decompressBytes(memoryEntry: MemoryEntry, bytes: Uint8Array): Uint8Array {
+  decompressBytes(memoryEntry: MemoryEntry, bytes: Uint8Array | Array<number>): Uint8Array {
     if (memoryEntry.compression === 'gzip') {
-      return gunzipSync(bytes);
+      return gunzipSync(new Uint8Array(bytes));
     }
-    return bytes;
+    return new Uint8Array(bytes);
   }
 
   protected callZome(fn_name: string, payload: unknown) {

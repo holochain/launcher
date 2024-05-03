@@ -365,7 +365,7 @@ export type ZomeAssetMap = Record<ZomeName, ZomeAsset>;
 export type ZomeAsset = {
   zome_entry: ZomeEntry;
   memory_entry: MemoryEntry;
-  bytes: Uint8Array;
+  bytes: Uint8Array | Array<number>;
 };
 
 export type IntegritiesToken = Array<[string, Uint8Array]>;
