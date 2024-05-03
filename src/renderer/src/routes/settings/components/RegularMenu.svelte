@@ -5,8 +5,9 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { SYSTEM_INFORMATION, SYSTEM_SETTINGS } from '$const';
-	import { validateApp } from '$helpers';
+	import { filterHash, getAppStoreDistributionHash, validateApp } from '$helpers';
 	import { MenuGear, MenuInfo } from '$icons';
+	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
 	import { SETTINGS_SCREEN } from '$shared/const';
 
@@ -15,6 +16,14 @@
 	const client = trpc();
 
 	const installedApps = client.getInstalledApps.createQuery();
+
+	const { checkForAppUiUpdatesQuery } = createAppQueries();
+
+	$: uiUpdates = checkForAppUiUpdatesQuery(
+		$installedApps?.data
+			?.map((app) => getAppStoreDistributionHash(app.distributionInfo))
+			.filter(filterHash) ?? []
+	);
 
 	const selectView = (view: string) => goto(`/${SETTINGS_SCREEN}/${view}`);
 
@@ -39,7 +48,7 @@
 {:else if $installedApps.isSuccess}
 	{#each $installedApps.data.filter(validateApp) as app (app.appInfo.installed_app_id)}
 		<MenuEntry
-			isUpdateAvailable={$checkForAppUiUpdates.data?.[app.appInfo.installed_app_id] ?? false}
+			isUpdateAvailable={!!$uiUpdates.data?.[app.appInfo.installed_app_id]}
 			name={app.appInfo.installed_app_id}
 			onClick={() => selectView(app.appInfo.installed_app_id)}
 			isSelected={view === app.appInfo.installed_app_id}

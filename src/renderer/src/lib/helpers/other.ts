@@ -2,8 +2,10 @@ import { encodeHashToBase64 } from '@holochain/client';
 
 import { createAppStoreClient, createDevHubClient } from '$services';
 import {
+	AppStoreDistributionInfoSchema,
 	type CellId,
 	CellInfoSchema,
+	DistributionInfoV1Schema,
 	type ExtendedAppInfo,
 	ExtendedAppInfoSchema,
 	type InitializeAppPorts
@@ -53,3 +55,18 @@ export const convertFileToUint8Array = async (file: File): Promise<Uint8Array> =
 	const buffer = await file.arrayBuffer();
 	return new Uint8Array(buffer);
 };
+
+export const getAppStoreDistributionHash = (app: unknown): string | undefined => {
+	const parsedApp = DistributionInfoV1Schema.safeParse(app);
+	if (!parsedApp.success) {
+		return undefined;
+	}
+	const parsedAppData = AppStoreDistributionInfoSchema.safeParse(parsedApp.data);
+	if (!parsedAppData.success) {
+		return undefined;
+	}
+
+	return parsedAppData.data.appVersionActionHash;
+};
+
+export const filterHash = (hash: unknown): hash is string => hash !== undefined;

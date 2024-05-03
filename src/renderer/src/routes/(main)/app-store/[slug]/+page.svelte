@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { AppDetailsPanel, Button } from '$components';
 	import { createImageUrl, showModalError, uint8ArrayToURIComponent } from '$helpers';
+	import { InstallAppFromBytes } from '$modal';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
 
@@ -57,14 +58,20 @@
 								});
 							},
 							onSuccess: (bytes) => {
-								console.log('GOT BYTES: ', bytes.length);
-								// const distributionInfo = {
-								// 	appName: app.title,
-								// 	appVersion: latestVersion.content.version,
-								// 	appVersionActionHash: latestVersion.id,
-								// 	appEntryActionHash: latestVersion.address,
-								// 	appstoreDnaHash: latestVersion.content.apphub_hrl.dna
-								// };
+								modalStore.trigger({
+									type: 'component',
+									component: {
+										ref: InstallAppFromBytes,
+										props: {
+											bytes: bytes,
+											appName: app.title,
+											appVersion: latestVersion.content.version,
+											appVersionActionHash: latestVersion.id,
+											appEntryActionHash: latestVersion.address,
+											appstoreDnaHash: latestVersion.content.apphub_hrl.dna
+										}
+									}
+								});
 							}
 						});
 					},

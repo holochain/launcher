@@ -11,6 +11,7 @@
 
 	export let formData: AppInstallFormData;
 	export let files: FileList | null = null;
+	export let name: string = '';
 	export let onSubmit: () => void;
 	export let isPending = false;
 	export let acceptFileType = false;
@@ -22,7 +23,7 @@
 	>
 		<slot name="avatar" />
 		<header class="pt-4 text-2xl font-bold">
-			{acceptFileType ? $i18n.t('installFromYourDevice') : $i18n.t('kando')}
+			{name ? name : acceptFileType ? $i18n.t('installFromYourDevice') : $i18n.t('kando')}
 		</header>
 		<form class="modal-form flex flex-col space-y-4 p-4" on:submit|preventDefault={onSubmit}>
 			{#if acceptFileType}

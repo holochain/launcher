@@ -7,8 +7,15 @@
 	import { page } from '$app/stores';
 	import { AppDetailsPanel, Button } from '$components';
 	import { MODAL_DEVHUB_INSTALLATION_CONFIRMATION } from '$const';
-	import { createModalParams, getCellId, validateApp } from '$helpers';
+	import {
+		createModalParams,
+		filterHash,
+		getAppStoreDistributionHash,
+		getCellId,
+		validateApp
+	} from '$helpers';
 	import { Download } from '$icons';
+	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
 	import { SETTINGS_SCREEN } from '$shared/const';
 
@@ -18,10 +25,17 @@
 
 	const modalStore = getModalStore();
 
+	const { checkForAppUiUpdatesQuery } = createAppQueries();
+
 	const installedApps = client.getInstalledApps.createQuery();
 	const uninstallApp = client.uninstallApp.createMutation();
 	const isDevhubInstalled = client.isDevhubInstalled.createQuery();
-	const checkForAppUiUpdates = client.checkForAppUiUpdates.createQuery();
+
+	$: uiUpdates = checkForAppUiUpdatesQuery(
+		$installedApps?.data
+			?.map((app) => getAppStoreDistributionHash(app.distributionInfo))
+			.filter(filterHash) ?? []
+	);
 
 	const modal = createModalParams(MODAL_DEVHUB_INSTALLATION_CONFIRMATION);
 
@@ -31,11 +45,11 @@
 
 {#if selectedApp}
 	<AppDetailsPanel
-		version={selectedApp.version}
+		distributionInfo={selectedApp.distributionInfo}
 		title={selectedApp.appInfo.installed_app_id}
 		buttons={[$i18n.t('details')]}
 	/>
-	{@const isUpdateAvailable = $checkForAppUiUpdates.data?.[selectedApp.appInfo.installed_app_id]}
+	{@const isUpdateAvailable = $uiUpdates.data?.[selectedApp.appInfo.installed_app_id]}
 	{#if isUpdateAvailable}
 		<DashedSection borderColor="border-warning-500/30">
 			<div class="flex w-full justify-between">

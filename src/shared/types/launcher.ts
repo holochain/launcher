@@ -1,7 +1,15 @@
 import type { AgentPubKey } from '@holochain/client';
 import { z } from 'zod';
 
-import { APP_STORE, APPS_VIEW, type MAIN_SCREEN, type SETTINGS_SCREEN } from '../const';
+import {
+  APP_STORE,
+  APPS_VIEW,
+  DISTRIBUTION_TYPE_APPSTORE,
+  DISTRIBUTION_TYPE_DEFAULT_APP,
+  DISTRIBUTION_TYPE_FILESYSTEM,
+  type MAIN_SCREEN,
+  type SETTINGS_SCREEN,
+} from '../const';
 
 export type Screen = typeof MAIN_SCREEN | typeof SETTINGS_SCREEN;
 
@@ -46,17 +54,23 @@ export const BytesSchema = z.object({
   bytes: z.instanceof(Uint8Array),
 });
 
+export const AppStoreDistributionInfoSchema = z.object({
+  type: z.literal(DISTRIBUTION_TYPE_APPSTORE),
+  appName: z.string(),
+  appstoreDnaHash: z.string(),
+  appEntryActionHash: z.string(),
+  appVersionActionHash: z.string(),
+  appVersion: z.string(),
+});
+
 export const DistributionInfoV1Schema = z.union([
-  z.object({ type: z.literal('filesystem') }),
-  z.object({ type: z.literal('default-app') }),
   z.object({
-    type: z.literal('appstore'),
-    appName: z.string(),
-    appstoreDnaHash: z.string({ description: 'DnaHashB64' }),
-    appEntryActionHash: z.string({ description: 'ActionHashB64' }),
-    appVersionActionHash: z.string({ description: 'ActionHashB64' }),
-    appVersion: z.string({ description: 'version name' }),
+    type: z.literal(DISTRIBUTION_TYPE_FILESYSTEM),
   }),
+  z.object({
+    type: z.literal(DISTRIBUTION_TYPE_DEFAULT_APP),
+  }),
+  AppStoreDistributionInfoSchema,
 ]);
 
 export type DistributionInfoV1 = z.infer<typeof DistributionInfoV1Schema>;
