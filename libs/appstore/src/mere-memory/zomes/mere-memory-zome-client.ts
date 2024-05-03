@@ -137,6 +137,13 @@ export class MereMemoryZomeClient extends ZomeClient {
     return this.callZome('get_memory_block_entry', blockAddress);
   }
 
+  decompressBytes(memoryEntry: MemoryEntry, bytes: Uint8Array): Uint8Array {
+    if (memoryEntry.compression === 'gzip') {
+      return gunzipSync(bytes);
+    }
+    return bytes;
+  }
+
   protected callZome(fn_name: string, payload: unknown) {
     const req: AppCallZomeRequest = {
       role_name: this.roleName,
