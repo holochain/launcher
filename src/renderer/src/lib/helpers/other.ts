@@ -1,4 +1,5 @@
 import { encodeHashToBase64 } from '@holochain/client';
+import type { AppVersionEntry, Entity } from 'appstore-tools';
 
 import { createAppStoreClient, createDevHubClient } from '$services';
 import {
@@ -49,6 +50,14 @@ export const initializeDefaultAppPorts = async (data: InitializeAppPorts) => {
 	if (devhubAuthenticationToken) {
 		await createDevHubClient(appPort, devhubAuthenticationToken);
 	}
+};
+
+export const getLatestVersion = (appVersions: Entity<AppVersionEntry>[]) => {
+	if (!Array.isArray(appVersions) || appVersions.length === 0) {
+		return undefined;
+	}
+
+	return appVersions.sort((a, b) => b.content.published_at - a.content.published_at)[0];
 };
 
 export const convertFileToUint8Array = async (file: File): Promise<Uint8Array> => {

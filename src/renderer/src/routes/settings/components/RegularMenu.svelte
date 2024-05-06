@@ -9,7 +9,7 @@
 	import { MenuGear, MenuInfo } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
-	import { SETTINGS_SCREEN } from '$shared/const';
+	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_SCREEN } from '$shared/const';
 
 	import MenuEntry from './MenuEntry.svelte';
 
@@ -47,8 +47,11 @@
 	<ProgressRadial stroke={100} width="w-6" />
 {:else if $installedApps.isSuccess}
 	{#each $installedApps.data.filter(validateApp) as app (app.appInfo.installed_app_id)}
+		{@const isUpdateAvailable =
+			app.distributionInfo.type == DISTRIBUTION_TYPE_APPSTORE &&
+			!!$uiUpdates.data?.[app.distributionInfo.appVersionActionHash]}
 		<MenuEntry
-			isUpdateAvailable={!!$uiUpdates.data?.[app.appInfo.installed_app_id]}
+			{isUpdateAvailable}
 			name={app.appInfo.installed_app_id}
 			onClick={() => selectView(app.appInfo.installed_app_id)}
 			isSelected={view === app.appInfo.installed_app_id}

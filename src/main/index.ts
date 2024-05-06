@@ -577,7 +577,7 @@ const router = t.router({
     const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
     return holochainManager.isHappAvailableAndValid(opts.input);
   }),
-  isUiAvailable: t.procedure.input(z.string()).mutation(async (opts) => {
+  areUiBytesAvailable: t.procedure.input(z.string()).query(async (opts) => {
     const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
     return holochainManager.isUiAvailable(opts.input);
   }),
@@ -661,7 +661,7 @@ const router = t.router({
   updateUiFromHash: t.procedure.input(UpdateUiFromHashSchema).mutation((opts) => {
     const { uiZipSha256, appId, appVersionActionHash } = opts.input;
     const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
-    holochainManager.updateUiFromHash(uiZipSha256, appId, appVersionActionHash);
+    return holochainManager.updateUiFromHash(uiZipSha256, appId, appVersionActionHash);
   }),
   getKandoBytes: t.procedure.query(async () => {
     const filePath = path.join(DEFAULT_APPS_DIRECTORY, 'kando.webhapp');

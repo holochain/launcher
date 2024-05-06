@@ -2,9 +2,10 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
-	import { showModalError } from '$helpers';
+	import { initializeDefaultAppPorts, showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
 	import { APPS_VIEW } from '$shared/const';
+	import { getErrorMessage } from '$shared/helpers';
 
 	import { PasswordForm, SetupProgressWrapper } from '../components';
 
@@ -16,20 +17,30 @@
 
 	const launch = client.launch.createMutation();
 
+	const utils = client.createUtils();
+
+	const handleError = (errorMessage: string) => {
+		showModalError({
+			modalStore,
+			errorTitle: $i18n.t('setupError'),
+			errorMessage
+		});
+	};
+
 	const loginAndLaunch = () => {
 		$launch.mutate(
 			{ password: passwordInput },
 			{
-				onSuccess: () => {
-					goto(`/${APPS_VIEW}`);
+				onSuccess: async () => {
+					try {
+						const initializeDefaultAppPortsData = await utils.initializeDefaultAppPorts.fetch();
+						await initializeDefaultAppPorts(initializeDefaultAppPortsData);
+						goto(`/${APPS_VIEW}`);
+					} catch (error) {
+						handleError($i18n.t(getErrorMessage(error)));
+					}
 				},
-				onError: (error) => {
-					showModalError({
-						modalStore,
-						errorTitle: $i18n.t('loginError'),
-						errorMessage: $i18n.t(error.message || 'unknownError')
-					});
-				}
+				onError: (error) => handleError($i18n.t(error.message || 'unknownError'))
 			}
 		);
 	};

@@ -50,7 +50,7 @@
 			{
 				onSuccess: () => {
 					$installedApps.refetch();
-					goto(`${APPS_VIEW}?${PRESEARCH_URL_QUERY}=${formData.appId}`);
+					goto(`/${APPS_VIEW}?${PRESEARCH_URL_QUERY}=${formData.appId}`);
 					modalStore.close();
 				},
 				onError: (error) => {

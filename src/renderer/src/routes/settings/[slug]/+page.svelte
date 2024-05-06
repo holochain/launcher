@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { encodeHashToBase64 } from '@holochain/client';
 	import { getModalStore } from '@skeletonlabs/skeleton';
+	import type { AppVersionEntry } from 'appstore-tools';
 	import clsx from 'clsx';
 
 	import { goto } from '$app/navigation';
@@ -12,12 +13,15 @@
 		filterHash,
 		getAppStoreDistributionHash,
 		getCellId,
+		showModalError,
 		validateApp
 	} from '$helpers';
 	import { Download } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
-	import { SETTINGS_SCREEN } from '$shared/const';
+	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_SCREEN } from '$shared/const';
+	import { getErrorMessage } from '$shared/helpers';
+	import type { UpdateUiFromHash } from '$shared/types';
 
 	import { DashedSection } from '../components';
 
@@ -25,22 +29,90 @@
 
 	const modalStore = getModalStore();
 
-	const { checkForAppUiUpdatesQuery } = createAppQueries();
+	const { checkForAppUiUpdatesQuery, fetchUiBytesMutation } = createAppQueries();
 
 	const installedApps = client.getInstalledApps.createQuery();
 	const uninstallApp = client.uninstallApp.createMutation();
 	const isDevhubInstalled = client.isDevhubInstalled.createQuery();
+	const updateUiFromHash = client.updateUiFromHash.createMutation();
+	const storeUiBytes = client.storeUiBytes.createMutation();
 
+	$: view = $page.params.slug;
+	$: selectedApp = $installedApps.data?.find((app) => app.appInfo.installed_app_id === view);
 	$: uiUpdates = checkForAppUiUpdatesQuery(
 		$installedApps?.data
 			?.map((app) => getAppStoreDistributionHash(app.distributionInfo))
 			.filter(filterHash) ?? []
 	);
+	$: update =
+		selectedApp && uiUpdates && selectedApp.distributionInfo.type === DISTRIBUTION_TYPE_APPSTORE
+			? $uiUpdates.data?.[selectedApp.distributionInfo.appVersionActionHash]
+			: undefined;
+	$: areUiBytesAvailable = update
+		? client.areUiBytesAvailable.createQuery(update.content.bundle_hashes.ui_hash)
+		: undefined;
 
 	const modal = createModalParams(MODAL_DEVHUB_INSTALLATION_CONFIRMATION);
 
-	$: view = $page.params.slug;
-	$: selectedApp = $installedApps.data?.find((app) => app.appInfo.installed_app_id === view);
+	const onSuccess = () => {
+		$installedApps.refetch();
+		$uiUpdates.refetch();
+		modalStore.close();
+	};
+
+	const handleError = (error: unknown) => {
+		modalStore.close();
+		showModalError({
+			modalStore,
+			errorTitle: $i18n.t('appError'),
+			errorMessage: getErrorMessage(error)
+		});
+	};
+
+	const updateUIFromHashLogic = (updateInfo: UpdateUiFromHash) =>
+		$updateUiFromHash.mutate(updateInfo, { onSuccess, onError: handleError });
+
+	const fetchAndStoreUiBytesLogic = ({
+		appVersionEntry,
+		updateInfo
+	}: {
+		appVersionEntry: AppVersionEntry;
+		updateInfo: UpdateUiFromHash;
+	}) => {
+		$fetchUiBytesMutation.mutate(appVersionEntry, {
+			onSuccess: (bytes) =>
+				$storeUiBytes.mutate(
+					{ bytes },
+					{
+						onSuccess: () =>
+							updateUIFromHashLogic({
+								appId: updateInfo.appId,
+								uiZipSha256: updateInfo.uiZipSha256,
+								appVersionActionHash: updateInfo.appVersionActionHash
+							}),
+						onError: handleError
+					}
+				),
+			onError: handleError
+		});
+	};
+
+	const updateUI = ({
+		appVersionEntry,
+		updateInfo
+	}: {
+		appVersionEntry: AppVersionEntry;
+		updateInfo: UpdateUiFromHash;
+	}) => {
+		if ($areUiBytesAvailable?.isSuccess && !$areUiBytesAvailable.data) {
+			return fetchAndStoreUiBytesLogic({
+				appVersionEntry,
+				updateInfo
+			});
+		}
+
+		return updateUIFromHashLogic(updateInfo);
+	};
 </script>
 
 {#if selectedApp}
@@ -49,15 +121,38 @@
 		title={selectedApp.appInfo.installed_app_id}
 		buttons={[$i18n.t('details')]}
 	/>
-	{@const isUpdateAvailable = $uiUpdates.data?.[selectedApp.appInfo.installed_app_id]}
-	{#if isUpdateAvailable}
+	{#if update && selectedApp.distributionInfo.type === DISTRIBUTION_TYPE_APPSTORE}
 		<DashedSection borderColor="border-warning-500/30">
-			<div class="flex w-full justify-between">
-				<h2 class="h2 text-warning-500">{$i18n.t('updateAvailable')}</h2>
+			<div class="flex w-full items-center justify-between">
+				<h3 class="h3 text-warning-500">{$i18n.t('updateAvailable')}</h3>
+				<div class="flex items-center">
+					<p>{selectedApp.distributionInfo.appVersion}</p>
+					<h3 class="h3 mx-2 text-warning-500">→</h3>
+					<p>
+						{update.content.version}
+					</p>
+				</div>
+
 				<Button
 					props={{
-						onClick: () => {},
-						class: 'btn bg-warning-500'
+						onClick: async () => {
+							if (selectedApp.distributionInfo.type !== DISTRIBUTION_TYPE_APPSTORE) {
+								return;
+							}
+							updateUI({
+								appVersionEntry: update.content,
+								updateInfo: {
+									appId: selectedApp.appInfo.installed_app_id,
+									uiZipSha256: update.content.bundle_hashes.ui_hash,
+									appVersionActionHash: selectedApp.distributionInfo.appVersionActionHash
+								}
+							});
+						},
+						class: 'btn bg-warning-500',
+						isLoading:
+							$fetchUiBytesMutation.isPending ||
+							$storeUiBytes.isPending ||
+							$updateUiFromHash.isPending
 					}}
 				>
 					<div class="mr-2"><Download /></div>
@@ -66,7 +161,7 @@
 			</div>
 		</DashedSection>
 	{/if}
-	<div class={clsx('p-8', isUpdateAvailable && 'pt-0')}>
+	<div class={clsx('p-8', update && 'pt-0')}>
 		<div class="flex items-center justify-between">
 			<Button
 				props={{
