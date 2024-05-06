@@ -144,7 +144,7 @@
 								updateInfo: {
 									appId: selectedApp.appInfo.installed_app_id,
 									uiZipSha256: update.content.bundle_hashes.ui_hash,
-									appVersionActionHash: selectedApp.distributionInfo.appVersionActionHash
+									appVersionActionHash: encodeHashToBase64(update.id)
 								}
 							});
 						},
