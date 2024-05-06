@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { encodeHashToBase64 } from '@holochain/client';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { page } from '$app/stores';
@@ -7,7 +8,6 @@
 	import { InstallAppFromBytes } from '$modal';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
-	import { encodeHashToBase64 } from '@holochain/client';
 
 	const { appStoreHappsQuery, appVersionsAppstoreQueryFunction, fetchWebappBytesMutation } =
 		createAppQueries();
