@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { encodeHashToBase64 } from '@holochain/client';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { page } from '$app/stores';
@@ -66,9 +67,9 @@
 											bytes: bytes,
 											appName: app.title,
 											appVersion: latestVersion.content.version,
-											appVersionActionHash: latestVersion.id,
-											appEntryActionHash: latestVersion.address,
-											appstoreDnaHash: latestVersion.content.apphub_hrl.dna
+											appVersionActionHash: encodeHashToBase64(latestVersion.id),
+											appEntryActionHash: encodeHashToBase64(latestVersion.address),
+											appstoreDnaHash: encodeHashToBase64(latestVersion.content.apphub_hrl.dna)
 										}
 									}
 								});
