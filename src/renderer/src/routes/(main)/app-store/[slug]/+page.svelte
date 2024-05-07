@@ -44,9 +44,8 @@
 						props: {
 							bytes: bytes,
 							appName: app?.title,
-							appVersion: versionEntity.content.version,
 							appVersionActionHash: encodeHashToBase64(versionEntity.id),
-							appEntryActionHash: encodeHashToBase64(versionEntity.address),
+							appEntryActionHash: encodeHashToBase64(versionEntity.content.for_app),
 							appstoreDnaHash: encodeHashToBase64(versionEntity.content.apphub_hrl.dna)
 						}
 					}
@@ -56,9 +55,11 @@
 </script>
 
 {#if app && appVersionsDetailsQuery && $appVersionsDetailsQuery?.isSuccess}
+	{@const latestVersion = getLatestVersion($appVersionsDetailsQuery.data)}
 	<AppDetailsPanel
 		imageUrl={createImageUrl(app.icon)}
 		title={app.title}
+		appVersion={latestVersion?.content.version}
 		subtitle={app.subtitle}
 		buttons={[$i18n.t('description'), $i18n.t('versionHistory')]}
 		bind:selectedIndex
@@ -68,10 +69,6 @@
 				props={{
 					class: 'btn-app-store variant-filled',
 					onClick: async () => {
-						const appVersions = $appVersionsDetailsQuery.data;
-
-						const latestVersion = getLatestVersion(appVersions);
-
 						if (!latestVersion) {
 							return showModalError({
 								modalStore,

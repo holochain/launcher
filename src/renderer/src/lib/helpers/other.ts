@@ -60,6 +60,19 @@ export const getLatestVersion = (appVersions: Entity<AppVersionEntry>[]) => {
 	return appVersions.sort((a, b) => b.content.published_at - a.content.published_at)[0];
 };
 
+export const getVersionByActionHash = (
+	appVersions: Entity<AppVersionEntry>[] | undefined,
+	actionHash: string
+) => {
+	if (!appVersions || !Array.isArray(appVersions) || appVersions.length === 0) {
+		return '';
+	}
+
+	const version = appVersions.find((version) => encodeHashToBase64(version.id) === actionHash);
+
+	return version?.content.version ?? '';
+};
+
 export const convertFileToUint8Array = async (file: File): Promise<Uint8Array> => {
 	const buffer = await file.arrayBuffer();
 	return new Uint8Array(buffer);

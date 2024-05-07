@@ -60,7 +60,6 @@ export const AppStoreDistributionInfoSchema = z.object({
   appstoreDnaHash: z.string(),
   appEntryActionHash: z.string(),
   appVersionActionHash: z.string(),
-  appVersion: z.string(),
 });
 
 export const DistributionInfoV1Schema = z.union([

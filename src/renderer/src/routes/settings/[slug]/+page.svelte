@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { encodeHashToBase64 } from '@holochain/client';
+	import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import type { AppVersionEntry } from 'appstore-tools';
 	import clsx from 'clsx';
@@ -13,6 +13,7 @@
 		filterHash,
 		getAppStoreDistributionHash,
 		getCellId,
+		getVersionByActionHash,
 		showModalError,
 		validateApp
 	} from '$helpers';
@@ -29,7 +30,8 @@
 
 	const modalStore = getModalStore();
 
-	const { checkForAppUiUpdatesQuery, fetchUiBytesMutation } = createAppQueries();
+	const { checkForAppUiUpdatesQuery, fetchUiBytesMutation, appVersionsAppstoreQueryFunction } =
+		createAppQueries();
 
 	const installedApps = client.getInstalledApps.createQuery();
 	const uninstallApp = client.uninstallApp.createMutation();
@@ -39,18 +41,26 @@
 
 	$: view = $page.params.slug;
 	$: selectedApp = $installedApps.data?.find((app) => app.appInfo.installed_app_id === view);
+	$: selectedAppDistributionInfoData =
+		selectedApp?.distributionInfo.type === DISTRIBUTION_TYPE_APPSTORE
+			? selectedApp.distributionInfo
+			: undefined;
 	$: uiUpdates = checkForAppUiUpdatesQuery(
 		$installedApps?.data
 			?.map((app) => getAppStoreDistributionHash(app.distributionInfo))
 			.filter(filterHash) ?? []
 	);
 	$: update =
-		selectedApp && uiUpdates && selectedApp.distributionInfo.type === DISTRIBUTION_TYPE_APPSTORE
-			? $uiUpdates.data?.[selectedApp.distributionInfo.appVersionActionHash]
+		selectedApp && uiUpdates && selectedAppDistributionInfoData
+			? $uiUpdates.data?.[selectedAppDistributionInfoData.appVersionActionHash]
 			: undefined;
 	$: areUiBytesAvailable = update
 		? client.areUiBytesAvailable.createQuery(update.content.bundle_hashes.ui_hash)
 		: undefined;
+
+	$: appVersionsDetailsQuery = appVersionsAppstoreQueryFunction(
+		decodeHashFromBase64(selectedAppDistributionInfoData?.appEntryActionHash ?? '')
+	);
 
 	const modal = createModalParams(MODAL_DEVHUB_INSTALLATION_CONFIRMATION);
 
@@ -116,8 +126,12 @@
 </script>
 
 {#if selectedApp}
+	{@const appVersion = getVersionByActionHash(
+		$appVersionsDetailsQuery?.data,
+		selectedAppDistributionInfoData?.appVersionActionHash ?? ''
+	)}
 	<AppDetailsPanel
-		distributionInfo={selectedApp.distributionInfo}
+		{appVersion}
 		title={selectedApp.appInfo.installed_app_id}
 		buttons={[$i18n.t('details')]}
 	/>
@@ -126,7 +140,7 @@
 			<div class="flex w-full items-center justify-between">
 				<h3 class="h3 text-warning-500">{$i18n.t('updateAvailable')}</h3>
 				<div class="flex items-center">
-					<p>{selectedApp.distributionInfo.appVersion}</p>
+					<p>{appVersion}</p>
 					<h3 class="h3 mx-2 text-warning-500">→</h3>
 					<p>
 						{update.content.version}

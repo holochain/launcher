@@ -18,7 +18,6 @@
 	export let appstoreDnaHash: string;
 	export let appEntryActionHash: string;
 	export let appVersionActionHash: string;
-	export let appVersion: string;
 
 	let formData = {
 		appId: '',
@@ -41,8 +40,7 @@
 					appName,
 					appstoreDnaHash,
 					appEntryActionHash,
-					appVersionActionHash,
-					appVersion
+					appVersionActionHash
 				},
 				appId: formData.appId,
 				networkSeed: formData.networkSeed
