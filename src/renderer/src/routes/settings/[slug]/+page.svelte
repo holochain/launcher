@@ -33,6 +33,8 @@
 	const { checkForAppUiUpdatesQuery, fetchUiBytesMutation, appVersionsAppstoreQueryFunction } =
 		createAppQueries();
 
+	const utils = client.createUtils();
+
 	const installedApps = client.getInstalledApps.createQuery();
 	const uninstallApp = client.uninstallApp.createMutation();
 	const isDevhubInstalled = client.isDevhubInstalled.createQuery();
@@ -54,9 +56,6 @@
 		selectedApp && uiUpdates && selectedAppDistributionInfoData
 			? $uiUpdates.data?.[selectedAppDistributionInfoData.appVersionActionHash]
 			: undefined;
-	$: areUiBytesAvailable = update
-		? client.areUiBytesAvailable.createQuery(update.content.bundle_hashes.ui_hash)
-		: undefined;
 
 	$: appVersionsDetailsQuery = appVersionsAppstoreQueryFunction(
 		decodeHashFromBase64(selectedAppDistributionInfoData?.appEntryActionHash ?? '')
@@ -107,21 +106,23 @@
 		});
 	};
 
-	const updateUI = ({
+	const updateUI = async ({
 		appVersionEntry,
 		updateInfo
 	}: {
 		appVersionEntry: AppVersionEntry;
 		updateInfo: UpdateUiFromHash;
 	}) => {
-		if ($areUiBytesAvailable?.isSuccess && !$areUiBytesAvailable.data) {
-			return fetchAndStoreUiBytesLogic({
-				appVersionEntry,
-				updateInfo
-			});
+		const areUiBytesAvailable = await utils.areUiBytesAvailable.fetch(updateInfo.uiZipSha256);
+
+		if (areUiBytesAvailable) {
+			return updateUIFromHashLogic(updateInfo);
 		}
 
-		return updateUIFromHashLogic(updateInfo);
+		return fetchAndStoreUiBytesLogic({
+			appVersionEntry,
+			updateInfo
+		});
 	};
 </script>
 

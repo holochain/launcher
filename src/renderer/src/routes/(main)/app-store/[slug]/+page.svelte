@@ -12,11 +12,22 @@
 		uint8ArrayToURIComponent
 	} from '$helpers';
 	import { InstallAppFromBytes } from '$modal';
+	import InstallAppFromHashes from '$modal/InstallAppFromHashes.svelte';
 	import { createAppQueries } from '$queries';
-	import { i18n } from '$services';
+	import { i18n, trpc } from '$services';
+	import { getErrorMessage } from '$shared/helpers';
 
-	const { appStoreHappsQuery, appVersionsAppstoreQueryFunction, fetchWebappBytesMutation } =
-		createAppQueries();
+	const client = trpc();
+
+	const {
+		appStoreHappsQuery,
+		appVersionsAppstoreQueryFunction,
+		fetchWebappBytesMutation,
+		fetchUiBytesMutation
+	} = createAppQueries();
+
+	const utils = client.createUtils();
+	const storeUiBytes = client.storeUiBytes.createMutation();
 
 	const modalStore = getModalStore();
 
@@ -26,32 +37,91 @@
 
 	$: appVersionsDetailsQuery = appVersionsAppstoreQueryFunction(app?.id);
 
-	const fetchWebappBytesMutationLogic = (versionEntity: Entity<AppVersionEntry>) =>
-		$fetchWebappBytesMutation.mutate(versionEntity.content, {
-			onError: (error) => {
-				console.error(error);
-				showModalError({
-					modalStore,
-					errorTitle: $i18n.t('appError'),
-					errorMessage: $i18n.t(error.message)
-				});
-			},
-			onSuccess: (bytes) => {
-				modalStore.trigger({
-					type: 'component',
-					component: {
-						ref: InstallAppFromBytes,
-						props: {
-							bytes: bytes,
-							appName: app?.title,
-							appVersionActionHash: encodeHashToBase64(versionEntity.id),
-							appEntryActionHash: encodeHashToBase64(versionEntity.content.for_app),
-							appstoreDnaHash: encodeHashToBase64(versionEntity.content.apphub_hrl.dna)
-						}
+	const handleError = (error: unknown) => {
+		modalStore.close();
+		showModalError({
+			modalStore,
+			errorTitle: $i18n.t('appError'),
+			errorMessage: getErrorMessage(error)
+		});
+	};
+
+	const createModalInstallAppFromBytes =
+		(versionEntity: Entity<AppVersionEntry>) => (bytes: Uint8Array) =>
+			modalStore.trigger({
+				type: 'component',
+				component: {
+					ref: InstallAppFromBytes,
+					props: {
+						bytes: bytes,
+						appName: app?.title,
+						appVersionActionHash: encodeHashToBase64(versionEntity.id),
+						appEntryActionHash: encodeHashToBase64(versionEntity.content.for_app),
+						appstoreDnaHash: encodeHashToBase64(versionEntity.content.apphub_hrl.dna)
 					}
-				});
+				}
+			});
+
+	const createModalInstallAppFromHashes = async (versionEntity: Entity<AppVersionEntry>) =>
+		modalStore.trigger({
+			type: 'component',
+			component: {
+				ref: InstallAppFromHashes,
+				props: {
+					uiZipSha256: versionEntity.content.bundle_hashes.ui_hash,
+					happSha256: versionEntity.content.bundle_hashes.happ_hash,
+					appName: app?.title,
+					appVersionActionHash: encodeHashToBase64(versionEntity.id),
+					appEntryActionHash: encodeHashToBase64(versionEntity.content.for_app),
+					appstoreDnaHash: encodeHashToBase64(versionEntity.content.apphub_hrl.dna)
+				}
 			}
 		});
+
+	const fetchWebappBytesMutationLogic = (versionEntity: Entity<AppVersionEntry>) => {
+		$fetchWebappBytesMutation.mutate(versionEntity.content, {
+			onError: handleError,
+			onSuccess: createModalInstallAppFromBytes(versionEntity)
+		});
+	};
+
+	const fetchAndStoreUiBytesLogicAndInstall = (versionEntity: Entity<AppVersionEntry>) => {
+		$fetchUiBytesMutation.mutate(versionEntity.content, {
+			onSuccess: (bytes) =>
+				$storeUiBytes.mutate(
+					{ bytes },
+					{
+						onSuccess: () => createModalInstallAppFromHashes(versionEntity),
+						onError: handleError
+					}
+				),
+			onError: handleError
+		});
+	};
+
+	const installLogic = async (versionEntity: Entity<AppVersionEntry>) => {
+		const areUiBytesAvailable = await utils.areUiBytesAvailable.fetch(
+			versionEntity.content.bundle_hashes.ui_hash
+		);
+		const areHashBytesAvailable = await utils.areUiBytesAvailable.fetch(
+			versionEntity.content.bundle_hashes.happ_hash
+		);
+		console.log(areUiBytesAvailable, areHashBytesAvailable);
+		if (areUiBytesAvailable && areHashBytesAvailable) {
+			return createModalInstallAppFromHashes(versionEntity);
+		}
+
+		if (!areUiBytesAvailable && areHashBytesAvailable) {
+			return fetchAndStoreUiBytesLogicAndInstall(versionEntity);
+		}
+
+		return fetchWebappBytesMutationLogic(versionEntity);
+	};
+
+	$: isLoading =
+		$storeUiBytes.isPending ||
+		$fetchUiBytesMutation.isPending ||
+		$fetchWebappBytesMutation.isPending;
 </script>
 
 {#if app && appVersionsDetailsQuery && $appVersionsDetailsQuery?.isSuccess}
@@ -70,26 +140,11 @@
 					class: 'btn-app-store variant-filled',
 					onClick: async () => {
 						if (!latestVersion) {
-							return showModalError({
-								modalStore,
-								errorTitle: $i18n.t('appError'),
-								errorMessage: $i18n.t('appError')
-							});
+							return handleError($i18n.t('appError'));
 						}
-						// check whether UI is already available
-
-						// check whether happ is already available
-
-						// if both available
-						// installWebhappFromHashses(latestVersion.content.bundle_hashes,...)
-
-						// if only happ available
-						// fetchUiBytesMutation
-						// storeUiBytes
-
-						return fetchWebappBytesMutationLogic(latestVersion);
+						return installLogic(latestVersion);
 					},
-					isLoading: $fetchWebappBytesMutation.isPending
+					isLoading
 				}}
 			>
 				{$i18n.t('install')}
@@ -106,8 +161,8 @@
 				<Button
 					props={{
 						class: 'btn-app-store variant-filled',
-						isLoading: $fetchWebappBytesMutation.isPending,
-						onClick: () => fetchWebappBytesMutationLogic(versionEntry)
+						isLoading,
+						onClick: () => installLogic(versionEntry)
 					}}
 				>
 					{$i18n.t('install')}
