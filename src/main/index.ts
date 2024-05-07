@@ -157,7 +157,7 @@ console.log('RUNNING ON PLATFORM: ', process.platform);
 
 const isFirstInstance = app.requestSingleInstanceLock();
 
-if (!isFirstInstance) {
+if (!isFirstInstance && app.isPackaged) {
   app.quit();
 }
 
@@ -573,7 +573,7 @@ const router = t.router({
       );
     }
   }),
-  isHappAvailableAndValid: t.procedure.input(z.string()).mutation(async (opts) => {
+  isHappAvailableAndValid: t.procedure.input(z.string()).query(async (opts) => {
     const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
     return holochainManager.isHappAvailableAndValid(opts.input);
   }),

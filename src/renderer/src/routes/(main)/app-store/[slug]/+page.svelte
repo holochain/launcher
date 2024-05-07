@@ -103,7 +103,7 @@
 		const areUiBytesAvailable = await utils.areUiBytesAvailable.fetch(
 			versionEntity.content.bundle_hashes.ui_hash
 		);
-		const areHappBytesAvailable = await utils.areUiBytesAvailable.fetch(
+		const areHappBytesAvailable = await utils.isHappAvailableAndValid.fetch(
 			versionEntity.content.bundle_hashes.happ_hash
 		);
 		if (areUiBytesAvailable && areHappBytesAvailable) {
