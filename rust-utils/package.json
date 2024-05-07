@@ -1,6 +1,6 @@
 {
   "name": "hc-launcher-rust-utils",
-  "version": "0.202.0",
+  "version": "0.202.1",
   "main": "index.js",
   "types": "index.d.ts",
   "napi": {
