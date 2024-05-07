@@ -187,7 +187,7 @@ jobs:
 
           ls dist
 
-          dotnet tool install --global AzureSignTool
+          dotnet tool install --global --version 4.0.1 AzureSignTool
 
           echo "sha512 before code signing"
           CertUtil -hashfile "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" SHA512
