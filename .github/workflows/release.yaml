@@ -26,6 +26,7 @@ jobs:
           name: v${{ needs.extract-versions.outputs.version }} (Holochain v${{ needs.extract-versions.outputs.holochain_version }})
           draft: true
           generateReleaseNotes: true
+          omitBodyDuringUpdate: true
           allowUpdates: true
   publish:
     needs: [extract-versions, create-draft-release]
