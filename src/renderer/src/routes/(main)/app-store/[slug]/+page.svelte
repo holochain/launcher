@@ -106,7 +106,6 @@
 		const areHashBytesAvailable = await utils.areUiBytesAvailable.fetch(
 			versionEntity.content.bundle_hashes.happ_hash
 		);
-		console.log(areUiBytesAvailable, areHashBytesAvailable);
 		if (areUiBytesAvailable && areHashBytesAvailable) {
 			return createModalInstallAppFromHashes(versionEntity);
 		}
