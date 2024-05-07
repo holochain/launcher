@@ -60,7 +60,6 @@ export const AppStoreDistributionInfoSchema = z.object({
   appstoreDnaHash: z.string(),
   appEntryActionHash: z.string(),
   appVersionActionHash: z.string(),
-  appVersion: z.string(),
 });
 
 export const DistributionInfoV1Schema = z.union([
@@ -91,3 +90,5 @@ export const UpdateUiFromHashSchema = z.object({
   appId: z.string(),
   appVersionActionHash: z.optional(z.string({ description: 'ActionHashB64' })),
 });
+
+export type UpdateUiFromHash = z.infer<typeof UpdateUiFromHashSchema>;

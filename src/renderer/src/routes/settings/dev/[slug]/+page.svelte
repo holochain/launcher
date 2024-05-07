@@ -17,7 +17,7 @@
 
 	$: app = $appStoreMyHappsQuery?.data?.find((app) => uint8ArrayToURIComponent(app.id) === view);
 
-	$: appVersionsQuery = app ? appVersionsAppstoreQueryFunction(app.id) : null;
+	$: appVersionsQuery = appVersionsAppstoreQueryFunction(app?.id);
 </script>
 
 {#if $appVersionsQuery?.isSuccess && app}

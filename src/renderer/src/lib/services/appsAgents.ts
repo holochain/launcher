@@ -1,6 +1,6 @@
 import { AppWebsocket } from '@holochain/client';
 import { AppstoreAppClient, DevhubAppClient } from 'appstore-tools';
-import { type Writable, writable } from 'svelte/store';
+import { get, type Writable, writable } from 'svelte/store';
 
 const appStoreClientStore = writable<AppstoreAppClient | null>(null);
 const devHubClientStore = writable<DevhubAppClient | null>(null);
@@ -11,6 +11,7 @@ const createAppClient = async <T>(
 	clientConstructor: new (client: AppWebsocket) => T,
 	store: Writable<T | null>
 ): Promise<void> => {
+	if (get(store)) return;
 	const client = await AppWebsocket.connect({ url: new URL(`ws://127.0.0.1:${port}`), token });
 	const appClient = new clientConstructor(client);
 	store.set(appClient);

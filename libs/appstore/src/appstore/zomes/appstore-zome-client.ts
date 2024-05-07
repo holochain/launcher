@@ -89,7 +89,7 @@ export class AppstoreZomeClient extends ZomeClient {
   }
 
   async getAppVersion(actionHash: ActionHash): Promise<Entity<AppVersionEntry>> {
-    return this.callZome('get_app_version', actionHash);
+    return this.callZome('get_app_version', { id: actionHash });
   }
 
   async getAppVersionsForApp(actionHash: ActionHash): Promise<Array<Entity<AppVersionEntry>>> {

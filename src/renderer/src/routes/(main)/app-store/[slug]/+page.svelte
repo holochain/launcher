@@ -1,10 +1,16 @@
 <script lang="ts">
 	import { encodeHashToBase64 } from '@holochain/client';
 	import { getModalStore } from '@skeletonlabs/skeleton';
+	import type { AppVersionEntry, Entity } from 'appstore-tools';
 
 	import { page } from '$app/stores';
 	import { AppDetailsPanel, Button } from '$components';
-	import { createImageUrl, showModalError, uint8ArrayToURIComponent } from '$helpers';
+	import {
+		createImageUrl,
+		getLatestVersion,
+		showModalError,
+		uint8ArrayToURIComponent
+	} from '$helpers';
 	import { InstallAppFromBytes } from '$modal';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
@@ -18,13 +24,42 @@
 	let selectedIndex = 0;
 	const app = $appStoreHappsQuery.data?.find(({ id }) => uint8ArrayToURIComponent(id) === slug);
 
-	$: appVersionsDetailsQuery = app ? appVersionsAppstoreQueryFunction(app.id) : undefined;
+	$: appVersionsDetailsQuery = appVersionsAppstoreQueryFunction(app?.id);
+
+	const fetchWebappBytesMutationLogic = (versionEntity: Entity<AppVersionEntry>) =>
+		$fetchWebappBytesMutation.mutate(versionEntity.content, {
+			onError: (error) => {
+				console.error(error);
+				showModalError({
+					modalStore,
+					errorTitle: $i18n.t('appError'),
+					errorMessage: $i18n.t(error.message)
+				});
+			},
+			onSuccess: (bytes) => {
+				modalStore.trigger({
+					type: 'component',
+					component: {
+						ref: InstallAppFromBytes,
+						props: {
+							bytes: bytes,
+							appName: app?.title,
+							appVersionActionHash: encodeHashToBase64(versionEntity.id),
+							appEntryActionHash: encodeHashToBase64(versionEntity.content.for_app),
+							appstoreDnaHash: encodeHashToBase64(versionEntity.content.apphub_hrl.dna)
+						}
+					}
+				});
+			}
+		});
 </script>
 
 {#if app && appVersionsDetailsQuery && $appVersionsDetailsQuery?.isSuccess}
+	{@const latestVersion = getLatestVersion($appVersionsDetailsQuery.data)}
 	<AppDetailsPanel
 		imageUrl={createImageUrl(app.icon)}
 		title={app.title}
+		appVersion={latestVersion?.content.version}
 		subtitle={app.subtitle}
 		buttons={[$i18n.t('description'), $i18n.t('versionHistory')]}
 		bind:selectedIndex
@@ -34,10 +69,13 @@
 				props={{
 					class: 'btn-app-store variant-filled',
 					onClick: async () => {
-						const appVersions = $appVersionsDetailsQuery.data;
-						const latestVersion = appVersions.sort(
-							(a, b) => a.content.published_at - b.content.published_at
-						)[0];
+						if (!latestVersion) {
+							return showModalError({
+								modalStore,
+								errorTitle: $i18n.t('appError'),
+								errorMessage: $i18n.t('appError')
+							});
+						}
 						// check whether UI is already available
 
 						// check whether happ is already available
@@ -49,32 +87,7 @@
 						// fetchUiBytesMutation
 						// storeUiBytes
 
-						$fetchWebappBytesMutation.mutate(latestVersion.content, {
-							onError: (error) => {
-								console.error(error);
-								showModalError({
-									modalStore,
-									errorTitle: $i18n.t('appError'),
-									errorMessage: $i18n.t(error.message)
-								});
-							},
-							onSuccess: (bytes) => {
-								modalStore.trigger({
-									type: 'component',
-									component: {
-										ref: InstallAppFromBytes,
-										props: {
-											bytes: bytes,
-											appName: app.title,
-											appVersion: latestVersion.content.version,
-											appVersionActionHash: encodeHashToBase64(latestVersion.id),
-											appEntryActionHash: encodeHashToBase64(latestVersion.address),
-											appstoreDnaHash: encodeHashToBase64(latestVersion.content.apphub_hrl.dna)
-										}
-									}
-								});
-							}
-						});
+						return fetchWebappBytesMutationLogic(latestVersion);
 					},
 					isLoading: $fetchWebappBytesMutation.isPending
 				}}
@@ -93,7 +106,8 @@
 				<Button
 					props={{
 						class: 'btn-app-store variant-filled',
-						onClick: () => {}
+						isLoading: $fetchWebappBytesMutation.isPending,
+						onClick: () => fetchWebappBytesMutationLogic(versionEntry)
 					}}
 				>
 					{$i18n.t('install')}

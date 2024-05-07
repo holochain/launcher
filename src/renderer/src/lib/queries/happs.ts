@@ -55,23 +55,6 @@ export const createPublishersQuery = () => {
 };
 
 /**
- * Gets the versions that have been published to app store
- * @returns
- */
-export const createAppVersionsAppstoreQuery = () => (appEntryId: ActionHash) => {
-	return createQuery({
-		queryKey: [ALL_APP_VERSIONS_APPSTORE_QUERY_KEY, appEntryId],
-		queryFn: async () => {
-			const appstoreClient = getAppStoreClientOrThrow();
-
-			const appVersions = await appstoreClient.appstoreZomeClient.getAppVersionsForApp(appEntryId);
-
-			return appVersions;
-		}
-	});
-};
-
-/**
  * Get the versions that have been created in devhub
  * @returns
  */
@@ -298,6 +281,7 @@ export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: [ALL_APP_VERSIONS_DEVHUB_QUERY_KEY] });
 			queryClient.invalidateQueries({ queryKey: [ALL_APP_VERSIONS_APPSTORE_QUERY_KEY] });
+			queryClient.invalidateQueries({ queryKey: [CHECK_FOR_APP_UI_UPDATES_QUERY_KEY] });
 		}
 	});
 };
@@ -311,9 +295,17 @@ export const createFetchWebappBytesMutation = () => {
 	});
 };
 
+export const createFetchUiBytesMutation = () => {
+	return createMutation({
+		mutationFn: async (appVersionEntry: AppVersionEntry): Promise<Uint8Array> => {
+			const appStoreClient = getAppStoreClientOrThrow();
+			return appStoreClient.fetchUiBytes(appVersionEntry);
+		}
+	});
+};
+
 export const createCheckForAppUiUpdatesQuery = () => (appVersionActionHashes: string[]) => {
 	return createQuery({
-		staleTime: 1800000,
 		queryKey: [CHECK_FOR_APP_UI_UPDATES_QUERY_KEY, appVersionActionHashes],
 		queryFn: async () => {
 			const appStoreClient = getAppStoreClientOrThrow();
@@ -326,6 +318,26 @@ export const createCheckForAppUiUpdatesQuery = () => (appVersionActionHashes: st
 			);
 
 			return updates.reduce((acc, update) => (update ? { ...acc, ...update } : acc), {});
+		}
+	});
+};
+
+/**
+ * Gets the versions that have been published to app store
+ * @returns
+ */
+export const createAppVersionsAppstoreQuery = () => (appEntryId?: ActionHash) => {
+	if (!appEntryId) {
+		return undefined;
+	}
+	return createQuery({
+		queryKey: [ALL_APP_VERSIONS_APPSTORE_QUERY_KEY, appEntryId],
+		queryFn: async () => {
+			const appstoreClient = getAppStoreClientOrThrow();
+
+			const appVersions = await appstoreClient.appstoreZomeClient.getAppVersionsForApp(appEntryId);
+
+			return appVersions;
 		}
 	});
 };
