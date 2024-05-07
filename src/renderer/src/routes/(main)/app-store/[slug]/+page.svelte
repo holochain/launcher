@@ -103,14 +103,14 @@
 		const areUiBytesAvailable = await utils.areUiBytesAvailable.fetch(
 			versionEntity.content.bundle_hashes.ui_hash
 		);
-		const areHashBytesAvailable = await utils.areUiBytesAvailable.fetch(
+		const areHappBytesAvailable = await utils.areUiBytesAvailable.fetch(
 			versionEntity.content.bundle_hashes.happ_hash
 		);
-		if (areUiBytesAvailable && areHashBytesAvailable) {
+		if (areUiBytesAvailable && areHappBytesAvailable) {
 			return createModalInstallAppFromHashes(versionEntity);
 		}
 
-		if (!areUiBytesAvailable && areHashBytesAvailable) {
+		if (!areUiBytesAvailable && areHappBytesAvailable) {
 			return fetchAndStoreUiBytesLogicAndInstall(versionEntity);
 		}
 
