@@ -106,6 +106,7 @@ export const createAppStoreMyHappsQuery = () => {
 
 export const createAppStoreHappsQuery = () => {
 	return createQuery({
+		refetchInterval: 10000,
 		queryKey: [APP_STORE_HAPPS_QUERY_KEY],
 		queryFn: async () => {
 			const appStoreClient = getAppStoreClientOrThrow();
