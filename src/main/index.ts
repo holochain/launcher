@@ -157,7 +157,7 @@ console.log('RUNNING ON PLATFORM: ', process.platform);
 
 const isFirstInstance = app.requestSingleInstanceLock();
 
-if (!isFirstInstance) {
+if (!isFirstInstance && app.isPackaged) {
   app.quit();
 }
 
