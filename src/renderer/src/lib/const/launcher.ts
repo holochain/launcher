@@ -17,7 +17,7 @@ export const EMPTY_APP_DATA = {
 	title: '',
 	subtitle: '',
 	description: '',
-	version: '0.0.1',
+	version: '',
 	icon: undefined as Uint8Array | undefined,
 	bytes: undefined as Uint8Array | undefined
 };

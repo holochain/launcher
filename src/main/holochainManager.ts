@@ -296,36 +296,49 @@ export class HolochainManager {
    * @param membrane_proofs
    * @param icon
    */
-  async installWebHappFromBytes(
-    happAndUiBytes: HappAndUiBytes,
-    appId: string,
-    distributionInfo: DistributionInfoV1,
-    networkSeed?: string,
-    membrane_proofs?: { [key: string]: MembraneProof },
-    icon?: string,
-  ) {
+  async installWebHappFromBytes({
+    happAndUiBytes,
+    appId,
+    distributionInfo,
+    networkSeed,
+    membrane_proofs,
+    icon,
+  }: {
+    happAndUiBytes: HappAndUiBytes;
+    appId: string;
+    distributionInfo: DistributionInfoV1;
+    networkSeed?: string;
+    membrane_proofs?: { [key: string]: MembraneProof };
+    icon?: string;
+  }) {
     if (!happAndUiBytes.uiBytes) throw new Error('UI bytes undefined.');
 
     const happSha256 = this.storeHapp(happAndUiBytes.happBytes);
     const uiZipSha256 = this.storeUiIfNecessary(happAndUiBytes.uiBytes, icon);
 
-    await this.installWebhappFromHashes(
+    await this.installWebhappFromHashes({
       happSha256,
       uiZipSha256,
       appId,
       distributionInfo,
       networkSeed,
       membrane_proofs,
-    );
+    });
   }
 
-  async installHeadlessHappFromBytes(
-    happBytes: Array<number>,
-    appId: string,
-    distributionInfo: DistributionInfoV1,
-    networkSeed?: string,
-    membrane_proofs?: { [key: string]: MembraneProof },
-  ) {
+  async installHeadlessHappFromBytes({
+    happBytes,
+    appId,
+    distributionInfo,
+    networkSeed,
+    membrane_proofs,
+  }: {
+    happBytes: Array<number>;
+    appId: string;
+    distributionInfo: DistributionInfoV1;
+    networkSeed?: string;
+    membrane_proofs?: { [key: string]: MembraneProof };
+  }) {
     // write [sha256].happ to happs directory
     const happHasher = crypto.createHash('sha256');
     const happSha256 = happHasher.update(Buffer.from(happBytes)).digest('hex');
@@ -374,14 +387,21 @@ export class HolochainManager {
     });
   }
 
-  async installWebhappFromHashes(
-    happSha256: string,
-    uiZipSha256: string,
-    appId: string,
-    distributionInfo: DistributionInfoV1,
-    networkSeed?: string,
-    membrane_proofs?: { [key: string]: MembraneProof },
-  ): Promise<void> {
+  async installWebhappFromHashes({
+    happSha256,
+    uiZipSha256,
+    appId,
+    distributionInfo,
+    networkSeed,
+    membrane_proofs,
+  }: {
+    happSha256: string;
+    uiZipSha256: string;
+    appId: string;
+    distributionInfo: DistributionInfoV1;
+    networkSeed?: string;
+    membrane_proofs?: { [key: string]: MembraneProof };
+  }): Promise<void> {
     if (!this.isUiAvailable(uiZipSha256)) {
       throw new Error('UI not found for this hash. UI needs to be stored from bytes first.');
     }
@@ -647,19 +667,22 @@ export class HolochainManager {
     );
 
     if (
-      metadata.data.type === 'webhapp' &&
-      metadata.data.ui &&
-      metadata.data.ui.location.type === 'filesystem'
-    ) {
-      const iconPath = path.join(
-        this.fs.uisDir(this.holochainDataRoot),
-        metadata.data.ui.location.sha256,
-        'icon',
-      );
-      if (fs.existsSync(iconPath)) {
-        return fs.readFileSync(iconPath, 'utf-8');
-      }
+      metadata.data.type !== 'webhapp' ||
+      !metadata.data.ui ||
+      metadata.data.ui.location.type !== 'filesystem'
+    )
+      return undefined;
+
+    const iconPath = path.join(
+      this.fs.uisDir(this.holochainDataRoot),
+      metadata.data.ui.location.sha256,
+      'icon',
+    );
+
+    if (fs.existsSync(iconPath)) {
+      return fs.readFileSync(iconPath, 'utf-8');
     }
+
     return undefined;
   }
 

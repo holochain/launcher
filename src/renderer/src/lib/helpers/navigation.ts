@@ -19,8 +19,8 @@ export const setSearchInput = (event: CustomEvent) => {
 };
 
 export const handleNavigationWithAnimationDelay =
-	(setInputExpandedFalse: () => void) => (destination: MainScreenRoute) => () => {
-		setInputExpandedFalse();
+	(setInputExpandedFalse?: () => void) => (destination: MainScreenRoute) => () => {
+		setInputExpandedFalse?.();
 		setTimeout(() => {
 			const windowSize =
 				destination === APPS_VIEW

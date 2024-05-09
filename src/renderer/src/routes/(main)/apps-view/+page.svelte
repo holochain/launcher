@@ -27,12 +27,14 @@
 			.filter(validateApp) ?? [];
 </script>
 
-{#if $installedApps.isSuccess}
-	<ListOfApps
-		isSearchInputFilled={searchInput !== ''}
-		installedApps={filteredInstalledApps}
-		openAppCallback={() => {
-			goto(`?${SEARCH_URL_QUERY}=`);
-		}}
-	/>
-{/if}
+<div class="h-screen overflow-y-auto bg-light-background bg-fixed dark:bg-apps-list-dark-gradient">
+	{#if $installedApps.isSuccess}
+		<ListOfApps
+			isSearchInputFilled={searchInput !== ''}
+			installedApps={filteredInstalledApps}
+			openAppCallback={() => {
+				goto(`?${SEARCH_URL_QUERY}=`);
+			}}
+		/>
+	{/if}
+</div>

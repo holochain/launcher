@@ -41,8 +41,9 @@
 	const updateUiFromHash = client.updateUiFromHash.createMutation();
 	const storeUiBytes = client.storeUiBytes.createMutation();
 
-	$: view = $page.params.slug;
-	$: selectedApp = $installedApps.data?.find((app) => app.appInfo.installed_app_id === view);
+	$: selectedApp = $installedApps.data?.find(
+		(app) => app.appInfo.installed_app_id === $page.params.slug
+	);
 	$: selectedAppDistributionInfoData =
 		selectedApp?.distributionInfo.type === DISTRIBUTION_TYPE_APPSTORE
 			? selectedApp.distributionInfo

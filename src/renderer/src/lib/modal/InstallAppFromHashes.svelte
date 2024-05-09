@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { Avatar, getModalStore } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
 	import { PRESEARCH_URL_QUERY } from '$const';
-	import { showModalError } from '$helpers';
+	import { createImageUrl, showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
 	import { APPS_VIEW, DISTRIBUTION_TYPE_APPSTORE } from '$shared/const';
 
@@ -19,6 +19,7 @@
 	export let appstoreDnaHash: string;
 	export let appEntryActionHash: string;
 	export let appVersionActionHash: string;
+	export let icon: Uint8Array | undefined;
 
 	let formData = {
 		appId: '',
@@ -27,6 +28,8 @@
 
 	const installedApps = client.getInstalledApps.createQuery();
 	const installWebhappFromHashes = client.installWebhappFromHashes.createMutation();
+
+	$: imageUrl = createImageUrl(icon);
 </script>
 
 <ModalInstallForm
@@ -65,4 +68,10 @@
 			}
 		)}
 	isPending={$installWebhappFromHashes.isPending}
-/>
+>
+	<div slot="avatar">
+		{#if imageUrl}
+			<Avatar src={imageUrl} rounded="rounded-2xl" background="dark:bg-app-gradient" width="w-20" />
+		{/if}
+	</div>
+</ModalInstallForm>
