@@ -324,9 +324,6 @@ export class HolochainManager {
       networkSeed,
       membrane_proofs,
     });
-    if (icon) {
-      this.storeAppIcon(appId, icon);
-    }
   }
 
   async installHeadlessHappFromBytes({
@@ -397,7 +394,6 @@ export class HolochainManager {
     distributionInfo,
     networkSeed,
     membrane_proofs,
-    icon,
   }: {
     happSha256: string;
     uiZipSha256: string;
@@ -405,7 +401,6 @@ export class HolochainManager {
     distributionInfo: DistributionInfoV1;
     networkSeed?: string;
     membrane_proofs?: { [key: string]: MembraneProof };
-    icon?: string;
   }): Promise<void> {
     if (!this.isUiAvailable(uiZipSha256)) {
       throw new Error('UI not found for this hash. UI needs to be stored from bytes first.');
@@ -455,9 +450,6 @@ export class HolochainManager {
     );
 
     await this.adminWebsocket.enableApp({ installed_app_id: appId });
-    if (icon) {
-      this.storeAppIcon(appId, icon);
-    }
     const installedApps = await this.adminWebsocket.listApps({});
     // console.log('Installed apps: ', installedApps);
     this.installedApps = installedApps;
@@ -667,24 +659,6 @@ export class HolochainManager {
       return false;
     }
     return true;
-  }
-
-  storeAppIcon(appId: string, iconData: string): void {
-    const metadata: AppMetadata<AppMetadataV1> = this.integrityChecker.readSignedJSON(
-      path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json'),
-    );
-
-    if (!metadata.data.ui || metadata.data.ui.location.type !== 'filesystem') return;
-
-    const iconPath = path.join(
-      this.fs.uisDir(this.holochainDataRoot),
-      metadata.data.ui.location.sha256,
-      'icon',
-    );
-
-    if (!fs.existsSync(iconPath)) {
-      fs.writeFileSync(iconPath, iconData, 'utf-8');
-    }
   }
 
   appIcon(appId: string): string | undefined {

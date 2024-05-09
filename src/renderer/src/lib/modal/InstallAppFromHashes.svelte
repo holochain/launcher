@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { encodeHashToBase64 } from '@holochain/client';
 	import { Avatar, getModalStore } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
@@ -49,8 +48,7 @@
 					appVersionActionHash
 				},
 				appId: formData.appId,
-				networkSeed: formData.networkSeed,
-				...(icon ? { icon: encodeHashToBase64(icon) } : {})
+				networkSeed: formData.networkSeed
 			},
 			{
 				onSuccess: () => {
