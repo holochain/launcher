@@ -570,7 +570,7 @@ const router = t.router({
     });
   }),
   installWebhappFromHashes: t.procedure
-    .input(InstallWebhappFromHashesSchema)
+    .input(InstallWebhappFromHashesSchema) // TODO: need metadata input as well here like name and action hash of app and app version in app store
     .mutation(async (opts) => {
       const { happSha256, uiZipSha256, appId, distributionInfo, networkSeed, icon } = opts.input;
       const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
