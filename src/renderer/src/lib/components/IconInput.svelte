@@ -34,7 +34,7 @@
 			role="img"
 			aria-label="Uploaded Image Preview"
 		>
-			<span class="absolute top-1 text-xs opacity-50">{$i18n.t('icon').toUpperCase()}</span>
+			<span class="absolute top-1 text-xs opacity-50">{`${$i18n.t('icon').toUpperCase()}*`}</span>
 			<UploadImage />
 		</div>
 	{:else}

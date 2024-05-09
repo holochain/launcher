@@ -20,8 +20,6 @@ export const isAppDataValid = (data: unknown): data is AppData =>
 	isNonEmptyString(data.title) &&
 	'subtitle' in data &&
 	isNonEmptyString(data.subtitle) &&
-	'description' in data &&
-	isNonEmptyString(data.description) &&
 	'version' in data &&
 	isNonEmptyString(data.version);
 

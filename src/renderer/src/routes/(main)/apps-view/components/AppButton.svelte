@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { decodeHashFromBase64 } from '@holochain/client';
 	import clsx from 'clsx';
 
+	import { createImageUrl } from '$helpers';
 	import type { ExtendedAppInfo } from '$shared/types';
 
 	import BaseButton from './BaseButton.svelte';
@@ -17,13 +19,15 @@
 		'dark:border-2 border-white': willBeOpen,
 		'dark:border-0': !willBeOpen
 	});
+
+	$: imageUrl = app.icon ? createImageUrl(decodeHashFromBase64(app.icon)) : undefined;
 </script>
 
 <BaseButton
 	onClick={() => {
 		if (!isDisabled) onClick();
 	}}
-	src={app.icon}
+	src={imageUrl}
 	initials={app.appInfo.installed_app_id}
 	border={borderClasses}
 	background="dark:bg-app-gradient"

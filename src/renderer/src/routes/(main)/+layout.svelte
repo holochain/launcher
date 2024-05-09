@@ -16,7 +16,6 @@
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
 	import { APP_STORE, APPS_VIEW } from '$shared/const';
-	import { navigationStore } from '$stores';
 
 	const client = trpc();
 
@@ -90,34 +89,19 @@
 		}
 	};
 
-	client.mainScreenRoute.createSubscription(undefined, {
-		onData: (data: string) => {
-			goto(`/${data}`);
-		}
-	});
-
 	onMount(() => {
-		const unsubscribe = navigationStore.subscribe((value) => {
-			if (value !== null) {
-				handleNavigation(value)();
-				navigationStore.set(null);
-			}
-		});
-
 		window.addEventListener('keydown', handleEscapeKey);
 
 		return () => {
-			unsubscribe();
 			window.removeEventListener('keydown', handleEscapeKey);
 		};
 	});
 </script>
 
 <TopBar>
-	{#if type !== APP_STORE}
-		<IconButton onClick={handleNavigation(APP_STORE)}><Home /></IconButton>
+	{#if type !== APPS_VIEW}
+		<IconButton onClick={handleNavigation(APPS_VIEW)}><Rocket /></IconButton>
 	{/if}
-
 	<div
 		class="app-region-no-drag relative mx-2 max-w-md flex-grow origin-left transition-transform"
 		class:duration-{ANIMATION_DURATION}={inputExpanded}
@@ -145,9 +129,9 @@
 			{/if}
 		</div>
 	</div>
-	{#if type !== APPS_VIEW}
-		<IconButton onClick={handleNavigation(APPS_VIEW)} buttonClass="ml-auto">
-			<Rocket />
+	{#if type !== APP_STORE}
+		<IconButton onClick={handleNavigation(APP_STORE)} buttonClass="ml-auto">
+			<Home />
 		</IconButton>
 	{/if}
 	<IconButton onClick={() => $openSettings.mutate(undefined)}>

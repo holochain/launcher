@@ -50,11 +50,11 @@
 	}}
 >
 	<IconInput bind:icon={appData.icon} handleFileUpload={handleIconUpload} />
-	<InputWithLabel bind:value={appData.title} id="happName" label={$i18n.t('nameYourHapp')} />
+	<InputWithLabel bind:value={appData.title} id="happName" label={`${$i18n.t('nameYourHapp')}*`} />
 	<InputWithLabel
 		bind:value={appData.subtitle}
 		id="happDescription"
-		label={$i18n.t('oneLineDescription')}
+		label={`${$i18n.t('oneLineDescription')}*`}
 	/>
 	<InputWithLabel
 		bind:value={appData.description}
@@ -62,11 +62,11 @@
 		label={$i18n.t('description')}
 		maxLength={500}
 	/>
-	<InputWithLabel bind:files={bytesFiles} id="webbhapp" label={$i18n.t('webbhapp')} />
+	<InputWithLabel bind:files={bytesFiles} id="webbhapp" label={`${$i18n.t('webbhapp')}*`} />
 	<InputWithLabel
 		bind:value={appData.version}
 		id="version"
-		label={$i18n.t('version')}
+		label={`${$i18n.t('version')}*`}
 		maxLength={10}
 	/>
 	<footer class="modal-footer flex justify-between gap-2">

@@ -1,4 +1,5 @@
 import type { AgentPubKey } from '@holochain/client';
+import type { BrowserWindow } from 'electron';
 import { z } from 'zod';
 
 import {
@@ -21,6 +22,7 @@ export type WindowInfo = {
   agentPubKey: AgentPubKey;
   installedAppId: string;
   adminPort?: number;
+  windowObject: BrowserWindow;
 };
 
 export type WindowInfoRecord = Record<number, WindowInfo>;
@@ -35,6 +37,7 @@ export const HolochainLairVersionSchema = z.object({
 export const CommonAppSchema = z.object({
   appId: z.string().min(1),
   networkSeed: z.string(),
+  icon: z.string().optional(),
   // TODO add membrane proofs here
 });
 

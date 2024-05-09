@@ -53,6 +53,7 @@
 				component: {
 					ref: InstallAppFromBytes,
 					props: {
+						icon: app?.icon,
 						bytes: bytes,
 						appName: app?.title,
 						appVersionActionHash: encodeHashToBase64(versionEntity.id),
@@ -68,6 +69,7 @@
 			component: {
 				ref: InstallAppFromHashes,
 				props: {
+					icon: app?.icon,
 					uiZipSha256: versionEntity.content.bundle_hashes.ui_hash,
 					happSha256: versionEntity.content.bundle_hashes.happ_hash,
 					appName: app?.title,

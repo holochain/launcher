@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
-	import { showModalError } from '$helpers';
+	import { handleNavigationWithAnimationDelay, showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
 	import { APP_STORE } from '$shared/const';
 	import { type ExtendedAppInfo } from '$shared/types';
-	import { navigationStore } from '$stores';
 
 	import AppButton from './AppButton.svelte';
 	import BaseButton from './BaseButton.svelte';
@@ -20,9 +19,7 @@
 	const openApp = client.openApp.createMutation();
 </script>
 
-<div
-	class="align-center flex grow justify-center bg-light-background bg-fixed dark:bg-apps-list-dark-gradient"
->
+<div class="align-center flex grow justify-center">
 	<div>
 		<div class="my-8 grid grid-cols-5 gap-8 scroll-smooth px-2">
 			{#each installedApps as app, index}
@@ -50,7 +47,7 @@
 				fontSize={250}
 				fill="fill-white opacity-50"
 				initials="+"
-				onClick={() => navigationStore.set(APP_STORE)}
+				onClick={handleNavigationWithAnimationDelay()(APP_STORE)}
 			>
 				<span class="pt-2 text-xs opacity-50">{$i18n.t('addApps')}</span>
 			</BaseButton>

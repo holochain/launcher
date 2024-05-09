@@ -1,16 +1,17 @@
 import type { AppInfo, CallZomeRequestSigned } from '@holochain/client';
 import { TRPCError } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
-import { BrowserWindow } from 'electron';
+import type { BrowserWindow } from 'electron';
 import { shell } from 'electron';
 import fs from 'fs';
 import type { ZomeCallNapi, ZomeCallSigner, ZomeCallUnsignedNapi } from 'hc-launcher-rust-utils';
+import type * as rustUtils from 'hc-launcher-rust-utils';
 import path from 'path';
 import semver from 'semver';
 import type { ZodSchema } from 'zod';
 
 import { APP_STORE_APP_ID, DEVHUB_APP_ID, DISTRIBUTION_TYPE_DEFAULT_APP } from '$shared/const';
-import type { AppToInstall } from '$shared/types';
+import type { AppToInstall, DistributionInfoV1 } from '$shared/types';
 import {
   type EventKeys,
   type EventMap,
@@ -119,12 +120,12 @@ export const processHeadlessAppInstallation =
       launcherEmitter.emit(LOADING_PROGRESS_UPDATE, progressUpdate);
       const happPath = path.join(DEFAULT_APPS_DIRECTORY, name);
       const happBytes = fs.readFileSync(happPath);
-      await holochainManager.installHeadlessHappFromBytes(
-        Array.from(happBytes),
-        id,
-        { type: DISTRIBUTION_TYPE_DEFAULT_APP },
-        defaultAppsNetworkSeed,
-      );
+      await holochainManager.installHeadlessHappFromBytes({
+        happBytes: Array.from(happBytes),
+        appId: id,
+        distributionInfo: { type: DISTRIBUTION_TYPE_DEFAULT_APP },
+        networkSeed: defaultAppsNetworkSeed,
+      });
     }
   };
 
@@ -135,21 +136,17 @@ export function isHappAlreadyOpened({
   installed_app_id: string;
   WINDOW_INFO_MAP: WindowInfoRecord;
 }) {
-  const windowEntry = Object.entries(WINDOW_INFO_MAP).find(
-    ([, value]) => value.installedAppId === installed_app_id,
+  const windowEntry = Object.values(WINDOW_INFO_MAP).find(
+    (value) => value.installedAppId === installed_app_id,
   );
   if (!windowEntry) return false;
 
-  const [windowId] = windowEntry;
-  const window = BrowserWindow.fromId(parseInt(windowId));
-  if (!window) return false;
-
-  if (window.isMinimized()) window.restore();
-  window.focus();
+  const { windowObject } = windowEntry;
+  if (windowObject.isMinimized()) windowObject.restore();
+  windowObject.focus();
 
   return true;
 }
-
 export function breakingVersion(version: string) {
   if (!semver.valid(version)) {
     throw new Error('Version is not valid semver.');
@@ -225,4 +222,37 @@ export const getInstalledAppsInfo = (managers: Record<string, HolochainManager> 
   return Object.values(managers).flatMap((manager) =>
     manager.installedApps.filter(filterHeadlessApps).map(createAppInfo(manager)),
   );
+};
+
+export const installApp = async ({
+  holochainManager,
+  happAndUiBytes,
+  appId,
+  distributionInfo,
+  networkSeed,
+  icon,
+}: {
+  holochainManager: HolochainManager;
+  happAndUiBytes: rustUtils.HappAndUiBytes;
+  appId: string;
+  distributionInfo: DistributionInfoV1;
+  networkSeed: string;
+  icon?: string;
+}): Promise<void> => {
+  if (happAndUiBytes.uiBytes) {
+    await holochainManager.installWebHappFromBytes({
+      happAndUiBytes,
+      appId,
+      distributionInfo,
+      networkSeed,
+      icon,
+    });
+  } else {
+    await holochainManager.installHeadlessHappFromBytes({
+      happBytes: happAndUiBytes.happBytes,
+      appId,
+      distributionInfo,
+      networkSeed,
+    });
+  }
 };

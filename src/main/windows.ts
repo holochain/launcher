@@ -16,6 +16,7 @@ import path from 'path';
 import url from 'url';
 
 import {
+  ANIMATION_DURATION,
   MAIN_SCREEN,
   SEARCH_HEIGH,
   SETTINGS_SCREEN,
@@ -54,9 +55,17 @@ export const loadOrServe = is.dev ? loadVite : serveURL;
  * @param title
  * @returns
  */
-const createAdminWindow = (title: string, optWidth?: number) =>
+const createAdminWindow = ({
+  title,
+  optWidth,
+  frame = false,
+}: {
+  title: string;
+  optWidth?: number;
+  frame?: boolean;
+}) =>
   new BrowserWindow({
-    frame: false,
+    frame: frame,
     width: optWidth || WINDOW_SIZE,
     minWidth: optWidth || WINDOW_SIZE,
     height: WINDOW_SIZE,
@@ -81,9 +90,13 @@ export const focusVisibleWindow = (launcherWindows: Record<Screen, BrowserWindow
 export const setupAppWindows = () => {
   let isQuitting = false;
   // Create the browser window.
-  const mainWindow = createAdminWindow('Holochain Launcher');
+  const mainWindow = createAdminWindow({ title: 'Holochain Launcher' });
 
-  const settingsWindow = createAdminWindow('Holochain Launcher Settings', SETTINGS_SIZE);
+  const settingsWindow = createAdminWindow({
+    title: 'Holochain Launcher Settings',
+    frame: true,
+    optWidth: SETTINGS_SIZE,
+  });
 
   const icon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '16x16.png'));
   const tray = new Tray(icon);
@@ -150,7 +163,9 @@ export const setupAppWindows = () => {
     if (!isQuitting) {
       e.preventDefault();
       settingsWindow.hide();
-      mainWindow.show();
+      setTimeout(() => {
+        mainWindow.show();
+      }, ANIMATION_DURATION);
     }
   });
 

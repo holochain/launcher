@@ -50,7 +50,7 @@
 		)}
 	isPending={$installDefaultAppMutation.isPending}
 >
-	<slot name="avatar">
+	<div slot="avatar">
 		<Avatar initials={'kn'} rounded="rounded-2xl" background="dark:bg-app-gradient" width="w-20" />
-	</slot>
+	</div>
 </ModalInstallForm>
