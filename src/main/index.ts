@@ -695,6 +695,8 @@ const router = t.router({
         single_use: false,
       });
 
+    APP_AUTHENTICATION_TOKENS[DEVHUB_APP_ID] = authenticationTokenResponse.token;
+
     return {
       appPort: APP_PORT,
       authenticationToken: authenticationTokenResponse.token,
