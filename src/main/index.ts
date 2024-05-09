@@ -150,6 +150,12 @@ contextMenu({
   showSaveImageAs: true,
   showSearchWithGoogle: false,
   showInspectElement: true,
+  append: (_defaultActions, _parameters, browserWindow) => [
+    {
+      label: 'Reload',
+      click: () => (browserWindow as BrowserWindow).reload(),
+    },
+  ],
 });
 
 console.log('APP PATH: ', app.getAppPath());
@@ -157,7 +163,7 @@ console.log('RUNNING ON PLATFORM: ', process.platform);
 
 const isFirstInstance = app.requestSingleInstanceLock();
 
-if (!isFirstInstance && app.isPackaged) {
+if (!isFirstInstance && app.isPackaged && !VALIDATED_CLI_ARGS.profile) {
   app.quit();
 }
 
