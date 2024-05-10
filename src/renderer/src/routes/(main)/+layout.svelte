@@ -7,10 +7,10 @@
 	import { SEARCH_URL_QUERY, SELECTED_ICON_STYLE } from '$const';
 	import {
 		filterHash,
+		filterValidateAndSortApps,
 		getAppStoreDistributionHash,
 		handleNavigationWithAnimationDelay,
-		setSearchInput,
-		validateApp
+		setSearchInput
 	} from '$helpers';
 	import { Gear, Home, Rocket } from '$icons';
 	import { createAppQueries } from '$queries';
@@ -31,12 +31,7 @@
 
 	$: searchInput = $page.url.searchParams.get(SEARCH_URL_QUERY) || '';
 
-	$: filteredInstalledApps =
-		$installedApps?.data
-			?.filter((app) =>
-				app.appInfo.installed_app_id.toLowerCase().includes(searchInput.toLowerCase())
-			)
-			.filter(validateApp) ?? [];
+	$: filteredInstalledApps = filterValidateAndSortApps(searchInput, $installedApps?.data ?? []);
 
 	$: type = $page.url.pathname.includes(`/${APP_STORE}/`)
 		? 'other'
@@ -144,4 +139,6 @@
 	</IconButton>
 </TopBar>
 
-<slot />
+<div class="grow overflow-y-auto bg-light-background px-4 dark:bg-apps-list-dark-gradient">
+	<slot />
+</div>

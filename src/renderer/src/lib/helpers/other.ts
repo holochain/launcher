@@ -32,6 +32,22 @@ export const isUint8Array = (value: unknown): value is Uint8Array => value insta
 export const validateApp = (app: unknown): app is ExtendedAppInfo =>
 	ExtendedAppInfoSchema.safeParse(app).success;
 
+export const filterValidateAndSortApps = (searchInput: string, apps: unknown[]) => {
+	const filteredAndValidatedApps = apps
+		.filter(validateApp)
+		.filter((app) =>
+			app.appInfo.installed_app_id.toLowerCase().includes(searchInput.toLowerCase())
+		);
+
+	return filteredAndValidatedApps.sort((a, b) => {
+		const idA = a.appInfo.installed_app_id.toLowerCase();
+		const idB = b.appInfo.installed_app_id.toLowerCase();
+		const exactMatchA = idA === searchInput.toLowerCase() ? 0 : 1;
+		const exactMatchB = idB === searchInput.toLowerCase() ? 0 : 1;
+		return exactMatchA - exactMatchB;
+	});
+};
+
 export const uint8ArrayToURIComponent = (bytes: Uint8Array) =>
 	encodeURIComponent(encodeHashToBase64(bytes));
 

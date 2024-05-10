@@ -21,7 +21,7 @@
 
 <div class="align-center flex grow justify-center">
 	<div>
-		<div class="my-8 grid grid-cols-5 gap-8 scroll-smooth px-2">
+		<div class="my-8 grid grid-cols-5 gap-8 scroll-smooth">
 			{#each installedApps as app, index}
 				<AppButton
 					{index}

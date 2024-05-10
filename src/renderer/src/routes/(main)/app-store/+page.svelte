@@ -18,19 +18,17 @@
 		) ?? [];
 </script>
 
-<div class="grow bg-light-background p-4 dark:bg-apps-list-dark-gradient">
-	<div class="text-token grid w-full gap-4 md:grid-cols-2">
-		{#each filteredAppStoreHapps as app}
-			<AppCard
-				icon={app.icon}
-				title={app.title}
-				subtitle={app.subtitle}
-				id={uint8ArrayToURIComponent(app.id)}
-			/>
-		{/each}
-		{#if isKandoInSearch}
-			<AppCard />
-		{/if}
-		<InstallFromDeviceCard />
-	</div>
+<div class="text-token grid w-full gap-4 py-4 md:grid-cols-2">
+	{#each filteredAppStoreHapps as app}
+		<AppCard
+			icon={app.icon}
+			title={app.title}
+			subtitle={app.subtitle}
+			id={uint8ArrayToURIComponent(app.id)}
+		/>
+	{/each}
+	{#if isKandoInSearch}
+		<AppCard />
+	{/if}
+	<InstallFromDeviceCard />
 </div>
