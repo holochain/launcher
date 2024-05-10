@@ -49,8 +49,13 @@
 				}
 			}}
 		>
-			<InputWithLabel bind:files id="webbhapp" label={$i18n.t('webbhapp')} />
-			<InputWithLabel bind:value={version} id="version" label={$i18n.t('version')} maxLength={10} />
+			<InputWithLabel bind:files id="webbhapp" label={`${$i18n.t('webbhapp')}*`} />
+			<InputWithLabel
+				bind:value={version}
+				id="version"
+				label={`${$i18n.t('version')}*`}
+				maxLength={10}
+			/>
 			{#if $publishNewVersionMutation.error}
 				<div class="flex items-center justify-center">
 					<span class="text-red-500">{$publishNewVersionMutation.error.message}</span>

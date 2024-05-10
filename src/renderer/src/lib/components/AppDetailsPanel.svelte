@@ -35,7 +35,9 @@
 				{/if}
 			</div>
 		</div>
-		<slot name="install" />
+		{#if selectedIndex === 0}
+			<slot name="install" />
+		{/if}
 	</div>
 	{#each buttons as button, index}
 		<Button

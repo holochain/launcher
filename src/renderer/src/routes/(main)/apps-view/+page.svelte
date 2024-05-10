@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { PRESEARCH_URL_QUERY, SEARCH_URL_QUERY } from '$const';
-	import { validateApp } from '$helpers';
+	import { filterValidateAndSortApps } from '$helpers';
 	import { trpc } from '$services';
 
 	import ListOfApps from './components/ListOfApps.svelte';
@@ -19,22 +19,15 @@
 
 	$: searchInput = $page.url.searchParams.get(SEARCH_URL_QUERY) || '';
 
-	$: filteredInstalledApps =
-		$installedApps?.data
-			?.filter((app) =>
-				app.appInfo.installed_app_id.toLowerCase().includes(searchInput.toLowerCase())
-			)
-			.filter(validateApp) ?? [];
+	$: filteredInstalledApps = filterValidateAndSortApps(searchInput, $installedApps?.data ?? []);
 </script>
 
-<div class="h-screen overflow-y-auto bg-light-background bg-fixed dark:bg-apps-list-dark-gradient">
-	{#if $installedApps.isSuccess}
-		<ListOfApps
-			isSearchInputFilled={searchInput !== ''}
-			installedApps={filteredInstalledApps}
-			openAppCallback={() => {
-				goto(`?${SEARCH_URL_QUERY}=`);
-			}}
-		/>
-	{/if}
-</div>
+{#if $installedApps.isSuccess}
+	<ListOfApps
+		isSearchInputFilled={searchInput !== ''}
+		installedApps={filteredInstalledApps}
+		openAppCallback={() => {
+			goto(`?${SEARCH_URL_QUERY}=`);
+		}}
+	/>
+{/if}
