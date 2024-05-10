@@ -30,9 +30,8 @@
 		}
 	};
 
-	const handleIconUpload = async (file: File): Promise<void> => {
-		const icon = await convertFileToUint8Array(file);
-		appData = { ...appData, icon };
+	const handleIconUpload = async (file: Uint8Array): Promise<void> => {
+		appData = { ...appData, icon: file };
 	};
 
 	$: setAppDataBytes(bytesFiles);

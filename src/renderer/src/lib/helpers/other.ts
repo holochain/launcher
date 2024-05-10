@@ -1,6 +1,7 @@
 import { encodeHashToBase64 } from '@holochain/client';
 import type { AppVersionEntry, Entity } from 'appstore-tools';
 
+import { MAX_IMAGE_WIDTH_AND_HEIGHT } from '$const';
 import { createAppStoreClient, createDevHubClient } from '$services';
 import {
 	AppStoreDistributionInfoSchema,
@@ -108,3 +109,40 @@ export const getAppStoreDistributionHash = (app: unknown): string | undefined =>
 };
 
 export const filterHash = (hash: unknown): hash is string => hash !== undefined;
+
+export const adjustDimensions = (width: number, height: number): [number, number] => {
+	if (width > height && width > MAX_IMAGE_WIDTH_AND_HEIGHT) {
+		return [MAX_IMAGE_WIDTH_AND_HEIGHT, (height * MAX_IMAGE_WIDTH_AND_HEIGHT) / width];
+	} else if (height > MAX_IMAGE_WIDTH_AND_HEIGHT) {
+		return [(width * MAX_IMAGE_WIDTH_AND_HEIGHT) / height, MAX_IMAGE_WIDTH_AND_HEIGHT];
+	}
+	return [width, height];
+};
+
+export const resizeImage = async (file: File): Promise<Uint8Array | null> => {
+	const img = document.createElement('img');
+	img.src = URL.createObjectURL(file);
+	await img.decode();
+
+	const [newWidth, newHeight] = adjustDimensions(img.width, img.height);
+
+	const canvas = document.createElement('canvas');
+	canvas.width = newWidth;
+	canvas.height = newHeight;
+	const ctx = canvas.getContext('2d');
+	ctx?.drawImage(img, 0, 0, newWidth, newHeight);
+	return new Promise<Uint8Array | null>((resolve) => {
+		canvas.toBlob((blob) => {
+			if (blob) {
+				const reader = new FileReader();
+				reader.onload = () => {
+					const arrayBuffer = reader.result as ArrayBuffer;
+					resolve(new Uint8Array(arrayBuffer));
+				};
+				reader.readAsArrayBuffer(blob);
+			} else {
+				resolve(null);
+			}
+		}, 'image/png');
+	});
+};

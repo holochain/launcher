@@ -590,7 +590,13 @@ const router = t.router({
   installWebhappFromBytes: t.procedure
     .input(InstallHappOrWebhappFromBytesSchema)
     .mutation(async (opts) => {
-      const { bytes, appId, distributionInfo, networkSeed, icon } = opts.input;
+      const {
+        bytes,
+        appId,
+        distributionInfo,
+        networkSeed,
+        // icon
+      } = opts.input;
       const happAndUiBytes = await rustUtils.decodeHappOrWebhapp(Array.from(bytes));
       const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
       await installApp({
@@ -599,7 +605,7 @@ const router = t.router({
         appId,
         distributionInfo,
         networkSeed,
-        icon,
+        // icon,
       });
     }),
   installDefaultApp: t.procedure.input(InstallDefaultAppSchema).mutation(async (opts) => {
