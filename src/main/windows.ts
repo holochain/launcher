@@ -59,16 +59,19 @@ const createAdminWindow = ({
   title,
   optWidth,
   frame = false,
+  icon,
 }: {
   title: string;
   optWidth?: number;
   frame?: boolean;
+  icon?: Electron.NativeImage;
 }) =>
   new BrowserWindow({
     frame: frame,
     width: optWidth || WINDOW_SIZE,
     minWidth: optWidth || WINDOW_SIZE,
     height: WINDOW_SIZE,
+    icon,
     minHeight: MIN_HEIGH,
     title: title,
     show: false,
@@ -91,16 +94,18 @@ export const focusVisibleWindow = (launcherWindows: Record<Screen, BrowserWindow
 export const setupAppWindows = () => {
   let isQuitting = false;
   // Create the browser window.
-  const mainWindow = createAdminWindow({ title: 'Holochain Launcher' });
+  const mainIcon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '../icon.png'));
+  const mainWindow = createAdminWindow({ title: 'Holochain Launcher', icon: mainIcon });
 
   const settingsWindow = createAdminWindow({
-    title: 'Holochain Launcher Settings',
+    title: 'Settings - Holochain Launcher',
     frame: true,
     optWidth: SETTINGS_SIZE,
+    icon: mainIcon,
   });
 
-  const icon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '16x16.png'));
-  const tray = new Tray(icon);
+  const trayIcon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '16x16.png'));
+  const tray = new Tray(trayIcon);
 
   loadOrServe(mainWindow, { screen: MAIN_SCREEN });
 
