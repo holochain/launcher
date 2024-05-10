@@ -18,7 +18,7 @@ import url from 'url';
 import {
   ANIMATION_DURATION,
   MAIN_SCREEN,
-  SEARCH_HEIGH,
+  MIN_HEIGH,
   SETTINGS_SCREEN,
   SETTINGS_SIZE,
   WINDOW_SIZE,
@@ -72,6 +72,7 @@ const createAdminWindow = ({
     minWidth: optWidth || WINDOW_SIZE,
     height: WINDOW_SIZE,
     icon,
+    minHeight: MIN_HEIGH,
     title: title,
     show: false,
     webPreferences: {
@@ -151,7 +152,7 @@ export const setupAppWindows = () => {
   tray.setContextMenu(trayContextMenu);
 
   globalShortcut.register('CommandOrControl+Shift+L', () => {
-    mainWindow.setSize(WINDOW_SIZE, SEARCH_HEIGH);
+    mainWindow.setSize(WINDOW_SIZE, MIN_HEIGH);
     focusVisibleWindow(windows);
   });
 

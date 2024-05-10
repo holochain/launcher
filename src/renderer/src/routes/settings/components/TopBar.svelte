@@ -25,6 +25,18 @@
 </script>
 
 <div class="app-region-drag flex p-3 dark:bg-apps-input-dark-gradient">
+	<IconButton
+		onClick={() => {
+			goto(`/${SETTINGS_SCREEN}`);
+		}}
+		buttonClass={clsx('p-2', isDevPage ? undefined : 'bg-black rounded-md')}
+	>
+		{#if isDevPage}
+			<Gear />
+		{:else}
+			<Gear fillColor={SELECTED_ICON_STYLE} />
+		{/if}
+	</IconButton>
 	{#if $isDevhubInstalled.data}
 		<IconButton
 			buttonClass={clsx('p-2', isDevPage && 'bg-black rounded-md')}
@@ -43,16 +55,4 @@
 			{/if}
 		</IconButton>
 	{/if}
-	<IconButton
-		onClick={() => {
-			goto(`/${SETTINGS_SCREEN}`);
-		}}
-		buttonClass={clsx('p-2', isDevPage ? undefined : 'bg-black rounded-md')}
-	>
-		{#if isDevPage}
-			<Gear />
-		{:else}
-			<Gear fillColor={SELECTED_ICON_STYLE} />
-		{/if}
-	</IconButton>
 </div>

@@ -6,7 +6,7 @@ import { SEARCH_URL_QUERY } from '$const';
 import {
 	ANIMATION_DURATION,
 	APPS_VIEW,
-	SEARCH_HEIGH,
+	MIN_HEIGH,
 	WINDOW_SIZE,
 	WINDOW_SIZE_LARGE
 } from '$shared/const';
@@ -24,7 +24,7 @@ export const handleNavigationWithAnimationDelay =
 		setTimeout(() => {
 			const windowSize =
 				destination === APPS_VIEW
-					? { width: WINDOW_SIZE, height: SEARCH_HEIGH }
+					? { width: WINDOW_SIZE, height: MIN_HEIGH }
 					: { width: WINDOW_SIZE_LARGE, height: WINDOW_SIZE };
 			window.resizeTo(windowSize.width, windowSize.height);
 			goto(`/${destination}`);
