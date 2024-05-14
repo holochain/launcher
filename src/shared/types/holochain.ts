@@ -49,9 +49,7 @@ export const InstalledAppInfoStatusSchema = z.union([
   z.object({
     disabled: z.object({}),
   }),
-  z.object({
-    running: z.null(),
-  }),
+  z.literal('running'),
 ]);
 
 export type InstalledAppInfoStatus = z.infer<typeof InstalledAppInfoStatusSchema>;

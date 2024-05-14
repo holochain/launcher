@@ -15,24 +15,32 @@ import type { MemoryEntry } from '../mere-memory';
 
 export type DevhubAppEntry = {
   manifest: AppManifestV1;
+  resources: ResourcesMap;
   app_token: AppToken;
+  claimed_file_size: number;
 };
 
 export type CreateDevhubAppInput = {
   manifest: AppManifestV1;
+  resources: ResourcesMap;
   roles_dna_tokens: RolesDnaTokensInput;
   claimed_file_size: number;
 };
 
 export type DevhubAppEntryInput = {
   manifest: AppManifestV1;
-  appToken: AppTokenInput;
+  resources: ResourcesMap;
+  app_token: AppTokenInput;
+  claimed_file_size: number;
 };
 
 export type AppAsset = {
   app_entry: DevhubAppEntry;
   dna_assets: Record<RoleName, DnaAsset>;
 };
+
+export type ResourcesMap = Record<string, HRL>;
+export type WebAppResourcesMap = Record<string, EntryHash>;
 
 export type AppToken = {
   integrity_hash: Uint8Array;
@@ -85,8 +93,7 @@ export type AppRoleManifest = {
 };
 
 export type AppRoleDnaManifest = {
-  dna_hrl?: HRL;
-  bytes?: Uint8Array;
+  bundled: string;
   modifiers: any;
   installed_hash: DnaHashB64 | undefined;
   clone_limit: number;
@@ -238,6 +245,7 @@ export type MoveWebAppPackageVersionInput = {
 
 export type CreateWebAppInput = {
   manifest: WebAppManifestV1;
+  resources: WebAppResourcesMap;
 };
 
 export type WebAppEntry = {
@@ -259,17 +267,15 @@ export type WebAppAsset = {
 export type WebAppManifestV1 = {
   name: string;
   ui: WebUI;
-  happ_manifest: AppManifestLocation | { bytes: Uint8Array };
+  happ_manifest: AppManifestLocation;
 };
 
-export type WebUI =
-  | {
-      ui_entry: EntryHash;
-    }
-  | { bytes: Uint8Array };
+export type WebUI = {
+  bundled: string;
+};
 
 export type AppManifestLocation = {
-  app_entry: EntryHash;
+  bundled: string;
 };
 
 export type WebAppToken = {
@@ -343,9 +349,12 @@ export enum ZomeType {
 
 export type DnaEntry = {
   manifest: DnaManifestV1;
+  resources: ResourcesMap;
   dna_token: DnaToken;
   integrities_token: IntegritiesToken;
   coordinators_token: CoordinatorsToken;
+  claimed_file_size: number;
+  asset_hashes: DnaAssetHashes;
 };
 
 export type DnaEntryInput = {
@@ -376,6 +385,7 @@ export type CoordinatorsTokenInput = Array<[string, Uint8Array]>;
 
 export type CreateDnaInput = {
   manifest: DnaManifestV1;
+  resources: ResourcesMap;
   claimed_file_size: number;
   asset_hashes: DnaAssetHashes;
 };
@@ -407,31 +417,14 @@ export type CoordinatorManifest = {
 export type IntegrityZomeManifest = {
   name: ZomeName;
   hash: WasmHashB64 | undefined;
-  zome_hrl?: HRL;
-  bytes?: Uint8Array;
-  dylib: any;
-};
-
-export type IntegrityZomeManifestWithBytes = {
-  name: ZomeName;
-  hash: WasmHashB64 | undefined;
-  bytes: Uint8Array;
+  bundled: string;
   dylib: any;
 };
 
 export type CoordinatorZomeManifest = {
   name: ZomeName;
   hash: WasmHashB64 | undefined;
-  zome_hrl?: HRL;
-  bytes?: Uint8Array;
-  dependencies: Array<ZomeDependency> | undefined;
-  dylib: any;
-};
-
-export type CoordinatorZomeManifestWithBytes = {
-  name: ZomeName;
-  hash: WasmHashB64 | undefined;
-  bytes: Uint8Array;
+  bundled: string;
   dependencies: Array<ZomeDependency> | undefined;
   dylib: any;
 };
