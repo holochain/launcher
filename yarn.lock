@@ -621,10 +621,10 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.57.0.tgz#a5417ae8427873f1dd08b70b3574b453e67b5f7f"
   integrity sha512-Ys+3g2TaW7gADOJzPt83SJtCDhMjndcDMFVQ/Tj9iA1BfJzFKD9mAUXT3OenpuPHbI6P/myECxRJrofUsDx/5g==
 
-"@holochain/client@0.17.0-dev.12":
-  version "0.17.0-dev.12"
-  resolved "https://registry.yarnpkg.com/@holochain/client/-/client-0.17.0-dev.12.tgz#27c3c98d855d3aa76ee3e0c612b2689df9004957"
-  integrity sha512-aEOkD4wtFeHAv5AiEkBfsiGeAujCyQf1yfvmtcdERnv73zgZhxCiZ0ZrEi46kdJhRHMXX/1Qkqo6VY8afrepfQ==
+"@holochain/client@0.18.0-dev.1":
+  version "0.18.0-dev.1"
+  resolved "https://registry.yarnpkg.com/@holochain/client/-/client-0.18.0-dev.1.tgz#711193f1401e5f10ef13d94df4579b9842bcc2b2"
+  integrity sha512-5BW+kG/VoB+AhrzquoZ1QHbc1fGwujLs2o6Ct+aOkqXATjQNFif6auX50cagZSaq9hWX5VuZLcqdDTXLWKhNrw==
   dependencies:
     "@bitgo/blake2b" "^3.2.4"
     "@holochain/serialization" "^0.1.0-beta-rc.3"
@@ -721,15 +721,10 @@
     lodash "^4.17.15"
     tmp-promise "^3.0.2"
 
-"@msgpack/msgpack@^2.8.0":
+"@msgpack/msgpack@^2.7.0", "@msgpack/msgpack@^2.8.0":
   version "2.8.0"
   resolved "https://registry.yarnpkg.com/@msgpack/msgpack/-/msgpack-2.8.0.tgz#4210deb771ee3912964f14a15ddfb5ff877e70b9"
   integrity sha512-h9u4u/jiIRKbq25PM+zymTyW6bhTzELvOoUd+AvYriWOAKpLGnIamaET3pnHYoI5iYphAHBI4ayx0MehR+VVPQ==
-
-"@msgpack/msgpack@^3.0.0-beta2":
-  version "3.0.0-beta2"
-  resolved "https://registry.yarnpkg.com/@msgpack/msgpack/-/msgpack-3.0.0-beta2.tgz#5bccee30f84df220b33905e3d8249ba96deca0b7"
-  integrity sha512-y+l1PNV0XDyY8sM3YtuMLK5vE3/hkfId+Do8pLo/OPxfxuFAUwcGz3oiiUuV46/aBpwTzZ+mRWVMtlSKbradhw==
 
 "@napi-rs/cli@^2.18.3":
   version "2.18.3"
@@ -864,13 +859,14 @@
   resolved "https://registry.yarnpkg.com/@skeletonlabs/tw-plugin/-/tw-plugin-0.4.0.tgz#fe9eb12123c46e7ffa79bf6eaf2da853c1c6ace6"
   integrity sha512-v6Y4deBq9ByRx3kTRGgekhhYkWEYgNNNu8UXOwJngCStB7w8SwmbNFSeHkluxMbgCgMnJyp220EMpw9nj/rEsQ==
 
-"@spartan-hc/bundles@0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@spartan-hc/bundles/-/bundles-0.2.2.tgz#2cbcbfc90afc8127ed17d59c111074205d0f8a91"
-  integrity sha512-UDdASyLFjGjJ2AJQ37B7oglcr60JlmTSztpvAPcXyLL6p2k5HvPyfvLh+n6WRT863gWuZoBNgGJ6GlfOg8ggMA==
+"@spartan-hc/bundles@0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@spartan-hc/bundles/-/bundles-0.2.3.tgz#77b7060d7af2b907537e9ed02612b71f71bd8791"
+  integrity sha512-j7h3qEtKu33Ny96PSBP4ULOf3lzdVeFdMj4GqQAE4vGtTeF26VwB6sR5HYvQhEyp21p/ZjHh9oCLxjqk3Y6kTg==
   dependencies:
-    "@msgpack/msgpack" "^3.0.0-beta2"
-    "@whi/weblogger" "^0.2.1"
+    "@msgpack/msgpack" "^2.7.0"
+    "@whi/json" "^0.1.7"
+    "@whi/weblogger" "^0.4.0"
     fflate "^0.8.1"
 
 "@sveltejs/adapter-static@^3.0.0":
@@ -1287,10 +1283,22 @@
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
-"@whi/weblogger@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@whi/weblogger/-/weblogger-0.2.1.tgz#9003d65d9994dab6c4c17dcbabe6248a16d8c296"
-  integrity sha512-ToIBS7sgLZul4Xp7Pu7eFBi0ZbsPanqhYZ3NrGeeGvUmLVL8oEQo3ohqB+44qlvU2ozIjPp0+ycr1XF1rkz4Cw==
+"@whi/json@^0.1.7":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@whi/json/-/json-0.1.7.tgz#aec896d3a8089d8f6a0fc6d6bdb8ca623c463e01"
+  integrity sha512-Rhys8tpfzVW/xfXbbeJOtb4vdp4vfxbpD4L/twHuWWtD06OCVdSvWLPB/Jp9CnrXwxtdyVpOdj80nyilXWEswA==
+  dependencies:
+    "@whi/object-walk" "^0.1.4"
+
+"@whi/object-walk@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@whi/object-walk/-/object-walk-0.1.4.tgz#32306e0d6250cb18c41bceaf71d3e471dfe25d75"
+  integrity sha512-equLmeFW/kV6m2VnBJFxEDIfieVsOjo54GrGEIQX1jYKIiSuBG8TkrdLB3yhq7+pvTzhUysep5cuDHs3fPszrQ==
+
+"@whi/weblogger@^0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@whi/weblogger/-/weblogger-0.4.0.tgz#3971e4c41ee7dd081ec7b6cce937c19d3f2c9ee8"
+  integrity sha512-mei8FObPU+M4KPF7TJdvrcJPGWnBqSHFmPDimtP33I9XsGCceMNiJf+Ek8B/VLtpAnR19IWKzgT9A0BDcP3HUw==
 
 "@xmldom/xmldom@^0.8.8":
   version "0.8.10"
@@ -2972,7 +2980,7 @@ hasown@^2.0.0:
     function-bind "^1.1.2"
 
 "hc-launcher-rust-utils@file:./rust-utils/dist":
-  version "0.202.0"
+  version "0.202.1"
 
 he@1.2.0:
   version "1.2.0"

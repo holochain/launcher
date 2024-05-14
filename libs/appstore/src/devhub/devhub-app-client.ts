@@ -95,7 +95,7 @@ export class DevhubAppClient {
     };
   }
 
-  async getIntegritZome(input: { dnaEntryAddress: AnyDhtHash; name: ZomeName }): Promise<Zome> {
+  async getIntegrityZome(input: { dnaEntryAddress: AnyDhtHash; name: ZomeName }): Promise<Zome> {
     const dnaEntryEntity = await this.dnaHubZomeClient.getDnaEntry(input.dnaEntryAddress);
     const zomeManifest = dnaEntryEntity.content.manifest.integrity.zomes.find(
       (zomeManifest) => zomeManifest.name === input.name,
@@ -106,7 +106,9 @@ export class DevhubAppClient {
         `DNA entry (${input.dnaEntryAddress}) does not have an integrity zome named '${input.name}'`,
       );
 
-    return this.getZome(zomeManifest.zome_hrl!.target);
+    const zomeHrl = dnaEntryEntity.content.resources[zomeManifest.bundled];
+
+    return this.getZome(zomeHrl.target);
   }
 
   async getCoordinatorZome(input: { dnaEntryAddress: AnyDhtHash; name: ZomeName }): Promise<Zome> {
@@ -120,26 +122,39 @@ export class DevhubAppClient {
         `DNA entry (${input.dnaEntryAddress}) does not have an coordinator zome named '${input.name}'`,
       );
 
-    return this.getZome(zomeManifest.zome_hrl!.target);
+    const zomeHrl = dnaEntryEntity.content.resources[zomeManifest.bundled];
+
+    return this.getZome(zomeHrl.target);
   }
 
   async getDnaBundle(addr: AnyDhtHash) {
     const dnaEntryEntity = await this.dnaHubZomeClient.getDnaEntry(addr);
+    const resources = {};
 
     for (const zomeManifest of dnaEntryEntity.content.manifest.integrity.zomes as any) {
-      const wasm = await this.getZome(zomeManifest.wasmHrl.target);
-      zomeManifest.bytes = wasm.bytes;
-      delete zomeManifest.zome_hrl;
+      const rpath = zomeManifest.bundled;
+      const zomeHrl = dnaEntryEntity.content.resources[rpath];
+      const zome = await this.getZome(zomeHrl.target);
+      resources[rpath] = zome.bytes;
     }
 
     for (const zomeManifest of dnaEntryEntity.content.manifest.coordinator.zomes as any) {
-      const wasm = await this.getZome(zomeManifest.wasmHrl.target);
-      zomeManifest.bytes = wasm.bytes;
-      delete zomeManifest.zome_hrl;
+      const rpath = zomeManifest.bundled;
+      const zomeHrl = dnaEntryEntity.content.resources[rpath];
+      const zome = await this.getZome(zomeHrl.target);
+      resources[rpath] = zome.bytes;
     }
 
-    const bundle = Bundle.createDna(dnaEntryEntity.content.manifest);
-
+    const bundle = new Bundle(
+      {
+        manifest: {
+          manifest_version: '1',
+          ...dnaEntryEntity.content.manifest,
+        },
+        resources,
+      },
+      'dna',
+    );
     return bundle.toBytes();
   }
 
@@ -170,13 +185,12 @@ export class DevhubAppClient {
       const zome_bytes = bundle.resources[rpath];
       const zomeEntity = await this.saveIntegrityZome(zome_bytes);
 
-      zome_manifest.zome_hrl = {
+      bundle.resources[rpath] = {
         dna: zomehubCellId[0],
         target: zomeEntity.address,
       };
 
       dna_asset_hashes.integrity[zome_manifest.name] = zomeEntity.content.hash;
-      delete zome_manifest.bundled;
     }
 
     for (const zome_manifest of bundle.manifest.coordinator.zomes) {
@@ -184,17 +198,17 @@ export class DevhubAppClient {
       const zome_bytes = bundle.resources[rpath];
       const zomeEntity = await this.saveCoordinatorZome(zome_bytes);
 
-      zome_manifest.zome_hrl = {
+      bundle.resources[rpath] = {
         dna: zomehubCellId[0],
         target: zomeEntity.address,
       };
 
       dna_asset_hashes.coordinator[zome_manifest.name] = zomeEntity.content.hash;
-      delete zome_manifest.bundled;
     }
 
     return this.dnaHubZomeClient.createDna({
       manifest: bundle.manifest,
+      resources: bundle.resources,
       claimed_file_size: bytes.length,
       asset_hashes: dna_asset_hashes,
     });
@@ -219,18 +233,17 @@ export class DevhubAppClient {
       const dnaHubCellId = getCellId(dnaHubCellProvisioned);
       if (!dnaHubCellId) throw new Error('dna_hub CellId undefined.');
 
-      role.dna.dna_hrl = {
+      bundle.resources[rpath] = {
         dna: dnaHubCellId[0],
         target: dnaEntry.address,
       };
-
-      delete role.dna.bundled;
 
       roles_dna_tokens[name] = dnaEntry.content.dna_token;
     }
 
     return await this.appHubZomeClient.createApp({
       manifest: bundle.manifest,
+      resources: bundle.resources,
       roles_dna_tokens,
       claimed_file_size: bytes.length,
     });
@@ -274,25 +287,26 @@ export class DevhubAppClient {
 
     {
       const happManifest = bundle.manifest.happ_manifest;
-      const happBytes = bundle.resources[happManifest.bundled];
+      const rpath = happManifest.bundled;
+      const happBytes = bundle.resources[rpath];
 
       const appEntry = await this.saveApp(happBytes);
 
-      happManifest.app_entry = appEntry.address;
-      delete happManifest.bundled;
+      bundle.resources[rpath] = appEntry.address;
     }
     {
       const uiManifest = bundle.manifest.ui;
-      const uiBytes = bundle.resources[uiManifest.bundled];
+      const rpath = uiManifest.bundled;
+      const uiBytes = bundle.resources[rpath];
 
       const uiEntry = await this.saveUi(uiBytes);
 
-      uiManifest.ui_entry = uiEntry.address;
-      delete uiManifest.bundled;
+      bundle.resources[rpath] = uiEntry.address;
     }
 
     return await this.appHubZomeClient.createWebapp({
       manifest: bundle.manifest,
+      resources: bundle.resources,
     });
   }
 

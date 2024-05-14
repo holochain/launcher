@@ -31,3 +31,6 @@
 		}}
 	/>
 {/if}
+{#if $installedApps.isError}
+	<div>Failed to get installed apps: {$installedApps.error.message}</div>
+{/if}

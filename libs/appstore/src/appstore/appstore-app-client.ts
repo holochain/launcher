@@ -326,83 +326,93 @@ export class AppstoreAppClient {
   }
 
   bundleFromDnaAsset(dnaAsset: DnaAsset): any {
-    const manifest = { ...dnaAsset.dna_entry.manifest };
-
-    // Copy objects so the original input is not mutated
-    manifest.integrity = { ...manifest.integrity };
-    manifest.coordinator = { ...manifest.coordinator };
-    manifest.integrity.zomes = manifest.integrity.zomes.slice();
-    manifest.coordinator.zomes = manifest.coordinator.zomes.slice();
+    const manifest = dnaAsset.dna_entry.manifest;
+    const resources = {};
 
     // const manifest			= { ...dna_asset.dna_entry.manifest };
-    for (const zome in manifest.integrity.zomes) {
-      const zome_manifest = (manifest.integrity.zomes[zome] = {
-        ...manifest.integrity.zomes[zome],
-      });
-      delete zome_manifest.zome_hrl;
+    for (const zome_manifest of manifest.integrity.zomes) {
+      const rpath = zome_manifest.bundled;
       const zomeAsset = dnaAsset.zome_assets[zome_manifest.name];
       console.log('decompressing zome bytes for zomeAsset: ', zomeAsset);
-      zome_manifest.bytes = this.mereMemoryZomeClient.decompressBytes(
+      resources[rpath] = this.mereMemoryZomeClient.decompressBytes(
         zomeAsset.memory_entry,
         zomeAsset.bytes,
       );
     }
 
-    for (const zome in manifest.coordinator.zomes) {
-      const zome_manifest = (manifest.coordinator.zomes[zome] = {
-        ...manifest.coordinator.zomes[zome],
-      });
-
-      delete zome_manifest.zome_hrl;
+    for (const zome_manifest of manifest.coordinator.zomes) {
+      const rpath = zome_manifest.bundled;
       const zomeAsset = dnaAsset.zome_assets[zome_manifest.name];
       console.log('decompressing zome bytes for zomeAsset: ', zomeAsset);
-      zome_manifest.bytes = this.mereMemoryZomeClient.decompressBytes(
+      resources[rpath] = this.mereMemoryZomeClient.decompressBytes(
         zomeAsset.memory_entry,
         zomeAsset.bytes,
       );
     }
 
-    return Bundle.createDna(manifest);
+    return new Bundle(
+      {
+        manifest: {
+          manifest_version: '1',
+          ...manifest,
+        },
+        resources,
+      },
+      'dna',
+    );
   }
 
   bundleFromAppAsset(appAsset: AppAsset): any {
-    const manifest = { ...appAsset.app_entry.manifest };
+    const manifest = appAsset.app_entry.manifest;
+    const resources = {};
 
-    // Copy objects so the original input is not mutated
-    manifest.roles = manifest.roles.slice();
-
-    for (const i in manifest.roles) {
-      const role_manifest = (manifest.roles[i] = {
-        ...manifest.roles[i],
-      });
-      delete role_manifest.dna.dna_hrl;
+    for (const role_manifest of manifest.roles) {
+      const rpath = role_manifest.dna.bundled;
       const dna_bundle = this.bundleFromDnaAsset(appAsset.dna_assets[role_manifest.name]);
-      role_manifest.dna.bytes = dna_bundle.toBytes();
+      resources[rpath] = dna_bundle.toBytes();
     }
 
-    return Bundle.createHapp(manifest);
+    return new Bundle(
+      {
+        manifest: {
+          manifest_version: '1',
+          ...manifest,
+        },
+        resources,
+      },
+      'happ',
+    );
   }
 
   bundleFromWebappAsset(webappAsset: WebAppAsset): any {
-    // Copy objects so the original input is not mutated
-    const manifest = { ...webappAsset.webapp_entry.manifest };
+    const manifest = webappAsset.webapp_entry.manifest;
+    const resources = {};
 
     console.log('Creating bundle from app assset...');
-
-    const app_bundle = this.bundleFromAppAsset(webappAsset.app_asset);
-    manifest.happ_manifest = {
-      bytes: app_bundle.toBytes(),
-    };
+    {
+      const app_bundle = this.bundleFromAppAsset(webappAsset.app_asset);
+      const rpath = manifest.happ_manifest.bundled;
+      resources[rpath] = app_bundle.toBytes();
+    }
 
     console.log('Decompressing UI bytes...');
-
-    manifest.ui = {
-      bytes: this.mereMemoryZomeClient.decompressBytes(
+    {
+      const rpath = manifest.ui.bundled;
+      resources[rpath] = this.mereMemoryZomeClient.decompressBytes(
         webappAsset.ui_asset.memory_entry,
         webappAsset.ui_asset.bytes,
-      ),
-    };
+      );
+    }
 
-    return Bundle.createWebhapp(manifest);
+    return new Bundle(
+      {
+        manifest: {
+          manifest_version: '1',
+          ...manifest,
+        },
+        resources,
+      },
+      'webhapp',
+    );
   }
 }
