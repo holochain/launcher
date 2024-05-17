@@ -318,7 +318,7 @@ export class AppstoreAppClient {
   }
 
   bundleFromDnaAsset(dnaAsset: DnaAsset): any {
-    const manifest = { ...dnaAsset.dna_entry.manifest };
+    const manifest = dnaAsset.dna_entry.manifest;
     const resources = {};
 
     for (const zomeManifest of manifest.integrity.zomes) {
@@ -359,8 +359,7 @@ export class AppstoreAppClient {
     for (const role_manifest of manifest.roles) {
       const rpath = role_manifest.dna.bundled;
       const dna_bundle = this.bundleFromDnaAsset(appAsset.dna_assets[role_manifest.name]);
-      const bundleBytes = dna_bundle.toBytes();
-      resources[rpath] = bundleBytes;
+      resources[rpath] = dna_bundle.toBytes();
     }
 
     return new Bundle(

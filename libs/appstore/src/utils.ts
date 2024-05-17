@@ -12,27 +12,6 @@ export function getCellId(cellInfo: CellInfo): CellId | undefined {
   return undefined;
 }
 
-export function determinizeBundleBytes(bytes: Uint8Array, type: string): Uint8Array {
-  if (!['happ', 'webhapp'].includes(type))
-    throw Error('Only happ and webhapp bundles are supported by this function.');
-
-  const bundle = new Bundle(bytes, type);
-
-  bundle.dnas().forEach((dnaBundle, i) => {
-    const roleManifest = bundle.manifest.roles[i];
-    const rpath = roleManifest.dna.bundled;
-    for (const zomeManifest of dnaBundle.manifest.integrity.zomes) {
-      if (!zomeManifest.dependencies) {
-        zomeManifest.dependencies = null;
-      }
-    }
-    // replace DNA bytes with deterministic bytes
-    bundle.resources[rpath] = dnaBundle.toBytes({ sortKeys: true });
-  });
-
-  return bundle.toBytes({ sortKeys: true });
-}
-
 export function bundleToDeterministicBytes(bundle: any): Uint8Array {
   if (!['happ', 'webhapp'].includes(bundle.type))
     throw Error('Only happ and webhapp bundles are supported by this function.');
