@@ -14,6 +14,7 @@ import type {
   WebAppPackageVersionEntry,
 } from '../devhub/types';
 import { MereMemoryZomeClient } from '../mere-memory/zomes/mere-memory-zome-client';
+import { bundleToDeterministicBytes } from '../utils';
 import type {
   AppEntry,
   AppVersionEntry,
@@ -241,26 +242,17 @@ export class AppstoreAppClient {
 
         console.log('Got webappAsset: ', webappAsset);
 
-        // TODO verify assets
-        // await this.appstoreZomeClient.verifyWebappAsset(webappAsset, webappPackageVersion.webapp);
-
         // Create webapp bundle
         const webappBundle = this.bundleFromWebappAsset(webappAsset);
+        const deterministicBundleBytes = bundleToDeterministicBytes(webappBundle);
 
-        console.log('Got webappBundle: ', webappBundle);
-
-        const bytes = webappBundle.toBytes();
-
-        const webappSha256 = sha256.hex(bytes);
+        const webappSha256 = sha256.hex(deterministicBundleBytes);
         if (appVersion.bundle_hashes.hash !== webappSha256)
-          console.warn(
+          throw new Error(
             `Hash of received webhapp bytes does not match the expected hash. Got ${webappSha256} but expecting ${appVersion.bundle_hashes.hash}`,
           );
-        // throw new Error(
-        //   `Hash of received webhapp bytes does not match the expected hash. Got ${webappSha256} but expecting ${appVersion.bundle_hashes.hash}`,
-        // );
 
-        return bytes;
+        return deterministicBundleBytes;
 
         // 2.1 get WebappEntry and verify its integrity
         // const webappEntryEntity = await this.portalZomeClient.customRemoteCall<Entity<WebAppEntry>>(
@@ -326,14 +318,12 @@ export class AppstoreAppClient {
   }
 
   bundleFromDnaAsset(dnaAsset: DnaAsset): any {
-    const manifest = dnaAsset.dna_entry.manifest;
+    const manifest = { ...dnaAsset.dna_entry.manifest };
     const resources = {};
 
-    // const manifest			= { ...dna_asset.dna_entry.manifest };
-    for (const zome_manifest of manifest.integrity.zomes) {
-      const rpath = zome_manifest.bundled;
-      const zomeAsset = dnaAsset.zome_assets[zome_manifest.name];
-      console.log('decompressing zome bytes for zomeAsset: ', zomeAsset);
+    for (const zomeManifest of manifest.integrity.zomes) {
+      const rpath = zomeManifest.bundled;
+      const zomeAsset = dnaAsset.zome_assets[zomeManifest.name];
       resources[rpath] = this.mereMemoryZomeClient.decompressBytes(
         zomeAsset.memory_entry,
         zomeAsset.bytes,
@@ -369,7 +359,8 @@ export class AppstoreAppClient {
     for (const role_manifest of manifest.roles) {
       const rpath = role_manifest.dna.bundled;
       const dna_bundle = this.bundleFromDnaAsset(appAsset.dna_assets[role_manifest.name]);
-      resources[rpath] = dna_bundle.toBytes();
+      const bundleBytes = dna_bundle.toBytes();
+      resources[rpath] = bundleBytes;
     }
 
     return new Bundle(

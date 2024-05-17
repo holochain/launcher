@@ -2,12 +2,13 @@ import { type ActionHash, decodeHashFromBase64 } from '@holochain/client';
 // @ts-expect-error the @spartan-hc/bundles package has no typescript types
 import { Bundle } from '@spartan-hc/bundles';
 import { createMutation, createQuery, QueryClient } from '@tanstack/svelte-query';
-import type {
-	AppstoreAppClient,
-	AppVersionEntry,
-	BundleHashes,
-	CreatePublisherFrontendInput,
-	DevhubAppClient
+import {
+	type AppstoreAppClient,
+	type AppVersionEntry,
+	type BundleHashes,
+	bundleToDeterministicBytes,
+	type CreatePublisherFrontendInput,
+	type DevhubAppClient
 } from 'appstore-tools';
 import { sha256 } from 'js-sha256';
 import { get, type Writable } from 'svelte/store';
@@ -43,9 +44,9 @@ const getClientOrThrow = <T extends ClientType>(
 };
 
 const getAppStoreClientOrThrow = () =>
-	getClientOrThrow(getAppStoreClient, APP_STORE_CLIENT_NOT_INITIALIZED_ERROR);
+	getClientOrThrow<AppstoreAppClient>(getAppStoreClient, APP_STORE_CLIENT_NOT_INITIALIZED_ERROR);
 const getDevHubClientOrThrow = () =>
-	getClientOrThrow(getDevHubClient, DEV_HUB_CLIENT_NOT_INITIALIZED_ERROR);
+	getClientOrThrow<DevhubAppClient>(getDevHubClient, DEV_HUB_CLIENT_NOT_INITIALIZED_ERROR);
 
 export const createPublishersQuery = () => {
 	return createQuery({
@@ -149,19 +150,24 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 			let webhappHash = sha256.hex(bytes);
 			console.log('hash before bundling: ', webhappHash);
 			const webappBundle = new Bundle(bytes, 'webhapp');
-			webhappHash = sha256.hex(webappBundle.toBytes());
-			console.log('hash after bundling: ', webhappHash);
+			const deterministicWebappBundleBytes = bundleToDeterministicBytes(webappBundle);
+			const deterministicHappBundleBytes = bundleToDeterministicBytes(webappBundle.happ());
+
+			webhappHash = sha256.hex(deterministicWebappBundleBytes);
+			console.log('webhapp sha256 after bundling: ', webhappHash);
 			const uiHash = sha256.hex(webappBundle.ui());
-			const happHash = sha256.hex(
-				webappBundle.resources[webappBundle.manifest.happ_manifest.bundled]
-			);
+			const happHash = sha256.hex(deterministicHappBundleBytes);
+			console.log('happ sha256: ', happHash);
+			console.log('webapp manifest: ', webappBundle.manifest);
+			console.log('happ manifest: ', webappBundle.happ().manifest);
+
 			const hashes: BundleHashes = {
 				hash: webhappHash,
 				ui_hash: uiHash,
 				happ_hash: happHash
 			};
 
-			const appEntry = await devHubClient.saveWebapp(bytes);
+			const appEntry = await devHubClient.saveWebapp(deterministicWebappBundleBytes);
 			const webappPackage = await devHubClient.createWebappPackage({
 				title,
 				subtitle,

@@ -71,6 +71,7 @@
 	};
 
 	const handleError = (error: unknown) => {
+		console.error(error);
 		modalStore.close();
 		showModalError({
 			modalStore,

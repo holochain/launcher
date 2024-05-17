@@ -39,6 +39,7 @@
 					goto(`/${DEV_PAGE}/${id}`);
 				},
 				onError: (error) => {
+					console.error(error);
 					showModalError({
 						modalStore,
 						errorTitle: $i18n.t('appError'),

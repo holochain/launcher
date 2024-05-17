@@ -407,25 +407,18 @@ export type IntegrityManifest = {
   network_seed: string | undefined;
   properties: any | undefined;
   origin_time: any;
-  zomes: Array<IntegrityZomeManifest>;
+  zomes: Array<ZomeManifest>;
 };
 
 export type CoordinatorManifest = {
-  zomes: Array<CoordinatorZomeManifest>;
+  zomes: Array<ZomeManifest>;
 };
 
-export type IntegrityZomeManifest = {
+export type ZomeManifest = {
   name: ZomeName;
   hash: WasmHashB64 | undefined;
   bundled: string;
-  dylib: any;
-};
-
-export type CoordinatorZomeManifest = {
-  name: ZomeName;
-  hash: WasmHashB64 | undefined;
-  bundled: string;
-  dependencies: Array<ZomeDependency> | undefined;
+  dependencies: Array<ZomeDependency> | undefined | null;
   dylib: any;
 };
 
