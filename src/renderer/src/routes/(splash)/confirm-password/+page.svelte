@@ -47,7 +47,10 @@
 						handleError($i18n.t(getErrorMessage(error)));
 					}
 				},
-				onError: (error) => handleError($i18n.t(error.message || 'unknownError'))
+				onError: (error) => {
+					console.error(error);
+					handleError($i18n.t(error.message || 'unknownError'));
+				}
 			}
 		);
 	};

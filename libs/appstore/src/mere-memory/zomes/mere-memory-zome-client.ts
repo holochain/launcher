@@ -62,7 +62,7 @@ export class MereMemoryZomeClient extends ZomeClient {
     // TODO potentially check whether it already exists to not recreate the same entries
 
     // set modification time to 0 to produce consistent hashes (assumption)
-    const compressedBytes = gzipSync(bytes, { mtime: 0 });
+    const compressedBytes = gzipSync(bytes, { mtime: 0, level: 6 });
 
     const compressedSize = compressedBytes.length;
 
