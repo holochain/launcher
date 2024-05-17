@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import type { ActionHashB64, AppInfo, MembraneProof } from '@holochain/client';
+import type {
+  ActionHashB64,
+  AppAuthenticationToken,
+  AppInfo,
+  InstalledAppId,
+  MembraneProof,
+} from '@holochain/client';
 import { AdminWebsocket } from '@holochain/client';
 import AdmZip from 'adm-zip';
 import * as childProcess from 'child_process';
@@ -55,6 +61,7 @@ export class HolochainManager {
   integrityChecker: IntegrityChecker;
   version: HolochainVersion;
   holochainDataRoot: HolochainDataRoot;
+  appTokens: Record<InstalledAppId, AppAuthenticationToken> = {};
 
   constructor(
     processHandle: childProcess.ChildProcessWithoutNullStreams | undefined,
@@ -144,8 +151,8 @@ export class HolochainManager {
 
         const attachAppInterfaceResponse = await adminWebsocket.attachAppInterface({
           allowed_origins: app.isPackaged
-            ? 'app://-,webhapp://webhappwindow'
-            : 'http://localhost:5173,webhapp://webhappwindow',
+            ? 'app://-,webhapp://webhappwindow,holochain-launcher'
+            : 'http://localhost:5173,webhapp://webhappwindow,holochain-launcher',
         });
         console.log('Attached app interface port: ', attachAppInterfaceResponse);
         const appPort = attachAppInterfaceResponse.port;
@@ -257,8 +264,8 @@ export class HolochainManager {
 
           const attachAppInterfaceResponse = await adminWebsocket.attachAppInterface({
             allowed_origins: app.isPackaged
-              ? 'app://-,webhapp://webhappwindow'
-              : 'http://localhost:5173,webhapp://webhappwindow',
+              ? 'app://-,webhapp://webhappwindow,holochain-launcher'
+              : 'http://localhost:5173,webhapp://webhappwindow,holochain-launcher',
           });
           console.log('Attached app interface port: ', attachAppInterfaceResponse);
           const appPort = attachAppInterfaceResponse.port;
@@ -691,6 +698,17 @@ export class HolochainManager {
       path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json'),
     );
     return metadata.data.distributionInfo;
+  }
+
+  async getAppToken(appId: InstalledAppId): Promise<AppAuthenticationToken> {
+    const token = this.appTokens[appId];
+    if (token) return token;
+    const response = await this.adminWebsocket.issueAppAuthenticationToken({
+      installed_app_id: appId,
+      single_use: false,
+      expiry_seconds: 99999999,
+    });
+    return response.token;
   }
 }
 

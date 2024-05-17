@@ -8,7 +8,11 @@ export default defineConfig({
         $shared: resolve(__dirname, './src/shared'),
       },
     },
-    plugins: [externalizeDepsPlugin({ exclude: ['@holochain/client', 'nanoid'] })],
+    plugins: [
+      externalizeDepsPlugin({
+        exclude: ['@holochain/client', 'nanoid', 'appstore-tools', '@spartan-hc/bundles'],
+      }),
+    ],
   },
   preload: {
     plugins: [
