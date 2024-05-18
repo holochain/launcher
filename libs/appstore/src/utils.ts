@@ -17,6 +17,11 @@ export type HappAndUi = {
   ui: Uint8Array;
 };
 
+/**
+ * Converts webhapp bytes to happ bytes and UI bytes in a deterministic manner
+ * @param bytes
+ * @returns
+ */
 export function webhappToHappAndUi(bytes): HappAndUi {
   const webappBundle = new Bundle(bytes, 'webhapp');
   const happBundle = webappBundle.happ();

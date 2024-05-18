@@ -28,6 +28,11 @@ export type PublishNewVersionData = {
 	version: string;
 	webappPackageId: Uint8Array;
 	appEntryId: Uint8Array;
+	/**
+	 * Sha256 hash of the happ in previous version(s). Sha256 of happ
+	 * should never change across versions
+	 */
+	previousHappHash: string;
 };
 
 export const isPublishNewVersionDataValid = (data: unknown): data is PublishNewVersionData =>
@@ -40,4 +45,6 @@ export const isPublishNewVersionDataValid = (data: unknown): data is PublishNewV
 	'webappPackageId' in data &&
 	isUint8Array(data.webappPackageId) &&
 	'appEntryId' in data &&
-	isUint8Array(data.appEntryId);
+	isUint8Array(data.appEntryId) &&
+	'previousHappHash' in data &&
+	isNonEmptyString(data.previousHappHash);
