@@ -57,7 +57,6 @@
 		});
 
 	const installLogic = async (versionEntity: Entity<AppVersionEntry>) => {
-		console.log('@installLogic: versionEntity.content: ', versionEntity.content);
 		$fetchWebapp.mutate(versionEntity.content, {
 			onSuccess: () => createModalInstallAppFromHashes(versionEntity),
 			onError: (e) => {
