@@ -524,7 +524,6 @@ const router = t.router({
   }),
   fetchWebhapp: t.procedure.input(z.any()).mutation(async (opts) => {
     const appVersionEntry = opts.input as AppVersionEntry;
-    console.log('FETCHING WEBHAPP for entry with keys: ', Object.keys(appVersionEntry));
     const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
     const appstoreAppClient = await getAppstoreAppClient();
 
