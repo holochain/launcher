@@ -239,7 +239,13 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 
 export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 	return createMutation({
-		mutationFn: async ({ bytes, version, webappPackageId, appEntryId }: PublishNewVersionData) => {
+		mutationFn: async ({
+			bytes,
+			version,
+			webappPackageId,
+			appEntryId,
+			previousHappHash
+		}: PublishNewVersionData) => {
 			const devHubClient = getDevHubClientOrThrow();
 			const appStoreClient = getAppStoreClientOrThrow();
 
@@ -255,6 +261,11 @@ export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 			webhappHash = sha256.hex(deterministicWebappBundleBytes);
 			const uiHash = sha256.hex(webappBundle.ui());
 			const happHash = sha256.hex(deterministicHappBundleBytes);
+
+			if (happHash !== previousHappHash)
+				throw new Error(
+					'happ sha256 does not match the happ sha256 of previous versions. Since coordinator zome updates are currently not supported, only app versions with the same happ file are allowed to be published under the same app entry'
+				);
 
 			const hashes: BundleHashes = {
 				hash: webhappHash,

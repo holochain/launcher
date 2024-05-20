@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getModalStore } from '@skeletonlabs/skeleton';
+	import type { AppVersionEntry, Entity } from 'appstore-tools';
 
 	import { AddTypeModalFooter, InputWithLabel } from '$components';
 	import { convertFileToUint8Array } from '$helpers';
@@ -13,9 +14,15 @@
 
 	export let webappPackageId: Uint8Array;
 	export let appEntryId: Uint8Array;
+	export let previousVersions: Entity<AppVersionEntry>[];
+
 	let files: FileList | null = null;
 	let version = '';
 	let bytes: Uint8Array | undefined;
+
+	const previousHappHash = previousVersions
+		.map((entity) => entity.content)
+		.sort((a, b) => a.last_updated - b.last_updated)[0].bundle_hashes.happ_hash;
 
 	const setAppDataBytes = async (files: FileList | null) => {
 		bytes = files && files.length > 0 ? await convertFileToUint8Array(files[0]) : undefined;
@@ -38,7 +45,8 @@
 					webappPackageId,
 					version,
 					bytes,
-					appEntryId
+					appEntryId,
+					previousHappHash
 				};
 				if (isPublishNewVersionDataValid(publishNewVersionData)) {
 					$publishNewVersionMutation.mutate(publishNewVersionData, {
@@ -63,7 +71,13 @@
 			{/if}
 			<AddTypeModalFooter
 				isPending={$publishNewVersionMutation.isPending}
-				isValid={isPublishNewVersionDataValid({ webappPackageId, version, bytes, appEntryId })}
+				isValid={isPublishNewVersionDataValid({
+					webappPackageId,
+					version,
+					bytes,
+					appEntryId,
+					previousHappHash
+				})}
 				onCancel={modalStore.close}
 			/>
 		</form>

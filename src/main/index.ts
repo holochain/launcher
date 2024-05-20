@@ -1,8 +1,11 @@
 import { optimizer } from '@electron-toolkit/utils';
-import type { AppAuthenticationToken, InstalledAppId } from '@holochain/client';
-import { type CallZomeRequest, getNonceExpiration, randomNonce } from '@holochain/client';
-import { encode } from '@msgpack/msgpack';
+import type { AppClient, InstalledAppId } from '@holochain/client';
+import { AppWebsocket, type CallZomeRequest } from '@holochain/client';
+import { decode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
+import type { AppVersionEntry } from 'appstore-tools';
+import { AppstoreAppClient, DevhubAppClient } from 'appstore-tools';
+import { webhappToHappAndUi } from 'appstore-tools';
 import * as childProcess from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
@@ -11,7 +14,7 @@ import contextMenu from 'electron-context-menu';
 import { createIPCHandler } from 'electron-trpc/main';
 import { autoUpdater } from 'electron-updater';
 import fs from 'fs';
-import type { ZomeCallSigner, ZomeCallUnsignedNapi } from 'hc-launcher-rust-utils';
+import type { ZomeCallSigner } from 'hc-launcher-rust-utils';
 import * as rustUtils from 'hc-launcher-rust-utils';
 import os from 'os';
 import path from 'path';
@@ -195,12 +198,15 @@ let INTEGRITY_CHECKER: IntegrityChecker | undefined;
 
 let APP_PORT: number | undefined;
 // For now there is only one holochain data root at a time for the sake of simplicity.
-let HOLOCHAIN_DATA_ROOT: HolochainDataRoot | undefined;
+let DEFAULT_HOLOCHAIN_DATA_ROOT: HolochainDataRoot | undefined;
 const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
 let LAIR_HANDLE: childProcess.ChildProcessWithoutNullStreams | undefined;
 let PRIVILEDGED_LAUNCHER_WINDOWS: Record<Screen, BrowserWindow>; // Admin windows with special zome call signing priviledges
 const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
-const APP_AUTHENTICATION_TOKENS: Record<InstalledAppId, AppAuthenticationToken> = {};
+
+const APP_CLIENTS: Record<InstalledAppId, AppClient> = {};
+let APPSTORE_APP_CLIENT: AppstoreAppClient | undefined;
+let DEVHUB_APP_CLIENT: DevhubAppClient | undefined;
 
 const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeRequest) => {
   // TODO check here that cellId belongs to the installedAppId that the window belongs to
@@ -224,43 +230,14 @@ const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeReques
 
   if (!authorized) return Promise.reject('Agent public key unauthorized.');
 
-  const zomeCallUnsignedNapi: ZomeCallUnsignedNapi = {
-    provenance: Array.from(request.provenance),
-    cellId: [Array.from(request.cell_id[0]), Array.from(request.cell_id[1])],
-    zomeName: request.zome_name,
-    fnName: request.fn_name,
-    payload: Array.from(encode(request.payload)),
-    nonce: Array.from(await randomNonce()),
-    expiresAt: getNonceExpiration(),
-  };
-
   if (windowInfo && windowInfo.adminPort) {
     // In case of externally running binaries we need to use a custom zome call signer
     const zomeCallSigner = CUSTOM_ZOME_CALL_SIGNERS[windowInfo.adminPort];
-    return signZomeCall(zomeCallSigner, zomeCallUnsignedNapi);
+    return signZomeCall(zomeCallSigner, request);
   }
   if (!DEFAULT_ZOME_CALL_SIGNER) throw Error('Lair signer is not ready');
-  return signZomeCall(DEFAULT_ZOME_CALL_SIGNER, zomeCallUnsignedNapi);
+  return signZomeCall(DEFAULT_ZOME_CALL_SIGNER, request);
 };
-
-// https://github.com/holochain/holochain-client-js/issues/221
-const handleSignZomeCallLegacy = async (e: IpcMainInvokeEvent, request: ZomeCallUnsignedNapi) => {
-  const windowInfo = WINDOW_INFO_MAP[e.sender.id];
-  if (request.provenance.toString() !== Array.from(windowInfo.agentPubKey).toString())
-    return Promise.reject('Agent public key unauthorized.');
-  if (windowInfo && windowInfo.adminPort) {
-    // In case of externally running binaries we need to use a custom zome call signer
-    const zomeCallSigner = CUSTOM_ZOME_CALL_SIGNERS[windowInfo.adminPort];
-    return zomeCallSigner.signZomeCall(request);
-  }
-  if (!DEFAULT_ZOME_CALL_SIGNER) throw Error('Lair signer is not ready');
-  return DEFAULT_ZOME_CALL_SIGNER.signZomeCall(request);
-};
-
-// // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-// if (require('electron-squirrel-startup')) {
-//   app.quit();
-// }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -278,7 +255,6 @@ app.whenReady().then(async () => {
   createIPCHandler({ router, windows: Object.values(PRIVILEDGED_LAUNCHER_WINDOWS) });
 
   ipcMain.handle('sign-zome-call', handleSignZomeCall);
-  ipcMain.handle('sign-zome-call-legacy', handleSignZomeCallLegacy);
 
   // Check for updates
   if (app.isPackaged) {
@@ -420,7 +396,7 @@ async function handleLaunch(password: string) {
     VALIDATED_CLI_ARGS.wasmLog,
     nonDefaultPartition,
   );
-  HOLOCHAIN_DATA_ROOT = holochainDataRoot;
+  DEFAULT_HOLOCHAIN_DATA_ROOT = holochainDataRoot;
   HOLOCHAIN_MANAGERS[holochainDataRoot.name] = holochainManager;
   APP_PORT = holochainManager.appPort;
   // Install default apps if necessary
@@ -436,26 +412,6 @@ async function handleLaunch(password: string) {
       }),
     ),
   );
-
-  // Issue authentication tokens for appstore and devhub
-  const appstoreTokenResponse = await holochainManager.adminWebsocket.issueAppAuthenticationToken({
-    installed_app_id: APP_STORE_APP_ID,
-    expiry_seconds: 9999999,
-    single_use: false,
-  });
-  APP_AUTHENTICATION_TOKENS[APP_STORE_APP_ID] = appstoreTokenResponse.token;
-  if (
-    holochainManager.installedApps
-      .map((appInfo) => appInfo.installed_app_id)
-      .includes(DEVHUB_APP_ID)
-  ) {
-    const devhubTokenResponse = await holochainManager.adminWebsocket.issueAppAuthenticationToken({
-      installed_app_id: DEVHUB_APP_ID,
-      expiry_seconds: 9999999,
-      single_use: false,
-    });
-    APP_AUTHENTICATION_TOKENS[DEVHUB_APP_ID] = devhubTokenResponse.token;
-  }
 
   PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE, MIN_HEIGH, true);
   loadOrServe(PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN], { screen: SETTINGS_SCREEN });
@@ -481,6 +437,45 @@ const getHolochainManager = (dataRootName: string) => {
   return holochainManager;
 };
 
+const getAppClient = async (appId: InstalledAppId): Promise<AppClient> => {
+  const defaultHolochainManager = HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_DATA_ROOT!.name];
+  let appClient = APP_CLIENTS[appId];
+  if (appClient) return appClient;
+  const token = await defaultHolochainManager.getAppToken(appId);
+  appClient = await AppWebsocket.connect({
+    url: new URL(`ws://localhost:${defaultHolochainManager.appPort}`),
+    token,
+    wsClientOptions: {
+      origin: 'holochain-launcher',
+    },
+    callZomeTransform: {
+      input: async (request) => signZomeCall(DEFAULT_ZOME_CALL_SIGNER!, request),
+      output: (o) => decode(o),
+    },
+  });
+  APP_CLIENTS[appId] = appClient;
+  return appClient;
+};
+
+const getAppstoreAppClient = async () => {
+  if (APPSTORE_APP_CLIENT) return APPSTORE_APP_CLIENT;
+  if (!DEFAULT_HOLOCHAIN_DATA_ROOT) throw new Error('Default holochain data root is not defined.');
+  const appClient = await getAppClient(APP_STORE_APP_ID);
+  const appstoreAppClient = new AppstoreAppClient(appClient);
+  APPSTORE_APP_CLIENT = appstoreAppClient;
+  return APPSTORE_APP_CLIENT;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getDevhubAppClient = async () => {
+  if (DEVHUB_APP_CLIENT) return DEVHUB_APP_CLIENT;
+  if (!DEFAULT_HOLOCHAIN_DATA_ROOT) throw new Error('Default holochain data root is not defined.');
+  const appClient = await getAppClient(DEVHUB_APP_ID);
+  const devhubAppClient = new DevhubAppClient(appClient);
+  DEVHUB_APP_CLIENT = devhubAppClient;
+  return DEVHUB_APP_CLIENT;
+};
+
 const router = t.router({
   openSettings: t.procedure.mutation(() => {
     PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN].show();
@@ -496,18 +491,7 @@ const router = t.router({
       return;
     }
 
-    const maybeExistingToken = APP_AUTHENTICATION_TOKENS[appInfo.installed_app_id];
-    const appAuthenticationToken = maybeExistingToken
-      ? maybeExistingToken
-      : (
-          await holochainManager.adminWebsocket.issueAppAuthenticationToken({
-            installed_app_id: appInfo.installed_app_id,
-            expiry_seconds: 9999999, // TODO set to zero once unlimited tokens are supported
-            single_use: false,
-          })
-        ).token;
-
-    APP_AUTHENTICATION_TOKENS[appInfo.installed_app_id] = appAuthenticationToken;
+    const appAuthenticationToken = await holochainManager.getAppToken(appInfo.installed_app_id);
 
     const happWindow = createHappWindow(
       opts.input,
@@ -538,28 +522,50 @@ const router = t.router({
     const holochainManager = getHolochainManager(holochainDataRoot.name);
     await holochainManager.uninstallApp(appInfo.installed_app_id);
   }),
+  fetchWebhapp: t.procedure.input(z.any()).mutation(async (opts) => {
+    const appVersionEntry = opts.input as AppVersionEntry;
+    const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
+    const appstoreAppClient = await getAppstoreAppClient();
+
+    const uiAvailable = holochainManager.isUiAvailable(appVersionEntry.bundle_hashes.ui_hash);
+    const happAvailable = holochainManager.isHappAvailableAndValid(
+      appVersionEntry.bundle_hashes.happ_hash,
+    );
+    console.log('happAvailable, uiAvailable: ', happAvailable, uiAvailable);
+    if (happAvailable && uiAvailable) {
+      return;
+    } else if (happAvailable && !uiAvailable) {
+      const uiBytes = await appstoreAppClient.fetchUiBytes(appVersionEntry);
+      holochainManager.storeUiIfNecessary(Array.from(uiBytes));
+    } else {
+      const webhappBytes = await appstoreAppClient.fetchWebappBytes(appVersionEntry);
+      const happAndUi = webhappToHappAndUi(webhappBytes);
+      holochainManager.storeUiIfNecessary(Array.from(happAndUi.ui));
+      holochainManager.storeHapp(Array.from(happAndUi.happ));
+    }
+  }),
   isHappAvailableAndValid: t.procedure.input(z.string()).query(async (opts) => {
-    const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+    const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
     return holochainManager.isHappAvailableAndValid(opts.input);
   }),
   areUiBytesAvailable: t.procedure.input(z.string()).query(async (opts) => {
-    const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+    const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
     return holochainManager.isUiAvailable(opts.input);
   }),
   storeUiBytes: t.procedure.input(BytesSchema).mutation(async (opts) => {
     const { bytes } = opts.input;
-    const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+    const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
     return holochainManager.storeUiIfNecessary(Array.from(bytes));
   }),
   storeHappBytes: t.procedure.input(BytesSchema).mutation(async (opts) => {
     const { bytes } = opts.input;
-    const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+    const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
     return holochainManager.storeHapp(Array.from(bytes));
   }),
   installHappFromPath: t.procedure.input(InstallHappFromPathSchema).mutation(async (opts) => {
     const { filePath, appId, networkSeed } = opts.input;
     const happAndUiBytes = await rustUtils.readAndDecodeHappOrWebhapp(filePath);
-    const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+    const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
     const distributionInfo: DistributionInfoV1 = { type: 'filesystem' };
     await installApp({
       holochainManager: holochainManager,
@@ -573,7 +579,7 @@ const router = t.router({
     .input(InstallWebhappFromHashesSchema) // TODO: need metadata input as well here like name and action hash of app and app version in app store
     .mutation(async (opts) => {
       const { happSha256, uiZipSha256, appId, distributionInfo, networkSeed } = opts.input;
-      const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+      const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
       await holochainManager.installWebhappFromHashes({
         happSha256,
         uiZipSha256,
@@ -587,7 +593,7 @@ const router = t.router({
     .mutation(async (opts) => {
       const { bytes, appId, distributionInfo, networkSeed, icon } = opts.input;
       const happAndUiBytes = await rustUtils.decodeHappOrWebhapp(Array.from(bytes));
-      const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+      const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
       await installApp({
         holochainManager,
         happAndUiBytes,
@@ -601,7 +607,7 @@ const router = t.router({
     const { name, appId, networkSeed } = opts.input;
     const filePath = path.join(DEFAULT_APPS_DIRECTORY, name);
     const happAndUiBytes = await rustUtils.readAndDecodeHappOrWebhapp(filePath);
-    const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+    const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
     await installApp({
       holochainManager,
       happAndUiBytes,
@@ -612,7 +618,7 @@ const router = t.router({
   }),
   updateUiFromHash: t.procedure.input(UpdateUiFromHashSchema).mutation((opts) => {
     const { uiZipSha256, appId, appVersionActionHash } = opts.input;
-    const holochainManager = getHolochainManager(HOLOCHAIN_DATA_ROOT!.name);
+    const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
     return holochainManager.updateUiFromHash(uiZipSha256, appId, appVersionActionHash);
   }),
   getKandoBytes: t.procedure.query(async () => {
@@ -656,9 +662,10 @@ const router = t.router({
   }),
   handleSetupAndLaunch: handlePasswordInput(handleSetupAndLaunch),
   launch: handlePasswordInput(handleLaunch),
-  initializeDefaultAppPorts: t.procedure.query(() => {
-    const appstoreAuthenticationToken = APP_AUTHENTICATION_TOKENS[APP_STORE_APP_ID];
-    const devhubAuthenticationToken = APP_AUTHENTICATION_TOKENS[DEVHUB_APP_ID];
+  initializeDefaultAppPorts: t.procedure.query(async () => {
+    const defaultHolochainManager = HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_DATA_ROOT!.name];
+    const appstoreAuthenticationToken = await defaultHolochainManager.getAppToken(APP_STORE_APP_ID);
+    const devhubAuthenticationToken = await defaultHolochainManager.getAppToken(DEVHUB_APP_ID);
     if (!appstoreAuthenticationToken) {
       return throwTRPCErrorError({
         message: NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND,
@@ -687,18 +694,11 @@ const router = t.router({
       launcherEmitter: LAUNCHER_EMITTER,
     })(DEVHUB_INSTALL);
 
-    const authenticationTokenResponse =
-      await defaultHolochainManager.adminWebsocket.issueAppAuthenticationToken({
-        installed_app_id: DEVHUB_INSTALL.id,
-        expiry_seconds: 9999999,
-        single_use: false,
-      });
-
-    APP_AUTHENTICATION_TOKENS[DEVHUB_APP_ID] = authenticationTokenResponse.token;
+    const authenticationToken = await defaultHolochainManager.getAppToken(DEVHUB_APP_ID);
 
     return {
       appPort: APP_PORT,
-      authenticationToken: authenticationTokenResponse.token,
+      authenticationToken,
     };
   }),
   onSetupProgressUpdate: t.procedure.subscription(() => {

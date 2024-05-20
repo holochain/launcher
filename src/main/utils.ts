@@ -1,4 +1,11 @@
-import type { AppInfo, CallZomeRequestSigned } from '@holochain/client';
+import {
+  type AppInfo,
+  type CallZomeRequest,
+  type CallZomeRequestSigned,
+  getNonceExpiration,
+  randomNonce,
+} from '@holochain/client';
+import { encode } from '@msgpack/msgpack';
 import { TRPCError } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
 import type { BrowserWindow } from 'electron';
@@ -165,9 +172,19 @@ export function breakingVersion(version: string) {
 
 export async function signZomeCall(
   zomeCallSigner: ZomeCallSigner,
-  zomeCallUnsigned: ZomeCallUnsignedNapi,
+  zomeCallUnsigned: CallZomeRequest,
 ): Promise<CallZomeRequestSigned> {
-  const zomeCallSignedNapi: ZomeCallNapi = await zomeCallSigner.signZomeCall(zomeCallUnsigned);
+  const zomeCallUnsignedNapi: ZomeCallUnsignedNapi = {
+    provenance: Array.from(zomeCallUnsigned.provenance),
+    cellId: [Array.from(zomeCallUnsigned.cell_id[0]), Array.from(zomeCallUnsigned.cell_id[1])],
+    zomeName: zomeCallUnsigned.zome_name,
+    fnName: zomeCallUnsigned.fn_name,
+    payload: Array.from(encode(zomeCallUnsigned.payload)),
+    nonce: Array.from(await randomNonce()),
+    expiresAt: getNonceExpiration(),
+  };
+
+  const zomeCallSignedNapi: ZomeCallNapi = await zomeCallSigner.signZomeCall(zomeCallUnsignedNapi);
 
   const zomeCallSigned: CallZomeRequestSigned = {
     provenance: Uint8Array.from(zomeCallSignedNapi.provenance),

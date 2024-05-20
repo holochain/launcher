@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { ActionHash, AppClient } from '@holochain/client';
+import { type ActionHash, type AppClient, encodeHashToBase64 } from '@holochain/client';
 import { Bundle } from '@spartan-hc/bundles';
 import { sha256 } from 'js-sha256';
 
@@ -220,9 +220,12 @@ export class AppstoreAppClient {
         // validate hash of received entry
         const webappPackageVersionEntryHash =
           await this.appstoreZomeClient.hashWebappPackageVersionEntry(webappPackageVersion);
-        if (webappPackageVersionEntryHash.toString() !== appVersion.apphub_hrl_hash.toString()) {
+        if (
+          encodeHashToBase64(webappPackageVersionEntryHash) !==
+          encodeHashToBase64(appVersion.apphub_hrl_hash)
+        ) {
           throw new Error(
-            'Hash of received WebappPackageVersionEntry does not match expected hash.',
+            `Hash of received WebappPackageVersionEntry does not match expected hash. Got ${encodeHashToBase64(webappPackageVersionEntryHash)}, expected ${encodeHashToBase64(appVersion.apphub_hrl_hash)}`,
           );
         }
 

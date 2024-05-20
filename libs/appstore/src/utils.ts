@@ -12,6 +12,25 @@ export function getCellId(cellInfo: CellInfo): CellId | undefined {
   return undefined;
 }
 
+export type HappAndUi = {
+  happ: Uint8Array;
+  ui: Uint8Array;
+};
+
+/**
+ * Converts webhapp bytes to happ bytes and UI bytes in a deterministic manner
+ * @param bytes
+ * @returns
+ */
+export function webhappToHappAndUi(bytes): HappAndUi {
+  const webappBundle = new Bundle(bytes, 'webhapp');
+  const happBundle = webappBundle.happ();
+  return {
+    happ: bundleToDeterministicBytes(happBundle),
+    ui: webappBundle.ui(),
+  };
+}
+
 export function bundleToDeterministicBytes(bundle: any): Uint8Array {
   if (!['happ', 'webhapp'].includes(bundle.type))
     throw Error('Only happ and webhapp bundles are supported by this function.');

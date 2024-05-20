@@ -11,7 +11,6 @@
 		showModalError,
 		uint8ArrayToURIComponent
 	} from '$helpers';
-	import { InstallAppFromBytes } from '$modal';
 	import InstallAppFromHashes from '$modal/InstallAppFromHashes.svelte';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
@@ -19,15 +18,9 @@
 
 	const client = trpc();
 
-	const {
-		appStoreHappsQuery,
-		appVersionsAppstoreQueryFunction,
-		fetchWebappBytesMutation,
-		fetchUiBytesMutation
-	} = createAppQueries();
+	const { appStoreHappsQuery, appVersionsAppstoreQueryFunction } = createAppQueries();
 
-	const utils = client.createUtils();
-	const storeUiBytes = client.storeUiBytes.createMutation();
+	const fetchWebapp = client.fetchWebhapp.createMutation();
 
 	const modalStore = getModalStore();
 
@@ -46,23 +39,6 @@
 		});
 	};
 
-	const createModalInstallAppFromBytes =
-		(versionEntity: Entity<AppVersionEntry>) => (bytes: Uint8Array) =>
-			modalStore.trigger({
-				type: 'component',
-				component: {
-					ref: InstallAppFromBytes,
-					props: {
-						icon: app?.icon,
-						bytes: bytes,
-						appName: app?.title,
-						appVersionActionHash: encodeHashToBase64(versionEntity.id),
-						appEntryActionHash: encodeHashToBase64(versionEntity.content.for_app),
-						appstoreDnaHash: encodeHashToBase64(versionEntity.content.apphub_hrl.dna)
-					}
-				}
-			});
-
 	const createModalInstallAppFromHashes = async (versionEntity: Entity<AppVersionEntry>) =>
 		modalStore.trigger({
 			type: 'component',
@@ -80,49 +56,17 @@
 			}
 		});
 
-	const fetchWebappBytesMutationLogic = (versionEntity: Entity<AppVersionEntry>) => {
-		$fetchWebappBytesMutation.mutate(versionEntity.content, {
-			onError: handleError,
-			onSuccess: createModalInstallAppFromBytes(versionEntity)
-		});
-	};
-
-	const fetchAndStoreUiBytesLogicAndInstall = (versionEntity: Entity<AppVersionEntry>) => {
-		$fetchUiBytesMutation.mutate(versionEntity.content, {
-			onSuccess: (bytes) =>
-				$storeUiBytes.mutate(
-					{ bytes },
-					{
-						onSuccess: () => createModalInstallAppFromHashes(versionEntity),
-						onError: handleError
-					}
-				),
-			onError: handleError
-		});
-	};
-
 	const installLogic = async (versionEntity: Entity<AppVersionEntry>) => {
-		const areUiBytesAvailable = await utils.areUiBytesAvailable.fetch(
-			versionEntity.content.bundle_hashes.ui_hash
-		);
-		const areHappBytesAvailable = await utils.isHappAvailableAndValid.fetch(
-			versionEntity.content.bundle_hashes.happ_hash
-		);
-		if (areUiBytesAvailable && areHappBytesAvailable) {
-			return createModalInstallAppFromHashes(versionEntity);
-		}
-
-		if (!areUiBytesAvailable && areHappBytesAvailable) {
-			return fetchAndStoreUiBytesLogicAndInstall(versionEntity);
-		}
-
-		return fetchWebappBytesMutationLogic(versionEntity);
+		$fetchWebapp.mutate(versionEntity.content, {
+			onSuccess: () => createModalInstallAppFromHashes(versionEntity),
+			onError: (e) => {
+				console.error(e);
+				handleError(e);
+			}
+		});
 	};
 
-	$: isLoading =
-		$storeUiBytes.isPending ||
-		$fetchUiBytesMutation.isPending ||
-		$fetchWebappBytesMutation.isPending;
+	$: isLoading = $fetchWebapp.isPending;
 </script>
 
 {#if app && appVersionsDetailsQuery && $appVersionsDetailsQuery?.isSuccess}
