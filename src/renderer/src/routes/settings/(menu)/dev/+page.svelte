@@ -26,8 +26,8 @@
 
 			const bundle = new Bundle(bytes);
 			appData.bytes = bytes;
-			appData.title = bundle?.name ?? '';
-			appData.version = bundle?.manifest?.version ?? '';
+			appData.title = appData.title || bundle?.name || '';
+			appData.version = appData.version || bundle?.manifest?.version || '';
 		}
 	};
 

@@ -28,10 +28,11 @@
 
 	const setAppDataBytes = async (files: FileList | null) => {
 		if (files && files.length > 0) {
-			const bytes = await convertFileToUint8Array(files[0]);
+			const convertedBytes = await convertFileToUint8Array(files[0]);
+			bytes = convertedBytes;
 
-			const bundle = new Bundle(bytes);
-			version = bundle?.manifest?.version ?? '';
+			const bundle = new Bundle(convertedBytes);
+			version = version || bundle?.manifest?.version || '';
 		}
 	};
 
