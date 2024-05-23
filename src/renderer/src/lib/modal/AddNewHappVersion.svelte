@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { getModalStore } from '@skeletonlabs/skeleton';
+	// @ts-expect-error the @spartan-hc/bundles package has no typescript types
+	import { Bundle } from '@spartan-hc/bundles';
 	import type { AppVersionEntry, Entity } from 'appstore-tools';
 
 	import { AddTypeModalFooter, InputWithLabel } from '$components';
@@ -25,7 +27,12 @@
 		.sort((a, b) => a.last_updated - b.last_updated)[0].bundle_hashes.happ_hash;
 
 	const setAppDataBytes = async (files: FileList | null) => {
-		bytes = files && files.length > 0 ? await convertFileToUint8Array(files[0]) : undefined;
+		if (files && files.length > 0) {
+			const bytes = await convertFileToUint8Array(files[0]);
+
+			const bundle = new Bundle(bytes);
+			version = bundle?.manifest?.version ?? '';
+		}
 	};
 
 	$: setAppDataBytes(files);
@@ -57,7 +64,7 @@
 				}
 			}}
 		>
-			<InputWithLabel bind:files id="webbhapp" label={`${$i18n.t('webbhapp')}*`} />
+			<InputWithLabel bind:files id="webbhapp" label={`${$i18n.t('uploadYourBundle')}*`} />
 			<InputWithLabel
 				bind:value={version}
 				id="version"

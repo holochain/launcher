@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { getModalStore } from '@skeletonlabs/skeleton';
+	// @ts-expect-error the @spartan-hc/bundles package has no typescript types
+	import { Bundle } from '@spartan-hc/bundles';
 
 	import { goto } from '$app/navigation';
 	import { Button, IconInput, InputWithLabel } from '$components';
-	import { DEV_PAGE, EMPTY_APP_DATA } from '$const';
+	import { DEV_APP_PAGE, EMPTY_APP_DATA } from '$const';
 	import { convertFileToUint8Array, showModalError } from '$helpers';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
@@ -16,8 +18,17 @@
 	let appData = { ...EMPTY_APP_DATA };
 	let bytesFiles: FileList | null = null;
 
+	let isLoading = false;
+
 	const setAppDataBytes = async (files: FileList | null) => {
-		appData.bytes = files && files.length > 0 ? await convertFileToUint8Array(files[0]) : undefined;
+		if (files && files.length > 0) {
+			const bytes = await convertFileToUint8Array(files[0]);
+
+			const bundle = new Bundle(bytes);
+			appData.bytes = bytes;
+			appData.title = bundle?.name ?? '';
+			appData.version = bundle?.manifest?.version ?? '';
+		}
 	};
 
 	const handleIconUpload = async (file: File): Promise<void> => {
@@ -32,14 +43,16 @@
 	class="modal-form mx-auto my-4 flex w-full max-w-xs flex-col space-y-4"
 	on:submit|preventDefault={async () => {
 		if (isAppDataValid(appData)) {
+			isLoading = true;
 			$publishHappMutation.mutate(appData, {
 				onSuccess: (id) => {
 					appData = { ...EMPTY_APP_DATA };
 					bytesFiles = null;
-					goto(`/${DEV_PAGE}/${id}`);
+					goto(`/${DEV_APP_PAGE}/${id}`);
 				},
 				onError: (error) => {
 					console.error(error);
+					isLoading = false;
 					showModalError({
 						modalStore,
 						errorTitle: $i18n.t('appError'),
@@ -51,6 +64,7 @@
 	}}
 >
 	<IconInput bind:icon={appData.icon} handleFileUpload={handleIconUpload} />
+	<InputWithLabel bind:files={bytesFiles} id="webbhapp" label={`${$i18n.t('uploadYourBundle')}*`} />
 	<InputWithLabel bind:value={appData.title} id="happName" label={`${$i18n.t('nameYourHapp')}*`} />
 	<InputWithLabel
 		bind:value={appData.subtitle}
@@ -63,7 +77,6 @@
 		label={$i18n.t('description')}
 		maxLength={500}
 	/>
-	<InputWithLabel bind:files={bytesFiles} id="webbhapp" label={`${$i18n.t('webbhapp')}*`} />
 	<InputWithLabel
 		bind:value={appData.version}
 		id="version"
@@ -74,12 +87,12 @@
 		<Button
 			props={{
 				disabled: $publishHappMutation.isPending || !isAppDataValid(appData),
-				isLoading: $publishHappMutation.isPending,
+				isLoading: isLoading || $publishHappMutation.isPending,
 				type: 'submit',
-				class: 'btn bg-add-happ-button flex-1'
+				class: 'btn-happ-button flex-1'
 			}}
 		>
-			<span>{$i18n.t('add')}</span>
+			<span>{$i18n.t('publishYourApp')}</span>
 		</Button>
 	</footer>
 </form>

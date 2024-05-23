@@ -24,7 +24,7 @@
 	import { getErrorMessage } from '$shared/helpers';
 	import type { UpdateUiFromHash } from '$shared/types';
 
-	import { DashedSection } from '../components';
+	import { DashedSection } from '../../components';
 
 	const client = trpc();
 

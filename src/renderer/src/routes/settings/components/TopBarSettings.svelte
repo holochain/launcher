@@ -1,12 +1,10 @@
 <script lang="ts">
-	import { getModalStore } from '@skeletonlabs/skeleton';
 	import clsx from 'clsx';
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { IconButton } from '$components';
-	import { DEV_PAGE, MODAL_ADD_PUBLISHER, SELECTED_ICON_STYLE } from '$const';
-	import { createModalParams } from '$helpers';
+	import { DEV_PAGE, PUBLISHER_SCREEN, SELECTED_ICON_STYLE } from '$const';
 	import { Gear, Upload } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { trpc } from '$services';
@@ -15,11 +13,7 @@
 	const client = trpc();
 	const isDevhubInstalled = client.isDevhubInstalled.createQuery();
 
-	const modalStore = getModalStore();
-
 	const { publishersQuery } = createAppQueries();
-
-	const modal = createModalParams(MODAL_ADD_PUBLISHER);
 
 	$: isDevPage = $page.url.pathname.includes(DEV_PAGE);
 </script>
@@ -42,10 +36,15 @@
 			buttonClass={clsx('p-2', isDevPage && 'bg-black rounded-md')}
 			onClick={() => {
 				if (!$publishersQuery.isSuccess) return;
-				if ($publishersQuery.data.length < 1) {
-					return modalStore.trigger(modal);
-				}
-				goto(isDevPage ? `/${SETTINGS_SCREEN}` : `/${DEV_PAGE}`);
+
+				const targetScreen =
+					$publishersQuery.data.length < 1
+						? `/${PUBLISHER_SCREEN}`
+						: isDevPage
+							? `/${SETTINGS_SCREEN}`
+							: `/${DEV_PAGE}`;
+
+				goto(targetScreen);
 			}}
 		>
 			{#if isDevPage}

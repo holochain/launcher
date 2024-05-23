@@ -16,6 +16,12 @@ Build the sidecar binaries (requires Rust and Go installed):
 bash ./scripts/setup-binaries.sh
 ```
 
+or fetch with
+
+```bash
+yarn fetch:binaries
+```
+
 Build the Node Rust-add-ons
 
 ```bash
