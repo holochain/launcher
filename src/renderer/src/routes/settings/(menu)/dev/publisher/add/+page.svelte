@@ -1,13 +1,16 @@
 <script lang="ts">
+	import { getModalStore } from '@skeletonlabs/skeleton';
 	import type { CreatePublisherFrontendInput } from 'appstore-tools';
 
 	import { goto } from '$app/navigation';
 	import { Button, IconInput, InputWithLabel } from '$components';
 	import { DEV_PAGE } from '$const';
-	import { base64ToArrayBuffer, convertFileToUint8Array } from '$helpers';
+	import { base64ToArrayBuffer, convertFileToUint8Array, showModalError } from '$helpers';
 	import { defaultIcon } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
+
+	const modalStore = getModalStore();
 
 	const { publisherMutation } = createAppQueries();
 
@@ -32,6 +35,15 @@
 		$publisherMutation.mutate(publisherData, {
 			onSuccess: () => {
 				goto(`/${DEV_PAGE}`);
+			},
+			onError: (error) => {
+				modalStore.close();
+				console.error(error);
+				showModalError({
+					modalStore,
+					errorTitle: $i18n.t('appError'),
+					errorMessage: $i18n.t(error.message)
+				});
 			}
 		});
 	}}
