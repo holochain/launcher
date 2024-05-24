@@ -25,7 +25,9 @@
 		.sort((a, b) => a.last_updated - b.last_updated)[0].bundle_hashes.happ_hash;
 
 	const setAppDataBytes = async (files: FileList | null) => {
-		bytes = files && files.length > 0 ? await convertFileToUint8Array(files[0]) : undefined;
+		if (files && files.length > 0) {
+			bytes = await convertFileToUint8Array(files[0]);
+		}
 	};
 
 	$: setAppDataBytes(files);
@@ -57,7 +59,7 @@
 				}
 			}}
 		>
-			<InputWithLabel bind:files id="webbhapp" label={`${$i18n.t('webbhapp')}*`} />
+			<InputWithLabel bind:files id="webbhapp" label={`${$i18n.t('uploadYourBundle')}*`} />
 			<InputWithLabel
 				bind:value={version}
 				id="version"

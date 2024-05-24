@@ -19,7 +19,11 @@ export const showModalError = ({
 	modalStore.trigger(modal);
 };
 
-export const createModalParams = (component: Modals): ModalSettings => ({
+export const createModalParams = (
+	component: Modals,
+	response?: (r: unknown) => void
+): ModalSettings => ({
 	type: 'component' as const,
-	component
+	component,
+	response
 });

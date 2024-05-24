@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { DEV_PAGE } from '$const';
+	import { DEV_APP_PAGE, DEV_PAGE } from '$const';
 	import { uint8ArrayToURIComponent } from '$helpers';
 	import { Plus } from '$icons';
 	import { createAppQueries } from '$queries';
@@ -11,7 +11,7 @@
 
 	const { appStoreMyHappsQuery } = createAppQueries();
 
-	const selectView = (view: string) => goto(`/${DEV_PAGE}/${view}`);
+	const selectView = (view: string) => goto(`/${DEV_APP_PAGE}/${view}`);
 
 	$: view = $page.params.slug;
 </script>

@@ -4,7 +4,7 @@ import { AppWebsocket, type CallZomeRequest } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
 import type { AppVersionEntry } from 'appstore-tools';
-import { AppstoreAppClient, DevhubAppClient } from 'appstore-tools';
+import { AppstoreAppClient } from 'appstore-tools';
 import { webhappToHappAndUi } from 'appstore-tools';
 import * as childProcess from 'child_process';
 import { Command, Option } from 'commander';
@@ -206,7 +206,7 @@ const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - 
 
 const APP_CLIENTS: Record<InstalledAppId, AppClient> = {};
 let APPSTORE_APP_CLIENT: AppstoreAppClient | undefined;
-let DEVHUB_APP_CLIENT: DevhubAppClient | undefined;
+// let DEVHUB_APP_CLIENT: DevhubAppClient | undefined;
 
 const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeRequest) => {
   // TODO check here that cellId belongs to the installedAppId that the window belongs to
@@ -466,15 +466,14 @@ const getAppstoreAppClient = async () => {
   return APPSTORE_APP_CLIENT;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getDevhubAppClient = async () => {
-  if (DEVHUB_APP_CLIENT) return DEVHUB_APP_CLIENT;
-  if (!DEFAULT_HOLOCHAIN_DATA_ROOT) throw new Error('Default holochain data root is not defined.');
-  const appClient = await getAppClient(DEVHUB_APP_ID);
-  const devhubAppClient = new DevhubAppClient(appClient);
-  DEVHUB_APP_CLIENT = devhubAppClient;
-  return DEVHUB_APP_CLIENT;
-};
+// const getDevhubAppClient = async () => {
+//   if (DEVHUB_APP_CLIENT) return DEVHUB_APP_CLIENT;
+//   if (!DEFAULT_HOLOCHAIN_DATA_ROOT) throw new Error('Default holochain data root is not defined.');
+//   const appClient = await getAppClient(DEVHUB_APP_ID);
+//   const devhubAppClient = new DevhubAppClient(appClient);
+//   DEVHUB_APP_CLIENT = devhubAppClient;
+//   return DEVHUB_APP_CLIENT;
+// };
 
 const router = t.router({
   openSettings: t.procedure.mutation(() => {
@@ -664,18 +663,23 @@ const router = t.router({
   launch: handlePasswordInput(handleLaunch),
   initializeDefaultAppPorts: t.procedure.query(async () => {
     const defaultHolochainManager = HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_DATA_ROOT!.name];
-    const appstoreAuthenticationToken = await defaultHolochainManager.getAppToken(APP_STORE_APP_ID);
-    const devhubAuthenticationToken = await defaultHolochainManager.getAppToken(DEVHUB_APP_ID);
-    if (!appstoreAuthenticationToken) {
-      return throwTRPCErrorError({
-        message: NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND,
-      });
-    }
-    if (isDevhubInstalled(HOLOCHAIN_MANAGERS) && !devhubAuthenticationToken) {
-      return throwTRPCErrorError({
-        message: NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND,
-      });
-    }
+
+    const getTokenOrThrow = async (appId: string, errorMessage: string) => {
+      const token = await defaultHolochainManager.getAppToken(appId);
+      if (!token) {
+        throwTRPCErrorError({ message: errorMessage });
+      }
+      return token;
+    };
+
+    const appstoreAuthenticationToken = await getTokenOrThrow(
+      APP_STORE_APP_ID,
+      NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND,
+    );
+    const devhubAuthenticationToken = isDevhubInstalled(HOLOCHAIN_MANAGERS)
+      ? await getTokenOrThrow(DEVHUB_APP_ID, NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND)
+      : undefined;
+
     return validateWithZod({
       schema: InitializeAppPortsSchema,
       data: {

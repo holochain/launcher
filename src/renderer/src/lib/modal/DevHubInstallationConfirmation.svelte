@@ -2,16 +2,10 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { Button } from '$components';
-	import { showModalError } from '$helpers';
 	import { Confirmation } from '$icons';
-	import { createDevHubClient, i18n, trpc } from '$services';
-
-	const client = trpc();
+	import { i18n } from '$services';
 
 	const modalStore = getModalStore();
-
-	const installDevhub = client.installDevhub.createMutation();
-	const isDevhubInstalled = client.isDevhubInstalled.createQuery();
 </script>
 
 {#if $modalStore[0]}
@@ -34,25 +28,9 @@
 			<Button
 				props={{
 					onClick: () => {
-						$installDevhub.mutate(undefined, {
-							onSuccess: async ({ appPort, authenticationToken }) => {
-								if (!appPort) {
-									modalStore.close();
-									showModalError({
-										modalStore,
-										errorTitle: $i18n.t('appError'),
-										errorMessage: $i18n.t('noAppPortError')
-									});
-									return;
-								}
-
-								await createDevHubClient(appPort, authenticationToken);
-								$isDevhubInstalled.refetch();
-								modalStore.close();
-							}
-						});
+						$modalStore[0]?.response?.(true);
+						modalStore.close();
 					},
-					isLoading: $installDevhub.isPending,
 					type: 'submit',
 					class: 'btn-secondary bg-add-happ-button flex-1'
 				}}
