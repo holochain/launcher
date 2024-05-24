@@ -18,5 +18,5 @@
 		class: 'btn-happ-button mt-4'
 	}}
 >
-	<span>{$i18n.t('setUpYourPublisherAccount')}</span>
+	<span>{$i18n.t('setUpYourPublisherProfile')}</span>
 </Button>

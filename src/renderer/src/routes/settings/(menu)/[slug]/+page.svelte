@@ -19,7 +19,7 @@
 	} from '$helpers';
 	import { Download } from '$icons';
 	import { createAppQueries } from '$queries';
-	import { i18n, trpc } from '$services';
+	import { createDevHubClient, i18n, trpc } from '$services';
 	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_SCREEN } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
 	import type { UpdateUiFromHash } from '$shared/types';
@@ -38,6 +38,7 @@
 	const installedApps = client.getInstalledApps.createQuery();
 	const uninstallApp = client.uninstallApp.createMutation();
 	const isDevhubInstalled = client.isDevhubInstalled.createQuery();
+	const installDevhub = client.installDevhub.createMutation();
 	const updateUiFromHash = client.updateUiFromHash.createMutation();
 	const storeUiBytes = client.storeUiBytes.createMutation();
 
@@ -61,8 +62,6 @@
 	$: appVersionsDetailsQuery = appVersionsAppstoreQueryFunction(
 		decodeHashFromBase64(selectedAppDistributionInfoData?.appEntryActionHash ?? '')
 	);
-
-	const modal = createModalParams(MODAL_DEVHUB_INSTALLATION_CONFIRMATION);
 
 	const onSuccess = () => {
 		$installedApps.refetch();
@@ -125,6 +124,38 @@
 			appVersionEntry,
 			updateInfo
 		});
+	};
+
+	const handleDevhubInstallSuccess = async ({
+		appPort,
+		authenticationToken
+	}: {
+		appPort?: number;
+		authenticationToken: number[];
+	}) => {
+		if (!appPort) {
+			handleError({
+				message: $i18n.t('noAppPortError'),
+				title: $i18n.t('appError')
+			});
+			return;
+		}
+		await createDevHubClient(appPort, authenticationToken);
+		$isDevhubInstalled.refetch();
+		modalStore.close();
+	};
+
+	const showModal = () => {
+		const modal = createModalParams(MODAL_DEVHUB_INSTALLATION_CONFIRMATION, (shouldInstall) => {
+			if (shouldInstall) {
+				$installDevhub.mutate(undefined, {
+					onSuccess: handleDevhubInstallSuccess,
+					onError: handleError
+				});
+			}
+		});
+
+		modalStore.trigger(modal);
 	};
 </script>
 
@@ -212,7 +243,8 @@
 		{:else}
 			<Button
 				props={{
-					onClick: () => modalStore.trigger(modal),
+					isLoading: $installDevhub.isPending,
+					onClick: showModal,
 					class: 'btn-install'
 				}}
 			>

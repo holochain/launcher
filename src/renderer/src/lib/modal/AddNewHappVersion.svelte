@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { getModalStore } from '@skeletonlabs/skeleton';
-	// @ts-expect-error the @spartan-hc/bundles package has no typescript types
-	import { Bundle } from '@spartan-hc/bundles';
 	import type { AppVersionEntry, Entity } from 'appstore-tools';
 
 	import { AddTypeModalFooter, InputWithLabel } from '$components';
@@ -28,11 +26,7 @@
 
 	const setAppDataBytes = async (files: FileList | null) => {
 		if (files && files.length > 0) {
-			const convertedBytes = await convertFileToUint8Array(files[0]);
-			bytes = convertedBytes;
-
-			const bundle = new Bundle(convertedBytes);
-			version = version || bundle?.manifest?.version || '';
+			bytes = await convertFileToUint8Array(files[0]);
 		}
 	};
 

@@ -27,7 +27,7 @@
 </script>
 
 <header class="pt-4 text-2xl font-bold">
-	{$i18n.t('setUpYourPublisherAccount')}
+	{$i18n.t('setUpYourPublisherProfile')}
 </header>
 <form
 	class="modal-form flex flex-col space-y-4 p-4"
