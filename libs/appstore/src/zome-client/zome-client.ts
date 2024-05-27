@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { AppCallZomeRequest, AppClient, RoleName, ZomeName } from '@holochain/client';
 
 export class ZomeClient {
