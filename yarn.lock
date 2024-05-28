@@ -884,10 +884,10 @@
   resolved "https://registry.yarnpkg.com/@skeletonlabs/tw-plugin/-/tw-plugin-0.4.0.tgz#fe9eb12123c46e7ffa79bf6eaf2da853c1c6ace6"
   integrity sha512-v6Y4deBq9ByRx3kTRGgekhhYkWEYgNNNu8UXOwJngCStB7w8SwmbNFSeHkluxMbgCgMnJyp220EMpw9nj/rEsQ==
 
-"@spartan-hc/bundles@0.2.6":
-  version "0.2.6"
-  resolved "https://registry.yarnpkg.com/@spartan-hc/bundles/-/bundles-0.2.6.tgz#3b54154589e60e2f70391a165e31fdb7dc30becd"
-  integrity sha512-jU+OpwnaIoRagoFCcFPW8Ni7/oIulvkTyjg/AO2KHF4b/U0V2kXKDosibHgWsh50dv2Hhht1KaaVmtr9RRxDCA==
+"@spartan-hc/bundles@0.2.5":
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/@spartan-hc/bundles/-/bundles-0.2.5.tgz#05cad64e863ffc9f686efbcb4679598c19fa78ee"
+  integrity sha512-/SA7UO91dm8OlFMr4CSPv0plZaQjleQd3Fk0Rl68T/psiI80AmEU0puT9ZU1MHQTX/WimcaI7o1Ol8oN9sZY8g==
   dependencies:
     "@msgpack/msgpack" "^2.7.0"
     "@whi/json" "^0.1.7"
@@ -2304,10 +2304,10 @@ electron-vite@^2.2.0:
     magic-string "^0.30.5"
     picocolors "^1.0.0"
 
-electron@^30.0.8:
-  version "30.0.8"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-30.0.8.tgz#aa54bab26ce706c9e1b244d79047a451733eb4b0"
-  integrity sha512-ivzXJJ/9gdb4oOw+5SDuaZpSInz8C+Z021dKZfFLMltKbDa4sSqt5cRBiUg7J36Z2kdus+Jai0bdHWutYE9wAA==
+electron@^29.4.1:
+  version "29.4.1"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-29.4.1.tgz#c266c52182e38b09e934d95a2fd11ce153613cda"
+  integrity sha512-YQvMAtdmjMF1yGfQFuO/KOmy+04SKot85NalppK/8zxKwOKrrK6dJBp+nJWteqBwRAKiasSrC1lDalF6hZct/w==
   dependencies:
     "@electron/get" "^2.0.0"
     "@types/node" "^20.9.0"
