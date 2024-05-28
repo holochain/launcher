@@ -526,22 +526,24 @@ const router = t.router({
     const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
     const appstoreAppClient = await getAppstoreAppClient();
 
-    const uiAvailable = holochainManager.isUiAvailable(appVersionEntry.bundle_hashes.ui_hash);
-    const happAvailable = holochainManager.isHappAvailableAndValid(
+    const isUiAvailable = holochainManager.isUiAvailable(appVersionEntry.bundle_hashes.ui_hash);
+    const isHappAvailable = holochainManager.isHappAvailableAndValid(
       appVersionEntry.bundle_hashes.happ_hash,
     );
-    console.log('happAvailable, uiAvailable: ', happAvailable, uiAvailable);
-    if (happAvailable && uiAvailable) {
-      return;
-    } else if (happAvailable && !uiAvailable) {
+    console.log('happAvailable, uiAvailable: ', isHappAvailable, isUiAvailable);
+
+    if (isHappAvailable && isUiAvailable) return;
+
+    if (isHappAvailable && !isUiAvailable) {
       const uiBytes = await appstoreAppClient.fetchUiBytes(appVersionEntry);
       holochainManager.storeUiIfNecessary(Array.from(uiBytes));
-    } else {
-      const webhappBytes = await appstoreAppClient.fetchWebappBytes(appVersionEntry);
-      const happAndUi = webhappToHappAndUi(webhappBytes);
-      holochainManager.storeUiIfNecessary(Array.from(happAndUi.ui));
-      holochainManager.storeHapp(Array.from(happAndUi.happ));
+      return;
     }
+
+    const webhappBytes = await appstoreAppClient.fetchWebappBytes(appVersionEntry);
+    const { ui, happ } = webhappToHappAndUi(webhappBytes);
+    holochainManager.storeUiIfNecessary(Array.from(ui));
+    holochainManager.storeHapp(Array.from(happ));
   }),
   isHappAvailableAndValid: t.procedure.input(z.string()).query(async (opts) => {
     const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);

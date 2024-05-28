@@ -1,7 +1,8 @@
 import { type ActionHash, decodeHashFromBase64 } from '@holochain/client';
 // @ts-expect-error the @spartan-hc/bundles package has no typescript types
 import { Bundle } from '@spartan-hc/bundles';
-import { createMutation, createQuery, QueryClient } from '@tanstack/svelte-query';
+import type { QueryClient } from '@tanstack/svelte-query';
+import { createMutation, createQuery } from '@tanstack/svelte-query';
 import {
 	type AppstoreAppClient,
 	type AppVersionEntry,

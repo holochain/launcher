@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ActionHash, AgentPubKey, AnyDhtHash, AppCallZomeRequest } from '@holochain/client';
 
 import { ZomeClient } from '../../zome-client/zome-client';

@@ -8,6 +8,9 @@
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "[svelte]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer",
     "editor.formatOnSave": false,
@@ -18,10 +21,10 @@
   },
   "prettier.requireConfig": true,
   "prettier.documentSelectors": ["**/*.svelte"],
-  "[svelte]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-  },
-  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+},
+  "eslint.validate": ["javascript", "typescript", "svelte"],
   "cSpell.words": [
     "APP_STORE",
     "appstore",
