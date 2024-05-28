@@ -534,7 +534,7 @@ const router = t.router({
 
     if (isHappAvailable && isUiAvailable) return;
 
-    if (isHappAvailable) {
+    if (isHappAvailable && !isUiAvailable) {
       const uiBytes = await appstoreAppClient.fetchUiBytes(appVersionEntry);
       holochainManager.storeUiIfNecessary(Array.from(uiBytes));
       return;
