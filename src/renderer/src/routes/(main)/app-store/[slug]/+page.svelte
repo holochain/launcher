@@ -1,19 +1,22 @@
 <script lang="ts">
 	import { encodeHashToBase64 } from '@holochain/client';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 	import type { AppVersionEntry, Entity } from 'appstore-tools';
 
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { AppDetailsPanel, Button } from '$components';
+	import { PRESEARCH_URL_QUERY } from '$const';
 	import {
 		createImageUrl,
 		getLatestVersion,
 		showModalError,
 		uint8ArrayToURIComponent
 	} from '$helpers';
-	import InstallAppFromHashes from '$modal/InstallAppFromHashes.svelte';
+	import { InstallAppFromHashes } from '$modal';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
+	import { APPS_VIEW, DISTRIBUTION_TYPE_APPSTORE } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
 
 	const client = trpc();
@@ -21,8 +24,11 @@
 	const { appStoreHappsQuery, appVersionsAppstoreQueryFunction } = createAppQueries();
 
 	const fetchWebapp = client.fetchWebhapp.createMutation();
+	const installedApps = client.getInstalledApps.createQuery();
+	const installWebhappFromHashes = client.installWebhappFromHashes.createMutation();
 
 	const modalStore = getModalStore();
+	const toastStore = getToastStore();
 
 	const slug: string = $page.params.slug;
 	let selectedIndex = 0;
@@ -38,23 +44,55 @@
 			errorMessage: getErrorMessage(error)
 		});
 	};
-
-	const createModalInstallAppFromHashes = async (versionEntity: Entity<AppVersionEntry>) =>
+	const createModalInstallAppFromHashes = async (versionEntity: Entity<AppVersionEntry>) => {
 		modalStore.trigger({
 			type: 'component',
 			component: {
 				ref: InstallAppFromHashes,
 				props: {
 					icon: app?.icon,
-					uiZipSha256: versionEntity.content.bundle_hashes.ui_hash,
-					happSha256: versionEntity.content.bundle_hashes.happ_hash,
-					appName: app?.title,
-					appVersionActionHash: encodeHashToBase64(versionEntity.id),
-					appEntryActionHash: encodeHashToBase64(versionEntity.content.for_app),
-					appstoreDnaHash: encodeHashToBase64(versionEntity.content.apphub_hrl.dna)
+					appName: app?.title
 				}
+			},
+			response: ({ appId, networkSeed }: { appId: string; networkSeed: string }) => {
+				if (appId.length === 0) {
+					return;
+				}
+				$installWebhappFromHashes.mutate(
+					{
+						uiZipSha256: versionEntity.content.bundle_hashes.ui_hash,
+						happSha256: versionEntity.content.bundle_hashes.happ_hash,
+						distributionInfo: {
+							type: DISTRIBUTION_TYPE_APPSTORE,
+							appName: app?.title ?? '',
+							appstoreDnaHash: encodeHashToBase64(versionEntity.content.apphub_hrl.dna),
+							appEntryActionHash: encodeHashToBase64(versionEntity.content.for_app),
+							appVersionActionHash: encodeHashToBase64(versionEntity.id)
+						},
+						appId: appId,
+						networkSeed: networkSeed
+					},
+					{
+						onSuccess: () => {
+							$installedApps.refetch();
+							toastStore.trigger({
+								message: `${appId} ${$i18n.t('installedSuccessfully')}`
+							});
+							goto(`/${APPS_VIEW}?${PRESEARCH_URL_QUERY}=${appId}`);
+						},
+						onError: (error) => {
+							console.error(error);
+							showModalError({
+								modalStore,
+								errorTitle: $i18n.t('appError'),
+								errorMessage: $i18n.t(error.message)
+							});
+						}
+					}
+				);
 			}
 		});
+	};
 
 	const installLogic = async (versionEntity: Entity<AppVersionEntry>) => {
 		$fetchWebapp.mutate(versionEntity.content, {
@@ -66,7 +104,7 @@
 		});
 	};
 
-	$: isLoading = $fetchWebapp.isPending;
+	$: isLoading = $fetchWebapp.isPending || $installWebhappFromHashes.isPending;
 </script>
 
 {#if app && appVersionsDetailsQuery && $appVersionsDetailsQuery?.isSuccess}

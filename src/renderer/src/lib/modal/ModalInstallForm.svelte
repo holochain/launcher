@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore, popup } from '@skeletonlabs/skeleton';
 
 	import { Button, Input } from '$components';
+	import { Info } from '$icons';
 	import { i18n } from '$services';
 	import type { AppInstallFormData } from '$types';
 
@@ -38,7 +39,32 @@
 				/>
 			{/if}
 			<InputModal bind:value={formData.appId} id="appName" label={$i18n.t('name')} />
-			<InputModal bind:value={formData.networkSeed} id="networkSeed" label={$i18n.t('network')} />
+			<InputModal
+				bind:value={formData.networkSeed}
+				id="networkSeed"
+				placeholder={$i18n.t('public')}
+				label={$i18n.t('network')}
+			>
+				<div class="absolute right-11 top-3">
+					<button
+						class="!outline-none [&>*]:pointer-events-none"
+						use:popup={{
+							event: 'hover',
+							target: 'popupHover',
+							placement: 'bottom'
+						}}
+					>
+						<Info />
+					</button>
+				</div>
+				<div class="card z-50 min-w-80 !bg-primary-900 p-4" data-popup="popupHover">
+					<div class="flex flex-col gap-2">
+						<p>{$i18n.t('networkSeed')}</p>
+						<span>{$i18n.t('networkSeedDescription')}</span>
+					</div>
+					<div class="arrow bg-primary-900" />
+				</div>
+			</InputModal>
 			<footer class="modal-footer flex justify-between gap-2">
 				<Button
 					props={{

@@ -1,3 +1,5 @@
+<svelte:options accessors />
+
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
 
@@ -12,7 +14,7 @@
 	export let autocomplete: string | null = null;
 	export let files: FileList | null = null;
 
-	const focusInput = () => inputElement?.focus();
+	export let focusInput = () => inputElement?.focus();
 
 	const handleEvent = (type: string) => (event: Event) => dispatch(type, event);
 

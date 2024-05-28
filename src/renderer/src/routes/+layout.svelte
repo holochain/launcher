@@ -1,7 +1,14 @@
 <script lang="ts">
 	import '../app.postcss';
 
-	import { initializeStores, Modal, type ModalComponent } from '@skeletonlabs/skeleton';
+	import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
+	import {
+		initializeStores,
+		Modal,
+		type ModalComponent,
+		storePopup,
+		Toast
+	} from '@skeletonlabs/skeleton';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 
 	import {
@@ -19,11 +26,22 @@
 		[MODAL_DEVHUB_INSTALLATION_CONFIRMATION]: { ref: DevHubInstallationConfirmation }
 	};
 
+	const setupStorePopup = () => {
+		storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
+	};
+
 	initializeStores();
+	setupStorePopup();
 </script>
 
 <QueryClientProvider client={queryClient}>
 	<Modal components={modalRegistry} />
+	<Toast
+		position="br"
+		color="!text-white"
+		background="variant-filled-surface"
+		buttonDismiss="!bg-transparent !text-white"
+	/>
 	<div class="flex h-full min-w-80 flex-col">
 		<slot />
 	</div>
