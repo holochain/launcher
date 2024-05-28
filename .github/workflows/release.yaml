@@ -85,11 +85,8 @@ jobs:
         if: steps.cache-rust-utils.outputs.cache-hit != 'true'
         run: yarn setupForCI
 
-      - name: build and install libs
+      - name: build and install libs and dependencies
         run: yarn build:libs
-
-      - name: install app dependencies
-        run: yarn
 
       - name: install default apps
         run: |

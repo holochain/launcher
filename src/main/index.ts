@@ -1,11 +1,9 @@
 import { optimizer } from '@electron-toolkit/utils';
-import type { AppClient, InstalledAppId } from '@holochain/client';
-import { AppWebsocket, type CallZomeRequest } from '@holochain/client';
+import type { AppClient, CallZomeRequest, InstalledAppId } from '@holochain/client';
+import { AppWebsocket } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
-import type { AppVersionEntry } from 'appstore-tools';
-import { AppstoreAppClient } from 'appstore-tools';
-import { webhappToHappAndUi } from 'appstore-tools';
+import { AppstoreAppClient, type AppVersionEntry, webhappToHappAndUi } from 'appstore-tools';
 import * as childProcess from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';

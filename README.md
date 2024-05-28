@@ -19,19 +19,14 @@ bash ./scripts/setup-binaries.sh
 or fetch with
 
 ```bash
+mkdir resources/bins
 yarn fetch:binaries
 ```
 
-Build the Node Rust-add-ons
+Build the Node Rust-add-ons and install dependencies
 
 ```bash
 yarn setup
-```
-
-Install dependencies
-
-```bash
-yarn
 ```
 
 Download default app
