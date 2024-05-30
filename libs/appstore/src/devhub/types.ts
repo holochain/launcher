@@ -250,6 +250,7 @@ export type CreateWebAppInput = {
 
 export type WebAppEntry = {
   manifest: WebAppManifestV1;
+  resources: WebAppResourcesMap;
   webapp_token: WebAppToken;
 };
 
