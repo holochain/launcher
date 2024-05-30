@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getModalStore, popup } from '@skeletonlabs/skeleton';
+	import { onMount } from 'svelte';
 
 	import { Button, Input } from '$components';
 	import { Info } from '$icons';
@@ -16,6 +17,13 @@
 	export let onSubmit: () => void;
 	export let isPending = false;
 	export let acceptFileType = false;
+
+	onMount(() => {
+		formData.appId = name || $i18n.t('kando');
+		if (document.activeElement) {
+			(document.activeElement as HTMLElement).blur();
+		}
+	});
 </script>
 
 {#if $modalStore[0]}
