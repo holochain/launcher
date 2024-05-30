@@ -16,7 +16,7 @@
 		bind:this={input}
 		bind:value
 		props={{
-			class: `px-20 input-modal pt-6 placeholder-white placeholder-semibold max-w-72`,
+			class: `px-20 input-modal pt-6 placeholder-white placeholder-semibold`,
 			id,
 			type: 'text',
 			placeholder

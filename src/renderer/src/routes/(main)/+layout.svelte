@@ -14,7 +14,7 @@
 	} from '$helpers';
 	import { Gear, Home, Rocket } from '$icons';
 	import { createAppQueries } from '$queries';
-	import { i18n, trpc } from '$services';
+	import { i18n, trpc, useFocusRefetch } from '$services';
 	import { APP_STORE, APPS_VIEW } from '$shared/const';
 
 	const client = trpc();
@@ -51,6 +51,8 @@
 			?.map((app) => getAppStoreDistributionHash(app.distributionInfo))
 			.filter(filterHash) ?? []
 	);
+
+	useFocusRefetch($uiUpdates?.refetch);
 
 	const handleNavigation = handleNavigationWithAnimationDelay(() => (inputExpanded = false));
 

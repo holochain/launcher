@@ -64,7 +64,7 @@
 				bind:value={version}
 				id="version"
 				label={`${$i18n.t('version')}*`}
-				maxLength={10}
+				maxLength={50}
 			/>
 			{#if $publishNewVersionMutation.error}
 				<div class="flex items-center justify-center">

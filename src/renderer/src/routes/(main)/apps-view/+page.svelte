@@ -5,7 +5,7 @@
 	import { page } from '$app/stores';
 	import { PRESEARCH_URL_QUERY, SEARCH_URL_QUERY } from '$const';
 	import { filterValidateAndSortApps } from '$helpers';
-	import { trpc } from '$services';
+	import { trpc, useFocusRefetch } from '$services';
 
 	import ListOfApps from './components/ListOfApps.svelte';
 
@@ -14,8 +14,11 @@
 	const installedApps = client.getInstalledApps.createQuery();
 
 	onMount(() => {
-		goto(`?${SEARCH_URL_QUERY}=${$page.url.searchParams.get(PRESEARCH_URL_QUERY) || ''}`);
+		const searchQuery = $page.url.searchParams.get(PRESEARCH_URL_QUERY) || '';
+		goto(`?${SEARCH_URL_QUERY}=${searchQuery}`);
 	});
+
+	useFocusRefetch($installedApps.refetch);
 
 	$: searchInput = $page.url.searchParams.get(SEARCH_URL_QUERY) || '';
 

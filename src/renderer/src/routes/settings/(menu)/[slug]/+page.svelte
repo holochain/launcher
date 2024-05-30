@@ -239,7 +239,7 @@
 {:else}
 	<DashedSection title={$i18n.t('developerTools')}>
 		{#if $isDevhubInstalled.data}
-			<p>{$i18n.t('devhubAlreadyInstalled')}</p>
+			<p>{$i18n.t('devhubInstalled')}</p>
 		{:else}
 			<Button
 				props={{
