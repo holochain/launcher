@@ -161,6 +161,11 @@ export class AppstoreAppClient {
         console.log('Got WebappEntry: ', webappEntryEntity.content);
 
         // 2. Get UI asset
+        const uiResourcePath = webappEntryEntity.content.manifest.ui.bundled;
+        const uiEntryHash = webappEntryEntity.content.resources[uiResourcePath];
+        if (!uiEntryHash)
+          throw new Error('UI EntryHash not found in the resources field of the WebAppEntry');
+
         // happy path
         const uiAsset = await this.portalZomeClient.customRemoteCall<UiAsset>({
           host,
@@ -168,7 +173,7 @@ export class AppstoreAppClient {
             dna: appVersion.apphub_hrl.dna,
             zome: 'apphub_csr',
             function: 'get_ui_asset',
-            payload: (webappEntryEntity.content.manifest.ui as any).ui_entry,
+            payload: uiEntryHash,
           },
         });
 
