@@ -2,10 +2,9 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
-	import { initializeDefaultAppPorts, showModalError } from '$helpers';
+	import { showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
 	import { APPS_VIEW } from '$shared/const';
-	import { getErrorMessage } from '$shared/helpers';
 
 	import { PasswordForm, SetupProgressWrapper } from '../components';
 
@@ -16,8 +15,6 @@
 	const client = trpc();
 
 	const launch = client.launch.createMutation();
-
-	const utils = client.createUtils();
 
 	const handleError = (errorMessage: string) => {
 		showModalError({
@@ -31,15 +28,7 @@
 		$launch.mutate(
 			{ password: passwordInput },
 			{
-				onSuccess: async () => {
-					try {
-						const initializeDefaultAppPortsData = await utils.initializeDefaultAppPorts.fetch();
-						await initializeDefaultAppPorts(initializeDefaultAppPortsData);
-						goto(`/${APPS_VIEW}`);
-					} catch (error) {
-						handleError($i18n.t(getErrorMessage(error)));
-					}
-				},
+				onSuccess: () => goto(`/${APPS_VIEW}`),
 				onError: (error) => handleError($i18n.t(error.message || 'unknownError'))
 			}
 		);
