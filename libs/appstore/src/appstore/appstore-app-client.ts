@@ -8,12 +8,12 @@ import type {
   DnaAsset,
   Entity,
   UiAsset,
-  UpdateEntityInput,
   WebAppAsset,
   WebAppEntry,
   WebAppPackageVersionEntry,
 } from '../devhub/types';
 import { MereMemoryZomeClient } from '../mere-memory/zomes/mere-memory-zome-client';
+import type { UpdateEntityInput } from '../types';
 import { bundleToDeterministicBytes } from '../utils';
 import type {
   AppEntry,
@@ -21,6 +21,7 @@ import type {
   CreateAppFrontendInput,
   CreatePublisherFrontendInput,
   PublisherEntry,
+  UpdateAppFrontendInput,
   UpdatePublisherFrontendInput,
 } from './types';
 import { AppstoreZomeClient } from './zomes/appstore-zome-client';
@@ -62,10 +63,25 @@ export class AppstoreAppClient {
   }
 
   async createApp(input: CreateAppFrontendInput): Promise<Entity<AppEntry>> {
-    const iconBytes = await this.mereMemoryZomeClient.saveBytes(input.icon);
+    const iconEntryHash = await this.mereMemoryZomeClient.saveBytes(input.icon);
     return this.appstoreZomeClient.createApp({
       ...input,
-      icon: iconBytes,
+      icon: iconEntryHash,
+    });
+  }
+
+  async updateApp(input: UpdateEntityInput<UpdateAppFrontendInput>): Promise<Entity<AppEntry>> {
+    let iconEntryHash;
+    if (input.properties.icon) {
+      iconEntryHash = await this.mereMemoryZomeClient.saveBytes(input.properties.icon);
+    }
+
+    return this.appstoreZomeClient.updateApp({
+      base: input.base,
+      properties: {
+        ...input.properties,
+        icon: iconEntryHash ? iconEntryHash : undefined,
+      },
     });
   }
 

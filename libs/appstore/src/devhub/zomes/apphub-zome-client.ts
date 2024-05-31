@@ -1,6 +1,7 @@
 import { type ActionHash, type AgentPubKey, type AnyDhtHash } from '@holochain/client';
 
 import type { DeprecationNotice } from '../../appstore';
+import type { UpdateEntityInput } from '../../types';
 import { ZomeClient } from '../../zome-client/zome-client';
 import type {
   CreateDevhubAppInput,
@@ -16,7 +17,6 @@ import type {
   EntityId,
   MoveWebAppPackageVersionInput,
   UiEntry,
-  UpdateEntityInput,
   UpdateWebAppPackageInput,
   UpdateWebAppPackageVersionInput,
   WebAppEntry,

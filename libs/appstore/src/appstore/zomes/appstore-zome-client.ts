@@ -4,10 +4,10 @@ import type {
   DevhubAppEntry,
   Entity,
   UiEntry,
-  UpdateEntityInput,
   WebAppEntry,
   WebAppPackageVersionEntry,
 } from '../../devhub/types';
+import type { UpdateEntityInput } from '../../types';
 import { ZomeClient } from '../../zome-client/zome-client';
 import type {
   AppEntry,
@@ -18,6 +18,7 @@ import type {
   DeprecateInput,
   PublisherEntry,
   UndeprecateInput,
+  UpdateAppProperties,
   UpdatePublisherInput,
 } from '../types';
 
@@ -65,6 +66,10 @@ export class AppstoreZomeClient extends ZomeClient {
   //
 
   async createApp(input: CreateAppInput): Promise<Entity<AppEntry>> {
+    return this.callZome('create_app', input);
+  }
+
+  async updateApp(input: UpdateEntityInput<UpdateAppProperties>): Promise<Entity<AppEntry>> {
     return this.callZome('create_app', input);
   }
 
