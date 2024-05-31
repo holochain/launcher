@@ -121,6 +121,7 @@ export const createAppStoreHappsQuery = () => {
 					return {
 						title: app.content.title,
 						subtitle: app.content.subtitle,
+						description: app.content.description,
 						icon,
 						id: app.id
 					};

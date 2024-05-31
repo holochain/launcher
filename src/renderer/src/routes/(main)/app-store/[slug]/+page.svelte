@@ -121,6 +121,11 @@
 {/if}
 
 {#if $appVersionsDetailsQuery?.data}
+	{#if selectedIndex === 0 && app}
+		<div class="px-8 py-2">
+			{app.description}
+		</div>
+	{/if}
 	{#if selectedIndex === 1}
 		{#each $appVersionsDetailsQuery.data as versionEntry}
 			<div class="flex w-full items-center justify-between px-8 pt-2">
