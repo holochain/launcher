@@ -4,7 +4,7 @@ export function useFocusRefetch(refetch: () => void) {
 	let focusHandler: () => void;
 
 	onMount(() => {
-		focusHandler = () => refetch();
+		focusHandler = () => refetch?.();
 		window.addEventListener('focus', focusHandler);
 	});
 

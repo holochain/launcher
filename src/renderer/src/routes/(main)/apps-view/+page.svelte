@@ -18,7 +18,7 @@
 		goto(`?${SEARCH_URL_QUERY}=${searchQuery}`);
 	});
 
-	useFocusRefetch($installedApps.refetch);
+	useFocusRefetch($installedApps?.refetch);
 
 	$: searchInput = $page.url.searchParams.get(SEARCH_URL_QUERY) || '';
 
