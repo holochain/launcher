@@ -12,7 +12,7 @@ import contextMenu from 'electron-context-menu';
 import { createIPCHandler } from 'electron-trpc/main';
 import { autoUpdater } from 'electron-updater';
 import fs from 'fs';
-import type { ZomeCallSigner } from 'hc-launcher-rust-utils';
+import type { LauncherLairClient } from 'hc-launcher-rust-utils';
 import * as rustUtils from 'hc-launcher-rust-utils';
 import os from 'os';
 import path from 'path';
@@ -188,9 +188,9 @@ const DEFAULT_APPS_NETWORK_SEED = app.isPackaged
 
 setupLogs(LAUNCHER_EMITTER, LAUNCHER_FILE_SYSTEM);
 
-let DEFAULT_ZOME_CALL_SIGNER: ZomeCallSigner | undefined;
+let DEFAULT_ZOME_CALL_SIGNER: LauncherLairClient | undefined;
 // Zome call signers for external binaries (admin ports used as keys)
-const CUSTOM_ZOME_CALL_SIGNERS: Record<number, ZomeCallSigner> = {};
+const CUSTOM_ZOME_CALL_SIGNERS: Record<number, LauncherLairClient> = {};
 
 let INTEGRITY_CHECKER: IntegrityChecker | undefined;
 
@@ -348,7 +348,7 @@ async function handleLaunch(password: string) {
 
   if (VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external') {
     lairUrl = VALIDATED_CLI_ARGS.holochainVersion.lairUrl;
-    const externalZomeCallSigner = await rustUtils.ZomeCallSigner.connect(lairUrl, password);
+    const externalZomeCallSigner = await rustUtils.LauncherLairClient.connect(lairUrl, password);
     CUSTOM_ZOME_CALL_SIGNERS[VALIDATED_CLI_ARGS.holochainVersion.adminPort] =
       externalZomeCallSigner;
   } else {
@@ -363,7 +363,11 @@ async function handleLaunch(password: string) {
 
     LAIR_HANDLE = lairHandle;
 
-    DEFAULT_ZOME_CALL_SIGNER = await rustUtils.ZomeCallSigner.connect(lairUrl, password);
+    DEFAULT_ZOME_CALL_SIGNER = await rustUtils.LauncherLairClient.connect(lairUrl, password);
+    DEFAULT_ZOME_CALL_SIGNER.importSeedFromJsonFile(
+      '/home/matthias/code/holochain/holochain/launcher-electron/test_seeds.json',
+    );
+    console.log('read seed from json file.');
   }
 
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingHolochain');

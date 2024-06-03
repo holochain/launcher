@@ -252,11 +252,11 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { overwriteConfig, defaultConductorConfig, decodeHappOrWebhapp, readAndDecodeHappOrWebhapp, saveWebhapp, ZomeCallSigner } = nativeBinding
+const { overwriteConfig, defaultConductorConfig, decodeHappOrWebhapp, readAndDecodeHappOrWebhapp, saveWebhapp, LauncherLairClient } = nativeBinding
 
 module.exports.overwriteConfig = overwriteConfig
 module.exports.defaultConductorConfig = defaultConductorConfig
 module.exports.decodeHappOrWebhapp = decodeHappOrWebhapp
 module.exports.readAndDecodeHappOrWebhapp = readAndDecodeHappOrWebhapp
 module.exports.saveWebhapp = saveWebhapp
-module.exports.ZomeCallSigner = ZomeCallSigner
+module.exports.LauncherLairClient = LauncherLairClient

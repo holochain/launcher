@@ -5,4 +5,4 @@ pub mod conductor_config;
 pub mod decode_webapp;
 pub mod types;
 mod utils;
-pub mod zome_call_signer;
+pub mod launcher_lair_client;

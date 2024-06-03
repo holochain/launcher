@@ -33,9 +33,10 @@ export interface HappAndUiBytes {
   happBytes: Array<number>
   uiBytes?: Array<number>
 }
-export type JsZomeCallSigner = ZomeCallSigner
-export class ZomeCallSigner {
+export type JsLauncherLairClient = LauncherLairClient
+export class LauncherLairClient {
   constructor()
-  static connect(connectionUrl: string, passphrase: string): Promise<ZomeCallSigner>
+  static connect(connectionUrl: string, passphrase: string): Promise<LauncherLairClient>
   signZomeCall(zomeCallUnsignedJs: ZomeCallUnsignedNapi): Promise<ZomeCallNapi>
+  importSeedFromJsonFile(path: string): Promise<void>
 }
