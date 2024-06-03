@@ -254,7 +254,7 @@ export const installApp = async ({
   appId: string;
   distributionInfo: DistributionInfoV1;
   networkSeed: string;
-  icon?: string;
+  icon?: Uint8Array;
 }): Promise<void> => {
   if (happAndUiBytes.uiBytes) {
     await holochainManager.installWebHappFromBytes({
