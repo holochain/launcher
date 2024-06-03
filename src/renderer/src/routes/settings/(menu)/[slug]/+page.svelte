@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 	import type { AppVersionEntry } from 'appstore-tools';
 	import clsx from 'clsx';
 
@@ -30,6 +30,7 @@
 	const client = trpc();
 
 	const modalStore = getModalStore();
+	const toastStore = getToastStore();
 
 	const { checkForAppUiUpdatesQuery, fetchUiBytesMutation, appVersionsAppstoreQueryFunction } =
 		createAppQueries();
@@ -70,6 +71,10 @@
 		$installedApps.refetch();
 		$uiUpdates.refetch();
 		modalStore.close();
+
+		toastStore.trigger({
+			message: `${selectedApp?.appInfo.installed_app_id} ${$i18n.t('isUpdatedSuccessfully')}`
+		});
 	};
 
 	const handleError = (error: unknown) => {
