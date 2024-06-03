@@ -227,11 +227,11 @@ impl LauncherLairClient {
             base64::STANDARD_NO_PAD,
         );
 
-        let base36_pubkey_x = base64::encode(
+        let base36_pubkey_x = base36::encode(
             seed_info_derived.x25519_pub_key.as_ref()
         );
 
-        let base36_pubkey_ed = base64::encode(
+        let base36_pubkey_ed = base36::encode(
             seed_info_derived.ed25519_pub_key.as_ref(),
         );
 
