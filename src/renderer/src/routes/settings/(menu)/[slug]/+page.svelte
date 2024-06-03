@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 	import type { AppVersionEntry } from 'appstore-tools';
 	import clsx from 'clsx';
 
@@ -9,6 +9,7 @@
 	import { AppDetailsPanel, Button } from '$components';
 	import { MODAL_DEVHUB_INSTALLATION_CONFIRMATION } from '$const';
 	import {
+		capitalizeFirstLetter,
 		createModalParams,
 		filterHash,
 		getAppStoreDistributionHash,
@@ -29,6 +30,7 @@
 	const client = trpc();
 
 	const modalStore = getModalStore();
+	const toastStore = getToastStore();
 
 	const { checkForAppUiUpdatesQuery, fetchUiBytesMutation, appVersionsAppstoreQueryFunction } =
 		createAppQueries();
@@ -41,6 +43,8 @@
 	const installDevhub = client.installDevhub.createMutation();
 	const updateUiFromHash = client.updateUiFromHash.createMutation();
 	const storeUiBytes = client.storeUiBytes.createMutation();
+
+	let selectedIndex = 0;
 
 	$: selectedApp = $installedApps.data?.find(
 		(app) => app.appInfo.installed_app_id === $page.params.slug
@@ -67,6 +71,10 @@
 		$installedApps.refetch();
 		$uiUpdates.refetch();
 		modalStore.close();
+
+		toastStore.trigger({
+			message: `${selectedApp?.appInfo.installed_app_id} ${$i18n.t('isUpdatedSuccessfully')}`
+		});
 	};
 
 	const handleError = (error: unknown) => {
@@ -167,7 +175,8 @@
 	<AppDetailsPanel
 		{appVersion}
 		title={selectedApp.appInfo.installed_app_id}
-		buttons={[$i18n.t('details')]}
+		buttons={[$i18n.t('details'), capitalizeFirstLetter($i18n.t('settings'))]}
+		bind:selectedIndex
 	/>
 	{#if update && selectedApp.distributionInfo.type === DISTRIBUTION_TYPE_APPSTORE}
 		<DashedSection borderColor="border-warning-500/30">
@@ -209,37 +218,43 @@
 			</div>
 		</DashedSection>
 	{/if}
-	<div class={clsx('p-8', update && 'pt-0')}>
-		<div class="flex items-center justify-between">
-			<Button
-				props={{
-					onClick: () =>
-						validateApp(selectedApp) &&
-						$uninstallApp.mutate(selectedApp, {
-							onSuccess: () => {
-								$installedApps.refetch();
-								goto(`/${SETTINGS_SCREEN}`);
-							}
-						}),
-					class: 'btn-app-store variant-filled'
-				}}
-			>
-				{$i18n.t('uninstall')}
-			</Button>
+	{#if selectedIndex === 0}
+		<div class="px-8 py-4">
+			<p>{$i18n.t('details')}</p>
 		</div>
-		{#each Object.entries(selectedApp.appInfo.cell_info) as [roleName, cellId]}
-			{@const cellIdResult = getCellId(cellId[0])}
-			{#if cellIdResult}
-				<p class="break-all">
-					{roleName}: {encodeHashToBase64(cellIdResult[0])}
-				</p>
-			{/if}
-		{/each}
-	</div>
+	{:else if selectedIndex === 1}
+		<div class={clsx('p-8', update && 'pt-0')}>
+			<div class="flex items-center justify-between">
+				<Button
+					props={{
+						onClick: () =>
+							validateApp(selectedApp) &&
+							$uninstallApp.mutate(selectedApp, {
+								onSuccess: () => {
+									$installedApps.refetch();
+									goto(`/${SETTINGS_SCREEN}`);
+								}
+							}),
+						class: 'btn-app-store variant-filled'
+					}}
+				>
+					{$i18n.t('uninstall')}
+				</Button>
+			</div>
+			{#each Object.entries(selectedApp.appInfo.cell_info) as [roleName, cellId]}
+				{@const cellIdResult = getCellId(cellId[0])}
+				{#if cellIdResult}
+					<p class="break-all">
+						{roleName}: {encodeHashToBase64(cellIdResult[0])}
+					</p>
+				{/if}
+			{/each}
+		</div>
+	{/if}
 {:else}
 	<DashedSection title={$i18n.t('developerTools')}>
 		{#if $isDevhubInstalled.data}
-			<p>{$i18n.t('devhubAlreadyInstalled')}</p>
+			<p>{$i18n.t('devhubInstalled')}</p>
 		{:else}
 			<Button
 				props={{

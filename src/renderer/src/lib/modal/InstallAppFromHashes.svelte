@@ -23,7 +23,6 @@
 	bind:formData
 	onSubmit={() => {
 		$modalStore[0]?.response?.(formData);
-		modalStore.close();
 	}}
 >
 	<div slot="avatar">

@@ -7,12 +7,7 @@
 	import { page } from '$app/stores';
 	import { AppDetailsPanel, Button } from '$components';
 	import { PRESEARCH_URL_QUERY } from '$const';
-	import {
-		createImageUrl,
-		getLatestVersion,
-		showModalError,
-		uint8ArrayToURIComponent
-	} from '$helpers';
+	import { createImageUrl, getLatestVersion, uint8ArrayToURIComponent } from '$helpers';
 	import { InstallAppFromHashes } from '$modal';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
@@ -37,11 +32,9 @@
 	$: appVersionsDetailsQuery = appVersionsAppstoreQueryFunction(app?.id);
 
 	const handleError = (error: unknown) => {
-		modalStore.close();
-		showModalError({
-			modalStore,
-			errorTitle: $i18n.t('appError'),
-			errorMessage: getErrorMessage(error)
+		console.error(error);
+		toastStore.trigger({
+			message: getErrorMessage(error)
 		});
 	};
 	const createModalInstallAppFromHashes = async (versionEntity: Entity<AppVersionEntry>) => {
@@ -55,6 +48,7 @@
 				}
 			},
 			response: ({ appId, networkSeed }: { appId: string; networkSeed: string }) => {
+				modalStore.close();
 				if (appId.length === 0) {
 					return;
 				}
@@ -80,14 +74,7 @@
 							});
 							goto(`/${APPS_VIEW}?${PRESEARCH_URL_QUERY}=${appId}`);
 						},
-						onError: (error) => {
-							console.error(error);
-							showModalError({
-								modalStore,
-								errorTitle: $i18n.t('appError'),
-								errorMessage: $i18n.t(error.message)
-							});
-						}
+						onError: handleError
 					}
 				);
 			}
@@ -97,10 +84,7 @@
 	const installLogic = async (versionEntity: Entity<AppVersionEntry>) => {
 		$fetchWebapp.mutate(versionEntity.content, {
 			onSuccess: () => createModalInstallAppFromHashes(versionEntity),
-			onError: (e) => {
-				console.error(e);
-				handleError(e);
-			}
+			onError: handleError
 		});
 	};
 
@@ -121,12 +105,8 @@
 			<Button
 				props={{
 					class: 'btn-app-store variant-filled',
-					onClick: async () => {
-						if (!latestVersion) {
-							return handleError($i18n.t('appError'));
-						}
-						return installLogic(latestVersion);
-					},
+					onClick: async () =>
+						latestVersion ? installLogic(latestVersion) : handleError($i18n.t('appError')),
 					isLoading
 				}}
 			>
@@ -137,7 +117,11 @@
 {/if}
 
 {#if $appVersionsDetailsQuery?.data}
-	{#if selectedIndex === 1}
+	{#if app && selectedIndex === 0}
+		<div class="px-8 py-2">
+			{app.description}
+		</div>
+	{:else if selectedIndex === 1}
 		{#each $appVersionsDetailsQuery.data as versionEntry}
 			<div class="flex w-full items-center justify-between px-8 pt-2">
 				<h4 class="font-semibold">{versionEntry.content.version}</h4>

@@ -8,6 +8,14 @@
 	export let placeholder = '';
 
 	let input: Input;
+
+	const getPlaceholder = (isFocused: boolean, placeholder: string): string =>
+		isFocused ? '' : placeholder;
+
+	let isFocused = false;
+
+	const handleFocus = () => (isFocused = true);
+	const handleBlur = () => (isFocused = false);
 </script>
 
 <div class="relative">
@@ -15,11 +23,13 @@
 	<Input
 		bind:this={input}
 		bind:value
+		on:focus={handleFocus}
+		on:blur={handleBlur}
 		props={{
-			class: `px-20 input-modal pt-6 placeholder-white placeholder-semibold max-w-72`,
+			class: `px-20 input-modal pt-6 placeholder-white placeholder-semibold`,
 			id,
 			type: 'text',
-			placeholder
+			placeholder: getPlaceholder(isFocused, placeholder)
 		}}
 	/>
 	<slot />

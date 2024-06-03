@@ -6,10 +6,14 @@
 	export let id: string;
 	export let label: string;
 	export let files: FileList | null = null;
+	export let largeTextField: boolean = false;
 
 	let isFocused = false;
 
 	$: wordCount = value?.length || 0;
+
+	const handleFocus = () => (isFocused = true);
+	const handleBlur = () => (isFocused = false);
 </script>
 
 <div class="flex flex-col">
@@ -23,35 +27,52 @@
 			<span class="text-xs">{wordCount}/{maxLength}</span>
 		{/if}
 	</div>
-	<div
-		class="rounded-md p-[1px]"
-		class:bg-transparent={!isFocused}
-		class:bg-app-gradient={isFocused}
-	>
-		{#if value == undefined}
-			<Input
-				bind:files
-				on:focus={() => (isFocused = true)}
-				on:blur={() => (isFocused = false)}
-				props={{
-					class: `input`,
-					id,
-					type: 'file',
-					accept: '.webhapp'
-				}}
-			/>
-		{:else}
-			<Input
+	{#if largeTextField}
+		<div
+			class="flex items-stretch rounded-md p-[1px]"
+			class:bg-transparent={!isFocused}
+			class:bg-app-gradient={isFocused}
+		>
+			<textarea
 				bind:value
-				on:focus={() => (isFocused = true)}
-				on:blur={() => (isFocused = false)}
-				props={{
-					class: `input`,
-					id,
-					type: 'text',
-					maxlength: maxLength
-				}}
-			/>
-		{/if}
-	</div>
+				on:focus={handleFocus}
+				on:blur={handleBlur}
+				class="input flex-grow"
+				{id}
+				maxlength={maxLength}
+			></textarea>
+		</div>
+	{:else}
+		<div
+			class="rounded-md p-[1px]"
+			class:bg-transparent={!isFocused}
+			class:bg-app-gradient={isFocused}
+		>
+			{#if value == undefined}
+				<Input
+					bind:files
+					on:focus={handleFocus}
+					on:blur={handleBlur}
+					props={{
+						class: `input`,
+						id,
+						type: 'file',
+						accept: '.webhapp'
+					}}
+				/>
+			{:else}
+				<Input
+					bind:value
+					on:focus={handleFocus}
+					on:blur={handleBlur}
+					props={{
+						class: `input`,
+						id,
+						type: 'text',
+						maxlength: maxLength
+					}}
+				/>
+			{/if}
+		</div>
+	{/if}
 </div>

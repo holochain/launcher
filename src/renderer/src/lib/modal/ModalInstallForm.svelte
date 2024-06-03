@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getModalStore, popup } from '@skeletonlabs/skeleton';
+	import { onMount } from 'svelte';
 
 	import { Button, Input } from '$components';
 	import { Info } from '$icons';
@@ -16,11 +17,18 @@
 	export let onSubmit: () => void;
 	export let isPending = false;
 	export let acceptFileType = false;
+
+	onMount(() => {
+		formData.appId = name || $i18n.t('kando');
+		if (document.activeElement) {
+			(document.activeElement as HTMLElement).blur();
+		}
+	});
 </script>
 
 {#if $modalStore[0]}
 	<div
-		class="card w-modal flex flex-col items-center justify-center !bg-transparent !ring-transparent"
+		class="card w-modal flex max-w-80 flex-col items-center justify-center !bg-transparent !ring-transparent"
 	>
 		<slot name="avatar" />
 		<header class="pt-4 text-2xl font-bold">
@@ -47,6 +55,7 @@
 			>
 				<div class="absolute right-11 top-3">
 					<button
+						type="button"
 						class="!outline-none [&>*]:pointer-events-none"
 						use:popup={{
 							event: 'hover',

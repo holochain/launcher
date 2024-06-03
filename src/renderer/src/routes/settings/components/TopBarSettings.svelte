@@ -7,7 +7,7 @@
 	import { DEV_PAGE, PUBLISHER_SCREEN, SELECTED_ICON_STYLE } from '$const';
 	import { Gear, Upload } from '$icons';
 	import { createAppQueries } from '$queries';
-	import { trpc } from '$services';
+	import { i18n, trpc } from '$services';
 	import { SETTINGS_SCREEN } from '$shared/const';
 
 	const client = trpc();
@@ -25,11 +25,14 @@
 		}}
 		buttonClass={clsx('p-2', isDevPage ? undefined : 'bg-black rounded-md')}
 	>
-		{#if isDevPage}
-			<Gear />
-		{:else}
-			<Gear fillColor={SELECTED_ICON_STYLE} />
-		{/if}
+		<div class="flex flex-row items-center gap-2">
+			{#if isDevPage}
+				<Gear />
+			{:else}
+				<Gear fillColor={SELECTED_ICON_STYLE} />
+			{/if}
+			<span>{$i18n.t('settings')}</span>
+		</div>
 	</IconButton>
 	{#if $isDevhubInstalled.data}
 		<IconButton
@@ -47,11 +50,14 @@
 				goto(targetScreen);
 			}}
 		>
-			{#if isDevPage}
-				<Upload fillColor={SELECTED_ICON_STYLE} />
-			{:else}
-				<Upload />
-			{/if}
+			<div class="flex flex-row items-center gap-2">
+				{#if isDevPage}
+					<Upload fillColor={SELECTED_ICON_STYLE} />
+				{:else}
+					<Upload />
+				{/if}
+				<span>{$i18n.t('publish')}</span>
+			</div>
 		</IconButton>
 	{/if}
 </div>
