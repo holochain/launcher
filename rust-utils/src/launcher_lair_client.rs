@@ -16,16 +16,16 @@ use napi::Result;
 
 use crate::types::*;
 
-// This is an incomplete type with only the fields that are actually necessary for the launcher case
-struct SeedConfig {
-    /// This is the Device Seed Bundle as a base64 string which is compatible with lair-keystore >=v0.0.8
-    /// And is encoded with a password that will be needed to be used to decrypt it
-    device_bundle: String,
-    /// Derivation path of the seed in this config that was generated for a Master Seed
-    device_derivation_path: String,
-    // /1 derivation path of the device bundle base36 encoded
-    holoport_id: String,
-}
+// // This is an incomplete type with only the fields that are actually necessary for the launcher case
+// struct SeedConfig {
+//     /// This is the Device Seed Bundle as a base64 string which is compatible with lair-keystore >=v0.0.8
+//     /// And is encoded with a password that will be needed to be used to decrypt it
+//     device_bundle: String,
+//     /// Derivation path of the seed in this config that was generated for a Master Seed
+//     device_derivation_path: String,
+//     // /1 derivation path of the device bundle base36 encoded
+//     holoport_id: String,
+// }
 
 struct LauncherLairClient {
     lair_client: LairClient,
@@ -82,6 +82,7 @@ impl LauncherLairClient {
     pub async fn import_seed_from_json_file(
         &self,
         path: String,
+        passphrase: String,
         tag_appendix: String,
     ) -> Result<()> {
         let json_string = std::fs::read_to_string(path)?;
@@ -113,7 +114,9 @@ impl LauncherLairClient {
 
         let derivation_path = vec![derivation_path_num];
 
-        let key_pair = unlock_device_bundle(&device_bundle, String::from("pass")).await?;
+        println!("Parsed derivation path: {:?}", derivation_path);
+
+        let key_pair = unlock_device_bundle(&device_bundle, passphrase).await?;
         // Get or generate key for encryption of the seed
         let encryption_key = match self
             .lair_client
@@ -182,7 +185,7 @@ impl LauncherLairClient {
         let src_tag = format!("imported#{tag_appendix}");
 
         // import the encrypted seed into lair
-        self.lair_client
+        let root_seed = self.lair_client
             .import_seed(
                 encryption_key.x25519_pub_key,
                 decryption_key.x25519_pub_key,
@@ -196,6 +199,30 @@ impl LauncherLairClient {
             .map_err(|e| {
                 napi::Error::from_reason(format!("Failed to import cipher into lair: {}", e))
             })?;
+
+        let base64_pubkey_x = base64::encode_config(
+            root_seed.x25519_pub_key.as_ref(),
+            base64::STANDARD_NO_PAD,
+        );
+
+        let base64_pubkey_ed = base64::encode_config(
+            root_seed.ed25519_pub_key.as_ref(),
+            base64::STANDARD_NO_PAD,
+        );
+
+        let base36_pubkey_x = base36::encode(
+            root_seed.x25519_pub_key.as_ref()
+        );
+
+        let base36_pubkey_ed = base36::encode(
+            root_seed.ed25519_pub_key.as_ref(),
+        );
+
+        println!("\n\ngot derived base64 x25519 pubkey: {base64_pubkey_x}");
+        println!("got derived base64 ed25519 pubkey: {base64_pubkey_ed}");
+
+        println!("got derived base36 x25519 pubkey: {base36_pubkey_x}");
+        println!("got derived base36 ed25519 pubkey: {base36_pubkey_ed}");
 
         let dst_tag = format!("imported#derived{device_derivation_path_str}#{tag_appendix}");
 
@@ -235,7 +262,7 @@ impl LauncherLairClient {
             seed_info_derived.ed25519_pub_key.as_ref(),
         );
 
-        println!("got derived base64 x25519 pubkey: {base64_pubkey_x}");
+        println!("\n\ngot derived base64 x25519 pubkey: {base64_pubkey_x}");
         println!("got derived base64 ed25519 pubkey: {base64_pubkey_ed}");
 
         println!("got derived base36 x25519 pubkey: {base36_pubkey_x}");
@@ -284,12 +311,13 @@ impl JsLauncherLairClient {
     pub async fn import_seed_from_json_file(
         &self,
         path: String,
+        passphrase: String,
         tag_appendix: String,
     ) -> Result<()> {
         self.launcher_lair_client
             .as_ref()
             .unwrap()
-            .import_seed_from_json_file(path, tag_appendix)
+            .import_seed_from_json_file(path, passphrase, tag_appendix)
             .await
     }
 }
