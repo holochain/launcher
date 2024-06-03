@@ -112,9 +112,9 @@ impl LauncherLairClient {
                 ))
             })?;
 
-        let derivation_path = vec![derivation_path_num];
+        let device_derivation_path = vec![derivation_path_num];
 
-        println!("Parsed derivation path: {:?}", derivation_path);
+        println!("Parsed derivation path: {:?}", device_derivation_path);
 
         let key_pair = unlock_device_bundle(&device_bundle, passphrase).await?;
         // Get or generate key for encryption of the seed
@@ -175,7 +175,7 @@ impl LauncherLairClient {
                 encryption_key.x25519_pub_key.clone(),
                 decryption_key.x25519_pub_key.clone(),
                 None,
-                key_pair.public.as_bytes().to_vec().into(),
+                key_pair.secret.as_bytes().to_vec().into(),
             )
             .await
             .map_err(|e| {
@@ -234,7 +234,7 @@ impl LauncherLairClient {
                 None,
                 dst_tag.into(),
                 None,
-                derivation_path.into(),
+                vec![1].into(),
             )
             .await
             .map_err(|e| {
@@ -327,7 +327,10 @@ pub async fn unlock_device_bundle(
     device_bundle: &String,
     passphrase: String,
 ) -> napi::Result<Keypair> {
-    let cipher = base64::decode_config(device_bundle, base64::URL_SAFE_NO_PAD).map_err(|e| {
+    // let cipher = base64::decode_config(device_bundle, base64::URL_SAFE_NO_PAD).map_err(|e| {
+    //     napi::Error::from_reason(format!("Failed to decode device bundle: {:?}", e))
+    // })?;
+    let cipher = base64::decode(device_bundle).map_err(|e| {
         napi::Error::from_reason(format!("Failed to decode device bundle: {:?}", e))
     })?;
     match UnlockedSeedBundle::from_locked(&cipher)
@@ -345,6 +348,11 @@ pub async fn unlock_device_bundle(
                     e
                 ))
             })?;
+            let immediately_derived_seed = seed.derive(1).await.unwrap();
+            let derived_pubkey = PublicKey::from_bytes(&*immediately_derived_seed.get_sign_pub_key().read_lock()).unwrap();
+            let base36_derived_pubkey = base36::encode(derived_pubkey.as_ref());
+            println!("Immediately derived pubkey: {base36_derived_pubkey}");
+
             Ok(Keypair {
                 public: PublicKey::from_bytes(&*seed.get_sign_pub_key().read_lock()).map_err(
                     |e| napi::Error::from_reason(format!("Failed to get public key: {:?}", e)),

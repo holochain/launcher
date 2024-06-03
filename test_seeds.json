@@ -1,16 +1,13 @@
 {
-  "device_bundle": "k6VoY3NiMJGWonB3xBCZ0R47aR6ctMScaYsrOLwRzSAAAcQY58NsOmNCDbniGsLgUhj5UoHjBrapiiDGxDGAa5Wqzm0pVuXGN106iyMHRk4dOf0iGWj65oCeB8-ZYXJdeflsVDY-DOuJaadfPZQExCyCrWRldmljZV9udW1iZXIAq2dlbmVyYXRlX2J5r3F1aWNrc3RhcnQtdjIuMA",
-  "revocation_pub_key": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  "holoport_id": "4099r424lmhpjhqsrf253fq8pkuladttqq0k1vkf96bsiy9lnf",
-  "device_derivation_path": "1",
+  "device_bundle": "k6VoY3NiMJGWonB3xBCG5YSrc5dvFcOxeoHVwyn2zhAAAAADxBjEEKoEzjJPA092vGHYZRr1logo4aqWH/rEMU5Y3KMMi9Qr6XljCR2z2rmLMrAGgWnwsHbLceNAIbucO1f5gmRBP4QRqe4Uhv0h0BjEAA==",
+  "device_derivation_path": "2",
+  "revocation_pub_key": "N+ZFTpNh/AHsVplSMM9vXUwyBSORQk3mWttRKntX1kk",
+  "holoport_id": "43wshe97frq850fow8diy6qzsz4dl6lmsm28wiv15jg8ttun1l",
   "registration_code": "registration-code",
   "settings": {
     "admin": {
-      "email": "jack@holo.host",
-      "public_key": [
-        215, 40, 133, 123, 179, 96, 208, 91, 185, 17, 99, 109, 188, 70, 164, 254, 138, 105, 60, 69,
-        42, 100, 13, 34, 166, 178, 194, 10, 192, 50, 23, 208
-      ]
+      "email": "joel@holo.host",
+      "public_key": "aYeY80D7bJ9vPdUxqz1q08YZO7wcUSqpDHlFktPF9lU"
     }
   }
 }
