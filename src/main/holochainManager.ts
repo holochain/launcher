@@ -584,7 +584,6 @@ export class HolochainManager {
    * @returns The sha256 hash of the UI zip bytes.
    */
   storeUiIfNecessary(uiBytes: Array<number>, icon?: Uint8Array): string {
-    console.log('storeUiIfNecessary', uiBytes, icon);
     if (icon && !(icon instanceof Uint8Array)) throw new Error('Icon must be of type Uint8Array.');
 
     const uiZipSha256 = crypto.createHash('sha256').update(Buffer.from(uiBytes)).digest('hex');

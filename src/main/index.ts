@@ -658,8 +658,6 @@ const router = t.router({
   getInstalledApps: t.procedure.query(() => {
     const installedApps = getInstalledAppsInfo(HOLOCHAIN_MANAGERS);
 
-    console.log('installedApps: ', installedApps);
-
     return validateWithZod({
       schema: z.array(ExtendedAppInfoSchema),
       data: installedApps,
