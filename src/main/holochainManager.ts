@@ -586,10 +586,14 @@ export class HolochainManager {
   storeUiIfNecessary(uiBytes: Array<number>, icon?: Uint8Array): string {
     if (icon && !(icon instanceof Uint8Array)) throw new Error('Icon must be of type Uint8Array.');
 
-    const uiZipSha256 = crypto.createHash('sha256').update(Buffer.from(uiBytes)).digest('hex');
+    // compute UI hash
+    const uiZipHasher = crypto.createHash('sha256');
+    const uiZipSha256 = uiZipHasher.update(Buffer.from(uiBytes)).digest('hex');
+
     const uiDir = path.join(this.fs.uisDir(this.holochainDataRoot), uiZipSha256);
     const assetsPath = path.join(uiDir, 'assets');
 
+    // here we assume that if the uiDir exists, the hashes.json exists as well.
     if (!fs.existsSync(assetsPath)) {
       this.createUiDirectory(uiDir, uiBytes);
     }
