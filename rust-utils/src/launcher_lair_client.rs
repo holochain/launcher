@@ -8,6 +8,7 @@ use holochain_zome_types::prelude::{Signature, ZomeCallUnsigned};
 use lair_keystore_api::{
     dependencies::{sodoken::BufRead, url::Url},
     ipc_keystore::ipc_keystore_connect,
+    lair_store::LairEntryInfo,
     LairClient,
 };
 
@@ -78,10 +79,168 @@ impl LauncherLairClient {
         Ok(signed_zome_call)
     }
 
-    pub async fn import_seed_from_json_file(&self, path: String) -> Result<()> {
+    pub async fn import_seed_from_json_file(
+        &self,
+        path: String,
+        tag_appendix: String,
+    ) -> Result<()> {
         let json_string = std::fs::read_to_string(path)?;
         let parsed_string: serde_json::Value = serde_json::from_str(&json_string)?;
         println!("Parsed json string: {}", parsed_string);
+        let device_bundle = parsed_string["device_bundle"]
+            .as_str()
+            .ok_or(napi::Error::from_reason(
+                "device_bundle value does not seem to be a string",
+            ))?
+            .to_string();
+        println!("Got device_bundle: {device_bundle}");
+
+        let device_derivation_path_str =
+            parsed_string["device_derivation_path"]
+                .as_str()
+                .ok_or(napi::Error::from_reason(
+                    "device_derivation_path value does not seem to be a string",
+                ))?;
+
+        // ATTN this will only work for single digit derivation paths
+        let derivation_path_num =
+            u32::from_str_radix(device_derivation_path_str, 10).map_err(|e| {
+                napi::Error::from_reason(format!(
+                    "Failed to parse device_derivation_path to u8: {}",
+                    e
+                ))
+            })?;
+
+        let derivation_path = vec![derivation_path_num];
+
+        let key_pair = unlock_device_bundle(&device_bundle, String::from("pass")).await?;
+        // Get or generate key for encryption of the seed
+        let encryption_key = match self
+            .lair_client
+            .get_entry("import-encryption-key".into())
+            .await
+        {
+            Ok(key) => match key {
+                LairEntryInfo::Seed { tag: _, seed_info } => seed_info,
+                _ => {
+                    return Err(napi::Error::from_reason(
+                        "The import encryption key in lair is of the wrong format.",
+                    ))
+                }
+            },
+            Err(_) => self
+                .lair_client
+                .new_seed("import-encryption-key".into(), None, false)
+                .await
+                .map_err(|e| {
+                    napi::Error::from_reason(format!(
+                        "Failed to create new import encryption key in lair: {}",
+                        e
+                    ))
+                })?,
+        };
+        // Get or generate key for decryption of the seed
+        let decryption_key = match self
+            .lair_client
+            .get_entry("import-decryption-key".into())
+            .await
+        {
+            Ok(key) => match key {
+                LairEntryInfo::Seed { tag: _, seed_info } => seed_info,
+                _ => {
+                    return Err(napi::Error::from_reason(
+                        "The import decryption key in lair is of the wrong format.",
+                    ))
+                }
+            },
+            Err(_) => self
+                .lair_client
+                .new_seed("import-decryption-key".into(), None, false)
+                .await
+                .map_err(|e| {
+                    napi::Error::from_reason(format!(
+                        "Failed to create new import decryption key in lair: {}",
+                        e
+                    ))
+                })?,
+        };
+
+        // encrypt device_bundle seed
+        let (nonce, cipher) = self
+            .lair_client
+            .crypto_box_xsalsa_by_pub_key(
+                encryption_key.x25519_pub_key.clone(),
+                decryption_key.x25519_pub_key.clone(),
+                None,
+                key_pair.public.as_bytes().to_vec().into(),
+            )
+            .await
+            .map_err(|e| {
+                napi::Error::from_reason(format!("Failed to encrypt the device_bundle_seed: {}", e))
+            })?;
+
+        let src_tag = format!("imported#{tag_appendix}");
+
+        // import the encrypted seed into lair
+        self.lair_client
+            .import_seed(
+                encryption_key.x25519_pub_key,
+                decryption_key.x25519_pub_key,
+                None,
+                nonce,
+                cipher,
+                src_tag.clone().into(),
+                true,
+            )
+            .await
+            .map_err(|e| {
+                napi::Error::from_reason(format!("Failed to import cipher into lair: {}", e))
+            })?;
+
+        let dst_tag = format!("imported#derived{device_derivation_path_str}#{tag_appendix}");
+
+        // Derive the seed for the given derivation path
+        let seed_info_derived = self
+            .lair_client
+            .derive_seed(
+                src_tag.into(),
+                None,
+                dst_tag.into(),
+                None,
+                derivation_path.into(),
+            )
+            .await
+            .map_err(|e| {
+                napi::Error::from_reason(format!(
+                    "Failed to derive seed from derivation path: {}",
+                    e
+                ))
+            })?;
+
+        let base64_pubkey_x = base64::encode_config(
+            seed_info_derived.x25519_pub_key.as_ref(),
+            base64::STANDARD_NO_PAD,
+        );
+
+        let base64_pubkey_ed = base64::encode_config(
+            seed_info_derived.ed25519_pub_key.as_ref(),
+            base64::STANDARD_NO_PAD,
+        );
+
+        let base36_pubkey_x = base64::encode(
+            seed_info_derived.x25519_pub_key.as_ref()
+        );
+
+        let base36_pubkey_ed = base64::encode(
+            seed_info_derived.ed25519_pub_key.as_ref(),
+        );
+
+        println!("got derived base64 x25519 pubkey: {base64_pubkey_x}");
+        println!("got derived base64 ed25519 pubkey: {base64_pubkey_ed}");
+
+        println!("got derived base36 x25519 pubkey: {base36_pubkey_x}");
+        println!("got derived base36 ed25519 pubkey: {base36_pubkey_ed}");
+
         Ok(())
     }
 }
@@ -122,11 +281,15 @@ impl JsLauncherLairClient {
     }
 
     #[napi]
-    pub async fn import_seed_from_json_file(&self, path: String) -> Result<()> {
+    pub async fn import_seed_from_json_file(
+        &self,
+        path: String,
+        tag_appendix: String,
+    ) -> Result<()> {
         self.launcher_lair_client
             .as_ref()
             .unwrap()
-            .import_seed_from_json_file(path)
+            .import_seed_from_json_file(path, tag_appendix)
             .await
     }
 }
@@ -156,18 +319,10 @@ pub async fn unlock_device_bundle(
             })?;
             Ok(Keypair {
                 public: PublicKey::from_bytes(&*seed.get_sign_pub_key().read_lock()).map_err(
-                    |e| {
-                        napi::Error::from_reason(format!(
-                            "Failed to get public key: {:?}",
-                            e
-                        ))
-                    },
+                    |e| napi::Error::from_reason(format!("Failed to get public key: {:?}", e)),
                 )?,
                 secret: SecretKey::from_bytes(&*seed.get_seed().read_lock()).map_err(|e| {
-                    napi::Error::from_reason(format!(
-                        "Failed to get seed: {:?}",
-                        e
-                    ))
+                    napi::Error::from_reason(format!("Failed to get seed: {:?}", e))
                 })?,
             })
         }

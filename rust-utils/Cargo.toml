@@ -19,6 +19,7 @@ lair_keystore_api = "0.4.4"
 
 
 base64 = "0.13.0"
+base36 = "=0.0.1"
 ed25519-dalek = { version = "1.0.1" }
 nanoid = "0.4.0"
 # Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix

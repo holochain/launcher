@@ -38,5 +38,5 @@ export class LauncherLairClient {
   constructor()
   static connect(connectionUrl: string, passphrase: string): Promise<LauncherLairClient>
   signZomeCall(zomeCallUnsignedJs: ZomeCallUnsignedNapi): Promise<ZomeCallNapi>
-  importSeedFromJsonFile(path: string): Promise<void>
+  importSeedFromJsonFile(path: string, tagAppendix: string): Promise<void>
 }
