@@ -578,7 +578,6 @@ export class HolochainManager {
     }
 
     const maybeIconPngPath = path.join(uiDir, 'assets', 'icon.png');
-    console.log('maybeIconPngPath', fs.existsSync(maybeIconPngPath));
     if (!fs.existsSync(maybeIconPngPath)) return;
 
     const iconBytes = fs.readFileSync(maybeIconPngPath);
