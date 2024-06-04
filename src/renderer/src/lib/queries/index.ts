@@ -10,7 +10,8 @@ import {
 	createPublisherMutation,
 	createPublishersQuery,
 	createPublishHappMutation,
-	createPublishNewVersionMutation
+	createPublishNewVersionMutation,
+	createUpdateAppDetailsMutation
 } from './happs';
 
 export function createAppQueries() {
@@ -22,6 +23,7 @@ export function createAppQueries() {
 	const fetchWebappBytesMutation = createFetchWebappBytesMutation();
 	const publisherMutation = createPublisherMutation(queryClient);
 	const publishHappMutation = createPublishHappMutation(queryClient);
+	const updateAppDetailsMutation = createUpdateAppDetailsMutation(queryClient);
 	const publishNewVersionMutation = createPublishNewVersionMutation(queryClient);
 	const checkForAppUiUpdatesQuery = createCheckForAppUiUpdatesQuery();
 	const fetchUiBytesMutation = createFetchUiBytesMutation();
@@ -31,6 +33,7 @@ export function createAppQueries() {
 		publisherMutation,
 		publishHappMutation,
 		appStoreMyHappsQuery,
+		updateAppDetailsMutation,
 		appVersionsAppstoreQueryFunction,
 		publishNewVersionMutation,
 		fetchWebappBytesMutation,

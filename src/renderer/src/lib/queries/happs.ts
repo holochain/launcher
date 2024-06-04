@@ -29,7 +29,7 @@ import {
 	DEV_HUB_CLIENT_NOT_INITIALIZED_ERROR,
 	NO_PUBLISHERS_AVAILABLE_ERROR
 } from '$shared/types';
-import { type AppData, type PublishNewVersionData } from '$types';
+import { type AppData, type AppWithIcon, type PublishNewVersionData } from '$types';
 
 type ClientType = DevhubAppClient | AppstoreAppClient;
 
@@ -96,8 +96,10 @@ export const createAppStoreMyHappsQuery = () => {
 						id: app.id,
 						title: app.content.title,
 						subtitle: app.content.subtitle,
+						description: app.content.description,
 						icon,
-						apphubHrlTarget: app.content.apphub_hrl.target
+						apphubHrlTarget: app.content.apphub_hrl.target,
+						apphubHrlHash: app.content.apphub_hrl.dna
 					};
 				})
 			);
@@ -227,6 +229,50 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 			});
 
 			return uint8ArrayToURIComponent(appEntryEntity.id);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: [APP_STORE_MY_HAPPS_QUERY_KEY]
+			});
+			queryClient.invalidateQueries({
+				queryKey: [APP_STORE_HAPPS_QUERY_KEY]
+			});
+		}
+	});
+};
+
+export const createUpdateAppDetailsMutation = (queryClient: QueryClient) => {
+	return createMutation({
+		mutationFn: async ({
+			title,
+			subtitle,
+			description,
+			icon,
+			apphubHrlTarget,
+			apphubHrlHash,
+			id
+		}: AppWithIcon) => {
+			const appStoreClient = getAppStoreClientOrThrow();
+			const devHubClient = getDevHubClientOrThrow();
+
+			const apphubDnaHash = await devHubClient.apphubDnaHash();
+
+			await appStoreClient.updateApp({
+				base: id,
+				properties: {
+					title,
+					subtitle,
+					description,
+					icon,
+					apphub_hrl: {
+						dna: apphubDnaHash,
+						target: apphubHrlTarget
+					},
+					apphub_hrl_hash: apphubHrlHash
+				}
+			});
+
+			return uint8ArrayToURIComponent(id);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({

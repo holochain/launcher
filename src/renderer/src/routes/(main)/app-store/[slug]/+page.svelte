@@ -14,6 +14,8 @@
 	import { APPS_VIEW, DISTRIBUTION_TYPE_APPSTORE } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
 
+	import VersionEntry from './components/VersionEntry.svelte';
+
 	const client = trpc();
 
 	const { appStoreHappsQuery, appVersionsAppstoreQueryFunction } = createAppQueries();
@@ -126,18 +128,11 @@
 		</div>
 	{:else if selectedIndex === 1}
 		{#each $appVersionsDetailsQuery.data as versionEntry}
-			<div class="flex w-full items-center justify-between px-8 pt-2">
-				<h4 class="font-semibold">{versionEntry.content.version}</h4>
-				<Button
-					props={{
-						class: 'btn-app-store variant-filled',
-						isLoading,
-						onClick: () => installLogic(versionEntry)
-					}}
-				>
-					{$i18n.t('install')}
-				</Button>
-			</div>
+			<VersionEntry
+				version={versionEntry.content.version}
+				installLogic={() => installLogic(versionEntry)}
+				{isLoading}
+			/>
 		{/each}
 	{/if}
 {/if}

@@ -51,6 +51,7 @@
 			app.distributionInfo.type == DISTRIBUTION_TYPE_APPSTORE &&
 			!!$uiUpdates.data?.[app.distributionInfo.appVersionActionHash]}
 		<MenuEntry
+			icon={app.icon}
 			{isUpdateAvailable}
 			name={app.appInfo.installed_app_id}
 			onClick={() => selectView(app.appInfo.installed_app_id)}
