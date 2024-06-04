@@ -3,7 +3,7 @@ import type { AppClient, CallZomeRequest, InstalledAppId } from '@holochain/clie
 import { AppWebsocket } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
-import { AppstoreAppClient, type AppVersionEntry, webhappToHappAndUi } from 'appstore-tools';
+import { AppstoreAppClient, webhappToHappAndUi } from 'appstore-tools';
 import * as childProcess from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
@@ -36,6 +36,7 @@ import type {
   WindowInfoRecord,
 } from '$shared/types';
 import {
+  AppVersionEntrySchemaWithIcon,
   BytesSchema,
   CHECK_INITIALIZED_KEYSTORE_ERROR,
   ExtendedAppInfoSchema,
@@ -519,8 +520,12 @@ const router = t.router({
     const holochainManager = getHolochainManager(holochainDataRoot.name);
     await holochainManager.uninstallApp(appInfo.installed_app_id);
   }),
-  fetchWebhapp: t.procedure.input(z.any()).mutation(async (opts) => {
-    const appVersionEntry = opts.input as AppVersionEntry;
+  fetchWebhapp: t.procedure.input(AppVersionEntrySchemaWithIcon).mutation(async (opts) => {
+    const { app_version, icon } = opts.input;
+    const appVersionEntry = {
+      ...app_version,
+      metadata: app_version.metadata || {}, // Ensure metadata is defined if it's optional
+    };
     const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
     const appstoreAppClient = await getAppstoreAppClient();
 
@@ -534,13 +539,13 @@ const router = t.router({
 
     if (isHappAvailable && !isUiAvailable) {
       const uiBytes = await appstoreAppClient.fetchUiBytes(appVersionEntry);
-      holochainManager.storeUiIfNecessary(Array.from(uiBytes));
+      holochainManager.storeUiIfNecessary(Array.from(uiBytes), icon);
       return;
     }
 
     const webhappBytes = await appstoreAppClient.fetchWebappBytes(appVersionEntry);
     const { ui, happ } = webhappToHappAndUi(webhappBytes);
-    holochainManager.storeUiIfNecessary(Array.from(ui));
+    holochainManager.storeUiIfNecessary(Array.from(ui), icon);
     holochainManager.storeHapp(Array.from(happ));
   }),
   isHappAvailableAndValid: t.procedure.input(z.string()).query(async (opts) => {

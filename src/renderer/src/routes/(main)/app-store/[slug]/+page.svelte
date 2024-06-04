@@ -82,10 +82,13 @@
 	};
 
 	const installLogic = async (versionEntity: Entity<AppVersionEntry>) => {
-		$fetchWebapp.mutate(versionEntity.content, {
-			onSuccess: () => createModalInstallAppFromHashes(versionEntity),
-			onError: handleError
-		});
+		$fetchWebapp.mutate(
+			{ app_version: versionEntity.content, icon: app?.icon },
+			{
+				onSuccess: () => createModalInstallAppFromHashes(versionEntity),
+				onError: handleError
+			}
+		);
 	};
 
 	$: isLoading = $fetchWebapp.isPending || $installWebhappFromHashes.isPending;

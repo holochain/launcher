@@ -23,7 +23,7 @@
 		onClick={() => {
 			goto(`/${SETTINGS_SCREEN}`);
 		}}
-		buttonClass={clsx('p-2', isDevPage ? undefined : 'bg-black rounded-md')}
+		buttonClass={clsx('p-2 mr-2', isDevPage ? undefined : 'bg-black rounded-md')}
 	>
 		<div class="flex flex-row items-center gap-2">
 			{#if isDevPage}

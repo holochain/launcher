@@ -1,22 +1,27 @@
 <script lang="ts">
 	import { Avatar } from '@skeletonlabs/skeleton';
 
-	import { createImageUrl } from '$helpers';
+	import { createImageUrl, resizeImage } from '$helpers';
 	import { UploadImage } from '$icons';
 	import { i18n } from '$services';
 	export let icon: Uint8Array | undefined = undefined;
 
-	export let handleFileUpload: (file: File) => void;
+	export let handleFileUpload: (icon: Uint8Array) => void;
 	$: imageUrl = createImageUrl(icon);
 
 	const createInputAndTriggerClick = () => {
 		const input = document.createElement('input');
 		input.type = 'file';
 		input.accept = 'image/png';
-		input.onchange = (event: Event) => {
+		input.onchange = async (event: Event) => {
 			const input = event.target as HTMLInputElement;
 			const file = input.files?.[0];
-			if (file) handleFileUpload(file);
+			if (file) {
+				const resizedFile = await resizeImage(file);
+				if (resizedFile) {
+					handleFileUpload(resizedFile);
+				}
+			}
 		};
 		input.click();
 	};

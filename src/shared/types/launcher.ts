@@ -37,7 +37,7 @@ export const HolochainLairVersionSchema = z.object({
 export const CommonAppSchema = z.object({
   appId: z.string().min(1),
   networkSeed: z.string(),
-  icon: z.string().optional(),
+  icon: z.instanceof(Uint8Array).optional(),
   // TODO add membrane proofs here
 });
 

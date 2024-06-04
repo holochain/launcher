@@ -315,7 +315,7 @@ export class HolochainManager {
     distributionInfo: DistributionInfoV1;
     networkSeed?: string;
     membrane_proofs?: { [key: string]: MembraneProof };
-    icon?: string;
+    icon?: Uint8Array;
   }) {
     if (!happAndUiBytes.uiBytes) throw new Error('UI bytes undefined.');
 
@@ -553,60 +553,74 @@ export class HolochainManager {
     return happSha256;
   }
 
+  private createUiDirectory(uiDir: string, uiBytes: Array<number>): void {
+    fs.mkdirSync(uiDir, { recursive: true });
+
+    const hashes: Record<string, string> = {};
+    const zip = new AdmZip(Buffer.from(uiBytes));
+    zip.getEntries().forEach((entry) => {
+      const hash = crypto.createHash('sha256').update(entry.getData()).digest('hex');
+      hashes[entry.entryName] = hash;
+    });
+
+    this.integrityChecker.storeToSignedJSON(path.join(uiDir, 'hashes.json'), hashes);
+    zip.extractAllTo(path.join(uiDir, 'assets'));
+  }
+  private handleIconStorage(uiDir: string, icon?: Uint8Array): void {
+    const storeIcon = (iconBytes: Uint8Array) => {
+      const iconPath = path.join(uiDir, 'icon.png');
+      fs.writeFileSync(iconPath, iconBytes);
+    };
+
+    if (icon) {
+      storeIcon(icon);
+      return;
+    }
+
+    const maybeIconPngPath = path.join(uiDir, 'assets', 'icon.png');
+    if (!fs.existsSync(maybeIconPngPath)) return;
+
+    const iconBytes = fs.readFileSync(maybeIconPngPath);
+    if (iconBytes.byteLength > 1100000) {
+      this.launcherEmitter.emit(
+        'launcher-error',
+        `icon.png of the passed UI is too big and won't be stored. Icons need to be 1024x1024 pixel.`,
+      );
+      console.warn("Icon is too large and won't be stored.");
+      return;
+    }
+
+    storeIcon(iconBytes);
+  }
+
   /**
-   * Extracts and stores ui.zip bytes to a directory named after the sha256 of the bytes
-   * if that directory does not exist yet.
-   * If an icon is passed, the icon gets stored alongside the UI assets.
-   * If no icon is passed but an icon.png file is present in the UI assets,
-   * this icon gets stored instead.
+   * Extracts and stores ui.zip bytes to a directory named after the sha256 hash of the bytes
+   * if that directory does not already exist.
+   * If an icon is provided, it is stored alongside the UI assets.
+   * If no icon is provided but an icon.png file is present in the UI assets,
+   * that icon is stored instead.
    *
-   * @param uiBytes
-   * @returns
+   * @param uiBytes - The bytes of the UI zip file.
+   * @param icon - Optional icon to be stored with the UI assets.
+   * @returns The sha256 hash of the UI zip bytes.
    */
-  storeUiIfNecessary(uiBytes: Array<number>, icon?: string): string {
-    if (icon && typeof icon !== 'string') throw new Error('Icon must of type string.');
+  storeUiIfNecessary(uiBytes: Array<number>, icon?: Uint8Array): string {
+    if (icon && !(icon instanceof Uint8Array)) throw new Error('Icon must be of type Uint8Array.');
 
     // compute UI hash
     const uiZipHasher = crypto.createHash('sha256');
     const uiZipSha256 = uiZipHasher.update(Buffer.from(uiBytes)).digest('hex');
 
     const uiDir = path.join(this.fs.uisDir(this.holochainDataRoot), uiZipSha256);
+    const assetsPath = path.join(uiDir, 'assets');
+
     // here we assume that if the uiDir exists, the hashes.json exists as well.
-    if (!fs.existsSync(path.join(uiDir, 'assets'))) {
-      fs.mkdirSync(uiDir, { recursive: true });
-
-      const hashes: Record<string, string> = {};
-      const zip = new AdmZip(Buffer.from(uiBytes));
-      zip.getEntries().forEach((entry) => {
-        // console.log(entry.entryName);
-        const hasher = crypto.createHash('sha256');
-        const data = entry.getData();
-        hasher.update(data);
-        const hash = hasher.digest('hex');
-        hashes[entry.entryName] = hash;
-      });
-
-      this.integrityChecker.storeToSignedJSON(path.join(uiDir, 'hashes.json'), hashes);
-      zip.extractAllTo(path.join(uiDir, 'assets'));
+    if (!fs.existsSync(assetsPath)) {
+      this.createUiDirectory(uiDir, uiBytes);
     }
-    if (icon) {
-      fs.writeFileSync(path.join(uiDir, 'icon'), icon);
-    } else {
-      const maybeIconPngPath = path.join(uiDir, 'assets', 'icon.png');
-      if (fs.existsSync(maybeIconPngPath)) {
-        const iconBytes = fs.readFileSync(maybeIconPngPath);
-        if (iconBytes.byteLength > 1100000) {
-          this.launcherEmitter.emit(
-            'launcher-error',
-            `icon.png of the passed UI is too big and won't be stored. Icons need to be 1024x1024 pixel.`,
-          );
-          console.warn("Icon is too large and won't be stored.");
-        } else {
-          const iconString = iconBytes.toString('base64');
-          fs.writeFileSync(path.join(uiDir, 'icon'), `data:image/png;base64,${iconString}`);
-        }
-      }
-    }
+
+    this.handleIconStorage(uiDir, icon);
+
     return uiZipSha256;
   }
 
@@ -667,7 +681,7 @@ export class HolochainManager {
     return true;
   }
 
-  appIcon(appId: string): string | undefined {
+  appIcon(appId: string): Uint8Array | undefined {
     const metadata: AppMetadata<AppMetadataV1> = this.integrityChecker.readSignedJSON(
       path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json'),
     );
@@ -676,20 +690,17 @@ export class HolochainManager {
       metadata.data.type !== 'webhapp' ||
       !metadata.data.ui ||
       metadata.data.ui.location.type !== 'filesystem'
-    )
+    ) {
       return undefined;
+    }
 
     const iconPath = path.join(
       this.fs.uisDir(this.holochainDataRoot),
       metadata.data.ui.location.sha256,
-      'icon',
+      'icon.png',
     );
 
-    if (fs.existsSync(iconPath)) {
-      return fs.readFileSync(iconPath, 'utf-8');
-    }
-
-    return undefined;
+    return fs.existsSync(iconPath) ? fs.readFileSync(iconPath) : undefined;
   }
 
   appDistributionInfo(appId: string): DistributionInfoV1 {
