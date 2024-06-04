@@ -566,10 +566,32 @@ export class HolochainManager {
     this.integrityChecker.storeToSignedJSON(path.join(uiDir, 'hashes.json'), hashes);
     zip.extractAllTo(path.join(uiDir, 'assets'));
   }
+  private handleIconStorage(uiDir: string, icon?: Uint8Array): void {
+    const storeIcon = (iconBytes: Uint8Array) => {
+      const iconPath = path.join(uiDir, 'icon');
+      fs.writeFileSync(iconPath, iconBytes);
+    };
 
-  private storeIcon(uiDir: string, icon: Uint8Array): void {
-    const iconPath = path.join(uiDir, 'icon');
-    fs.writeFileSync(iconPath, icon);
+    if (icon) {
+      storeIcon(icon);
+      return;
+    }
+
+    const maybeIconPngPath = path.join(uiDir, 'assets', 'icon.png');
+    console.log('maybeIconPngPath', fs.existsSync(maybeIconPngPath));
+    if (!fs.existsSync(maybeIconPngPath)) return;
+
+    const iconBytes = fs.readFileSync(maybeIconPngPath);
+    if (iconBytes.byteLength > 1100000) {
+      this.launcherEmitter.emit(
+        'launcher-error',
+        `icon.png of the passed UI is too big and won't be stored. Icons need to be 1024x1024 pixel.`,
+      );
+      console.warn("Icon is too large and won't be stored.");
+      return;
+    }
+
+    storeIcon(iconBytes);
   }
 
   /**
@@ -598,9 +620,7 @@ export class HolochainManager {
       this.createUiDirectory(uiDir, uiBytes);
     }
 
-    if (icon) {
-      this.storeIcon(uiDir, icon);
-    }
+    this.handleIconStorage(uiDir, icon);
 
     return uiZipSha256;
   }
