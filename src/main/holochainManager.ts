@@ -568,7 +568,7 @@ export class HolochainManager {
   }
   private handleIconStorage(uiDir: string, icon?: Uint8Array): void {
     const storeIcon = (iconBytes: Uint8Array) => {
-      const iconPath = path.join(uiDir, 'icon');
+      const iconPath = path.join(uiDir, 'icon.png');
       fs.writeFileSync(iconPath, iconBytes);
     };
 
@@ -697,7 +697,7 @@ export class HolochainManager {
     const iconPath = path.join(
       this.fs.uisDir(this.holochainDataRoot),
       metadata.data.ui.location.sha256,
-      'icon',
+      'icon.png',
     );
 
     return fs.existsSync(iconPath) ? fs.readFileSync(iconPath) : undefined;
