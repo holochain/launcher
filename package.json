@@ -48,7 +48,7 @@
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
     "@electron/notarize": "2.3.2",
-    "@holochain/client": "0.17.0-rc.0",
+    "@holochain/client": "0.18.0-dev.1",
     "@msgpack/msgpack": "^2.8.0",
     "@spartan-hc/bundles": "0.2.5",
     "@trpc/client": "^10.44.1",
