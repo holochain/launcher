@@ -29,7 +29,7 @@ import {
 	DEV_HUB_CLIENT_NOT_INITIALIZED_ERROR,
 	NO_PUBLISHERS_AVAILABLE_ERROR
 } from '$shared/types';
-import { type AppData, type AppWithIcon, type PublishNewVersionData } from '$types';
+import { type AppData, type AppWithAction, type PublishNewVersionData } from '$types';
 
 type ClientType = DevhubAppClient | AppstoreAppClient;
 
@@ -99,7 +99,7 @@ export const createAppStoreMyHappsQuery = () => {
 						subtitle: app.content.subtitle,
 						description: app.content.description,
 						icon,
-						apphubHrlTarget: app.content.apphub_hrl.target,
+						apphubHrlTarget: app.content.apphub_hrl.target
 					};
 				})
 			);
@@ -243,18 +243,8 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 
 export const createUpdateAppDetailsMutation = (queryClient: QueryClient) => {
 	return createMutation({
-		mutationFn: async ({
-			title,
-			subtitle,
-			description,
-			icon,
-			action,
-			id
-		}: AppWithIcon) => {
+		mutationFn: async ({ title, subtitle, description, icon, action }: AppWithAction) => {
 			const appStoreClient = getAppStoreClientOrThrow();
-			const devHubClient = getDevHubClientOrThrow();
-
-			const apphubDnaHash = await devHubClient.apphubDnaHash();
 
 			await appStoreClient.updateApp({
 				base: action,
@@ -262,11 +252,9 @@ export const createUpdateAppDetailsMutation = (queryClient: QueryClient) => {
 					title,
 					subtitle,
 					description,
-					icon,
+					icon
 				}
 			});
-
-			return uint8ArrayToURIComponent(id);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({

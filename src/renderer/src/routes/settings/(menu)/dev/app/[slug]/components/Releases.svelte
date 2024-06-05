@@ -6,12 +6,12 @@
 	import { Check } from '$icons';
 	import { AddNewHappVersion } from '$modal';
 	import { i18n } from '$services';
-	import type { AppWithIcon } from '$types';
+	import type { AppWithHrlTarget } from '$types';
 
 	const modalStore = getModalStore();
 
 	export let appVersions: Entity<AppVersionEntry>[];
-	export let app: AppWithIcon;
+	export let app: AppWithHrlTarget;
 </script>
 
 <div class="flex flex-col">

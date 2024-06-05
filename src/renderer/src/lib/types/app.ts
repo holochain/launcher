@@ -1,5 +1,6 @@
+import type { ActionHash, AnyDhtHash } from '@holochain/client';
+
 import { isNonEmptyString, isUint8Array } from '$helpers';
-import type { ActionHash, AnyDhtHash, EntryHash } from '@holochain/client';
 
 type BaseAppData = {
 	title: string;
@@ -8,10 +9,13 @@ type BaseAppData = {
 	icon: Uint8Array;
 };
 
-export type AppWithIcon = BaseAppData & {
+export type AppWithHrlTarget = BaseAppData & {
 	id: ActionHash;
-	action: ActionHash;
 	apphubHrlTarget: AnyDhtHash;
+};
+
+export type AppWithAction = BaseAppData & {
+	action: ActionHash;
 };
 
 export type AppData = BaseAppData & {
@@ -55,11 +59,9 @@ const isAppDataProperties = {
 	version: isNonEmptyString
 };
 
-const isAppWithIconProperties = {
+const isAppWithActionProperties = {
 	...baseAppDataProperties,
-	id: isUint8Array,
-	action: isUint8Array,
-	apphubHrlTarget: isUint8Array,
+	action: isUint8Array
 };
 
 const isPublishNewVersionDataProperties = {
@@ -73,7 +75,8 @@ const isPublishNewVersionDataProperties = {
 export const isAppDataValid = (data: unknown): data is AppData =>
 	isObjectWithProperties(data, isAppDataProperties);
 
-export const isUpdateAppDataValid = (data: unknown): data is AppWithIcon =>
-	isObjectWithProperties(data, isAppWithIconProperties);
+export const isAppWithActionValid = (data: unknown): data is AppWithAction =>
+	isObjectWithProperties(data, isAppWithActionProperties);
+
 export const isPublishNewVersionDataValid = (data: unknown): data is PublishNewVersionData =>
 	isObjectWithProperties(data, isPublishNewVersionDataProperties);
