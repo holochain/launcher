@@ -365,20 +365,3 @@ pub async fn unlock_device_bundle(
         _ => Err(napi::Error::from_reason("Unsupported Cipher".to_string())),
     }
 }
-
-// fn public_key_from_base64<'de, D>(deserializer: D) -> napi::Result<PublicKey>
-// where
-//     D: Deserializer<'de>,
-// {
-//     String::deserialize(deserializer)
-//         .map_err(|err| {
-//             napi::Error::from_reason(format!("Failed to deserialize public key: {:?}", err))
-//         })
-//         .and_then(|s| {
-//             base64::decode_config(&s, base64::STANDARD_NO_PAD).map_err(|err| {
-//                 napi::Error::from_reason(format!("Failed to decode public key: {:?}", err))
-//             })
-//         })
-//         .map(|bytes| PublicKey::from_bytes(&bytes))
-//         .and_then(|maybe_key| maybe_key.map_err(|err| napi::Error::from_reason(err.to_string())))
-// }
