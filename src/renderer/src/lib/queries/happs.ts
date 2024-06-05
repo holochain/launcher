@@ -94,12 +94,12 @@ export const createAppStoreMyHappsQuery = () => {
 
 					return {
 						id: app.id,
+						action: app.action,
 						title: app.content.title,
 						subtitle: app.content.subtitle,
 						description: app.content.description,
 						icon,
 						apphubHrlTarget: app.content.apphub_hrl.target,
-						apphubHrlHash: app.content.apphub_hrl.dna
 					};
 				})
 			);
@@ -248,8 +248,7 @@ export const createUpdateAppDetailsMutation = (queryClient: QueryClient) => {
 			subtitle,
 			description,
 			icon,
-			apphubHrlTarget,
-			apphubHrlHash,
+			action,
 			id
 		}: AppWithIcon) => {
 			const appStoreClient = getAppStoreClientOrThrow();
@@ -258,17 +257,12 @@ export const createUpdateAppDetailsMutation = (queryClient: QueryClient) => {
 			const apphubDnaHash = await devHubClient.apphubDnaHash();
 
 			await appStoreClient.updateApp({
-				base: id,
+				base: action,
 				properties: {
 					title,
 					subtitle,
 					description,
 					icon,
-					apphub_hrl: {
-						dna: apphubDnaHash,
-						target: apphubHrlTarget
-					},
-					apphub_hrl_hash: apphubHrlHash
 				}
 			});
 

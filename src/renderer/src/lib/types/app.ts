@@ -1,4 +1,5 @@
 import { isNonEmptyString, isUint8Array } from '$helpers';
+import type { ActionHash, AnyDhtHash, EntryHash } from '@holochain/client';
 
 type BaseAppData = {
 	title: string;
@@ -8,9 +9,9 @@ type BaseAppData = {
 };
 
 export type AppWithIcon = BaseAppData & {
-	id: Uint8Array;
-	apphubHrlTarget: Uint8Array;
-	apphubHrlHash: Uint8Array;
+	id: ActionHash;
+	action: ActionHash;
+	apphubHrlTarget: AnyDhtHash;
 };
 
 export type AppData = BaseAppData & {
@@ -21,8 +22,8 @@ export type AppData = BaseAppData & {
 export type PublishNewVersionData = {
 	bytes: Uint8Array;
 	version: string;
-	webappPackageId: Uint8Array;
-	appEntryId: Uint8Array;
+	webappPackageId: ActionHash;
+	appEntryId: ActionHash;
 	/**
 	 * Sha256 hash of the happ in previous version(s). Sha256 of happ
 	 * should never change across versions
@@ -57,8 +58,8 @@ const isAppDataProperties = {
 const isAppWithIconProperties = {
 	...baseAppDataProperties,
 	id: isUint8Array,
+	action: isUint8Array,
 	apphubHrlTarget: isUint8Array,
-	apphubHrlHash: isUint8Array
 };
 
 const isPublishNewVersionDataProperties = {

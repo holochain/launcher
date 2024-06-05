@@ -8,6 +8,7 @@
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
 	import { type AppWithIcon, isUpdateAppDataValid } from '$types';
+	import { encodeHashToBase64 } from '@holochain/client';
 
 	const { updateAppDetailsMutation } = createAppQueries();
 
@@ -31,6 +32,7 @@
 			isLoading = true;
 			$updateAppDetailsMutation.mutate(appData, {
 				onSuccess: (id) => {
+					isLoading = false;
 					goto(`/${DEV_APP_PAGE}/${id}`);
 				},
 				onError: (error) => {

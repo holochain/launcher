@@ -61,12 +61,12 @@ export type CreateAppInput = {
 };
 
 export type UpdateAppProperties = {
-  title: string;
-  subtitle: string;
-  description: string;
-  icon: EntryHash;
-  apphub_hrl: HRL;
-  apphub_hrl_hash: EntryHash;
+  title?: string;
+  subtitle?: string;
+  description?: string;
+  icon?: EntryHash;
+  apphub_hrl?: HRL;
+  apphub_hrl_hash?: EntryHash;
 
   editors?: Array<AgentPubKey>;
 
@@ -76,12 +76,12 @@ export type UpdateAppProperties = {
 };
 
 export type UpdateAppFrontendInput = {
-  title: string;
-  subtitle: string;
-  description: string;
-  icon: Uint8Array; // icon bytes
-  apphub_hrl: HRL;
-  apphub_hrl_hash: EntryHash;
+  title?: string;
+  subtitle?: string;
+  description?: string;
+  icon?: Uint8Array; // icon bytes
+  apphub_hrl?: HRL;
+  apphub_hrl_hash?: EntryHash;
 
   editors?: Array<AgentPubKey>;
 

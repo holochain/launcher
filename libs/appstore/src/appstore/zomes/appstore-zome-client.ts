@@ -1,4 +1,9 @@
-import type { ActionHash, AgentPubKey, AppCallZomeRequest, EntryHash } from '@holochain/client';
+import {
+  type ActionHash,
+  type AgentPubKey,
+  type AppCallZomeRequest,
+  type EntryHash,
+} from '@holochain/client';
 
 import type {
   DevhubAppEntry,
@@ -70,7 +75,7 @@ export class AppstoreZomeClient extends ZomeClient {
   }
 
   async updateApp(input: UpdateEntityInput<UpdateAppProperties>): Promise<Entity<AppEntry>> {
-    return this.callZome('create_app', input);
+    return this.callZome('update_app', input);
   }
 
   async getApp(actionHash: ActionHash): Promise<Entity<AppEntry>> {
