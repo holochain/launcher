@@ -2,7 +2,6 @@
 	import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 	import type { AppVersionEntry } from 'appstore-tools';
-	import clsx from 'clsx';
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -10,6 +9,7 @@
 	import { MODAL_DEVHUB_INSTALLATION_CONFIRMATION } from '$const';
 	import {
 		capitalizeFirstLetter,
+		createImageUrl,
 		createModalParams,
 		filterHash,
 		getAppStoreDistributionHash,
@@ -26,6 +26,7 @@
 	import type { UpdateUiFromHash } from '$shared/types';
 
 	import { DashedSection } from '../../components';
+	import AppSettings from './components/AppSettings.svelte';
 
 	const client = trpc();
 
@@ -63,9 +64,11 @@
 			? $uiUpdates.data?.[selectedAppDistributionInfoData.appVersionActionHash]
 			: undefined;
 
-	$: appVersionsDetailsQuery = appVersionsAppstoreQueryFunction(
-		decodeHashFromBase64(selectedAppDistributionInfoData?.appEntryActionHash ?? '')
-	);
+	$: appVersionsDetailsQuery = selectedAppDistributionInfoData?.appEntryActionHash
+		? appVersionsAppstoreQueryFunction(
+				decodeHashFromBase64(selectedAppDistributionInfoData.appEntryActionHash)
+			)
+		: undefined;
 
 	const onSuccess = () => {
 		$installedApps.refetch();
@@ -165,6 +168,8 @@
 
 		modalStore.trigger(modal);
 	};
+
+	$: icon = selectedApp?.icon ? new Uint8Array(selectedApp.icon) : undefined;
 </script>
 
 {#if selectedApp}
@@ -173,6 +178,7 @@
 		selectedAppDistributionInfoData?.appVersionActionHash ?? ''
 	)}
 	<AppDetailsPanel
+		imageUrl={createImageUrl(icon)}
 		{appVersion}
 		title={selectedApp.appInfo.installed_app_id}
 		buttons={[$i18n.t('details'), capitalizeFirstLetter($i18n.t('settings'))]}
@@ -223,24 +229,17 @@
 			<p>{$i18n.t('details')}</p>
 		</div>
 	{:else if selectedIndex === 1}
-		<div class={clsx('p-8', update && 'pt-0')}>
-			<div class="flex items-center justify-between">
-				<Button
-					props={{
-						onClick: () =>
-							validateApp(selectedApp) &&
-							$uninstallApp.mutate(selectedApp, {
-								onSuccess: () => {
-									$installedApps.refetch();
-									goto(`/${SETTINGS_SCREEN}`);
-								}
-							}),
-						class: 'btn-app-store variant-filled'
-					}}
-				>
-					{$i18n.t('uninstall')}
-				</Button>
-			</div>
+		<AppSettings
+			uninstallLogic={() =>
+				validateApp(selectedApp) &&
+				$uninstallApp.mutate(selectedApp, {
+					onSuccess: () => {
+						$installedApps.refetch();
+						goto(`/${SETTINGS_SCREEN}`);
+					}
+				})}
+			update={!!update}
+		>
 			{#each Object.entries(selectedApp.appInfo.cell_info) as [roleName, cellId]}
 				{@const cellIdResult = getCellId(cellId[0])}
 				{#if cellIdResult}
@@ -249,7 +248,7 @@
 					</p>
 				{/if}
 			{/each}
-		</div>
+		</AppSettings>
 	{/if}
 {:else}
 	<DashedSection title={$i18n.t('developerTools')}>
