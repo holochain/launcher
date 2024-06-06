@@ -64,9 +64,11 @@
 			? $uiUpdates.data?.[selectedAppDistributionInfoData.appVersionActionHash]
 			: undefined;
 
-	$: appVersionsDetailsQuery = appVersionsAppstoreQueryFunction(
-		decodeHashFromBase64(selectedAppDistributionInfoData?.appEntryActionHash ?? '')
-	);
+	$: appVersionsDetailsQuery = selectedAppDistributionInfoData?.appEntryActionHash
+		? appVersionsAppstoreQueryFunction(
+				decodeHashFromBase64(selectedAppDistributionInfoData.appEntryActionHash)
+			)
+		: undefined;
 
 	const onSuccess = () => {
 		$installedApps.refetch();
