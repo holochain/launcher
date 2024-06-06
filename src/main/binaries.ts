@@ -35,10 +35,11 @@ const LAIR_BINARY = path.join(
   `lair-keystore-v${DEFAULT_LAIR_KEYSTORE_VERSION}${process.platform === 'win32' ? '.exe' : ''}`,
 );
 
-export const checkHolochainLairBinariesExist = () =>
+const checkHolochainLairBinariesExist = () =>
   [...Object.values(HOLOCHAIN_BINARIES), LAIR_BINARY].every(fs.existsSync);
 
 export {
+  checkHolochainLairBinariesExist,
   DEFAULT_HOLOCHAIN_VERSION,
   DEFAULT_LAIR_KEYSTORE_VERSION,
   HOLOCHAIN_BINARIES,
