@@ -90,7 +90,7 @@ export const createAppStoreMyHappsQuery = () => {
 			const myApps = await getAppStoreClientOrThrow().appstoreZomeClient.getMyApps();
 			const fetchIcon = async (iconAddress: Uint8Array) => {
 				try {
-					return await getDevHubClientOrThrow().appHubMereMemoryZomeClient.getMemoryBytes(
+					return await getAppStoreClientOrThrow().mereMemoryZomeClient.getMemoryBytes(
 						iconAddress
 					);
 				} catch {
