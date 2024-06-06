@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { ProgressRadial } from '@skeletonlabs/skeleton';
+	import { getModalStore } from '@skeletonlabs/skeleton';
 	import clsx from 'clsx';
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { CenterProgressRadial } from '$components';
 	import { SYSTEM_INFORMATION, SYSTEM_SETTINGS } from '$const';
-	import { filterHash, getAppStoreDistributionHash, validateApp } from '$helpers';
+	import { filterHash, getAppStoreDistributionHash, showModalError, validateApp } from '$helpers';
 	import { MenuGear, MenuInfo } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
@@ -14,16 +15,29 @@
 	import MenuEntry from './MenuEntry.svelte';
 
 	const client = trpc();
+	const modalStore = getModalStore();
 
 	const installedApps = client.getInstalledApps.createQuery();
 
 	const { checkForAppUiUpdatesQuery } = createAppQueries();
+
+	const showErrorModal = (error: string) => {
+		showModalError({
+			modalStore,
+			errorTitle: $i18n.t('appError'),
+			errorMessage: $i18n.t(error)
+		});
+	};
 
 	$: uiUpdates = checkForAppUiUpdatesQuery(
 		$installedApps?.data
 			?.map((app) => getAppStoreDistributionHash(app.distributionInfo))
 			.filter(filterHash) ?? []
 	);
+
+	$: if ($installedApps.isError) {
+		showErrorModal($installedApps.error.message);
+	}
 
 	const selectView = (view: string) => goto(`/${SETTINGS_SCREEN}/${view}`);
 
@@ -44,7 +58,7 @@
 {/each}
 <div class="!my-2 h-px w-full bg-tertiary-800"></div>
 {#if $installedApps.isPending}
-	<ProgressRadial stroke={100} width="w-6" />
+	<CenterProgressRadial width="w-12" />
 {:else if $installedApps.isSuccess}
 	{#each $installedApps.data.filter(validateApp) as app (app.appInfo.installed_app_id)}
 		{@const isUpdateAvailable =
