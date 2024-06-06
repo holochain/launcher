@@ -13,6 +13,9 @@
 	const { appVersionsAppstoreQueryFunction, appStoreMyHappsQuery } = createAppQueries();
 
 	$: view = $page.params.slug;
+	$: if (view) {
+		selectedIndex = 0;
+	}
 
 	$: app = $appStoreMyHappsQuery?.data?.find((app) => uint8ArrayToURIComponent(app.id) === view);
 
