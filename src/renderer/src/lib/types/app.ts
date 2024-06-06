@@ -6,21 +6,23 @@ type BaseAppData = {
 	title: string;
 	subtitle: string;
 	description: string;
-	icon: Uint8Array;
 };
 
 export type AppWithHrlTarget = BaseAppData & {
 	id: ActionHash;
 	apphubHrlTarget: AnyDhtHash;
+	icon?: Uint8Array;
 };
 
 export type AppWithAction = BaseAppData & {
 	action: ActionHash;
+	icon?: Uint8Array;
 };
 
 export type AppData = BaseAppData & {
 	bytes: Uint8Array;
 	version: string;
+	icon: Uint8Array;
 };
 
 export type PublishNewVersionData = {
@@ -49,14 +51,14 @@ const isObjectWithProperties = (
 const baseAppDataProperties = {
 	title: isNonEmptyString,
 	subtitle: isNonEmptyString,
-	description: isNonEmptyString,
-	icon: isUint8Array
+	description: isNonEmptyString
 };
 
 const isAppDataProperties = {
 	...baseAppDataProperties,
 	bytes: isUint8Array,
-	version: isNonEmptyString
+	version: isNonEmptyString,
+	icon: isUint8Array
 };
 
 const isAppWithActionProperties = {
