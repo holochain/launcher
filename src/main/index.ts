@@ -28,6 +28,7 @@ import {
   SETTINGS_SCREEN,
   WINDOW_SIZE,
 } from '$shared/const';
+import { getErrorMessage } from '$shared/helpers';
 import type {
   DistributionInfoV1,
   HolochainDataRoot,
@@ -36,6 +37,7 @@ import type {
   WindowInfoRecord,
 } from '$shared/types';
 import {
+  APP_NAME_EXISTS_ERROR,
   AppVersionEntrySchemaWithIcon,
   BytesSchema,
   CHECK_INITIALIZED_KEYSTORE_ERROR,
@@ -51,6 +53,7 @@ import {
   NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND,
   NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
+  REMOTE_CALL_FAILED_ERROR,
   UpdateUiFromHashSchema,
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '$shared/types';
@@ -533,20 +536,32 @@ const router = t.router({
     const isHappAvailable = holochainManager.isHappAvailableAndValid(
       appVersionEntry.bundle_hashes.happ_hash,
     );
+
     console.log('happAvailable, uiAvailable: ', isHappAvailable, isUiAvailable);
 
     if (isHappAvailable && isUiAvailable) return;
 
-    if (isHappAvailable && !isUiAvailable) {
-      const uiBytes = await appstoreAppClient.fetchUiBytes(appVersionEntry);
-      holochainManager.storeUiIfNecessary(Array.from(uiBytes), icon);
-      return;
-    }
+    try {
+      if (isHappAvailable && !isUiAvailable) {
+        const uiBytes = await appstoreAppClient.fetchUiBytes(appVersionEntry);
+        holochainManager.storeUiIfNecessary(Array.from(uiBytes), icon);
+        return;
+      }
 
-    const webhappBytes = await appstoreAppClient.fetchWebappBytes(appVersionEntry);
-    const { ui, happ } = webhappToHappAndUi(webhappBytes);
-    holochainManager.storeUiIfNecessary(Array.from(ui), icon);
-    holochainManager.storeHapp(Array.from(happ));
+      const webhappBytes = await appstoreAppClient.fetchWebappBytes(appVersionEntry);
+      const { ui, happ } = webhappToHappAndUi(webhappBytes);
+      holochainManager.storeUiIfNecessary(Array.from(ui), icon);
+      holochainManager.storeHapp(Array.from(happ));
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      if (errorMessage.includes('failed for all available hosts')) {
+        return throwTRPCErrorError({
+          message: REMOTE_CALL_FAILED_ERROR,
+          cause: errorMessage,
+        });
+      }
+      throw new Error(errorMessage);
+    }
   }),
   isHappAvailableAndValid: t.procedure.input(z.string()).query(async (opts) => {
     const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
@@ -583,14 +598,25 @@ const router = t.router({
     .input(InstallWebhappFromHashesSchema) // TODO: need metadata input as well here like name and action hash of app and app version in app store
     .mutation(async (opts) => {
       const { happSha256, uiZipSha256, appId, distributionInfo, networkSeed } = opts.input;
-      const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
-      await holochainManager.installWebhappFromHashes({
-        happSha256,
-        uiZipSha256,
-        appId,
-        distributionInfo,
-        networkSeed,
-      });
+      try {
+        const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
+        await holochainManager.installWebhappFromHashes({
+          happSha256,
+          uiZipSha256,
+          appId,
+          distributionInfo,
+          networkSeed,
+        });
+      } catch (error) {
+        const errorMessage = getErrorMessage(error);
+        if (errorMessage.includes('AppAlreadyInstalled')) {
+          return throwTRPCErrorError({
+            message: APP_NAME_EXISTS_ERROR,
+            cause: errorMessage,
+          });
+        }
+        throw new Error(errorMessage);
+      }
     }),
   installWebhappFromBytes: t.procedure
     .input(InstallHappOrWebhappFromBytesSchema)

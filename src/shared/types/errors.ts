@@ -1,4 +1,5 @@
 export const APP_STORE_CLIENT_NOT_INITIALIZED_ERROR = 'appStoreClientNotInitializedError';
+export const APP_NAME_EXISTS_ERROR = 'appNameExistsError';
 export const NO_APP_PORT_ERROR = 'noAppPortError';
 export const CHECK_INITIALIZED_KEYSTORE_ERROR = 'checkInitializedKeystoreError';
 export const DEV_HUB_CLIENT_NOT_INITIALIZED_ERROR = 'devHubClientNotInitializedError';
@@ -12,6 +13,7 @@ export const NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND = 'noAppstoreAuthenticationT
 export const NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND = 'noDevhubAuthenticationTokenFound';
 export const NO_PUBLISHERS_AVAILABLE_ERROR = 'noPublishersAvailableError';
 export const NO_RUNNING_HOLOCHAIN_MANAGER_ERROR = 'noRunningHolochainManagerError';
+export const REMOTE_CALL_FAILED_ERROR = 'remoteCallFailedError';
 export const WRONG_INSTALLED_APP_STRUCTURE = 'wrongInstalledAppStructure';
 export const WRONG_PASSWORD = 'wrongPassword';
 

@@ -7,12 +7,18 @@
 	import { page } from '$app/stores';
 	import { AppDetailsPanel, Button } from '$components';
 	import { PRESEARCH_URL_QUERY } from '$const';
-	import { createImageUrl, getLatestVersion, uint8ArrayToURIComponent } from '$helpers';
+	import {
+		createImageUrl,
+		getLatestVersion,
+		showModalError,
+		uint8ArrayToURIComponent
+	} from '$helpers';
 	import { InstallAppFromHashes } from '$modal';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
 	import { APPS_VIEW, DISTRIBUTION_TYPE_APPSTORE } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
+	import { REMOTE_CALL_FAILED_ERROR } from '$shared/types';
 
 	import VersionEntry from './components/VersionEntry.svelte';
 
@@ -35,8 +41,17 @@
 
 	const handleError = (error: unknown) => {
 		console.error(error);
+		const errorMessage = getErrorMessage(error);
+		if (errorMessage === REMOTE_CALL_FAILED_ERROR) {
+			return showModalError({
+				modalStore,
+				errorTitle: $i18n.t('appError'),
+				errorMessage: $i18n.t(errorMessage)
+			});
+		}
 		toastStore.trigger({
-			message: getErrorMessage(error)
+			autohide: false,
+			message: $i18n.t(errorMessage)
 		});
 	};
 	const createModalInstallAppFromHashes = async (versionEntity: Entity<AppVersionEntry>) => {

@@ -90,9 +90,7 @@ export const createAppStoreMyHappsQuery = () => {
 			const myApps = await getAppStoreClientOrThrow().appstoreZomeClient.getMyApps();
 			const fetchIcon = async (iconAddress: Uint8Array) => {
 				try {
-					return await getAppStoreClientOrThrow().mereMemoryZomeClient.getMemoryBytes(
-						iconAddress
-					);
+					return await getAppStoreClientOrThrow().mereMemoryZomeClient.getMemoryBytes(iconAddress);
 				} catch {
 					return undefined;
 				}
@@ -340,15 +338,6 @@ export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 			queryClient.invalidateQueries({ queryKey: [ALL_APP_VERSIONS_DEVHUB_QUERY_KEY] });
 			queryClient.invalidateQueries({ queryKey: [ALL_APP_VERSIONS_APPSTORE_QUERY_KEY] });
 			queryClient.invalidateQueries({ queryKey: [CHECK_FOR_APP_UI_UPDATES_QUERY_KEY] });
-		}
-	});
-};
-
-export const createFetchWebappBytesMutation = () => {
-	return createMutation({
-		mutationFn: async (appVersionEntry: AppVersionEntry): Promise<Uint8Array> => {
-			const appStoreClient = getAppStoreClientOrThrow();
-			return appStoreClient.fetchWebappBytes(appVersionEntry);
 		}
 	});
 };

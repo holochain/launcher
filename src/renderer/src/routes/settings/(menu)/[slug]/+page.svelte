@@ -23,7 +23,7 @@
 	import { createDevHubClient, i18n, trpc } from '$services';
 	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_SCREEN } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
-	import type { UpdateUiFromHash } from '$shared/types';
+	import { REMOTE_CALL_FAILED_ERROR, type UpdateUiFromHash } from '$shared/types';
 
 	import { DashedSection } from '../../components';
 	import AppSettings from './components/AppSettings.svelte';
@@ -82,11 +82,15 @@
 
 	const handleError = (error: unknown) => {
 		console.error(error);
+		const errorMessage = getErrorMessage(error);
+
 		modalStore.close();
 		showModalError({
 			modalStore,
 			errorTitle: $i18n.t('appError'),
-			errorMessage: getErrorMessage(error)
+			errorMessage: errorMessage.includes('failed for all available hosts')
+				? $i18n.t(REMOTE_CALL_FAILED_ERROR)
+				: errorMessage
 		});
 	};
 

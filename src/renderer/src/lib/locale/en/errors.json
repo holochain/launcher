@@ -1,4 +1,5 @@
 {
+	"appNameExistsError": "An app with the same name is already installed",
 	"appStoreClientNotInitializedError": "AppStoreClient not initialized",
 	"checkInitializedKeystoreError": "Error checking initialized keystore",
 	"devHubClientNotInitializedError": "DevHubClient not initialized",
@@ -12,6 +13,7 @@
 	"noDevhubAuthenticationTokenFound": "No authentication token found for devhub",
 	"noPublishersAvailableError": "No publishers available",
 	"noRunningHolochainManagerError": "No running Holochain manager",
+	"remoteCallFailedError": "Remote call failed. Unable to fetch happ bytes due to no available peers at the moment. Please try again later.",
 	"wrongInstalledAppStructure": "Wrong installed app structure",
 	"wrongPassword": "Wrong password"
 }
