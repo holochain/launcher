@@ -28,5 +28,16 @@ export const createModalParams = (
 	response
 });
 
+export const startViewTransition = (navigation: { complete: Promise<void> }): Promise<void> => {
+	if (!document.startViewTransition) return Promise.resolve();
+
+	return new Promise((resolve) => {
+		document.startViewTransition(async () => {
+			resolve();
+			await navigation.complete;
+		});
+	});
+};
+
 export const capitalizeFirstLetter = (str: string): string =>
 	str.charAt(0).toUpperCase() + str.slice(1);

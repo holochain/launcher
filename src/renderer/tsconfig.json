@@ -7,7 +7,8 @@
 		"resolveJsonModule": true,
 		"sourceMap": true,
 		"strict": true,
-		"typeRoots": ["svelte"]
+		"typeRoots": ["svelte", "../../node_modules/@types"],
+		"types": ["dom-view-transitions"]
 	},
 	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
 	//

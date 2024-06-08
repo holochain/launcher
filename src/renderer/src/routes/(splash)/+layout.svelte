@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { fly } from 'svelte/transition';
+
 	import { Splash } from '$lib/components';
 	import { trpc } from '$services';
+	import { ANIMATION_DURATION } from '$shared/const';
 
 	const client = trpc();
 	const defaultHolochainVersion = client.declaredHolochainVersion.createQuery();
@@ -18,6 +21,7 @@
 	{/if}
 	<div
 		class="max-w-s relative z-10 mb-8 flex flex-1 flex-col items-center justify-center text-center"
+		in:fly={{ x: -200, duration: ANIMATION_DURATION, delay: ANIMATION_DURATION }}
 	>
 		<slot />
 	</div>

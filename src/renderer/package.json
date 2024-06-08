@@ -21,6 +21,7 @@
 		"@sveltejs/vite-plugin-svelte": "^3.1.1",
 		"@tailwindcss/forms": "^0.5.7",
 		"@tanstack/svelte-query": "^5.40.1",
+		"@types/dom-view-transitions": "^1.0.4",
 		"autoprefixer": "10.4.19",
 		"clsx": "^2.1.1",
 		"eslint-plugin-svelte": "^2.39.0",
