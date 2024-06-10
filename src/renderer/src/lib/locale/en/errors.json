@@ -1,5 +1,5 @@
 {
-	"appNameExistsError": "An app with the same name is already installed",
+	"appNameExistsError": "An app with the same name is already installed. Please choose a different name",
 	"appStoreClientNotInitializedError": "AppStoreClient not initialized",
 	"checkInitializedKeystoreError": "Error checking initialized keystore",
 	"devHubClientNotInitializedError": "DevHubClient not initialized",
