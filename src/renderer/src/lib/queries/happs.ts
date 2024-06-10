@@ -375,9 +375,7 @@ export const createGetAppDetailsQuery = () => (actionHash: Uint8Array) => {
 		queryKey: [GET_APP_DETAILS_QUERY_KEY, actionHash],
 		queryFn: async () => {
 			const appStoreClient = getAppStoreClientOrThrow();
-			console.log(actionHash);
 			const appDetails = await appStoreClient.getAppDetails(actionHash);
-			console.log(appDetails);
 			return appDetails;
 		}
 	});

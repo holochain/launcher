@@ -86,10 +86,7 @@ export class AppstoreAppClient {
   }
 
   async getAppDetails(actionHash: Uint8Array): Promise<Entity<AppEntry> | undefined> {
-    const appEntry = await this.appstoreZomeClient.getApp(actionHash);
-    if (!appEntry) return undefined;
-
-    return appEntry;
+    return this.appstoreZomeClient.getApp(actionHash) || undefined;
   }
 
   /**
