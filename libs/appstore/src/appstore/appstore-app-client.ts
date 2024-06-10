@@ -225,7 +225,6 @@ export class AppstoreAppClient {
   async fetchWebappBytes(appVersion: AppVersionEntry): Promise<Uint8Array> {
     // For simplicity make all calls with one host. If that proves to not work well, split into
     // separate calls to different hosts
-    console.log('Trying with hosts');
     return this.portalZomeClient.tryWithHosts<Uint8Array>(
       async (host) => {
         // 1. get WebappPackageVersion and verify its hash
