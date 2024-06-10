@@ -33,6 +33,8 @@
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
 
+	const triggerToast = (message: string) => toastStore.trigger({ message });
+
 	const slug: string = $page.params.slug;
 	let selectedIndex = 0;
 	const app = $appStoreHappsQuery.data?.find(({ id }) => uint8ArrayToURIComponent(id) === slug);
@@ -49,10 +51,7 @@
 				errorMessage: $i18n.t(errorMessage)
 			});
 		}
-		toastStore.trigger({
-			autohide: false,
-			message: $i18n.t(errorMessage)
-		});
+		triggerToast($i18n.t(errorMessage));
 	};
 	const createModalInstallAppFromHashes = async (versionEntity: Entity<AppVersionEntry>) => {
 		modalStore.trigger({
@@ -98,12 +97,30 @@
 		});
 	};
 
+	const handleSuccess = (
+		toastTimeout: ReturnType<typeof setTimeout> | null,
+		versionEntity: Entity<AppVersionEntry>
+	) => {
+		if (toastTimeout) clearTimeout(toastTimeout);
+		createModalInstallAppFromHashes(versionEntity);
+	};
+
+	const handleErrorWithTimeout = (
+		toastTimeout: ReturnType<typeof setTimeout> | null,
+		error: unknown
+	) => {
+		if (toastTimeout) clearTimeout(toastTimeout);
+		handleError(error);
+	};
+
 	const installLogic = async (versionEntity: Entity<AppVersionEntry>) => {
+		const toastTimeout = setTimeout(() => triggerToast($i18n.t('fetchingAppData')), 1000);
+
 		$fetchWebapp.mutate(
 			{ app_version: versionEntity.content, icon: app?.icon },
 			{
-				onSuccess: () => createModalInstallAppFromHashes(versionEntity),
-				onError: handleError
+				onSuccess: () => handleSuccess(toastTimeout, versionEntity),
+				onError: (error) => handleErrorWithTimeout(toastTimeout, error)
 			}
 		);
 	};
