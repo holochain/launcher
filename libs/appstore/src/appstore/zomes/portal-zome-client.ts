@@ -32,7 +32,10 @@ export class PortalZomeClient extends ZomeClient {
    *
    * 3. return the first that responds to the ping
    */
-  async getAvailableHostForZomeFunction(input: DnaZomeFunction): Promise<AgentPubKey> {
+  async getAvailableHostForZomeFunction(
+    input: DnaZomeFunction,
+    timeoutMs: number = 4000,
+  ): Promise<AgentPubKey> {
     try {
       const hosts = await this.getHostsForZomeFunction(input);
 
@@ -44,7 +47,7 @@ export class PortalZomeClient extends ZomeClient {
             // console.log("@getAvailableHostForZomeFunction: trying to ping host: ", encodeHashToBase64(hostPubKey));
 
             try {
-              const result: Response<boolean> = await this.callZome('ping', hostPubKey);
+              const result: Response<boolean> = await this.callZome('ping', hostPubKey, timeoutMs);
 
               if (result.type === 'failure') {
                 return Promise.reject(`Failed to ping host: ${result.payload}`);
@@ -116,7 +119,10 @@ export class PortalZomeClient extends ZomeClient {
     pingTimeout: number = 3000,
   ): Promise<T> {
     // try with first responding host
-    const quickestHost: AgentPubKey = await this.getAvailableHostForZomeFunction(dnaZomeFunction);
+    const quickestHost: AgentPubKey = await this.getAvailableHostForZomeFunction(
+      dnaZomeFunction,
+      pingTimeout,
+    );
     console.log('got quickest host: ', quickestHost);
     try {
       // console.log("@tryWithHosts: trying with first responding host: ", encodeHashToBase64(host));
