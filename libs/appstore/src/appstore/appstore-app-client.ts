@@ -85,6 +85,13 @@ export class AppstoreAppClient {
     });
   }
 
+  async getAppDetails(actionHash: Uint8Array): Promise<Entity<AppEntry> | undefined> {
+    const appEntry = await this.appstoreZomeClient.getApp(actionHash);
+    if (!appEntry) return undefined;
+
+    return appEntry;
+  }
+
   /**
    * Checks whether a new update is available for a given AppVersionEntry action hash
    *

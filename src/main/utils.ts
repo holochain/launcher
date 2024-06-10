@@ -223,11 +223,9 @@ export function createObservable<K extends EventKeys>(
   });
 }
 
-export const filterHeadlessApps = (app: { installed_app_id: string }) =>
-  ![DEVHUB_APP_ID, APP_STORE_APP_ID].includes(app.installed_app_id);
-
 export const createAppInfo = (manager: HolochainManager) => (app: AppInfo) => {
   return {
+    isHeadless: [DEVHUB_APP_ID, APP_STORE_APP_ID].includes(app.installed_app_id),
     appInfo: app,
     holochainDataRoot: manager.holochainDataRoot,
     icon: manager.appIcon(app.installed_app_id),
@@ -237,7 +235,7 @@ export const createAppInfo = (manager: HolochainManager) => (app: AppInfo) => {
 
 export const getInstalledAppsInfo = (managers: Record<string, HolochainManager> = {}) => {
   return Object.values(managers).flatMap((manager) =>
-    manager.installedApps.filter(filterHeadlessApps).map(createAppInfo(manager)),
+    manager.installedApps.map(createAppInfo(manager)),
   );
 };
 

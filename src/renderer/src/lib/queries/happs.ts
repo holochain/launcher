@@ -22,6 +22,7 @@ import {
 	APP_STORE_HAPPS_QUERY_KEY,
 	APP_STORE_MY_HAPPS_QUERY_KEY,
 	CHECK_FOR_APP_UI_UPDATES_QUERY_KEY,
+	GET_APP_DETAILS_QUERY_KEY,
 	PUBLISHERS_QUERY_KEY
 } from '$const';
 import { uint8ArrayToURIComponent } from '$helpers';
@@ -365,6 +366,19 @@ export const createCheckForAppUiUpdatesQuery = () => (appVersionActionHashes: st
 			);
 
 			return updates.reduce((acc, update) => (update ? { ...acc, ...update } : acc), {});
+		}
+	});
+};
+
+export const createGetAppDetailsQuery = () => (actionHash: Uint8Array) => {
+	return createQuery({
+		queryKey: [GET_APP_DETAILS_QUERY_KEY, actionHash],
+		queryFn: async () => {
+			const appStoreClient = getAppStoreClientOrThrow();
+			console.log(actionHash);
+			const appDetails = await appStoreClient.getAppDetails(actionHash);
+			console.log(appDetails);
+			return appDetails;
 		}
 	});
 };

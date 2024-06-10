@@ -42,6 +42,7 @@ import {
   BytesSchema,
   CHECK_INITIALIZED_KEYSTORE_ERROR,
   ExtendedAppInfoSchema,
+  IncludeHeadlessSchema,
   InitializeAppPortsSchema,
   InstallDefaultAppSchema,
   InstallHappFromPathSchema,
@@ -682,12 +683,20 @@ const router = t.router({
   ),
   declaredHolochainVersion: t.procedure.query(() => DEFAULT_HOLOCHAIN_VERSION),
   isDevhubInstalled: t.procedure.query(() => isDevhubInstalled(HOLOCHAIN_MANAGERS)),
-  getInstalledApps: t.procedure.query(() => {
+  getInstalledApps: t.procedure.input(IncludeHeadlessSchema).query((opts) => {
+    const { input: includeHeadless } = opts;
     const installedApps = getInstalledAppsInfo(HOLOCHAIN_MANAGERS);
+
+    const processApps = (apps: typeof installedApps, includeHeadless: boolean) => {
+      const sortedApps = apps.sort((a, b) =>
+        a.isHeadless === b.isHeadless ? 0 : a.isHeadless ? -1 : 1,
+      );
+      return includeHeadless ? sortedApps : sortedApps.filter(({ isHeadless }) => !isHeadless);
+    };
 
     return validateWithZod({
       schema: z.array(ExtendedAppInfoSchema),
-      data: installedApps,
+      data: processApps(installedApps, includeHeadless),
       errorType: WRONG_INSTALLED_APP_STRUCTURE,
     });
   }),

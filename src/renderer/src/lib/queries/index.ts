@@ -6,6 +6,7 @@ import {
 	createAppVersionsAppstoreQuery,
 	createCheckForAppUiUpdatesQuery,
 	createFetchUiBytesMutation,
+	createGetAppDetailsQuery,
 	createPublisherMutation,
 	createPublishersQuery,
 	createPublishHappMutation,
@@ -24,6 +25,7 @@ export function createAppQueries() {
 	const updateAppDetailsMutation = createUpdateAppDetailsMutation(queryClient);
 	const publishNewVersionMutation = createPublishNewVersionMutation(queryClient);
 	const checkForAppUiUpdatesQuery = createCheckForAppUiUpdatesQuery();
+	const getAppDetailsQuery = createGetAppDetailsQuery();
 	const fetchUiBytesMutation = createFetchUiBytesMutation();
 
 	return {
@@ -36,6 +38,7 @@ export function createAppQueries() {
 		publishNewVersionMutation,
 		appStoreHappsQuery,
 		fetchUiBytesMutation,
+		getAppDetailsQuery,
 		checkForAppUiUpdatesQuery
 	};
 }
