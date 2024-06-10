@@ -1,4 +1,4 @@
-import type { AgentPubKey } from '@holochain/client';
+import { type AgentPubKey } from '@holochain/client';
 
 import type { Entity } from '../../devhub/types';
 import { ZomeClient } from '../../zome-client/zome-client';
@@ -44,7 +44,10 @@ export class PortalZomeClient extends ZomeClient {
         const availableHost = await Promise.any(
           hosts.map(async (hostEntryEntity) => {
             const hostPubKey = hostEntryEntity.content.author;
-            // console.log("@getAvailableHostForZomeFunction: trying to ping host: ", encodeHashToBase64(hostPubKey));
+            // console.log(
+            //   '@getAvailableHostForZomeFunction: trying to ping host: ',
+            //   encodeHashToBase64(hostPubKey),
+            // );
 
             try {
               const result: Response<boolean> = await this.callZome('ping', hostPubKey, timeoutMs);
@@ -116,7 +119,7 @@ export class PortalZomeClient extends ZomeClient {
   async tryWithHosts<T>(
     fn: (host: AgentPubKey) => Promise<T>,
     dnaZomeFunction: DnaZomeFunction,
-    pingTimeout: number = 3000,
+    pingTimeout: number = 4000,
   ): Promise<T> {
     // try with first responding host
     const quickestHost: AgentPubKey = await this.getAvailableHostForZomeFunction(
@@ -128,10 +131,10 @@ export class PortalZomeClient extends ZomeClient {
       // console.log("@tryWithHosts: trying with first responding host: ", encodeHashToBase64(host));
       const result = await fn(quickestHost);
       return result;
-    } catch (e: unknown) {
-      console.log('Failed: ', e);
-      const errors: Array<unknown> = [];
-      errors.push(JSON.stringify(e));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      const errors: Array<string> = [];
+      errors.push(e.toString());
 
       // console.log("@tryWithHosts: Failed with first host: ", JSON.stringify(e));
       // if it fails with the first host, try other hosts
@@ -150,8 +153,9 @@ export class PortalZomeClient extends ZomeClient {
           // console.log("@tryWithHosts: retrying with other host: ", encodeHashToBase64(otherHost));
           const response = await fn(host);
           return response;
-        } catch (e) {
-          errors.push(e);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (e: any) {
+          errors.push(e.toString());
         }
       }
 
