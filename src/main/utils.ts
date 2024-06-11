@@ -204,30 +204,21 @@ export async function signZomeCall(
   return zomeCallSigned;
 }
 
-export function createObservable<K extends EventKeys>(
-  emitter: LauncherEmitter,
-  eventName: K,
-  singleEmission: boolean = false,
-) {
+export function createObservable<K extends EventKeys>(emitter: LauncherEmitter, eventName: K) {
   return observable<EventMap[K]>((emit) => {
     const handler = (data: EventMap[K]) => {
       emit.next(data);
-      if (singleEmission) {
-        emitter.off(eventName, handler);
-      }
     };
 
     emitter.on(eventName, handler);
 
-    return !singleEmission ? () => emitter.off(eventName, handler) : undefined;
+    return () => emitter.off(eventName, handler);
   });
 }
 
-export const filterHeadlessApps = (app: { installed_app_id: string }) =>
-  ![DEVHUB_APP_ID, APP_STORE_APP_ID].includes(app.installed_app_id);
-
 export const createAppInfo = (manager: HolochainManager) => (app: AppInfo) => {
   return {
+    isHeadless: [DEVHUB_APP_ID, APP_STORE_APP_ID].includes(app.installed_app_id),
     appInfo: app,
     holochainDataRoot: manager.holochainDataRoot,
     icon: manager.appIcon(app.installed_app_id),
@@ -237,7 +228,7 @@ export const createAppInfo = (manager: HolochainManager) => (app: AppInfo) => {
 
 export const getInstalledAppsInfo = (managers: Record<string, HolochainManager> = {}) => {
   return Object.values(managers).flatMap((manager) =>
-    manager.installedApps.filter(filterHeadlessApps).map(createAppInfo(manager)),
+    manager.installedApps.map(createAppInfo(manager)),
   );
 };
 

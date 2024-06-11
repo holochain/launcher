@@ -4,17 +4,15 @@
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { CenterProgressRadial } from '$components';
 	import { showModalError } from '$helpers';
+	import { Splash } from '$lib/components';
 	import { i18n, trpc } from '$services';
 	import { SETTINGS_SCREEN } from '$shared/const';
-
 	const client = trpc();
 
 	const modalStore = getModalStore();
 
 	const lairSetupRequired = client.lairSetupRequired.createQuery();
-
 	onMount(() => {
 		const url = $page.url;
 
@@ -39,4 +37,4 @@
 	});
 </script>
 
-<CenterProgressRadial />
+<Splash />

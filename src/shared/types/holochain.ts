@@ -97,6 +97,7 @@ export const ExtendedAppInfoSchema = z.object({
   holochainDataRoot: HolochainDataRootSchema,
   icon: z.instanceof(Uint8Array).optional(),
   distributionInfo: DistributionInfoV1Schema,
+  isHeadless: z.boolean(),
 });
 
 export const InitializeAppPortsSchema = z.object({

@@ -94,4 +94,6 @@ export const UpdateUiFromHashSchema = z.object({
   appVersionActionHash: z.optional(z.string({ description: 'ActionHashB64' })),
 });
 
+export const IncludeHeadlessSchema = z.boolean().default(false);
+
 export type UpdateUiFromHash = z.infer<typeof UpdateUiFromHashSchema>;

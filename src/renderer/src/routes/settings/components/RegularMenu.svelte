@@ -17,7 +17,7 @@
 	const client = trpc();
 	const modalStore = getModalStore();
 
-	const installedApps = client.getInstalledApps.createQuery();
+	const installedApps = client.getInstalledApps.createQuery(true);
 
 	const { checkForAppUiUpdatesQuery } = createAppQueries();
 

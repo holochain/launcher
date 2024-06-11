@@ -1,17 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { DEV_PAGE } from '$const';
-	import { trpc, useFocusRefetch } from '$services';
 
 	import { DevMenu, RegularMenu } from '../components';
 
 	$: isDevPage = $page.url.pathname.includes(DEV_PAGE);
-
-	const client = trpc();
-
-	const installedApps = client.getInstalledApps.createQuery();
-
-	useFocusRefetch($installedApps.refetch);
 </script>
 
 <div class="flex flex-1 overflow-hidden bg-light-background bg-fixed dark:bg-app-dark-gradient">

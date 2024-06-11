@@ -7,12 +7,18 @@
 	import { page } from '$app/stores';
 	import { AppDetailsPanel, Button } from '$components';
 	import { PRESEARCH_URL_QUERY } from '$const';
-	import { createImageUrl, getLatestVersion, uint8ArrayToURIComponent } from '$helpers';
+	import {
+		createImageUrl,
+		getLatestVersion,
+		showModalError,
+		uint8ArrayToURIComponent
+	} from '$helpers';
 	import { InstallAppFromHashes } from '$modal';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
 	import { APPS_VIEW, DISTRIBUTION_TYPE_APPSTORE } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
+	import { APP_NAME_EXISTS_ERROR } from '$shared/types';
 
 	import VersionEntry from './components/VersionEntry.svelte';
 
@@ -27,6 +33,8 @@
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
 
+	const triggerToast = (message: string) => toastStore.trigger({ message });
+
 	const slug: string = $page.params.slug;
 	let selectedIndex = 0;
 	const app = $appStoreHappsQuery.data?.find(({ id }) => uint8ArrayToURIComponent(id) === slug);
@@ -35,8 +43,14 @@
 
 	const handleError = (error: unknown) => {
 		console.error(error);
-		toastStore.trigger({
-			message: getErrorMessage(error)
+		const errorMessage = getErrorMessage(error);
+		if (errorMessage === APP_NAME_EXISTS_ERROR) {
+			return triggerToast($i18n.t(errorMessage));
+		}
+		return showModalError({
+			modalStore,
+			errorTitle: $i18n.t('appError'),
+			errorMessage: $i18n.t(errorMessage)
 		});
 	};
 	const createModalInstallAppFromHashes = async (versionEntity: Entity<AppVersionEntry>) => {
@@ -83,12 +97,30 @@
 		});
 	};
 
+	const handleSuccess = (
+		toastTimeout: ReturnType<typeof setTimeout> | null,
+		versionEntity: Entity<AppVersionEntry>
+	) => {
+		if (toastTimeout) clearTimeout(toastTimeout);
+		createModalInstallAppFromHashes(versionEntity);
+	};
+
+	const handleErrorWithTimeout = (
+		toastTimeout: ReturnType<typeof setTimeout> | null,
+		error: unknown
+	) => {
+		if (toastTimeout) clearTimeout(toastTimeout);
+		handleError(error);
+	};
+
 	const installLogic = async (versionEntity: Entity<AppVersionEntry>) => {
+		const toastTimeout = setTimeout(() => triggerToast($i18n.t('fetchingAppData')), 1000);
+
 		$fetchWebapp.mutate(
 			{ app_version: versionEntity.content, icon: app?.icon },
 			{
-				onSuccess: () => createModalInstallAppFromHashes(versionEntity),
-				onError: handleError
+				onSuccess: () => handleSuccess(toastTimeout, versionEntity),
+				onError: (error) => handleErrorWithTimeout(toastTimeout, error)
 			}
 		);
 	};

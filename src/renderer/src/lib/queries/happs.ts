@@ -22,6 +22,7 @@ import {
 	APP_STORE_HAPPS_QUERY_KEY,
 	APP_STORE_MY_HAPPS_QUERY_KEY,
 	CHECK_FOR_APP_UI_UPDATES_QUERY_KEY,
+	GET_APP_DETAILS_QUERY_KEY,
 	PUBLISHERS_QUERY_KEY
 } from '$const';
 import { uint8ArrayToURIComponent } from '$helpers';
@@ -90,9 +91,7 @@ export const createAppStoreMyHappsQuery = () => {
 			const myApps = await getAppStoreClientOrThrow().appstoreZomeClient.getMyApps();
 			const fetchIcon = async (iconAddress: Uint8Array) => {
 				try {
-					return await getAppStoreClientOrThrow().mereMemoryZomeClient.getMemoryBytes(
-						iconAddress
-					);
+					return await getAppStoreClientOrThrow().mereMemoryZomeClient.getMemoryBytes(iconAddress);
 				} catch {
 					return undefined;
 				}
@@ -344,15 +343,6 @@ export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 	});
 };
 
-export const createFetchWebappBytesMutation = () => {
-	return createMutation({
-		mutationFn: async (appVersionEntry: AppVersionEntry): Promise<Uint8Array> => {
-			const appStoreClient = getAppStoreClientOrThrow();
-			return appStoreClient.fetchWebappBytes(appVersionEntry);
-		}
-	});
-};
-
 export const createFetchUiBytesMutation = () => {
 	return createMutation({
 		mutationFn: async (appVersionEntry: AppVersionEntry): Promise<Uint8Array> => {
@@ -376,6 +366,17 @@ export const createCheckForAppUiUpdatesQuery = () => (appVersionActionHashes: st
 			);
 
 			return updates.reduce((acc, update) => (update ? { ...acc, ...update } : acc), {});
+		}
+	});
+};
+
+export const createGetAppDetailsQuery = () => (actionHash: Uint8Array) => {
+	return createQuery({
+		queryKey: [GET_APP_DETAILS_QUERY_KEY, actionHash],
+		queryFn: async () => {
+			const appStoreClient = getAppStoreClientOrThrow();
+			const appDetails = await appStoreClient.getAppDetails(actionHash);
+			return appDetails;
 		}
 	});
 };

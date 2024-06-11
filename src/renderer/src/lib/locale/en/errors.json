@@ -1,4 +1,5 @@
 {
+	"appNameExistsError": "An app with the same name is already installed. Please choose a different name",
 	"appStoreClientNotInitializedError": "AppStoreClient not initialized",
 	"checkInitializedKeystoreError": "Error checking initialized keystore",
 	"devHubClientNotInitializedError": "DevHubClient not initialized",
@@ -9,9 +10,11 @@
 	"missingBinaries": "There are missing holochain or lair keystore binaries",
 	"noAppPortError": "Can't find app port",
 	"noAppstoreAuthenticationTokenFound": "No authentication token found for appstore",
+	"noAvailablePeerHostsError": "No available peer hosts found.",
 	"noDevhubAuthenticationTokenFound": "No authentication token found for devhub",
 	"noPublishersAvailableError": "No publishers available",
 	"noRunningHolochainManagerError": "No running Holochain manager",
+	"remoteOperationFailedError": "Remote operation failed. Please try again later.",
 	"wrongInstalledAppStructure": "Wrong installed app structure",
 	"wrongPassword": "Wrong password"
 }

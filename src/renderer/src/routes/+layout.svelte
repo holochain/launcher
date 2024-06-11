@@ -11,11 +11,13 @@
 	} from '@skeletonlabs/skeleton';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 
+	import { onNavigate } from '$app/navigation';
 	import {
 		MODAL_DEVHUB_INSTALLATION_CONFIRMATION,
 		MODAL_INSTALL_FROM_FILE,
 		MODAL_INSTALL_KANDO
 	} from '$const';
+	import { startViewTransition } from '$helpers';
 	import { DevHubInstallationConfirmation, InstallFromFile, InstallKando } from '$modal';
 
 	const queryClient = new QueryClient();
@@ -29,6 +31,8 @@
 	const setupStorePopup = () => {
 		storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 	};
+
+	onNavigate(startViewTransition);
 
 	initializeStores();
 	setupStorePopup();

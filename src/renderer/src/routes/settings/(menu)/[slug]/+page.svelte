@@ -23,7 +23,7 @@
 	import { createDevHubClient, i18n, trpc } from '$services';
 	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_SCREEN } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
-	import type { UpdateUiFromHash } from '$shared/types';
+	import { type UpdateUiFromHash } from '$shared/types';
 
 	import { DashedSection } from '../../components';
 	import AppSettings from './components/AppSettings.svelte';
@@ -33,12 +33,16 @@
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
 
-	const { checkForAppUiUpdatesQuery, fetchUiBytesMutation, appVersionsAppstoreQueryFunction } =
-		createAppQueries();
+	const {
+		checkForAppUiUpdatesQuery,
+		fetchUiBytesMutation,
+		appVersionsAppstoreQueryFunction,
+		getAppDetailsQuery
+	} = createAppQueries();
 
 	const utils = client.createUtils();
 
-	const installedApps = client.getInstalledApps.createQuery();
+	const installedApps = client.getInstalledApps.createQuery(true);
 	const uninstallApp = client.uninstallApp.createMutation();
 	const isDevhubInstalled = client.isDevhubInstalled.createQuery();
 	const installDevhub = client.installDevhub.createMutation();
@@ -70,6 +74,10 @@
 			)
 		: undefined;
 
+	$: appDetailsQuery = selectedAppDistributionInfoData?.appEntryActionHash
+		? getAppDetailsQuery(decodeHashFromBase64(selectedAppDistributionInfoData.appEntryActionHash))
+		: undefined;
+
 	const onSuccess = () => {
 		$installedApps.refetch();
 		$uiUpdates.refetch();
@@ -82,11 +90,13 @@
 
 	const handleError = (error: unknown) => {
 		console.error(error);
+		const errorMessage = getErrorMessage(error);
+
 		modalStore.close();
 		showModalError({
 			modalStore,
 			errorTitle: $i18n.t('appError'),
-			errorMessage: getErrorMessage(error)
+			errorMessage: $i18n.t(errorMessage)
 		});
 	};
 
@@ -181,7 +191,9 @@
 		imageUrl={createImageUrl(icon)}
 		{appVersion}
 		title={selectedApp.appInfo.installed_app_id}
-		buttons={[$i18n.t('details'), capitalizeFirstLetter($i18n.t('settings'))]}
+		buttons={$appDetailsQuery
+			? [$i18n.t('details'), capitalizeFirstLetter($i18n.t('settings'))]
+			: [capitalizeFirstLetter($i18n.t('settings'))]}
 		bind:selectedIndex
 	/>
 	{#if update && selectedApp.distributionInfo.type === DISTRIBUTION_TYPE_APPSTORE}
@@ -224,12 +236,14 @@
 			</div>
 		</DashedSection>
 	{/if}
-	{#if selectedIndex === 0}
+	{#if selectedIndex === 0 && $appDetailsQuery && $appDetailsQuery.data}
 		<div class="px-8 py-4">
-			<p>{$i18n.t('details')}</p>
+			<p class="font-semibold">{$appDetailsQuery.data.content.subtitle}</p>
+			<p>{$appDetailsQuery.data.content.description}</p>
 		</div>
-	{:else if selectedIndex === 1}
+	{:else}
 		<AppSettings
+			isHeadless={selectedApp.isHeadless}
 			uninstallLogic={() =>
 				validateApp(selectedApp) &&
 				$uninstallApp.mutate(selectedApp, {
