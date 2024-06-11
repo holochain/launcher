@@ -18,7 +18,7 @@
 	import { i18n, trpc } from '$services';
 	import { APPS_VIEW, DISTRIBUTION_TYPE_APPSTORE } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
-	import { NO_AVAILABLE_PEER_HOSTS_ERROR, REMOTE_OPERATION_FAILED_ERROR } from '$shared/types';
+	import { APP_NAME_EXISTS_ERROR } from '$shared/types';
 
 	import VersionEntry from './components/VersionEntry.svelte';
 
@@ -44,17 +44,14 @@
 	const handleError = (error: unknown) => {
 		console.error(error);
 		const errorMessage = getErrorMessage(error);
-		if (
-			errorMessage === REMOTE_OPERATION_FAILED_ERROR ||
-			errorMessage === NO_AVAILABLE_PEER_HOSTS_ERROR
-		) {
-			return showModalError({
-				modalStore,
-				errorTitle: $i18n.t('appError'),
-				errorMessage: $i18n.t(errorMessage)
-			});
+		if (errorMessage === APP_NAME_EXISTS_ERROR) {
+			return triggerToast($i18n.t(errorMessage));
 		}
-		triggerToast($i18n.t(errorMessage));
+		return showModalError({
+			modalStore,
+			errorTitle: $i18n.t('appError'),
+			errorMessage: $i18n.t(errorMessage)
+		});
 	};
 	const createModalInstallAppFromHashes = async (versionEntity: Entity<AppVersionEntry>) => {
 		modalStore.trigger({
