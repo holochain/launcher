@@ -13,6 +13,7 @@ import type {
   WebAppPackageVersionEntry,
 } from '../devhub/types';
 import { MereMemoryZomeClient } from '../mere-memory/zomes/mere-memory-zome-client';
+import { PortalZomeClient } from '../portal/zomes/portal-zome-client';
 import type { UpdateEntityInput } from '../types';
 import { bundleToDeterministicBytes } from '../utils';
 import type {
@@ -25,7 +26,6 @@ import type {
   UpdatePublisherFrontendInput,
 } from './types';
 import { AppstoreZomeClient } from './zomes/appstore-zome-client';
-import { PortalZomeClient } from './zomes/portal-zome-client';
 
 export class AppstoreAppClient {
   mereMemoryZomeClient: MereMemoryZomeClient;

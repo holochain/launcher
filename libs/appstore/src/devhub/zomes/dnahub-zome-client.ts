@@ -1,5 +1,6 @@
 import type { ActionHash, AgentPubKey, AnyDhtHash, AppCallZomeRequest } from '@holochain/client';
 
+import type { AgentInfo } from '../../types';
 import { ZomeClient } from '../../zome-client/zome-client';
 import type {
   CoordinatorsToken,
@@ -12,6 +13,10 @@ import type {
 } from '../types';
 
 export class DnaHubZomeClient extends ZomeClient {
+  async whoami(): Promise<AgentInfo> {
+    return this.callZome('whoami', null);
+  }
+
   async createDna(input: CreateDnaInput): Promise<Entity<DnaEntry>> {
     return this.callZome('create_dna', input);
   }

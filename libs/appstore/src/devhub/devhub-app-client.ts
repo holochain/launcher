@@ -3,6 +3,7 @@ import type { DnaHash, ProvisionedCell } from '@holochain/client';
 import { type AnyDhtHash, type AppClient, CellType, type ZomeName } from '@holochain/client';
 import { Bundle } from '@spartan-hc/bundles';
 
+import { PortalZomeClient } from '../appstore';
 import { MereMemoryZomeClient } from '../mere-memory/zomes/mere-memory-zome-client';
 import { getCellId } from '../utils';
 import type { DnaAssetHashes, Zome, ZomeEntry } from './types';
@@ -28,6 +29,7 @@ export class DevhubAppClient {
   zomeHubZomeClient: ZomeHubZomeClient;
   dnaHubZomeClient: DnaHubZomeClient;
   appHubZomeClient: AppHubZomeClient;
+  portalZomeClient: PortalZomeClient;
 
   cachedApphubDnaHash: DnaHash | undefined;
 
@@ -41,6 +43,7 @@ export class DevhubAppClient {
     this.zomeHubZomeClient = new ZomeHubZomeClient(client, 'zomehub', 'zomehub_csr');
     this.dnaHubZomeClient = new DnaHubZomeClient(client, 'dnahub', 'dnahub_csr');
     this.appHubZomeClient = new AppHubZomeClient(client, 'apphub', 'apphub_csr');
+    this.portalZomeClient = new PortalZomeClient(client, 'portal', 'portal_csr');
   }
 
   /**
