@@ -18,7 +18,7 @@
 	import { i18n, trpc } from '$services';
 	import { APPS_VIEW, DISTRIBUTION_TYPE_APPSTORE } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
-	import { REMOTE_CALL_FAILED_ERROR } from '$shared/types';
+	import { NO_AVAILABLE_PEER_HOSTS_ERROR, REMOTE_OPERATION_FAILED_ERROR } from '$shared/types';
 
 	import VersionEntry from './components/VersionEntry.svelte';
 
@@ -44,7 +44,10 @@
 	const handleError = (error: unknown) => {
 		console.error(error);
 		const errorMessage = getErrorMessage(error);
-		if (errorMessage === REMOTE_CALL_FAILED_ERROR) {
+		if (
+			errorMessage === REMOTE_OPERATION_FAILED_ERROR ||
+			errorMessage === NO_AVAILABLE_PEER_HOSTS_ERROR
+		) {
 			return showModalError({
 				modalStore,
 				errorTitle: $i18n.t('appError'),

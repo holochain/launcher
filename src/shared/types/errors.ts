@@ -13,7 +13,8 @@ export const NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND = 'noAppstoreAuthenticationT
 export const NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND = 'noDevhubAuthenticationTokenFound';
 export const NO_PUBLISHERS_AVAILABLE_ERROR = 'noPublishersAvailableError';
 export const NO_RUNNING_HOLOCHAIN_MANAGER_ERROR = 'noRunningHolochainManagerError';
-export const REMOTE_CALL_FAILED_ERROR = 'remoteCallFailedError';
+export const NO_AVAILABLE_PEER_HOSTS_ERROR = 'noAvailablePeerHostsError';
+export const REMOTE_OPERATION_FAILED_ERROR = 'remoteOperationFailedError';
 export const WRONG_INSTALLED_APP_STRUCTURE = 'wrongInstalledAppStructure';
 export const WRONG_PASSWORD = 'wrongPassword';
 

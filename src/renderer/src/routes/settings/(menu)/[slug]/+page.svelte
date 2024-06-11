@@ -23,7 +23,7 @@
 	import { createDevHubClient, i18n, trpc } from '$services';
 	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_SCREEN } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
-	import { REMOTE_CALL_FAILED_ERROR, type UpdateUiFromHash } from '$shared/types';
+	import { type UpdateUiFromHash } from '$shared/types';
 
 	import { DashedSection } from '../../components';
 	import AppSettings from './components/AppSettings.svelte';
@@ -96,9 +96,7 @@
 		showModalError({
 			modalStore,
 			errorTitle: $i18n.t('appError'),
-			errorMessage: errorMessage.includes('failed for all available hosts')
-				? $i18n.t(REMOTE_CALL_FAILED_ERROR)
-				: errorMessage
+			errorMessage: $i18n.t(errorMessage)
 		});
 	};
 

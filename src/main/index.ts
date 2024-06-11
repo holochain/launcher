@@ -54,10 +54,11 @@ import {
   MISSING_BINARIES,
   NO_APP_PORT_ERROR,
   NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND,
+  NO_AVAILABLE_PEER_HOSTS_ERROR,
   NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
   REFETCH_DATA_IN_ALL_WINDOWS,
-  REMOTE_CALL_FAILED_ERROR,
+  REMOTE_OPERATION_FAILED_ERROR,
   UpdateUiFromHashSchema,
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '$shared/types';
@@ -558,9 +559,15 @@ const router = t.router({
       holochainManager.storeHapp(Array.from(happ));
     } catch (error) {
       const errorMessage = getErrorMessage(error);
+      if (errorMessage.includes('No available peer host found.')) {
+        return throwTRPCErrorError({
+          message: NO_AVAILABLE_PEER_HOSTS_ERROR,
+          cause: errorMessage,
+        });
+      }
       if (errorMessage.includes('failed for all available hosts')) {
         return throwTRPCErrorError({
-          message: REMOTE_CALL_FAILED_ERROR,
+          message: REMOTE_OPERATION_FAILED_ERROR,
           cause: errorMessage,
         });
       }
