@@ -2,7 +2,7 @@ name: 'publish'
 on:
   push:
     branches:
-      - release-0.3.1-rc.1
+      - release-0.3.1-rc.2
 
 jobs:
   extract-versions:
