@@ -204,22 +204,15 @@ export async function signZomeCall(
   return zomeCallSigned;
 }
 
-export function createObservable<K extends EventKeys>(
-  emitter: LauncherEmitter,
-  eventName: K,
-  singleEmission: boolean = false,
-) {
+export function createObservable<K extends EventKeys>(emitter: LauncherEmitter, eventName: K) {
   return observable<EventMap[K]>((emit) => {
     const handler = (data: EventMap[K]) => {
       emit.next(data);
-      if (singleEmission) {
-        emitter.off(eventName, handler);
-      }
     };
 
     emitter.on(eventName, handler);
 
-    return !singleEmission ? () => emitter.off(eventName, handler) : undefined;
+    return () => emitter.off(eventName, handler);
   });
 }
 

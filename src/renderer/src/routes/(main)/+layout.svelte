@@ -17,7 +17,7 @@
 	} from '$helpers';
 	import { Gear, Home, Rocket } from '$icons';
 	import { createAppQueries } from '$queries';
-	import { i18n, trpc, useFocusRefetch } from '$services';
+	import { i18n, trpc } from '$services';
 	import { APP_STORE, APPS_VIEW } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
 
@@ -33,6 +33,15 @@
 	const utils = client.createUtils();
 
 	const modalStore = getModalStore();
+
+	client.refetchDataSubscription.createSubscription(undefined, {
+		onData: (data) => {
+			if (data) {
+				$installedApps.refetch();
+				$uiUpdates.refetch();
+			}
+		}
+	});
 
 	let inputExpanded = false;
 
@@ -58,8 +67,6 @@
 			?.map((app) => getAppStoreDistributionHash(app.distributionInfo))
 			.filter(filterHash) ?? []
 	);
-
-	useFocusRefetch($uiUpdates?.refetch);
 
 	const handleNavigation = handleNavigationWithAnimationDelay(() => (inputExpanded = false));
 
@@ -108,6 +115,7 @@
 	onMount(() => {
 		window.addEventListener('keydown', handleEscapeKey);
 		initializeAppPorts();
+
 		return () => {
 			window.removeEventListener('keydown', handleEscapeKey);
 		};

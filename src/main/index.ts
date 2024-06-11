@@ -3,6 +3,7 @@ import type { AppClient, CallZomeRequest, InstalledAppId } from '@holochain/clie
 import { AppWebsocket } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
+import { observable } from '@trpc/server/observable';
 import { AppstoreAppClient, webhappToHappAndUi } from 'appstore-tools';
 import * as childProcess from 'child_process';
 import { Command, Option } from 'commander';
@@ -31,6 +32,7 @@ import {
 import { getErrorMessage } from '$shared/helpers';
 import type {
   DistributionInfoV1,
+  EventMap,
   HolochainDataRoot,
   HolochainPartition,
   Screen,
@@ -54,6 +56,7 @@ import {
   NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND,
   NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
+  REFETCH_DATA_IN_ALL_WINDOWS,
   REMOTE_CALL_FAILED_ERROR,
   UpdateUiFromHashSchema,
   WRONG_INSTALLED_APP_STRUCTURE,
@@ -748,6 +751,12 @@ const router = t.router({
   }),
   onSetupProgressUpdate: t.procedure.subscription(() => {
     return createObservable(LAUNCHER_EMITTER, LOADING_PROGRESS_UPDATE);
+  }),
+  refetchDataSubscription: t.procedure.subscription(() => {
+    return observable<EventMap[typeof REFETCH_DATA_IN_ALL_WINDOWS]>((emit) => {
+      const handler = (data: EventMap[typeof REFETCH_DATA_IN_ALL_WINDOWS]) => emit.next(data);
+      LAUNCHER_EMITTER.on(REFETCH_DATA_IN_ALL_WINDOWS, handler);
+    });
   }),
 });
 

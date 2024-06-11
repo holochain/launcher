@@ -23,7 +23,12 @@ import type {
   HolochainPartition,
   HolochainVersion,
 } from '$shared/types';
-import { APP_INSTALLED, HOLOCHAIN_ERROR, HOLOCHAIN_LOG } from '$shared/types';
+import {
+  APP_INSTALLED,
+  HOLOCHAIN_ERROR,
+  HOLOCHAIN_LOG,
+  REFETCH_DATA_IN_ALL_WINDOWS,
+} from '$shared/types';
 
 import { DEFAULT_HOLOCHAIN_VERSION, HOLOCHAIN_BINARIES } from './binaries';
 import type { AppMetadata, AppMetadataV1, LauncherFileSystem } from './filesystem';
@@ -391,6 +396,7 @@ export class HolochainManager {
       holochainDataRoot: this.holochainDataRoot,
       data: appInfo,
     });
+    this.launcherEmitter.emit(REFETCH_DATA_IN_ALL_WINDOWS, `install-${appId}`);
   }
 
   async installWebhappFromHashes({
@@ -464,6 +470,7 @@ export class HolochainManager {
       holochainDataRoot: this.holochainDataRoot,
       data: appInfo,
     });
+    this.launcherEmitter.emit(REFETCH_DATA_IN_ALL_WINDOWS, `install-${appId}`);
   }
 
   async updateUiFromHash(
@@ -538,6 +545,7 @@ export class HolochainManager {
       default:
         throw new Error('Invalid existing distribution info type.');
     }
+    this.launcherEmitter.emit(REFETCH_DATA_IN_ALL_WINDOWS, `update-${appId}`);
   }
 
   /**
@@ -635,7 +643,7 @@ export class HolochainManager {
     const installedApps = await this.adminWebsocket.listApps({});
     console.log('Installed apps: ', installedApps);
     this.installedApps = installedApps;
-
+    this.launcherEmitter.emit(REFETCH_DATA_IN_ALL_WINDOWS, `uninstall-${appId}`);
     // TODO Potentially remove .happ file and ui directory in case it is not used by any
     // other app instance anymore. This would mean however that happ and UI would need
     // to be fetched over the network again if the same happ and UI shall be installed
