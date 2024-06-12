@@ -12,6 +12,8 @@ use lair_keystore_api::{
     lair_store::LairEntryInfo,
     LairClient,
 };
+use pinentry::PassphraseInput;
+use secrecy::{ExposeSecret, SecretString};
 
 use napi::Result;
 
@@ -86,7 +88,6 @@ impl LauncherLairClient {
     pub async fn derive_and_import_seed_from_json_file(
         &self,
         path: String,
-        passphrase: String,
     ) -> Result<String> {
         let json_string = std::fs::read_to_string(path)?;
         let parsed_string: serde_json::Value = serde_json::from_str(&json_string)?;
@@ -124,6 +125,17 @@ impl LauncherLairClient {
         // let device_derivation_path = vec![derivation_path_num];
 
         // println!("Parsed derivation path: {:?}", device_derivation_path);
+
+        let passphrase = if let Some(mut input) = PassphraseInput::with_default_binary() {
+            // pinentry binary is available!
+            input
+                .with_description("Enter Seed Bundle Passphrase")
+                .with_prompt("Passphrase:")
+                .interact()
+                .map_err(|e| napi::Error::from_reason(format!("Failed to collect passphrase: {e}")))?
+        } else {
+            return Err(napi::Error::from_reason("No pinentry binary available to collect the passphrase."));
+        };
 
         // Unlock the device bundle and derive the sub seed at index 1 which whose public part should
         // correspond to initial_host_pub_key_b64
@@ -202,7 +214,7 @@ impl LauncherLairClient {
                 encryption_key.x25519_pub_key.clone(),
                 decryption_key.x25519_pub_key.clone(),
                 None,
-                derived_key_pair.public.as_ref().into(),
+                derived_key_pair.secret.as_ref().into(),
             )
             .await
             .map_err(|e| {
@@ -233,7 +245,7 @@ impl LauncherLairClient {
         ));
 
         if initial_host_pub_key_b64 != imported_pubkey_b64.to_string() {
-            return Err(napi::Error::from_reason(format!("Imported public key does not match the expected public key. Expected {initial_host_pub_key_b64} but derived {imported_pubkey_b64}")));
+            return Err(napi::Error::from_reason(format!("Imported public key does not match the expected public key. Expected {initial_host_pub_key_b64} but imported {imported_pubkey_b64}")));
         }
 
         Ok(imported_pubkey_b64.to_string())
@@ -279,12 +291,11 @@ impl JsLauncherLairClient {
     pub async fn derive_and_import_seed_from_json_file(
         &self,
         path: String,
-        passphrase: String,
     ) -> Result<String> {
         self.launcher_lair_client
             .as_ref()
             .unwrap()
-            .derive_and_import_seed_from_json_file(path, passphrase)
+            .derive_and_import_seed_from_json_file(path)
             .await
     }
 }
@@ -293,7 +304,7 @@ impl JsLauncherLairClient {
 /// a sub SeedBundle by the given index and returns the corresponding derived KeyPair
 pub async fn derive_seed_from_device_bundle(
     device_bundle: &String,
-    passphrase: String,
+    passphrase: SecretString,
     index: u32,
 ) -> napi::Result<Keypair> {
     let cipher = base64::decode(device_bundle).map_err(|e| {
@@ -307,7 +318,7 @@ pub async fn derive_seed_from_device_bundle(
         .remove(0)
     {
         LockedSeedCipher::PwHash(cipher) => {
-            let passphrase_bufread = BufRead::from(passphrase.as_bytes());
+            let passphrase_bufread = BufRead::from(passphrase.expose_secret().as_bytes());
             let seed = cipher.unlock(passphrase_bufread).await.map_err(|e| {
                 napi::Error::from_reason(format!(
                     "Failed to unlock cipher with the given passphrase: {:?}",
