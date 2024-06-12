@@ -19,17 +19,6 @@ use napi::Result;
 
 use crate::types::*;
 
-// // This is an incomplete type with only the fields that are actually necessary for the launcher case
-// struct SeedConfig {
-//     /// This is the Device Seed Bundle as a base64 string which is compatible with lair-keystore >=v0.0.8
-//     /// And is encoded with a password that will be needed to be used to decrypt it
-//     device_bundle: String,
-//     /// Derivation path of the seed in this config that was generated for a Master Seed
-//     device_derivation_path: String,
-//     // /1 derivation path of the device bundle base36 encoded
-//     holoport_id: String,
-// }
-
 struct LauncherLairClient {
     lair_client: LairClient,
 }
@@ -326,11 +315,6 @@ pub async fn derive_seed_from_device_bundle(
                 ))
             })?;
             let derived_seed = seed.derive(index).await.unwrap();
-            // let derived_pubkey =
-            //     PublicKey::from_bytes(&*immediately_derived_seed.get_sign_pub_key().read_lock())
-            //         .unwrap();
-            // let base36_derived_pubkey = base36::encode(derived_pubkey.as_ref());
-            // println!("Immediately derived pubkey: {base36_derived_pubkey}");
 
             Ok(Keypair {
                 public: PublicKey::from_bytes(&*derived_seed.get_sign_pub_key().read_lock())
