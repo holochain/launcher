@@ -766,6 +766,58 @@ const router = t.router({
       LAUNCHER_EMITTER.on(REFETCH_DATA_IN_ALL_WINDOWS, handler);
     });
   }),
+  factoryReset: t.procedure.mutation(async () => {
+    const userDecision = await dialog.showMessageBox({
+      title: 'Factory Reset',
+      type: 'warning',
+      buttons: ['Cancel', 'Continue'],
+      defaultId: 0,
+      cancelId: 0,
+      message:
+        'WARNING: This will delete all your apps alongside any data therein as well as your private keys.',
+    });
+    if (userDecision.response === 0) {
+      return;
+    }
+
+    if (!LAUNCHER_FILE_SYSTEM) {
+      throw new Error('LauncherFilesystem is undefined. Aborting Factory Reset.');
+    }
+
+    // 1. Close all windows to prevent chromium related files to be accessed by them
+
+    Object.values(WINDOW_INFO_MAP).forEach((info) => {
+      info.windowObject.close();
+    });
+    if (PRIVILEDGED_LAUNCHER_WINDOWS) {
+      Object.values(PRIVILEDGED_LAUNCHER_WINDOWS).forEach((window) => {
+        window.close();
+      });
+    }
+
+    // 2. Stop holochain and lair to prevent files being accessed by them
+    Object.values(HOLOCHAIN_MANAGERS).forEach((manager) => {
+      if (manager.processHandle) manager.processHandle.kill();
+    });
+
+    if (LAIR_HANDLE) LAIR_HANDLE.kill();
+
+    // 3. Remove all data
+    LAUNCHER_FILE_SYSTEM.factoryReset();
+
+    // 4. Relaunch
+    const options: Electron.RelaunchOptions = {
+      args: process.argv,
+    };
+    // https://github.com/electron-userland/electron-builder/issues/1727#issuecomment-769896927
+    if (process.env.APPIMAGE) {
+      console.log('process.execPath: ', process.execPath);
+      options.args!.unshift('--appimage-extract-and-run');
+      options.execPath = process.env.APPIMAGE;
+    }
+    app.relaunch(options);
+    app.exit(0);
+  }),
 });
 
 export type AppRouter = typeof router;

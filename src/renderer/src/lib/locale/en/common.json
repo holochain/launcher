@@ -23,6 +23,7 @@
 	"discoverInstallAndManageYourApps": "Discover, install and manage your apps",
 	"enterAppName": "Enter app name",
 	"enterNetworkSeed": "Enter network seed",
+	"factoryResetError": "Factory Reset Failed",
 	"fetchingAppData": "Fetching app data",
 	"getStarted": "Get started",
 	"holochainLauncher": "Holochain Launcher",

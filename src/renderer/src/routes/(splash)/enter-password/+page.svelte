@@ -16,6 +16,8 @@
 
 	const launch = client.launch.createMutation();
 
+	const factoryReset = client.factoryReset.createMutation();
+
 	const handleError = (errorMessage: string) => {
 		showModalError({
 			modalStore,
@@ -43,4 +45,19 @@
 		isDisabled={passwordInput.length < 1 || $launch.isPending}
 		bind:value={passwordInput}
 	/>
+	<button
+		on:click={() => {
+			$factoryReset.mutate(
+				undefined,
+				{
+					onError: (error) =>
+						showModalError({
+							modalStore,
+							errorTitle: $i18n.t('factoryResetError'),
+							errorMessage: error.message
+						})
+				}
+			);
+		}}>Factory Reset</button
+	>
 </SetupProgressWrapper>
