@@ -60,6 +60,36 @@ export type CreateAppInput = {
   metadata?: any;
 };
 
+export type UpdateAppProperties = {
+  title?: string;
+  subtitle?: string;
+  description?: string;
+  icon?: EntryHash;
+  apphub_hrl?: HRL;
+  apphub_hrl_hash?: EntryHash;
+
+  editors?: Array<AgentPubKey>;
+
+  published_at?: number;
+  last_updated?: number;
+  metadata?: any;
+};
+
+export type UpdateAppFrontendInput = {
+  title?: string;
+  subtitle?: string;
+  description?: string;
+  icon?: Uint8Array; // icon bytes
+  apphub_hrl?: HRL;
+  apphub_hrl_hash?: EntryHash;
+
+  editors?: Array<AgentPubKey>;
+
+  published_at?: number;
+  last_updated?: number;
+  metadata?: any;
+};
+
 export type AppVersionEntry = {
   version: string;
   for_app: EntityId;

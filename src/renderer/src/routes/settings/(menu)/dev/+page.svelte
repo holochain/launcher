@@ -30,9 +30,8 @@
 		}
 	};
 
-	const handleIconUpload = async (file: File): Promise<void> => {
-		const icon = await convertFileToUint8Array(file);
-		appData = { ...appData, icon };
+	const handleIconUpload = async (file: Uint8Array): Promise<void> => {
+		appData = { ...appData, icon: file };
 	};
 
 	$: setAppDataBytes(bytesFiles);
@@ -73,6 +72,7 @@
 	<InputWithLabel
 		bind:value={appData.description}
 		id="description"
+		largeTextField
 		label={$i18n.t('description')}
 		maxLength={500}
 	/>
@@ -80,7 +80,7 @@
 		bind:value={appData.version}
 		id="version"
 		label={`${$i18n.t('version')}*`}
-		maxLength={10}
+		maxLength={50}
 	/>
 	<footer class="modal-footer flex justify-between gap-2">
 		<Button

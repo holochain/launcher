@@ -1,5 +1,7 @@
 import { SETTINGS_SCREEN } from '$shared/const';
 
+export const MAX_IMAGE_WIDTH_AND_HEIGHT = 300;
+
 export const MODAL_INSTALL_FROM_FILE = 'modalInstallFromFile';
 export const MODAL_INSTALL_KANDO = 'modalInstallKando';
 export const MODAL_ADD_NEW_HAPP_VERSION = 'modalAddNewHappVersion';

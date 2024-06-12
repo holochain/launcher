@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { decodeHashFromBase64 } from '@holochain/client';
 	import clsx from 'clsx';
 
 	import { createImageUrl } from '$helpers';
@@ -20,7 +19,7 @@
 		'dark:border-0': !willBeOpen
 	});
 
-	$: imageUrl = app.icon ? createImageUrl(decodeHashFromBase64(app.icon)) : undefined;
+	$: imageUrl = app.icon ? createImageUrl(app.icon) : undefined;
 </script>
 
 <BaseButton

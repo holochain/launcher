@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 
 	import { goto } from '$app/navigation';
@@ -10,12 +11,15 @@
 		filterValidateAndSortApps,
 		getAppStoreDistributionHash,
 		handleNavigationWithAnimationDelay,
-		setSearchInput
+		initializeDefaultAppPorts,
+		setSearchInput,
+		showModalError
 	} from '$helpers';
 	import { Gear, Home, Rocket } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
 	import { APP_STORE, APPS_VIEW } from '$shared/const';
+	import { getErrorMessage } from '$shared/helpers';
 
 	const client = trpc();
 
@@ -26,6 +30,18 @@
 	const openApp = client.openApp.createMutation();
 
 	const openSettings = client.openSettings.createMutation();
+	const utils = client.createUtils();
+
+	const modalStore = getModalStore();
+
+	client.refetchDataSubscription.createSubscription(undefined, {
+		onData: (data) => {
+			if (data) {
+				$installedApps.refetch();
+				$uiUpdates.refetch();
+			}
+		}
+	});
 
 	let inputExpanded = false;
 
@@ -83,9 +99,22 @@
 			goto(`/${APPS_VIEW}`);
 		}
 	};
+	const initializeAppPorts = async () => {
+		try {
+			const initializeDefaultAppPortsData = await utils.initializeDefaultAppPorts.fetch();
+			initializeDefaultAppPorts(initializeDefaultAppPortsData);
+		} catch (error) {
+			showModalError({
+				modalStore,
+				errorTitle: $i18n.t('setupError'),
+				errorMessage: $i18n.t(getErrorMessage(error))
+			});
+		}
+	};
 
 	onMount(() => {
 		window.addEventListener('keydown', handleEscapeKey);
+		initializeAppPorts();
 
 		return () => {
 			window.removeEventListener('keydown', handleEscapeKey);

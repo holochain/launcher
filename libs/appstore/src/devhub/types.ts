@@ -312,11 +312,6 @@ export type EntityId = ActionHash;
 
 export type EntityMap<T> = Record<string, Entity<T>>;
 
-export type UpdateEntityInput<T> = {
-  base: ActionHash;
-  properties: T;
-};
-
 export type BundleAddr = EntryHash;
 
 // ZOME HUB

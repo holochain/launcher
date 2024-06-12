@@ -6,11 +6,12 @@ import {
 	createAppVersionsAppstoreQuery,
 	createCheckForAppUiUpdatesQuery,
 	createFetchUiBytesMutation,
-	createFetchWebappBytesMutation,
+	createGetAppDetailsQuery,
 	createPublisherMutation,
 	createPublishersQuery,
 	createPublishHappMutation,
-	createPublishNewVersionMutation
+	createPublishNewVersionMutation,
+	createUpdateAppDetailsMutation
 } from './happs';
 
 export function createAppQueries() {
@@ -19,11 +20,12 @@ export function createAppQueries() {
 	const appStoreMyHappsQuery = createAppStoreMyHappsQuery();
 	const appStoreHappsQuery = createAppStoreHappsQuery();
 	const appVersionsAppstoreQueryFunction = createAppVersionsAppstoreQuery();
-	const fetchWebappBytesMutation = createFetchWebappBytesMutation();
 	const publisherMutation = createPublisherMutation(queryClient);
 	const publishHappMutation = createPublishHappMutation(queryClient);
+	const updateAppDetailsMutation = createUpdateAppDetailsMutation(queryClient);
 	const publishNewVersionMutation = createPublishNewVersionMutation(queryClient);
 	const checkForAppUiUpdatesQuery = createCheckForAppUiUpdatesQuery();
+	const getAppDetailsQuery = createGetAppDetailsQuery();
 	const fetchUiBytesMutation = createFetchUiBytesMutation();
 
 	return {
@@ -31,11 +33,12 @@ export function createAppQueries() {
 		publisherMutation,
 		publishHappMutation,
 		appStoreMyHappsQuery,
+		updateAppDetailsMutation,
 		appVersionsAppstoreQueryFunction,
 		publishNewVersionMutation,
-		fetchWebappBytesMutation,
 		appStoreHappsQuery,
 		fetchUiBytesMutation,
+		getAppDetailsQuery,
 		checkForAppUiUpdatesQuery
 	};
 }

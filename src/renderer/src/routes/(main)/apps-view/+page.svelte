@@ -14,7 +14,8 @@
 	const installedApps = client.getInstalledApps.createQuery();
 
 	onMount(() => {
-		goto(`?${SEARCH_URL_QUERY}=${$page.url.searchParams.get(PRESEARCH_URL_QUERY) || ''}`);
+		const searchQuery = $page.url.searchParams.get(PRESEARCH_URL_QUERY) || '';
+		goto(`?${SEARCH_URL_QUERY}=${searchQuery}`);
 	});
 
 	$: searchInput = $page.url.searchParams.get(SEARCH_URL_QUERY) || '';

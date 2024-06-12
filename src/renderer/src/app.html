@@ -21,13 +21,17 @@
 		%sveltekit.head%
 		<script>
 			const toggleTheme = (isDark) => document.documentElement.classList.toggle('dark', isDark);
-			const matchMediaDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+			// const matchMediaDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+
+			toggleTheme(true);
+
+			// TODO: Fix colors in app to allow for light mode
 
 			// Set the default theme based on system preference with fallback to dark
-			toggleTheme(matchMediaDark ? matchMediaDark.matches : true);
+			// toggleTheme(matchMediaDark ? matchMediaDark.matches : true);
 
 			// Listen for changes to the color scheme
-			matchMediaDark && matchMediaDark.addEventListener('change', (e) => toggleTheme(e.matches));
+			// matchMediaDark && matchMediaDark.addEventListener('change', (e) => toggleTheme(e.matches));
 		</script>
 	</head>
 	<body data-sveltekit-preload-data="hover" data-theme="app-theme">

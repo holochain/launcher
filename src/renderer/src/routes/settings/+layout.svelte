@@ -14,6 +14,16 @@
 
 	const utils = client.createUtils();
 
+	const installedApps = client.getInstalledApps.createQuery(true);
+
+	client.refetchDataSubscription.createSubscription(undefined, {
+		onData: (data) => {
+			if (data) {
+				$installedApps.refetch();
+			}
+		}
+	});
+
 	onMount(async () => {
 		try {
 			const initializeDefaultAppPortsData = await utils.initializeDefaultAppPorts.fetch();

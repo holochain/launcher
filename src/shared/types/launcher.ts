@@ -37,7 +37,7 @@ export const HolochainLairVersionSchema = z.object({
 export const CommonAppSchema = z.object({
   appId: z.string().min(1),
   networkSeed: z.string(),
-  icon: z.string().optional(),
+  icon: z.instanceof(Uint8Array).optional(),
   // TODO add membrane proofs here
 });
 
@@ -93,5 +93,7 @@ export const UpdateUiFromHashSchema = z.object({
   appId: z.string(),
   appVersionActionHash: z.optional(z.string({ description: 'ActionHashB64' })),
 });
+
+export const IncludeHeadlessSchema = z.boolean().default(false);
 
 export type UpdateUiFromHash = z.infer<typeof UpdateUiFromHashSchema>;

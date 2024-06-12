@@ -5,7 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { Button, IconInput, InputWithLabel } from '$components';
 	import { DEV_PAGE } from '$const';
-	import { base64ToArrayBuffer, convertFileToUint8Array, showModalError } from '$helpers';
+	import { base64ToArrayBuffer, showModalError } from '$helpers';
 	import { defaultIcon } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
@@ -21,8 +21,8 @@
 		icon: base64ToArrayBuffer(defaultIcon)
 	};
 
-	const handleFileUpload = async (file: File): Promise<void> => {
-		publisherData.icon = await convertFileToUint8Array(file);
+	const handleFileUpload = async (file: Uint8Array): Promise<void> => {
+		publisherData.icon = file;
 	};
 </script>
 

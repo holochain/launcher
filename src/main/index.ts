@@ -3,7 +3,8 @@ import type { AppClient, CallZomeRequest, InstalledAppId } from '@holochain/clie
 import { AppWebsocket } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
-import { AppstoreAppClient, type AppVersionEntry, webhappToHappAndUi } from 'appstore-tools';
+import { observable } from '@trpc/server/observable';
+import { AppstoreAppClient, DevhubAppClient, webhappToHappAndUi } from 'appstore-tools';
 import * as childProcess from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
@@ -28,17 +29,22 @@ import {
   SETTINGS_SCREEN,
   WINDOW_SIZE,
 } from '$shared/const';
+import { getErrorMessage } from '$shared/helpers';
 import type {
   DistributionInfoV1,
+  EventMap,
   HolochainDataRoot,
   HolochainPartition,
   Screen,
   WindowInfoRecord,
 } from '$shared/types';
 import {
+  APP_NAME_EXISTS_ERROR,
+  AppVersionEntrySchemaWithIcon,
   BytesSchema,
   CHECK_INITIALIZED_KEYSTORE_ERROR,
   ExtendedAppInfoSchema,
+  IncludeHeadlessSchema,
   InitializeAppPortsSchema,
   InstallDefaultAppSchema,
   InstallHappFromPathSchema,
@@ -48,8 +54,10 @@ import {
   MISSING_BINARIES,
   NO_APP_PORT_ERROR,
   NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND,
+  NO_AVAILABLE_PEER_HOSTS_ERROR,
   NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
+  REFETCH_DATA_IN_ALL_WINDOWS,
   UpdateUiFromHashSchema,
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '$shared/types';
@@ -204,7 +212,7 @@ const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - 
 
 const APP_CLIENTS: Record<InstalledAppId, AppClient> = {};
 let APPSTORE_APP_CLIENT: AppstoreAppClient | undefined;
-// let DEVHUB_APP_CLIENT: DevhubAppClient | undefined;
+let DEVHUB_APP_CLIENT: DevhubAppClient | undefined;
 
 const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeRequest) => {
   // TODO check here that cellId belongs to the installedAppId that the window belongs to
@@ -462,14 +470,14 @@ const getAppstoreAppClient = async () => {
   return APPSTORE_APP_CLIENT;
 };
 
-// const getDevhubAppClient = async () => {
-//   if (DEVHUB_APP_CLIENT) return DEVHUB_APP_CLIENT;
-//   if (!DEFAULT_HOLOCHAIN_DATA_ROOT) throw new Error('Default holochain data root is not defined.');
-//   const appClient = await getAppClient(DEVHUB_APP_ID);
-//   const devhubAppClient = new DevhubAppClient(appClient);
-//   DEVHUB_APP_CLIENT = devhubAppClient;
-//   return DEVHUB_APP_CLIENT;
-// };
+const getDevhubAppClient = async () => {
+  if (DEVHUB_APP_CLIENT) return DEVHUB_APP_CLIENT;
+  if (!DEFAULT_HOLOCHAIN_DATA_ROOT) throw new Error('Default holochain data root is not defined.');
+  const appClient = await getAppClient(DEVHUB_APP_ID);
+  const devhubAppClient = new DevhubAppClient(appClient);
+  DEVHUB_APP_CLIENT = devhubAppClient;
+  return DEVHUB_APP_CLIENT;
+};
 
 const router = t.router({
   openSettings: t.procedure.mutation(() => {
@@ -517,8 +525,12 @@ const router = t.router({
     const holochainManager = getHolochainManager(holochainDataRoot.name);
     await holochainManager.uninstallApp(appInfo.installed_app_id);
   }),
-  fetchWebhapp: t.procedure.input(z.any()).mutation(async (opts) => {
-    const appVersionEntry = opts.input as AppVersionEntry;
+  fetchWebhapp: t.procedure.input(AppVersionEntrySchemaWithIcon).mutation(async (opts) => {
+    const { app_version, icon } = opts.input;
+    const appVersionEntry = {
+      ...app_version,
+      metadata: app_version.metadata || {}, // Ensure metadata is defined if it's optional
+    };
     const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
     const appstoreAppClient = await getAppstoreAppClient();
 
@@ -526,20 +538,32 @@ const router = t.router({
     const isHappAvailable = holochainManager.isHappAvailableAndValid(
       appVersionEntry.bundle_hashes.happ_hash,
     );
+
     console.log('happAvailable, uiAvailable: ', isHappAvailable, isUiAvailable);
 
     if (isHappAvailable && isUiAvailable) return;
 
-    if (isHappAvailable && !isUiAvailable) {
-      const uiBytes = await appstoreAppClient.fetchUiBytes(appVersionEntry);
-      holochainManager.storeUiIfNecessary(Array.from(uiBytes));
-      return;
-    }
+    try {
+      if (isHappAvailable && !isUiAvailable) {
+        const uiBytes = await appstoreAppClient.fetchUiBytes(appVersionEntry);
+        holochainManager.storeUiIfNecessary(Array.from(uiBytes), icon);
+        return;
+      }
 
-    const webhappBytes = await appstoreAppClient.fetchWebappBytes(appVersionEntry);
-    const { ui, happ } = webhappToHappAndUi(webhappBytes);
-    holochainManager.storeUiIfNecessary(Array.from(ui));
-    holochainManager.storeHapp(Array.from(happ));
+      const webhappBytes = await appstoreAppClient.fetchWebappBytes(appVersionEntry);
+      const { ui, happ } = webhappToHappAndUi(webhappBytes);
+      holochainManager.storeUiIfNecessary(Array.from(ui), icon);
+      holochainManager.storeHapp(Array.from(happ));
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      if (errorMessage.includes('No available peer host found.')) {
+        return throwTRPCErrorError({
+          message: NO_AVAILABLE_PEER_HOSTS_ERROR,
+          cause: errorMessage,
+        });
+      }
+      throw new Error(errorMessage);
+    }
   }),
   isHappAvailableAndValid: t.procedure.input(z.string()).query(async (opts) => {
     const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
@@ -576,14 +600,25 @@ const router = t.router({
     .input(InstallWebhappFromHashesSchema) // TODO: need metadata input as well here like name and action hash of app and app version in app store
     .mutation(async (opts) => {
       const { happSha256, uiZipSha256, appId, distributionInfo, networkSeed } = opts.input;
-      const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
-      await holochainManager.installWebhappFromHashes({
-        happSha256,
-        uiZipSha256,
-        appId,
-        distributionInfo,
-        networkSeed,
-      });
+      try {
+        const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
+        await holochainManager.installWebhappFromHashes({
+          happSha256,
+          uiZipSha256,
+          appId,
+          distributionInfo,
+          networkSeed,
+        });
+      } catch (error) {
+        const errorMessage = getErrorMessage(error);
+        if (errorMessage.includes('AppAlreadyInstalled')) {
+          return throwTRPCErrorError({
+            message: APP_NAME_EXISTS_ERROR,
+            cause: errorMessage,
+          });
+        }
+        throw new Error(errorMessage);
+      }
     }),
   installWebhappFromBytes: t.procedure
     .input(InstallHappOrWebhappFromBytesSchema)
@@ -647,13 +682,22 @@ const router = t.router({
   defaultHolochainVersion: t.procedure.query(
     () => HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION].version,
   ),
+  declaredHolochainVersion: t.procedure.query(() => DEFAULT_HOLOCHAIN_VERSION),
   isDevhubInstalled: t.procedure.query(() => isDevhubInstalled(HOLOCHAIN_MANAGERS)),
-  getInstalledApps: t.procedure.query(() => {
+  getInstalledApps: t.procedure.input(IncludeHeadlessSchema).query((opts) => {
+    const { input: includeHeadless } = opts;
     const installedApps = getInstalledAppsInfo(HOLOCHAIN_MANAGERS);
+
+    const processApps = (apps: typeof installedApps, includeHeadless: boolean) => {
+      const sortedApps = apps.sort((a, b) =>
+        a.isHeadless === b.isHeadless ? 0 : a.isHeadless ? -1 : 1,
+      );
+      return includeHeadless ? sortedApps : sortedApps.filter(({ isHeadless }) => !isHeadless);
+    };
 
     return validateWithZod({
       schema: z.array(ExtendedAppInfoSchema),
-      data: installedApps,
+      data: processApps(installedApps, includeHeadless),
       errorType: WRONG_INSTALLED_APP_STRUCTURE,
     });
   }),
@@ -698,6 +742,14 @@ const router = t.router({
 
     const authenticationToken = await defaultHolochainManager.getAppToken(DEVHUB_APP_ID);
 
+    // make a whoami zome call to all relevant zomes to trigger init to register
+    // yourself as a host for the relevant functions in portal
+    const devhubClient = await getDevhubAppClient();
+    await devhubClient.appHubZomeClient.whoami();
+    await devhubClient.dnaHubZomeClient.whoami();
+    await devhubClient.zomeHubZomeClient.whoami();
+    await devhubClient.portalZomeClient.whoami();
+
     return {
       appPort: APP_PORT,
       authenticationToken,
@@ -710,6 +762,11 @@ const router = t.router({
     const jsonFilePath = opts.input;
     if (!DEFAULT_LAIR_CLIENT) throw new Error('Lair client is not ready.');
     return DEFAULT_LAIR_CLIENT.deriveAndImportSeedFromJsonFile(jsonFilePath);
+  refetchDataSubscription: t.procedure.subscription(() => {
+    return observable<EventMap[typeof REFETCH_DATA_IN_ALL_WINDOWS]>((emit) => {
+      const handler = (data: EventMap[typeof REFETCH_DATA_IN_ALL_WINDOWS]) => emit.next(data);
+      LAUNCHER_EMITTER.on(REFETCH_DATA_IN_ALL_WINDOWS, handler);
+    });
   }),
 });
 

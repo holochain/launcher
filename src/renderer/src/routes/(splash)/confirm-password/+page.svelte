@@ -3,11 +3,10 @@
 
 	import { goto } from '$app/navigation';
 	import { Button } from '$components';
-	import { initializeDefaultAppPorts, showModalError } from '$helpers';
+	import { showModalError } from '$helpers';
 	import { ArrowLeft, Warning } from '$icons';
 	import { i18n, trpc } from '$services';
 	import { APP_STORE } from '$shared/const';
-	import { getErrorMessage } from '$shared/helpers';
 	import { appPassword } from '$stores';
 
 	import { PasswordForm, SetupProgressWrapper } from '../components';
@@ -15,8 +14,6 @@
 	const modalStore = getModalStore();
 
 	const client = trpc();
-
-	const utils = client.createUtils();
 
 	const setupAndLaunch = client.handleSetupAndLaunch.createMutation();
 
@@ -38,15 +35,7 @@
 		$setupAndLaunch.mutate(
 			{ password: $appPassword },
 			{
-				onSuccess: async () => {
-					try {
-						const initializeDefaultAppPortsData = await utils.initializeDefaultAppPorts.fetch();
-						await initializeDefaultAppPorts(initializeDefaultAppPortsData);
-						goto(`/${APP_STORE}`);
-					} catch (error) {
-						handleError($i18n.t(getErrorMessage(error)));
-					}
-				},
+				onSuccess: () => goto(`/${APP_STORE}`),
 				onError: (error) => {
 					console.error(error);
 					handleError($i18n.t(error.message || 'unknownError'));

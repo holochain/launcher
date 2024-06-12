@@ -1,8 +1,14 @@
-import type { AgentPubKey } from '@holochain/client';
+import { type AgentPubKey } from '@holochain/client';
 
+import type {
+  CustomRemoteCallInput,
+  DnaZomeFunction,
+  HostAvailability,
+  HostEntry,
+} from '../../appstore/types';
 import type { Entity } from '../../devhub/types';
+import type { AgentInfo } from '../../types';
 import { ZomeClient } from '../../zome-client/zome-client';
-import type { CustomRemoteCallInput, DnaZomeFunction, HostAvailability, HostEntry } from '../types';
 
 export interface Response<T> {
   type: 'success' | 'failure';
@@ -10,6 +16,10 @@ export interface Response<T> {
 }
 
 export class PortalZomeClient extends ZomeClient {
+  async whoami(): Promise<AgentInfo> {
+    return this.callZome('whoami', null);
+  }
+
   async getHostsForZomeFunction(input: DnaZomeFunction): Promise<Array<Entity<HostEntry>>> {
     return this.callZome('get_hosts_for_zome_function', input);
   }
@@ -32,7 +42,10 @@ export class PortalZomeClient extends ZomeClient {
    *
    * 3. return the first that responds to the ping
    */
-  async getAvailableHostForZomeFunction(input: DnaZomeFunction): Promise<AgentPubKey> {
+  async getAvailableHostForZomeFunction(
+    input: DnaZomeFunction,
+    timeoutMs: number = 4000,
+  ): Promise<AgentPubKey> {
     try {
       const hosts = await this.getHostsForZomeFunction(input);
 
@@ -41,10 +54,13 @@ export class PortalZomeClient extends ZomeClient {
         const availableHost = await Promise.any(
           hosts.map(async (hostEntryEntity) => {
             const hostPubKey = hostEntryEntity.content.author;
-            // console.log("@getAvailableHostForZomeFunction: trying to ping host: ", encodeHashToBase64(hostPubKey));
+            // console.log(
+            //   '@getAvailableHostForZomeFunction: trying to ping host: ',
+            //   encodeHashToBase64(hostPubKey),
+            // );
 
             try {
-              const result: Response<boolean> = await this.callZome('ping', hostPubKey);
+              const result: Response<boolean> = await this.callZome('ping', hostPubKey, timeoutMs);
 
               if (result.type === 'failure') {
                 return Promise.reject(`Failed to ping host: ${result.payload}`);
@@ -113,19 +129,22 @@ export class PortalZomeClient extends ZomeClient {
   async tryWithHosts<T>(
     fn: (host: AgentPubKey) => Promise<T>,
     dnaZomeFunction: DnaZomeFunction,
-    pingTimeout: number = 3000,
+    pingTimeout: number = 4000,
   ): Promise<T> {
     // try with first responding host
-    const quickestHost: AgentPubKey = await this.getAvailableHostForZomeFunction(dnaZomeFunction);
+    const quickestHost: AgentPubKey = await this.getAvailableHostForZomeFunction(
+      dnaZomeFunction,
+      pingTimeout,
+    );
     console.log('got quickest host: ', quickestHost);
     try {
       // console.log("@tryWithHosts: trying with first responding host: ", encodeHashToBase64(host));
       const result = await fn(quickestHost);
       return result;
-    } catch (e: unknown) {
-      console.log('Failed: ', e);
-      const errors: Array<unknown> = [];
-      errors.push(JSON.stringify(e));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      const errors: Array<string> = [];
+      errors.push(e.toString());
 
       // console.log("@tryWithHosts: Failed with first host: ", JSON.stringify(e));
       // if it fails with the first host, try other hosts
@@ -144,8 +163,9 @@ export class PortalZomeClient extends ZomeClient {
           // console.log("@tryWithHosts: retrying with other host: ", encodeHashToBase64(otherHost));
           const response = await fn(host);
           return response;
-        } catch (e) {
-          errors.push(e);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (e: any) {
+          errors.push(e.toString());
         }
       }
 

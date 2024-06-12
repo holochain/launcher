@@ -18,7 +18,6 @@ export default {
 				'light-background': 'rgba(0, 102, 255, 0.1)'
 			},
 			backgroundImage: {
-				'login-background': "url('/images/login-background.png')",
 				'button-gradient':
 					'linear-gradient(to top right, rgb(0, 212, 225) 15%, rgb(175, 0, 236) 70%)',
 				'app-gradient':

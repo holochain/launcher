@@ -4,12 +4,14 @@ import { Bundle } from '@spartan-hc/bundles';
 import type { QueryClient } from '@tanstack/svelte-query';
 import { createMutation, createQuery } from '@tanstack/svelte-query';
 import {
+	type AppEntry,
 	type AppstoreAppClient,
 	type AppVersionEntry,
 	type BundleHashes,
 	bundleToDeterministicBytes,
 	type CreatePublisherFrontendInput,
-	type DevhubAppClient
+	type DevhubAppClient,
+	type Entity
 } from 'appstore-tools';
 import { sha256 } from 'js-sha256';
 import { get, type Writable } from 'svelte/store';
@@ -20,6 +22,7 @@ import {
 	APP_STORE_HAPPS_QUERY_KEY,
 	APP_STORE_MY_HAPPS_QUERY_KEY,
 	CHECK_FOR_APP_UI_UPDATES_QUERY_KEY,
+	GET_APP_DETAILS_QUERY_KEY,
 	PUBLISHERS_QUERY_KEY
 } from '$const';
 import { uint8ArrayToURIComponent } from '$helpers';
@@ -29,7 +32,7 @@ import {
 	DEV_HUB_CLIENT_NOT_INITIALIZED_ERROR,
 	NO_PUBLISHERS_AVAILABLE_ERROR
 } from '$shared/types';
-import { type AppData, type PublishNewVersionData } from '$types';
+import { type AppData, type AppWithAction, type PublishNewVersionData } from '$types';
 
 type ClientType = DevhubAppClient | AppstoreAppClient;
 
@@ -86,21 +89,25 @@ export const createAppStoreMyHappsQuery = () => {
 		queryKey: [APP_STORE_MY_HAPPS_QUERY_KEY],
 		queryFn: async () => {
 			const myApps = await getAppStoreClientOrThrow().appstoreZomeClient.getMyApps();
-			const appsWithIcons = await Promise.all(
-				myApps.map(async (app) => {
-					const icon = await getDevHubClientOrThrow().appHubMereMemoryZomeClient.getMemoryBytes(
-						app.content.icon
-					);
+			const fetchIcon = async (iconAddress: Uint8Array) => {
+				try {
+					return await getAppStoreClientOrThrow().mereMemoryZomeClient.getMemoryBytes(iconAddress);
+				} catch {
+					return undefined;
+				}
+			};
 
-					return {
-						id: app.id,
-						title: app.content.title,
-						subtitle: app.content.subtitle,
-						icon,
-						apphubHrlTarget: app.content.apphub_hrl.target
-					};
-				})
-			);
+			const mapAppToAppWithIcon = async (app: Entity<AppEntry>) => ({
+				id: app.id,
+				action: app.action,
+				title: app.content.title,
+				subtitle: app.content.subtitle,
+				description: app.content.description,
+				icon: await fetchIcon(app.content.icon),
+				apphubHrlTarget: app.content.apphub_hrl.target
+			});
+
+			const appsWithIcons = await Promise.all(myApps.map(mapAppToAppWithIcon));
 			return appsWithIcons;
 		}
 	});
@@ -121,6 +128,7 @@ export const createAppStoreHappsQuery = () => {
 					return {
 						title: app.content.title,
 						subtitle: app.content.subtitle,
+						description: app.content.description,
 						icon,
 						id: app.id
 					};
@@ -238,6 +246,32 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 	});
 };
 
+export const createUpdateAppDetailsMutation = (queryClient: QueryClient) => {
+	return createMutation({
+		mutationFn: async ({ title, subtitle, description, icon, action }: AppWithAction) => {
+			const appStoreClient = getAppStoreClientOrThrow();
+
+			await appStoreClient.updateApp({
+				base: action,
+				properties: {
+					title,
+					subtitle,
+					description,
+					icon
+				}
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: [APP_STORE_MY_HAPPS_QUERY_KEY]
+			});
+			queryClient.invalidateQueries({
+				queryKey: [APP_STORE_HAPPS_QUERY_KEY]
+			});
+		}
+	});
+};
+
 export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 	return createMutation({
 		mutationFn: async ({
@@ -309,15 +343,6 @@ export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 	});
 };
 
-export const createFetchWebappBytesMutation = () => {
-	return createMutation({
-		mutationFn: async (appVersionEntry: AppVersionEntry): Promise<Uint8Array> => {
-			const appStoreClient = getAppStoreClientOrThrow();
-			return appStoreClient.fetchWebappBytes(appVersionEntry);
-		}
-	});
-};
-
 export const createFetchUiBytesMutation = () => {
 	return createMutation({
 		mutationFn: async (appVersionEntry: AppVersionEntry): Promise<Uint8Array> => {
@@ -341,6 +366,17 @@ export const createCheckForAppUiUpdatesQuery = () => (appVersionActionHashes: st
 			);
 
 			return updates.reduce((acc, update) => (update ? { ...acc, ...update } : acc), {});
+		}
+	});
+};
+
+export const createGetAppDetailsQuery = () => (actionHash: Uint8Array) => {
+	return createQuery({
+		queryKey: [GET_APP_DETAILS_QUERY_KEY, actionHash],
+		queryFn: async () => {
+			const appStoreClient = getAppStoreClientOrThrow();
+			const appDetails = await appStoreClient.getAppDetails(actionHash);
+			return appDetails;
 		}
 	});
 };

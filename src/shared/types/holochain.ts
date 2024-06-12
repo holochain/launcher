@@ -95,8 +95,9 @@ export type HolochainPartition = z.infer<typeof HolochainPartitionSchema>;
 export const ExtendedAppInfoSchema = z.object({
   appInfo: AppInfoSchema,
   holochainDataRoot: HolochainDataRootSchema,
-  icon: z.string().optional(),
+  icon: z.instanceof(Uint8Array).optional(),
   distributionInfo: DistributionInfoV1Schema,
+  isHeadless: z.boolean(),
 });
 
 export const InitializeAppPortsSchema = z.object({
@@ -135,3 +136,31 @@ export type AppToInstall = {
   name: string;
   progressUpdate: LoadingProgressUpdate;
 };
+
+const HRLSchema = z.object({
+  dna: z.instanceof(Uint8Array),
+  target: z.instanceof(Uint8Array),
+});
+
+const BundleHashesSchema = z.object({
+  ui_hash: z.string(),
+  happ_hash: z.string(),
+  hash: z.string(),
+});
+
+const AppVersionEntrySchema = z.object({
+  version: z.string(),
+  for_app: z.instanceof(Uint8Array),
+  apphub_hrl: HRLSchema,
+  apphub_hrl_hash: z.instanceof(Uint8Array),
+  bundle_hashes: BundleHashesSchema,
+  author: z.instanceof(Uint8Array),
+  published_at: z.number(),
+  last_updated: z.number(),
+  metadata: z.any().optional(),
+});
+
+export const AppVersionEntrySchemaWithIcon = z.object({
+  app_version: AppVersionEntrySchema,
+  icon: z.instanceof(Uint8Array).optional(),
+});

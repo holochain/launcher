@@ -18,6 +18,9 @@
 	import { i18n, trpc } from '$services';
 	import { APPS_VIEW, DISTRIBUTION_TYPE_APPSTORE } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
+	import { APP_NAME_EXISTS_ERROR } from '$shared/types';
+
+	import VersionEntry from './components/VersionEntry.svelte';
 
 	const client = trpc();
 
@@ -30,6 +33,8 @@
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
 
+	const triggerToast = (message: string) => toastStore.trigger({ message });
+
 	const slug: string = $page.params.slug;
 	let selectedIndex = 0;
 	const app = $appStoreHappsQuery.data?.find(({ id }) => uint8ArrayToURIComponent(id) === slug);
@@ -37,11 +42,15 @@
 	$: appVersionsDetailsQuery = appVersionsAppstoreQueryFunction(app?.id);
 
 	const handleError = (error: unknown) => {
-		modalStore.close();
-		showModalError({
+		console.error(error);
+		const errorMessage = getErrorMessage(error);
+		if (errorMessage === APP_NAME_EXISTS_ERROR) {
+			return triggerToast($i18n.t(errorMessage));
+		}
+		return showModalError({
 			modalStore,
 			errorTitle: $i18n.t('appError'),
-			errorMessage: getErrorMessage(error)
+			errorMessage: $i18n.t(errorMessage)
 		});
 	};
 	const createModalInstallAppFromHashes = async (versionEntity: Entity<AppVersionEntry>) => {
@@ -55,6 +64,7 @@
 				}
 			},
 			response: ({ appId, networkSeed }: { appId: string; networkSeed: string }) => {
+				modalStore.close();
 				if (appId.length === 0) {
 					return;
 				}
@@ -80,28 +90,39 @@
 							});
 							goto(`/${APPS_VIEW}?${PRESEARCH_URL_QUERY}=${appId}`);
 						},
-						onError: (error) => {
-							console.error(error);
-							showModalError({
-								modalStore,
-								errorTitle: $i18n.t('appError'),
-								errorMessage: $i18n.t(error.message)
-							});
-						}
+						onError: handleError
 					}
 				);
 			}
 		});
 	};
 
+	const handleSuccess = (
+		toastTimeout: ReturnType<typeof setTimeout> | null,
+		versionEntity: Entity<AppVersionEntry>
+	) => {
+		if (toastTimeout) clearTimeout(toastTimeout);
+		createModalInstallAppFromHashes(versionEntity);
+	};
+
+	const handleErrorWithTimeout = (
+		toastTimeout: ReturnType<typeof setTimeout> | null,
+		error: unknown
+	) => {
+		if (toastTimeout) clearTimeout(toastTimeout);
+		handleError(error);
+	};
+
 	const installLogic = async (versionEntity: Entity<AppVersionEntry>) => {
-		$fetchWebapp.mutate(versionEntity.content, {
-			onSuccess: () => createModalInstallAppFromHashes(versionEntity),
-			onError: (e) => {
-				console.error(e);
-				handleError(e);
+		const toastTimeout = setTimeout(() => triggerToast($i18n.t('fetchingAppData')), 1000);
+
+		$fetchWebapp.mutate(
+			{ app_version: versionEntity.content, icon: app?.icon },
+			{
+				onSuccess: () => handleSuccess(toastTimeout, versionEntity),
+				onError: (error) => handleErrorWithTimeout(toastTimeout, error)
 			}
-		});
+		);
 	};
 
 	$: isLoading = $fetchWebapp.isPending || $installWebhappFromHashes.isPending;
@@ -121,12 +142,8 @@
 			<Button
 				props={{
 					class: 'btn-app-store variant-filled',
-					onClick: async () => {
-						if (!latestVersion) {
-							return handleError($i18n.t('appError'));
-						}
-						return installLogic(latestVersion);
-					},
+					onClick: async () =>
+						latestVersion ? installLogic(latestVersion) : handleError($i18n.t('appError')),
 					isLoading
 				}}
 			>
@@ -137,20 +154,17 @@
 {/if}
 
 {#if $appVersionsDetailsQuery?.data}
-	{#if selectedIndex === 1}
+	{#if app && selectedIndex === 0}
+		<div class="px-8 py-2">
+			{app.description}
+		</div>
+	{:else if selectedIndex === 1}
 		{#each $appVersionsDetailsQuery.data as versionEntry}
-			<div class="flex w-full items-center justify-between px-8 pt-2">
-				<h4 class="font-semibold">{versionEntry.content.version}</h4>
-				<Button
-					props={{
-						class: 'btn-app-store variant-filled',
-						isLoading,
-						onClick: () => installLogic(versionEntry)
-					}}
-				>
-					{$i18n.t('install')}
-				</Button>
-			</div>
+			<VersionEntry
+				version={versionEntry.content.version}
+				installLogic={() => installLogic(versionEntry)}
+				{isLoading}
+			/>
 		{/each}
 	{/if}
 {/if}

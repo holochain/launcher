@@ -16,8 +16,8 @@ const packageJSON = readJSONFile(getPackageJSONPath());
 
 const HolochainLairVersion = HolochainLairVersionSchema.parse(packageJSON);
 
-export const DEFAULT_HOLOCHAIN_VERSION = HolochainLairVersion.binaries.holochain;
-export const DEFAULT_LAIR_KEYSTORE_VERSION = HolochainLairVersion.binaries.lair_keystore;
+const DEFAULT_HOLOCHAIN_VERSION = HolochainLairVersion.binaries.holochain;
+const DEFAULT_LAIR_KEYSTORE_VERSION = HolochainLairVersion.binaries.lair_keystore;
 
 const BINARIES_DIRECTORY = getFilePath(
   app.isPackaged ? '../app.asar.unpacked/resources/bins' : './resources/bins',
@@ -35,7 +35,13 @@ const LAIR_BINARY = path.join(
   `lair-keystore-v${DEFAULT_LAIR_KEYSTORE_VERSION}${process.platform === 'win32' ? '.exe' : ''}`,
 );
 
-export const checkHolochainLairBinariesExist = () =>
+const checkHolochainLairBinariesExist = () =>
   [...Object.values(HOLOCHAIN_BINARIES), LAIR_BINARY].every(fs.existsSync);
 
-export { HOLOCHAIN_BINARIES, LAIR_BINARY };
+export {
+  checkHolochainLairBinariesExist,
+  DEFAULT_HOLOCHAIN_VERSION,
+  DEFAULT_LAIR_KEYSTORE_VERSION,
+  HOLOCHAIN_BINARIES,
+  LAIR_BINARY,
+};
