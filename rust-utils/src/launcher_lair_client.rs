@@ -80,21 +80,12 @@ impl LauncherLairClient {
     ) -> Result<String> {
         let json_string = std::fs::read_to_string(path)?;
         let parsed_string: serde_json::Value = serde_json::from_str(&json_string)?;
-        // println!("Parsed json string: {}", parsed_string);
         let device_bundle = parsed_string["device_bundle"]
             .as_str()
             .ok_or(napi::Error::from_reason(
                 "device_bundle value does not seem to be a string",
             ))?
             .to_string();
-        // println!("Got device_bundle: {device_bundle}");
-
-        // let device_derivation_path_str =
-        //     parsed_string["device_derivation_path"]
-        //         .as_str()
-        //         .ok_or(napi::Error::from_reason(
-        //             "device_derivation_path value does not seem to be a string",
-        //         ))?;
 
         let initial_host_pub_key_b64 =
             parsed_string["initial_host_pub_key"]
@@ -102,18 +93,6 @@ impl LauncherLairClient {
                 .ok_or(napi::Error::from_reason(
                     "initial_host_pub_key value does not seem to be a string",
                 ))?;
-
-        // let derivation_path_num =
-        //     u32::from_str_radix(device_derivation_path_str, 10).map_err(|e| {
-        //         napi::Error::from_reason(format!(
-        //             "Failed to parse device_derivation_path to u8: {}",
-        //             e
-        //         ))
-        //     })?;
-
-        // let device_derivation_path = vec![derivation_path_num];
-
-        // println!("Parsed derivation path: {:?}", device_derivation_path);
 
         let passphrase = if let Some(mut input) = PassphraseInput::with_default_binary() {
             // pinentry binary is available!
@@ -134,11 +113,6 @@ impl LauncherLairClient {
         let initial_host_pub_key_b64_derived = AgentPubKeyB64::from(AgentPubKey::from_raw_32(
             derived_key_pair.public.as_ref().into(),
         ));
-
-        // println!(
-        //     "Got derived AgentPubKeyB64: {}",
-        //     initial_host_pub_key_b64_derived.to_string()
-        // );
 
         if initial_host_pub_key_b64 != initial_host_pub_key_b64_derived.to_string() {
             return Err(napi::Error::from_reason(format!("Derived public key does not match the expected public key. Expected {initial_host_pub_key_b64} but derived {initial_host_pub_key_b64_derived}")));
