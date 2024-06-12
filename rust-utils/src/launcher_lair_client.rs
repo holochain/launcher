@@ -87,17 +87,17 @@ impl LauncherLairClient {
         &self,
         path: String,
         passphrase: String,
-    ) -> Result<()> {
+    ) -> Result<String> {
         let json_string = std::fs::read_to_string(path)?;
         let parsed_string: serde_json::Value = serde_json::from_str(&json_string)?;
-        println!("Parsed json string: {}", parsed_string);
+        // println!("Parsed json string: {}", parsed_string);
         let device_bundle = parsed_string["device_bundle"]
             .as_str()
             .ok_or(napi::Error::from_reason(
                 "device_bundle value does not seem to be a string",
             ))?
             .to_string();
-        println!("Got device_bundle: {device_bundle}");
+        // println!("Got device_bundle: {device_bundle}");
 
         // let device_derivation_path_str =
         //     parsed_string["device_derivation_path"]
@@ -130,10 +130,14 @@ impl LauncherLairClient {
         let derived_key_pair =
             derive_seed_from_device_bundle(&device_bundle, passphrase, 1).await?;
 
-        let initial_host_pub_key_b64_derived =
-            AgentPubKeyB64::from(AgentPubKey::from_raw_32(derived_key_pair.public.as_ref().into()));
+        let initial_host_pub_key_b64_derived = AgentPubKeyB64::from(AgentPubKey::from_raw_32(
+            derived_key_pair.public.as_ref().into(),
+        ));
 
-        println!("Got derived AgentPubKeyB64: {}", initial_host_pub_key_b64_derived.to_string());
+        // println!(
+        //     "Got derived AgentPubKeyB64: {}",
+        //     initial_host_pub_key_b64_derived.to_string()
+        // );
 
         if initial_host_pub_key_b64 != initial_host_pub_key_b64_derived.to_string() {
             return Err(napi::Error::from_reason(format!("Derived public key does not match the expected public key. Expected {initial_host_pub_key_b64} but derived {initial_host_pub_key_b64_derived}")));
@@ -224,57 +228,15 @@ impl LauncherLairClient {
                 napi::Error::from_reason(format!("Failed to import cipher into lair: {}", e))
             })?;
 
-        let base64_pubkey_x =
-            base64::encode_config(imported_seed.x25519_pub_key.as_ref(), base64::STANDARD_NO_PAD);
+        let imported_pubkey_b64 = AgentPubKeyB64::from(AgentPubKey::from_raw_32(
+            imported_seed.ed25519_pub_key.as_ref().to_vec(),
+        ));
 
-        let base64_pubkey_ed =
-            base64::encode_config(imported_seed.ed25519_pub_key.as_ref(), base64::STANDARD_NO_PAD);
+        if initial_host_pub_key_b64 != imported_pubkey_b64.to_string() {
+            return Err(napi::Error::from_reason(format!("Imported public key does not match the expected public key. Expected {initial_host_pub_key_b64} but derived {imported_pubkey_b64}")));
+        }
 
-        let base36_pubkey_x = base36::encode(imported_seed.x25519_pub_key.as_ref());
-
-        let base36_pubkey_ed = base36::encode(imported_seed.ed25519_pub_key.as_ref());
-
-        println!("\n\ngot imported base64 x25519 pubkey: {base64_pubkey_x}");
-        println!("got imported base64 ed25519 pubkey: {base64_pubkey_ed}");
-
-        println!("got imported base36 x25519 pubkey: {base36_pubkey_x}");
-        println!("got imported base36 ed25519 pubkey: {base36_pubkey_ed}");
-
-        // let dst_tag = format!("imported#derived{device_derivation_path_str}#{tag_appendix}");
-
-        // // Derive the seed for the given derivation path
-        // let seed_info_derived = self
-        //     .lair_client
-        //     .derive_seed(src_tag.into(), None, dst_tag.into(), None, vec![1].into())
-        //     .await
-        //     .map_err(|e| {
-        //         napi::Error::from_reason(format!(
-        //             "Failed to derive seed from derivation path: {}",
-        //             e
-        //         ))
-        //     })?;
-
-        // let base64_pubkey_x = base64::encode_config(
-        //     seed_info_derived.x25519_pub_key.as_ref(),
-        //     base64::STANDARD_NO_PAD,
-        // );
-
-        // let base64_pubkey_ed = base64::encode_config(
-        //     seed_info_derived.ed25519_pub_key.as_ref(),
-        //     base64::STANDARD_NO_PAD,
-        // );
-
-        // let base36_pubkey_x = base36::encode(seed_info_derived.x25519_pub_key.as_ref());
-
-        // let base36_pubkey_ed = base36::encode(seed_info_derived.ed25519_pub_key.as_ref());
-
-        // println!("\n\ngot derived base64 x25519 pubkey: {base64_pubkey_x}");
-        // println!("got derived base64 ed25519 pubkey: {base64_pubkey_ed}");
-
-        // println!("got derived base36 x25519 pubkey: {base36_pubkey_x}");
-        // println!("got derived base36 ed25519 pubkey: {base36_pubkey_ed}");
-
-        Ok(())
+        Ok(imported_pubkey_b64.to_string())
     }
 }
 
@@ -318,7 +280,7 @@ impl JsLauncherLairClient {
         &self,
         path: String,
         passphrase: String,
-    ) -> Result<()> {
+    ) -> Result<String> {
         self.launcher_lair_client
             .as_ref()
             .unwrap()
@@ -372,4 +334,3 @@ pub async fn derive_seed_from_device_bundle(
         _ => Err(napi::Error::from_reason("Unsupported Cipher".to_string())),
     }
 }
-
