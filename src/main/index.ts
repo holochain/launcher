@@ -364,10 +364,9 @@ async function handleLaunch(password: string) {
     LAIR_HANDLE = lairHandle;
 
     DEFAULT_ZOME_CALL_SIGNER = await rustUtils.LauncherLairClient.connect(lairUrl, password);
-    DEFAULT_ZOME_CALL_SIGNER.importSeedFromJsonFile(
+    await DEFAULT_ZOME_CALL_SIGNER.deriveAndImportSeedFromJsonFile(
       '/home/matthias/code/holochain/holochain/launcher-electron/test_seeds.json',
       'test-passphrase',
-      'test-import',
     );
     console.log('read seed from json file.');
   }

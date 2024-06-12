@@ -1,13 +1,14 @@
 {
-  "device_bundle": "k6VoY3NiMJGWonB3xBCG5YSrc5dvFcOxeoHVwyn2zhAAAAADxBjEEKoEzjJPA092vGHYZRr1logo4aqWH/rEMU5Y3KMMi9Qr6XljCR2z2rmLMrAGgWnwsHbLceNAIbucO1f5gmRBP4QRqe4Uhv0h0BjEAA==",
+  "device_bundle": "k6VoY3NiMJGWonB3xBDMSgXaaqCEDtRgibIq5V+LzhAAAAADxBhKYohydWdJnW0qHPgMqRVeUrkcJ+J9BzHEMYsu6TjeC19lUYMmEk8DbxwGPo0CKbOYL4VtFgwTwqTKuk0n9Tv5t1QccCx1iVkN7BjEAA==",
   "device_derivation_path": "2",
-  "revocation_pub_key": "N+ZFTpNh/AHsVplSMM9vXUwyBSORQk3mWttRKntX1kk",
-  "holoport_id": "43wshe97frq850fow8diy6qzsz4dl6lmsm28wiv15jg8ttun1l",
+  "revocation_pub_key": "CXPgTFVxfhvQQpd8RaLIAZYRKYqsOmoGzv7AVm+dM4Y",
+  "holoport_id": "s97ht0w3jbi2960anz7tciany8300izgini7utvf021dgz4b1",
+  "initial_host_pub_key": "uhCAkH327tESyjdBpCNdQEW1ibSdT_VfnO5VJehM-kBVU9I1UrCTj",
   "registration_code": "registration-code",
   "settings": {
     "admin": {
       "email": "joel@holo.host",
-      "public_key": "aYeY80D7bJ9vPdUxqz1q08YZO7wcUSqpDHlFktPF9lU"
+      "public_key": "XfYV7QiQYojbyYrNUXnvgUIqKFuAD1t0Qo7pAsjD/mk"
     }
   }
 }
