@@ -1,8 +1,14 @@
 import { type AgentPubKey } from '@holochain/client';
 
+import type {
+  CustomRemoteCallInput,
+  DnaZomeFunction,
+  HostAvailability,
+  HostEntry,
+} from '../../appstore/types';
 import type { Entity } from '../../devhub/types';
+import type { AgentInfo } from '../../types';
 import { ZomeClient } from '../../zome-client/zome-client';
-import type { CustomRemoteCallInput, DnaZomeFunction, HostAvailability, HostEntry } from '../types';
 
 export interface Response<T> {
   type: 'success' | 'failure';
@@ -10,6 +16,10 @@ export interface Response<T> {
 }
 
 export class PortalZomeClient extends ZomeClient {
+  async whoami(): Promise<AgentInfo> {
+    return this.callZome('whoami', null);
+  }
+
   async getHostsForZomeFunction(input: DnaZomeFunction): Promise<Array<Entity<HostEntry>>> {
     return this.callZome('get_hosts_for_zome_function', input);
   }

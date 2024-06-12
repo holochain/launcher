@@ -259,6 +259,7 @@
 				{#if cellIdResult}
 					<p class="break-all">
 						{roleName}: {encodeHashToBase64(cellIdResult[0])}
+						{'pubkey'}: {encodeHashToBase64(cellIdResult[1])}
 					</p>
 				{/if}
 			{/each}

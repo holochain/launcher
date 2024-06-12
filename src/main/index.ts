@@ -4,7 +4,7 @@ import { AppWebsocket } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
-import { AppstoreAppClient, webhappToHappAndUi } from 'appstore-tools';
+import { AppstoreAppClient, DevhubAppClient, webhappToHappAndUi } from 'appstore-tools';
 import * as childProcess from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
@@ -212,7 +212,7 @@ const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - 
 
 const APP_CLIENTS: Record<InstalledAppId, AppClient> = {};
 let APPSTORE_APP_CLIENT: AppstoreAppClient | undefined;
-// let DEVHUB_APP_CLIENT: DevhubAppClient | undefined;
+let DEVHUB_APP_CLIENT: DevhubAppClient | undefined;
 
 const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeRequest) => {
   // TODO check here that cellId belongs to the installedAppId that the window belongs to
@@ -472,14 +472,14 @@ const getAppstoreAppClient = async () => {
   return APPSTORE_APP_CLIENT;
 };
 
-// const getDevhubAppClient = async () => {
-//   if (DEVHUB_APP_CLIENT) return DEVHUB_APP_CLIENT;
-//   if (!DEFAULT_HOLOCHAIN_DATA_ROOT) throw new Error('Default holochain data root is not defined.');
-//   const appClient = await getAppClient(DEVHUB_APP_ID);
-//   const devhubAppClient = new DevhubAppClient(appClient);
-//   DEVHUB_APP_CLIENT = devhubAppClient;
-//   return DEVHUB_APP_CLIENT;
-// };
+const getDevhubAppClient = async () => {
+  if (DEVHUB_APP_CLIENT) return DEVHUB_APP_CLIENT;
+  if (!DEFAULT_HOLOCHAIN_DATA_ROOT) throw new Error('Default holochain data root is not defined.');
+  const appClient = await getAppClient(DEVHUB_APP_ID);
+  const devhubAppClient = new DevhubAppClient(appClient);
+  DEVHUB_APP_CLIENT = devhubAppClient;
+  return DEVHUB_APP_CLIENT;
+};
 
 const router = t.router({
   openSettings: t.procedure.mutation(() => {
@@ -743,6 +743,14 @@ const router = t.router({
     })(DEVHUB_INSTALL);
 
     const authenticationToken = await defaultHolochainManager.getAppToken(DEVHUB_APP_ID);
+
+    // make a whoami zome call to all relevant zomes to trigger init to register
+    // yourself as a host for the relevant functions in portal
+    const devhubClient = await getDevhubAppClient();
+    await devhubClient.appHubZomeClient.whoami();
+    await devhubClient.dnaHubZomeClient.whoami();
+    await devhubClient.zomeHubZomeClient.whoami();
+    await devhubClient.portalZomeClient.whoami();
 
     return {
       appPort: APP_PORT,
