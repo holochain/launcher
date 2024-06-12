@@ -230,8 +230,8 @@ const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeReques
 
   if (windowInfo && windowInfo.adminPort) {
     // In case of externally running binaries we need to use a custom zome call signer
-    const zomeCallSigner = CUSTOM_LAIR_CLIENTS[windowInfo.adminPort];
-    return signZomeCall(zomeCallSigner, request);
+    const lairClient = CUSTOM_LAIR_CLIENTS[windowInfo.adminPort];
+    return signZomeCall(lairClient, request);
   }
   if (!DEFAULT_LAIR_CLIENT) throw Error('Lair signer is not ready');
   return signZomeCall(DEFAULT_LAIR_CLIENT, request);
@@ -348,8 +348,8 @@ async function handleLaunch(password: string) {
 
   if (VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external') {
     lairUrl = VALIDATED_CLI_ARGS.holochainVersion.lairUrl;
-    const externalZomeCallSigner = await rustUtils.LauncherLairClient.connect(lairUrl, password);
-    CUSTOM_LAIR_CLIENTS[VALIDATED_CLI_ARGS.holochainVersion.adminPort] = externalZomeCallSigner;
+    const externalLairClient = await rustUtils.LauncherLairClient.connect(lairUrl, password);
+    CUSTOM_LAIR_CLIENTS[VALIDATED_CLI_ARGS.holochainVersion.adminPort] = externalLairClient;
   } else {
     const [lairHandle, lairUrl2] = await launchLairKeystore(
       VALIDATED_CLI_ARGS.lairBinaryPath,
@@ -361,6 +361,7 @@ async function handleLaunch(password: string) {
     lairUrl = lairUrl2;
 
     LAIR_HANDLE = lairHandle;
+    DEFAULT_LAIR_CLIENT = await rustUtils.LauncherLairClient.connect(lairUrl, password);
   }
 
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingHolochain');

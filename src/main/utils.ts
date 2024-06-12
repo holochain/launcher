@@ -175,7 +175,7 @@ export function breakingVersion(version: string) {
 }
 
 export async function signZomeCall(
-  zomeCallSigner: LauncherLairClient,
+  lairClient: LauncherLairClient,
   zomeCallUnsigned: CallZomeRequest,
 ): Promise<CallZomeRequestSigned> {
   const zomeCallUnsignedNapi: ZomeCallUnsignedNapi = {
@@ -188,7 +188,7 @@ export async function signZomeCall(
     expiresAt: getNonceExpiration(),
   };
 
-  const zomeCallSignedNapi: ZomeCallNapi = await zomeCallSigner.signZomeCall(zomeCallUnsignedNapi);
+  const zomeCallSignedNapi: ZomeCallNapi = await lairClient.signZomeCall(zomeCallUnsignedNapi);
 
   const zomeCallSigned: CallZomeRequestSigned = {
     provenance: Uint8Array.from(zomeCallSignedNapi.provenance),
