@@ -18,22 +18,31 @@
 
 	const factoryReset = client.factoryReset.createMutation();
 
-	const handleError = (errorMessage: string) => {
-		showModalError({
-			modalStore,
-			errorTitle: $i18n.t('setupError'),
-			errorMessage
-		});
-	};
-
 	const loginAndLaunch = () => {
 		$launch.mutate(
 			{ password: passwordInput },
 			{
 				onSuccess: () => goto(`/${APPS_VIEW}`),
-				onError: (error) => handleError($i18n.t(error.message || 'unknownError'))
+				onError: (error) =>
+					showModalError({
+						modalStore,
+						errorTitle: $i18n.t('setupError'),
+						errorMessage: error.message
+					})
 			}
 		);
+	};
+
+	const handleResponse = (r: boolean) => {
+		if (!r) return;
+		$factoryReset.mutate(undefined, {
+			onError: (error) =>
+				showModalError({
+					modalStore,
+					errorTitle: $i18n.t('factoryResetError'),
+					errorMessage: error.message
+				})
+		});
 	};
 </script>
 
@@ -46,18 +55,14 @@
 		bind:value={passwordInput}
 	/>
 	<button
+		class="pt-4 text-xs font-semibold leading-[0.5] opacity-50"
 		on:click={() => {
-			$factoryReset.mutate(
-				undefined,
-				{
-					onError: (error) =>
-						showModalError({
-							modalStore,
-							errorTitle: $i18n.t('factoryResetError'),
-							errorMessage: error.message
-						})
-				}
-			);
-		}}>Factory Reset</button
+			modalStore.trigger({
+				type: 'confirm',
+				title: $i18n.t('factoryReset'),
+				body: $i18n.t('factoryResetConfirm'),
+				response: handleResponse
+			});
+		}}>{$i18n.t('factoryResetClick')}</button
 	>
 </SetupProgressWrapper>

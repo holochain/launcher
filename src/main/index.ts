@@ -5,7 +5,7 @@ import { decode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
 import { AppstoreAppClient, DevhubAppClient, webhappToHappAndUi } from 'appstore-tools';
-import * as childProcess from 'child_process';
+import { type ChildProcessWithoutNullStreams, spawnSync } from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
 import { app, dialog, ipcMain, protocol } from 'electron';
@@ -76,6 +76,7 @@ import { DEFAULT_APPS_DIRECTORY } from './paths';
 import {
   breakingVersion,
   createObservable,
+  factoryResetUtility,
   getInstalledAppsInfo,
   installApp,
   isDevhubInstalled,
@@ -206,7 +207,7 @@ let APP_PORT: number | undefined;
 // For now there is only one holochain data root at a time for the sake of simplicity.
 let DEFAULT_HOLOCHAIN_DATA_ROOT: HolochainDataRoot | undefined;
 const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
-let LAIR_HANDLE: childProcess.ChildProcessWithoutNullStreams | undefined;
+let LAIR_HANDLE: ChildProcessWithoutNullStreams | undefined;
 let PRIVILEDGED_LAUNCHER_WINDOWS: Record<Screen, BrowserWindow>; // Admin windows with special zome call signing priviledges
 const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
 
@@ -329,7 +330,7 @@ async function handleSetupAndLaunch(password: string) {
     throw new Error('Main window needs to exist before launching.');
 
   if (VALIDATED_CLI_ARGS.holochainVersion.type !== 'running-external') {
-    const lairHandleTemp = childProcess.spawnSync(VALIDATED_CLI_ARGS.lairBinaryPath, ['--version']);
+    const lairHandleTemp = spawnSync(VALIDATED_CLI_ARGS.lairBinaryPath, ['--version']);
     if (!lairHandleTemp.stdout) {
       console.error(`Failed to run lair-keystore binary:\n${lairHandleTemp}`);
     }
@@ -766,58 +767,16 @@ const router = t.router({
       LAUNCHER_EMITTER.on(REFETCH_DATA_IN_ALL_WINDOWS, handler);
     });
   }),
-  factoryReset: t.procedure.mutation(async () => {
-    const userDecision = await dialog.showMessageBox({
-      title: 'Factory Reset',
-      type: 'warning',
-      buttons: ['Cancel', 'Continue'],
-      defaultId: 0,
-      cancelId: 0,
-      message:
-        'WARNING: This will delete all your apps alongside any data therein as well as your private keys.',
-    });
-    if (userDecision.response === 0) {
-      return;
-    }
-
-    if (!LAUNCHER_FILE_SYSTEM) {
-      throw new Error('LauncherFilesystem is undefined. Aborting Factory Reset.');
-    }
-
-    // 1. Close all windows to prevent chromium related files to be accessed by them
-
-    Object.values(WINDOW_INFO_MAP).forEach((info) => {
-      info.windowObject.close();
-    });
-    if (PRIVILEDGED_LAUNCHER_WINDOWS) {
-      Object.values(PRIVILEDGED_LAUNCHER_WINDOWS).forEach((window) => {
-        window.close();
-      });
-    }
-
-    // 2. Stop holochain and lair to prevent files being accessed by them
-    Object.values(HOLOCHAIN_MANAGERS).forEach((manager) => {
-      if (manager.processHandle) manager.processHandle.kill();
-    });
-
-    if (LAIR_HANDLE) LAIR_HANDLE.kill();
-
-    // 3. Remove all data
-    LAUNCHER_FILE_SYSTEM.factoryReset();
-
-    // 4. Relaunch
-    const options: Electron.RelaunchOptions = {
-      args: process.argv,
-    };
-    // https://github.com/electron-userland/electron-builder/issues/1727#issuecomment-769896927
-    if (process.env.APPIMAGE) {
-      console.log('process.execPath: ', process.execPath);
-      options.args!.unshift('--appimage-extract-and-run');
-      options.execPath = process.env.APPIMAGE;
-    }
-    app.relaunch(options);
-    app.exit(0);
-  }),
+  factoryReset: t.procedure.mutation(() =>
+    factoryResetUtility({
+      launcherFileSystem: LAUNCHER_FILE_SYSTEM,
+      windowInfoMap: WINDOW_INFO_MAP,
+      privilegedLauncherWindows: PRIVILEDGED_LAUNCHER_WINDOWS,
+      holochainManagers: HOLOCHAIN_MANAGERS,
+      lairHandle: LAIR_HANDLE,
+      app,
+    }),
+  ),
 });
 
 export type AppRouter = typeof router;
