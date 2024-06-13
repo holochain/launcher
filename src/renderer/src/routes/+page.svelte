@@ -5,7 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { showModalError } from '$helpers';
-	import { Splash } from '$lib/components';
+	import { CenterProgressRadial } from '$lib/components';
 	import { i18n, trpc } from '$services';
 	import { SETTINGS_SCREEN } from '$shared/const';
 	const client = trpc();
@@ -37,4 +37,4 @@
 	});
 </script>
 
-<Splash />
+<CenterProgressRadial />

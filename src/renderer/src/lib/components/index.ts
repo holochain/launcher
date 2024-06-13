@@ -6,5 +6,4 @@ export { default as IconButton } from './IconButton.svelte';
 export { default as IconInput } from './IconInput.svelte';
 export { default as Input } from './Input.svelte';
 export { default as InputWithLabel } from './InputWithLabel.svelte';
-export { default as Splash } from './Splash.svelte';
 export { default as TopBar } from './TopBar.svelte';

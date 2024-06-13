@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
 
-	import { Splash } from '$lib/components';
 	import { trpc } from '$services';
 	import { ANIMATION_DURATION } from '$shared/const';
 
@@ -9,11 +8,8 @@
 	const defaultHolochainVersion = client.declaredHolochainVersion.createQuery();
 </script>
 
-<div class="relative flex h-screen flex-col bg-fixed bg-center bg-no-repeat">
-	<div class="absolute inset-0 z-0">
-		<Splash />
-	</div>
-	<div class="absolute inset-0 bg-tertiary-500 opacity-5" />
+<div class="relative flex h-screen flex-col bg-login-background bg-fixed bg-center bg-no-repeat">
+	<div class="absolute inset-0 bg-tertiary-500 opacity-15" />
 	{#if $defaultHolochainVersion.isSuccess}
 		<p class="app-region-drag z-10 p-1 text-center text-xs opacity-30">
 			Holochain {$defaultHolochainVersion.data}
