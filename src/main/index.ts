@@ -13,7 +13,7 @@ import contextMenu from 'electron-context-menu';
 import { createIPCHandler } from 'electron-trpc/main';
 import { autoUpdater } from 'electron-updater';
 import fs from 'fs';
-import type { ZomeCallSigner } from 'hc-launcher-rust-utils';
+import type { LauncherLairClient } from 'hc-launcher-rust-utils';
 import * as rustUtils from 'hc-launcher-rust-utils';
 import os from 'os';
 import path from 'path';
@@ -196,9 +196,9 @@ const DEFAULT_APPS_NETWORK_SEED = app.isPackaged
 
 setupLogs(LAUNCHER_EMITTER, LAUNCHER_FILE_SYSTEM);
 
-let DEFAULT_ZOME_CALL_SIGNER: ZomeCallSigner | undefined;
+let DEFAULT_LAIR_CLIENT: LauncherLairClient | undefined;
 // Zome call signers for external binaries (admin ports used as keys)
-const CUSTOM_ZOME_CALL_SIGNERS: Record<number, ZomeCallSigner> = {};
+const CUSTOM_LAIR_CLIENTS: Record<number, LauncherLairClient> = {};
 
 let INTEGRITY_CHECKER: IntegrityChecker | undefined;
 
@@ -238,11 +238,11 @@ const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeReques
 
   if (windowInfo && windowInfo.adminPort) {
     // In case of externally running binaries we need to use a custom zome call signer
-    const zomeCallSigner = CUSTOM_ZOME_CALL_SIGNERS[windowInfo.adminPort];
-    return signZomeCall(zomeCallSigner, request);
+    const lairClient = CUSTOM_LAIR_CLIENTS[windowInfo.adminPort];
+    return signZomeCall(lairClient, request);
   }
-  if (!DEFAULT_ZOME_CALL_SIGNER) throw Error('Lair signer is not ready');
-  return signZomeCall(DEFAULT_ZOME_CALL_SIGNER, request);
+  if (!DEFAULT_LAIR_CLIENT) throw Error('Lair signer is not ready');
+  return signZomeCall(DEFAULT_LAIR_CLIENT, request);
 };
 
 // This method will be called when Electron has finished
@@ -356,9 +356,8 @@ async function handleLaunch(password: string) {
 
   if (VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external') {
     lairUrl = VALIDATED_CLI_ARGS.holochainVersion.lairUrl;
-    const externalZomeCallSigner = await rustUtils.ZomeCallSigner.connect(lairUrl, password);
-    CUSTOM_ZOME_CALL_SIGNERS[VALIDATED_CLI_ARGS.holochainVersion.adminPort] =
-      externalZomeCallSigner;
+    const externalLairClient = await rustUtils.LauncherLairClient.connect(lairUrl, password);
+    CUSTOM_LAIR_CLIENTS[VALIDATED_CLI_ARGS.holochainVersion.adminPort] = externalLairClient;
   } else {
     const [lairHandle, lairUrl2] = await launchLairKeystore(
       VALIDATED_CLI_ARGS.lairBinaryPath,
@@ -370,8 +369,7 @@ async function handleLaunch(password: string) {
     lairUrl = lairUrl2;
 
     LAIR_HANDLE = lairHandle;
-
-    DEFAULT_ZOME_CALL_SIGNER = await rustUtils.ZomeCallSigner.connect(lairUrl, password);
+    DEFAULT_LAIR_CLIENT = await rustUtils.LauncherLairClient.connect(lairUrl, password);
   }
 
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingHolochain');
@@ -455,7 +453,7 @@ const getAppClient = async (appId: InstalledAppId): Promise<AppClient> => {
       origin: 'holochain-launcher',
     },
     callZomeTransform: {
-      input: async (request) => signZomeCall(DEFAULT_ZOME_CALL_SIGNER!, request),
+      input: async (request) => signZomeCall(DEFAULT_LAIR_CLIENT!, request),
       output: (o) => decode(o),
     },
   });
@@ -760,6 +758,10 @@ const router = t.router({
   onSetupProgressUpdate: t.procedure.subscription(() => {
     return createObservable(LAUNCHER_EMITTER, LOADING_PROGRESS_UPDATE);
   }),
+  deriveAndImportSeedFromJsonFile: t.procedure.input(z.string()).mutation(async (opts) => {
+    const jsonFilePath = opts.input;
+    if (!DEFAULT_LAIR_CLIENT) throw new Error('Lair client is not ready.');
+    return DEFAULT_LAIR_CLIENT.deriveAndImportSeedFromJsonFile(jsonFilePath);
   refetchDataSubscription: t.procedure.subscription(() => {
     return observable<EventMap[typeof REFETCH_DATA_IN_ALL_WINDOWS]>((emit) => {
       const handler = (data: EventMap[typeof REFETCH_DATA_IN_ALL_WINDOWS]) => emit.next(data);

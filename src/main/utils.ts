@@ -11,7 +11,11 @@ import { observable } from '@trpc/server/observable';
 import type { BrowserWindow } from 'electron';
 import { shell } from 'electron';
 import fs from 'fs';
-import type { ZomeCallNapi, ZomeCallSigner, ZomeCallUnsignedNapi } from 'hc-launcher-rust-utils';
+import type {
+  LauncherLairClient,
+  ZomeCallNapi,
+  ZomeCallUnsignedNapi,
+} from 'hc-launcher-rust-utils';
 import type * as rustUtils from 'hc-launcher-rust-utils';
 import path from 'path';
 import semver from 'semver';
@@ -171,7 +175,7 @@ export function breakingVersion(version: string) {
 }
 
 export async function signZomeCall(
-  zomeCallSigner: ZomeCallSigner,
+  lairClient: LauncherLairClient,
   zomeCallUnsigned: CallZomeRequest,
 ): Promise<CallZomeRequestSigned> {
   const zomeCallUnsignedNapi: ZomeCallUnsignedNapi = {
@@ -184,7 +188,7 @@ export async function signZomeCall(
     expiresAt: getNonceExpiration(),
   };
 
-  const zomeCallSignedNapi: ZomeCallNapi = await zomeCallSigner.signZomeCall(zomeCallUnsignedNapi);
+  const zomeCallSignedNapi: ZomeCallNapi = await lairClient.signZomeCall(zomeCallUnsignedNapi);
 
   const zomeCallSigned: CallZomeRequestSigned = {
     provenance: Uint8Array.from(zomeCallSignedNapi.provenance),

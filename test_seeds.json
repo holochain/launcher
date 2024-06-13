@@ -1,0 +1,14 @@
+{
+  "device_bundle": "k6VoY3NiMJGWonB3xBDMSgXaaqCEDtRgibIq5V+LzhAAAAADxBhKYohydWdJnW0qHPgMqRVeUrkcJ+J9BzHEMYsu6TjeC19lUYMmEk8DbxwGPo0CKbOYL4VtFgwTwqTKuk0n9Tv5t1QccCx1iVkN7BjEAA==",
+  "device_derivation_path": "2",
+  "revocation_pub_key": "CXPgTFVxfhvQQpd8RaLIAZYRKYqsOmoGzv7AVm+dM4Y",
+  "holoport_id": "s97ht0w3jbi2960anz7tciany8300izgini7utvf021dgz4b1",
+  "initial_host_pub_key": "uhCAkH327tESyjdBpCNdQEW1ibSdT_VfnO5VJehM-kBVU9I1UrCTj",
+  "registration_code": "registration-code",
+  "settings": {
+    "admin": {
+      "email": "joel@holo.host",
+      "public_key": "XfYV7QiQYojbyYrNUXnvgUIqKFuAD1t0Qo7pAsjD/mk"
+    }
+  }
+}
