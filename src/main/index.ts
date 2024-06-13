@@ -762,6 +762,7 @@ const router = t.router({
     const jsonFilePath = opts.input;
     if (!DEFAULT_LAIR_CLIENT) throw new Error('Lair client is not ready.');
     return DEFAULT_LAIR_CLIENT.deriveAndImportSeedFromJsonFile(jsonFilePath);
+  }),
   refetchDataSubscription: t.procedure.subscription(() => {
     return observable<EventMap[typeof REFETCH_DATA_IN_ALL_WINDOWS]>((emit) => {
       const handler = (data: EventMap[typeof REFETCH_DATA_IN_ALL_WINDOWS]) => emit.next(data);
