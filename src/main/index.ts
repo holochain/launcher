@@ -39,7 +39,6 @@ import type {
   WindowInfoRecord,
 } from '$shared/types';
 import {
-  APP_NAME_EXISTS_ERROR,
   AppVersionEntrySchemaWithIcon,
   BytesSchema,
   CHECK_INITIALIZED_KEYSTORE_ERROR,
@@ -78,6 +77,7 @@ import {
   createObservable,
   factoryResetUtility,
   getInstalledAppsInfo,
+  handleInstallError,
   installApp,
   isDevhubInstalled,
   isHappAlreadyOpened,
@@ -587,17 +587,21 @@ const router = t.router({
     return holochainManager.storeHapp(Array.from(bytes));
   }),
   installHappFromPath: t.procedure.input(InstallHappFromPathSchema).mutation(async (opts) => {
-    const { filePath, appId, networkSeed } = opts.input;
-    const happAndUiBytes = await rustUtils.readAndDecodeHappOrWebhapp(filePath);
-    const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
-    const distributionInfo: DistributionInfoV1 = { type: 'filesystem' };
-    await installApp({
-      holochainManager: holochainManager,
-      happAndUiBytes,
-      appId,
-      distributionInfo,
-      networkSeed,
-    });
+    try {
+      const { filePath, appId, networkSeed } = opts.input;
+      const happAndUiBytes = await rustUtils.readAndDecodeHappOrWebhapp(filePath);
+      const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
+      const distributionInfo: DistributionInfoV1 = { type: 'filesystem' };
+      await installApp({
+        holochainManager: holochainManager,
+        happAndUiBytes,
+        appId,
+        distributionInfo,
+        networkSeed,
+      });
+    } catch (error) {
+      handleInstallError(error);
+    }
   }),
   installWebhappFromHashes: t.procedure
     .input(InstallWebhappFromHashesSchema) // TODO: need metadata input as well here like name and action hash of app and app version in app store
@@ -613,14 +617,7 @@ const router = t.router({
           networkSeed,
         });
       } catch (error) {
-        const errorMessage = getErrorMessage(error);
-        if (errorMessage.includes('AppAlreadyInstalled')) {
-          return throwTRPCErrorError({
-            message: APP_NAME_EXISTS_ERROR,
-            cause: errorMessage,
-          });
-        }
-        throw new Error(errorMessage);
+        handleInstallError(error);
       }
     }),
   installWebhappFromBytes: t.procedure
@@ -639,17 +636,21 @@ const router = t.router({
       });
     }),
   installDefaultApp: t.procedure.input(InstallDefaultAppSchema).mutation(async (opts) => {
-    const { name, appId, networkSeed } = opts.input;
-    const filePath = path.join(DEFAULT_APPS_DIRECTORY, name);
-    const happAndUiBytes = await rustUtils.readAndDecodeHappOrWebhapp(filePath);
-    const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
-    await installApp({
-      holochainManager,
-      happAndUiBytes,
-      appId,
-      distributionInfo: { type: DISTRIBUTION_TYPE_DEFAULT_APP },
-      networkSeed: networkSeed,
-    });
+    try {
+      const { name, appId, networkSeed } = opts.input;
+      const filePath = path.join(DEFAULT_APPS_DIRECTORY, name);
+      const happAndUiBytes = await rustUtils.readAndDecodeHappOrWebhapp(filePath);
+      const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
+      await installApp({
+        holochainManager,
+        happAndUiBytes,
+        appId,
+        distributionInfo: { type: DISTRIBUTION_TYPE_DEFAULT_APP },
+        networkSeed: networkSeed,
+      });
+    } catch (error) {
+      handleInstallError(error);
+    }
   }),
   updateUiFromHash: t.procedure.input(UpdateUiFromHashSchema).mutation((opts) => {
     const { uiZipSha256, appId, appVersionActionHash } = opts.input;

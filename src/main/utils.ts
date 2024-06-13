@@ -19,8 +19,10 @@ import semver from 'semver';
 import type { ZodSchema } from 'zod';
 
 import { APP_STORE_APP_ID, DEVHUB_APP_ID, DISTRIBUTION_TYPE_DEFAULT_APP } from '$shared/const';
+import { getErrorMessage } from '$shared/helpers';
 import type { AppToInstall, DistributionInfoV1 } from '$shared/types';
 import {
+  APP_NAME_EXISTS_ERROR,
   type EventKeys,
   type EventMap,
   LOADING_PROGRESS_UPDATE,
@@ -266,6 +268,17 @@ export const installApp = async ({
       networkSeed,
     });
   }
+};
+
+export const handleInstallError = (error: unknown) => {
+  const errorMessage = getErrorMessage(error);
+  if (errorMessage.includes('AppAlreadyInstalled')) {
+    return throwTRPCErrorError({
+      message: APP_NAME_EXISTS_ERROR,
+      cause: errorMessage,
+    });
+  }
+  throw new Error(errorMessage);
 };
 
 export async function factoryResetUtility({

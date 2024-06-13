@@ -1,4 +1,5 @@
 import { encodeHashToBase64 } from '@holochain/client';
+import type { ModalStore, ToastStore } from '@skeletonlabs/skeleton';
 import type { AppVersionEntry, Entity } from 'appstore-tools';
 
 import { MAX_IMAGE_WIDTH_AND_HEIGHT } from '$const';
@@ -12,6 +13,9 @@ import {
 	ExtendedAppInfoSchema,
 	type InitializeAppPorts
 } from '$shared/types';
+import type { Modals } from '$types';
+
+import { createModalParams, showModalError } from './display';
 
 export const getCellId = (cellInfo: unknown): CellId | undefined => {
 	const parsedCellInfo = CellInfoSchema.safeParse(cellInfo);
@@ -144,5 +148,39 @@ export const resizeImage = async (file: File): Promise<Uint8Array | null> => {
 				resolve(null);
 			}
 		}, 'image/png');
+	});
+};
+
+export const handleInstallError = ({
+	appNameExistsError,
+	title,
+	message,
+	modalStore,
+	toastStore,
+	modalComponent
+}: {
+	appNameExistsError: boolean;
+	title: string;
+	message: string;
+	modalStore: ModalStore;
+	toastStore: ToastStore;
+	modalComponent: Modals;
+}) => {
+	modalStore.close();
+	if (appNameExistsError) {
+		return toastStore.trigger({
+			message: message,
+			callback: (response) => {
+				if (response.status === 'closed') {
+					const modal = createModalParams(modalComponent);
+					modalStore.trigger(modal);
+				}
+			}
+		});
+	}
+	return showModalError({
+		modalStore,
+		errorTitle: title,
+		errorMessage: message
 	});
 };
