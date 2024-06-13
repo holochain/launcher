@@ -2,7 +2,8 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
-	import { showModalError } from '$helpers';
+	import { MODAL_FACTORY_RESET_CONFIRMATION } from '$const';
+	import { createModalParams, showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
 	import { APPS_VIEW } from '$shared/const';
 
@@ -33,16 +34,21 @@
 		);
 	};
 
-	const handleResponse = (r: boolean) => {
-		if (!r) return;
-		$factoryReset.mutate(undefined, {
-			onError: (error) =>
-				showModalError({
-					modalStore,
-					errorTitle: $i18n.t('factoryResetError'),
-					errorMessage: error.message
-				})
+	const showModal = () => {
+		const modal = createModalParams(MODAL_FACTORY_RESET_CONFIRMATION, (confirm) => {
+			if (confirm) {
+				$factoryReset.mutate(undefined, {
+					onError: (error) =>
+						showModalError({
+							modalStore,
+							errorTitle: $i18n.t('factoryResetError'),
+							errorMessage: error.message
+						})
+				});
+			}
 		});
+
+		modalStore.trigger(modal);
 	};
 </script>
 
@@ -54,15 +60,7 @@
 		isDisabled={passwordInput.length < 1 || $launch.isPending}
 		bind:value={passwordInput}
 	/>
-	<button
-		class="pt-4 text-xs font-semibold leading-[0.5] opacity-50"
-		on:click={() => {
-			modalStore.trigger({
-				type: 'confirm',
-				title: $i18n.t('factoryReset'),
-				body: $i18n.t('factoryResetConfirm'),
-				response: handleResponse
-			});
-		}}>{$i18n.t('factoryResetClick')}</button
-	>
+	<button class="pt-4 text-xs font-semibold leading-[0.5] opacity-50" on:click={showModal}>
+		{$i18n.t('factoryResetClick')}
+	</button>
 </SetupProgressWrapper>
