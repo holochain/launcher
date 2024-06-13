@@ -46,7 +46,7 @@
 			toastStore.trigger({
 				message: $i18n.t(errorMessage)
 			});
-			installLogic(versionEntity);
+			return installLogic(versionEntity);
 		}
 		return showModalError({
 			modalStore,

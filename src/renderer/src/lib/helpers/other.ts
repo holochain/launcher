@@ -172,7 +172,7 @@ export const handleInstallError = ({
 			message: message
 		});
 		const modal = createModalParams(modalComponent);
-		modalStore.trigger(modal);
+		return modalStore.trigger(modal);
 	}
 
 	return showModalError({
