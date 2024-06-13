@@ -31,7 +31,9 @@
 			{:else}
 				<Gear fillColor={SELECTED_ICON_STYLE} />
 			{/if}
-			<span>{$i18n.t('settings')}</span>
+			<span class={clsx(isDevPage && 'text-black dark:text-tertiary-400')}
+				>{$i18n.t('settings')}</span
+			>
 		</div>
 	</IconButton>
 	{#if $isDevhubInstalled.data}
@@ -56,7 +58,9 @@
 				{:else}
 					<Upload />
 				{/if}
-				<span>{$i18n.t('publish')}</span>
+				<span class={clsx(isDevPage ? '' : 'text-black dark:text-tertiary-400')}
+					>{$i18n.t('publish')}</span
+				>
 			</div>
 		</IconButton>
 	{/if}

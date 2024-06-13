@@ -1,5 +1,7 @@
 <script>
-	export let fillColor = 'fill-black dark:fill-tertiary-400';
+	import { NOT_SELECTED_ICON_STYLE } from '$const';
+
+	export let fillColor = NOT_SELECTED_ICON_STYLE;
 </script>
 
 <svg

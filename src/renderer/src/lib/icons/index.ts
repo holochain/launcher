@@ -9,7 +9,6 @@ export { default as Edit } from './Edit.svelte';
 export { default as Gear } from './Gear.svelte';
 export { default as Home } from './Home.svelte';
 export { default as Info } from './Info.svelte';
-export { default as MenuGear } from './Menu-Gear.svelte';
 export { default as MenuInfo } from './Menu-Info.svelte';
 export { default as PasswordEye } from './PasswordEye.svelte';
 export { default as Plus } from './Plus.svelte';

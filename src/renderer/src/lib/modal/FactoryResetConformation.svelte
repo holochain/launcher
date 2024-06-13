@@ -8,7 +8,7 @@
 </script>
 
 {#if $modalStore[0]}
-	<div class="flex flex-col items-center gap-4 rounded-lg bg-black p-8">
+	<div class="flex flex-col items-center gap-4 rounded-lg bg-modal-background p-8">
 		<p class="mb-4 max-w-72 text-center leading-tight">
 			{$i18n.t('factoryResetModalBody')}
 		</p>
