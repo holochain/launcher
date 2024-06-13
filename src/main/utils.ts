@@ -287,15 +287,14 @@ export async function factoryResetUtility({
     throw new Error('LauncherFilesystem is undefined. Aborting Factory Reset.');
   }
 
-  // Helper function to close windows
-  const closeWindows = (windows: WindowInfoRecord | Record<string, BrowserWindow>) => {
-    Object.values(windows).forEach((window) => window.close());
-  };
-
   // 1. Close all windows to prevent chromium related files to be accessed by them
-  closeWindows(windowInfoMap);
+  Object.values(windowInfoMap).forEach((info) => {
+    info.windowObject.close();
+  });
   if (privilegedLauncherWindows) {
-    closeWindows(privilegedLauncherWindows);
+    Object.values(privilegedLauncherWindows).forEach((window) => {
+      window.close();
+    });
   }
 
   // 2. Stop holochain and lair to prevent files being accessed by them
