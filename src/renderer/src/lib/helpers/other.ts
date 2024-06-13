@@ -168,16 +168,13 @@ export const handleInstallError = ({
 }) => {
 	modalStore.close();
 	if (appNameExistsError) {
-		return toastStore.trigger({
-			message: message,
-			callback: (response) => {
-				if (response.status === 'closed') {
-					const modal = createModalParams(modalComponent);
-					modalStore.trigger(modal);
-				}
-			}
+		toastStore.trigger({
+			message: message
 		});
+		const modal = createModalParams(modalComponent);
+		modalStore.trigger(modal);
 	}
+
 	return showModalError({
 		modalStore,
 		errorTitle: title,

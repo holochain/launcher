@@ -43,14 +43,10 @@
 		console.error(error);
 		const errorMessage = getErrorMessage(error);
 		if (errorMessage === APP_NAME_EXISTS_ERROR && versionEntity) {
-			return toastStore.trigger({
-				message: $i18n.t(errorMessage),
-				callback: (response) => {
-					if (response.status === 'closed') {
-						installLogic(versionEntity);
-					}
-				}
+			toastStore.trigger({
+				message: $i18n.t(errorMessage)
 			});
+			installLogic(versionEntity);
 		}
 		return showModalError({
 			modalStore,
