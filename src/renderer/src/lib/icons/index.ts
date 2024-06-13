@@ -14,6 +14,7 @@ export { default as MenuInfo } from './Menu-Info.svelte';
 export { default as PasswordEye } from './PasswordEye.svelte';
 export { default as Plus } from './Plus.svelte';
 export { default as Publisher } from './Publisher.svelte';
+export { default as ResizeIcon } from './ResizeIcon.svelte';
 export { default as Rocket } from './Rocket.svelte';
 export { default as Upload } from './Upload.svelte';
 export { default as UploadImage } from './UploadImage.svelte';
