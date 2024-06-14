@@ -6,8 +6,10 @@ export const MODAL_INSTALL_FROM_FILE = 'modalInstallFromFile';
 export const MODAL_INSTALL_KANDO = 'modalInstallKando';
 export const MODAL_ADD_NEW_HAPP_VERSION = 'modalAddNewHappVersion';
 export const MODAL_DEVHUB_INSTALLATION_CONFIRMATION = 'modalDevHubInstallationConfirmation';
+export const MODAL_FACTORY_RESET_CONFIRMATION = 'modalFactoryResetConfirmation';
 
 export const SELECTED_ICON_STYLE = 'fill-light-primary dark:fill-white';
+export const NOT_SELECTED_ICON_STYLE = 'fill-black dark:fill-tertiary-400';
 
 export const DEV_PAGE = `${SETTINGS_SCREEN}/dev`;
 export const DEV_APP_PAGE = `${DEV_PAGE}/app`;

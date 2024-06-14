@@ -44,9 +44,11 @@
 
 {#if $modalStore[0]}
 	<div
-		class="card w-modal flex max-w-80 flex-col items-center justify-center !bg-transparent !ring-transparent"
+		class="card w-modal relative flex max-w-80 flex-col items-center justify-center !bg-modal-background !ring-transparent"
 	>
-		<slot name="avatar" />
+		<div class="absolute -top-16 z-10">
+			<slot name="avatar" />
+		</div>
 		<header class="pt-4 text-2xl font-bold">
 			{name ? name : acceptFileType ? $i18n.t('installFromYourDevice') : $i18n.t('kando')}
 		</header>

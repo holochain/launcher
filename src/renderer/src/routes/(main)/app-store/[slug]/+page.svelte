@@ -33,19 +33,20 @@
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
 
-	const triggerToast = (message: string) => toastStore.trigger({ message });
-
 	const slug: string = $page.params.slug;
 	let selectedIndex = 0;
 	const app = $appStoreHappsQuery.data?.find(({ id }) => uint8ArrayToURIComponent(id) === slug);
 
 	$: appVersionsDetailsQuery = appVersionsAppstoreQueryFunction(app?.id);
 
-	const handleError = (error: unknown) => {
+	const handleError = (error: unknown, versionEntity?: Entity<AppVersionEntry>) => {
 		console.error(error);
 		const errorMessage = getErrorMessage(error);
-		if (errorMessage === APP_NAME_EXISTS_ERROR) {
-			return triggerToast($i18n.t(errorMessage));
+		if (errorMessage === APP_NAME_EXISTS_ERROR && versionEntity) {
+			toastStore.trigger({
+				message: $i18n.t(errorMessage)
+			});
+			return installLogic(versionEntity);
 		}
 		return showModalError({
 			modalStore,
@@ -53,6 +54,7 @@
 			errorMessage: $i18n.t(errorMessage)
 		});
 	};
+
 	const createModalInstallAppFromHashes = async (versionEntity: Entity<AppVersionEntry>) => {
 		modalStore.trigger({
 			type: 'component',
@@ -90,7 +92,7 @@
 							});
 							goto(`/${APPS_VIEW}?${PRESEARCH_URL_QUERY}=${appId}`);
 						},
-						onError: handleError
+						onError: (error) => handleError(error, versionEntity)
 					}
 				);
 			}
@@ -107,20 +109,24 @@
 
 	const handleErrorWithTimeout = (
 		toastTimeout: ReturnType<typeof setTimeout> | null,
-		error: unknown
+		error: unknown,
+		versionEntity: Entity<AppVersionEntry>
 	) => {
 		if (toastTimeout) clearTimeout(toastTimeout);
-		handleError(error);
+		handleError(error, versionEntity);
 	};
 
 	const installLogic = async (versionEntity: Entity<AppVersionEntry>) => {
-		const toastTimeout = setTimeout(() => triggerToast($i18n.t('fetchingAppData')), 1000);
+		const toastTimeout = setTimeout(
+			() => toastStore.trigger({ message: $i18n.t('fetchingAppData') }),
+			1000
+		);
 
 		$fetchWebapp.mutate(
 			{ app_version: versionEntity.content, icon: app?.icon },
 			{
 				onSuccess: () => handleSuccess(toastTimeout, versionEntity),
-				onError: (error) => handleErrorWithTimeout(toastTimeout, error)
+				onError: (error) => handleErrorWithTimeout(toastTimeout, error, versionEntity)
 			}
 		);
 	};

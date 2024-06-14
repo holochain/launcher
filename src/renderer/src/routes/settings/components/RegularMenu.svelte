@@ -5,9 +5,14 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { CenterProgressRadial } from '$components';
-	import { SYSTEM_INFORMATION, SYSTEM_SETTINGS } from '$const';
+	import {
+		NOT_SELECTED_ICON_STYLE,
+		SELECTED_ICON_STYLE,
+		SYSTEM_INFORMATION,
+		SYSTEM_SETTINGS
+	} from '$const';
 	import { filterHash, getAppStoreDistributionHash, showModalError, validateApp } from '$helpers';
-	import { MenuGear, MenuInfo } from '$icons';
+	import { Gear, MenuInfo } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
 	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_SCREEN } from '$shared/const';
@@ -44,18 +49,21 @@
 	$: view = $page.params.slug;
 </script>
 
-{#each [{ name: SYSTEM_INFORMATION, icon: MenuInfo }, { name: SYSTEM_SETTINGS, icon: MenuGear }] as { name, icon }}
-	{@const isSelected = (name === SYSTEM_INFORMATION && !view) || view === name}
-	<MenuEntry
-		name={$i18n.t(name)}
-		onClick={() => selectView(name === SYSTEM_INFORMATION ? '' : name)}
-		{isSelected}
-	>
-		<div slot="leading" class={clsx('mr-4', !isSelected && 'opacity-80')}>
-			<svelte:component this={icon} />
-		</div>
-	</MenuEntry>
-{/each}
+<MenuEntry name={$i18n.t(SYSTEM_INFORMATION)} onClick={() => selectView('')} isSelected={!view}>
+	<div slot="leading" class={clsx('ml-[1.5px] mr-[14px]')}>
+		<MenuInfo fillColor={view ? NOT_SELECTED_ICON_STYLE : SELECTED_ICON_STYLE} />
+	</div>
+</MenuEntry>
+
+<MenuEntry
+	name={$i18n.t(SYSTEM_SETTINGS)}
+	onClick={() => selectView(SYSTEM_SETTINGS)}
+	isSelected={view === SYSTEM_SETTINGS}
+>
+	<div slot="leading" class={clsx('mr-3', view !== SYSTEM_SETTINGS)}>
+		<Gear fillColor={view === SYSTEM_SETTINGS ? SELECTED_ICON_STYLE : NOT_SELECTED_ICON_STYLE} />
+	</div>
+</MenuEntry>
 <div class="!my-2 h-px w-full bg-tertiary-800"></div>
 {#if $installedApps.isPending}
 	<CenterProgressRadial width="w-12" />

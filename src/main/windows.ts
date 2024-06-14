@@ -136,7 +136,7 @@ export const setupAppWindows = () => {
           options.execPath = process.env.APPIMAGE;
         }
         app.relaunch(options);
-        app.exit(0);
+        app.quit();
       },
     },
     {

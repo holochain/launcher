@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getModalStore } from '@skeletonlabs/skeleton';
+	import clsx from 'clsx';
 	import { onMount } from 'svelte';
 
 	import { goto } from '$app/navigation';
@@ -15,7 +16,7 @@
 		setSearchInput,
 		showModalError
 	} from '$helpers';
-	import { Gear, Home, Rocket } from '$icons';
+	import { Gear, Home, ResizeIcon, Rocket } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
 	import { APP_STORE, APPS_VIEW } from '$shared/const';
@@ -145,7 +146,7 @@
 				autofocus: true
 			}}
 		/>
-		<div class="absolute left-2 top-2 z-10">
+		<div class={clsx('absolute z-10', type === APPS_VIEW ? 'left-2 top-2' : 'left-1 top-1')}>
 			{#if type === APPS_VIEW}
 				<Rocket fillColor={SELECTED_ICON_STYLE} />
 			{:else}
@@ -168,6 +169,9 @@
 	</IconButton>
 </TopBar>
 
-<div class="grow overflow-y-auto bg-light-background px-4 dark:bg-apps-list-dark-gradient">
+<div class="relative grow overflow-y-auto bg-light-background px-4 dark:bg-apps-list-dark-gradient">
 	<slot />
+	<div class="absolute bottom-2 right-2 cursor-se-resize">
+		<ResizeIcon />
+	</div>
 </div>

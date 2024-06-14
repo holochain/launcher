@@ -200,8 +200,10 @@ export class LauncherFileSystem {
     return fs.existsSync(path.join(this.keystoreDir, 'lair-keystore-config.yaml'));
   };
 
-  // TODO
-  // factoryReset = (deleteLogs: boolean) => {};
+  factoryReset(keepLogs = false) {
+    if (keepLogs) throw new Error('Keeping logs across factory reset is currently not supported.');
+    fs.rmSync(this.profileDataDir, { recursive: true });
+  }
 }
 
 export function createDirIfNotExists(path: fs.PathLike) {

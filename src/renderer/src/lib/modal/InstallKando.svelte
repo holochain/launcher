@@ -1,17 +1,20 @@
 <script lang="ts">
-	import { Avatar, getModalStore } from '@skeletonlabs/skeleton';
+	import { Avatar, getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
-	import { PRESEARCH_URL_QUERY } from '$const';
-	import { showModalError } from '$helpers';
+	import { MODAL_INSTALL_KANDO, PRESEARCH_URL_QUERY } from '$const';
+	import { handleInstallError } from '$helpers';
 	import { i18n, trpc } from '$services';
 	import { APPS_VIEW } from '$shared/const';
+	import { getErrorMessage } from '$shared/helpers';
+	import { APP_NAME_EXISTS_ERROR } from '$shared/types';
 
 	import ModalInstallForm from './ModalInstallForm.svelte';
 
 	const client = trpc();
 
 	const modalStore = getModalStore();
+	const toastStore = getToastStore();
 
 	let formData = {
 		appId: '',
@@ -38,12 +41,15 @@
 					modalStore.close();
 				},
 				onError: (error) => {
-					modalStore.close();
 					console.error(error);
-					showModalError({
+					const errorMessage = getErrorMessage(error);
+					handleInstallError({
+						appNameExistsError: errorMessage === APP_NAME_EXISTS_ERROR,
+						title: $i18n.t('appError'),
+						message: $i18n.t(errorMessage),
 						modalStore,
-						errorTitle: $i18n.t('appError'),
-						errorMessage: $i18n.t(error.message)
+						toastStore,
+						modalComponent: MODAL_INSTALL_KANDO
 					});
 				}
 			}

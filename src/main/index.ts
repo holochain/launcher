@@ -5,7 +5,7 @@ import { decode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
 import { AppstoreAppClient, DevhubAppClient, webhappToHappAndUi } from 'appstore-tools';
-import * as childProcess from 'child_process';
+import { type ChildProcessWithoutNullStreams, spawnSync } from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
 import { app, dialog, ipcMain, protocol } from 'electron';
@@ -39,7 +39,6 @@ import type {
   WindowInfoRecord,
 } from '$shared/types';
 import {
-  APP_NAME_EXISTS_ERROR,
   AppVersionEntrySchemaWithIcon,
   BytesSchema,
   CHECK_INITIALIZED_KEYSTORE_ERROR,
@@ -76,7 +75,9 @@ import { DEFAULT_APPS_DIRECTORY } from './paths';
 import {
   breakingVersion,
   createObservable,
+  factoryResetUtility,
   getInstalledAppsInfo,
+  handleInstallError,
   installApp,
   isDevhubInstalled,
   isHappAlreadyOpened,
@@ -206,7 +207,7 @@ let APP_PORT: number | undefined;
 // For now there is only one holochain data root at a time for the sake of simplicity.
 let DEFAULT_HOLOCHAIN_DATA_ROOT: HolochainDataRoot | undefined;
 const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
-let LAIR_HANDLE: childProcess.ChildProcessWithoutNullStreams | undefined;
+let LAIR_HANDLE: ChildProcessWithoutNullStreams | undefined;
 let PRIVILEDGED_LAUNCHER_WINDOWS: Record<Screen, BrowserWindow>; // Admin windows with special zome call signing priviledges
 const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
 
@@ -329,7 +330,7 @@ async function handleSetupAndLaunch(password: string) {
     throw new Error('Main window needs to exist before launching.');
 
   if (VALIDATED_CLI_ARGS.holochainVersion.type !== 'running-external') {
-    const lairHandleTemp = childProcess.spawnSync(VALIDATED_CLI_ARGS.lairBinaryPath, ['--version']);
+    const lairHandleTemp = spawnSync(VALIDATED_CLI_ARGS.lairBinaryPath, ['--version']);
     if (!lairHandleTemp.stdout) {
       console.error(`Failed to run lair-keystore binary:\n${lairHandleTemp}`);
     }
@@ -584,17 +585,21 @@ const router = t.router({
     return holochainManager.storeHapp(Array.from(bytes));
   }),
   installHappFromPath: t.procedure.input(InstallHappFromPathSchema).mutation(async (opts) => {
-    const { filePath, appId, networkSeed } = opts.input;
-    const happAndUiBytes = await rustUtils.readAndDecodeHappOrWebhapp(filePath);
-    const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
-    const distributionInfo: DistributionInfoV1 = { type: 'filesystem' };
-    await installApp({
-      holochainManager: holochainManager,
-      happAndUiBytes,
-      appId,
-      distributionInfo,
-      networkSeed,
-    });
+    try {
+      const { filePath, appId, networkSeed } = opts.input;
+      const happAndUiBytes = await rustUtils.readAndDecodeHappOrWebhapp(filePath);
+      const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
+      const distributionInfo: DistributionInfoV1 = { type: 'filesystem' };
+      await installApp({
+        holochainManager: holochainManager,
+        happAndUiBytes,
+        appId,
+        distributionInfo,
+        networkSeed,
+      });
+    } catch (error) {
+      handleInstallError(error);
+    }
   }),
   installWebhappFromHashes: t.procedure
     .input(InstallWebhappFromHashesSchema) // TODO: need metadata input as well here like name and action hash of app and app version in app store
@@ -610,14 +615,7 @@ const router = t.router({
           networkSeed,
         });
       } catch (error) {
-        const errorMessage = getErrorMessage(error);
-        if (errorMessage.includes('AppAlreadyInstalled')) {
-          return throwTRPCErrorError({
-            message: APP_NAME_EXISTS_ERROR,
-            cause: errorMessage,
-          });
-        }
-        throw new Error(errorMessage);
+        handleInstallError(error);
       }
     }),
   installWebhappFromBytes: t.procedure
@@ -636,17 +634,21 @@ const router = t.router({
       });
     }),
   installDefaultApp: t.procedure.input(InstallDefaultAppSchema).mutation(async (opts) => {
-    const { name, appId, networkSeed } = opts.input;
-    const filePath = path.join(DEFAULT_APPS_DIRECTORY, name);
-    const happAndUiBytes = await rustUtils.readAndDecodeHappOrWebhapp(filePath);
-    const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
-    await installApp({
-      holochainManager,
-      happAndUiBytes,
-      appId,
-      distributionInfo: { type: DISTRIBUTION_TYPE_DEFAULT_APP },
-      networkSeed: networkSeed,
-    });
+    try {
+      const { name, appId, networkSeed } = opts.input;
+      const filePath = path.join(DEFAULT_APPS_DIRECTORY, name);
+      const happAndUiBytes = await rustUtils.readAndDecodeHappOrWebhapp(filePath);
+      const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
+      await installApp({
+        holochainManager,
+        happAndUiBytes,
+        appId,
+        distributionInfo: { type: DISTRIBUTION_TYPE_DEFAULT_APP },
+        networkSeed: networkSeed,
+      });
+    } catch (error) {
+      handleInstallError(error);
+    }
   }),
   updateUiFromHash: t.procedure.input(UpdateUiFromHashSchema).mutation((opts) => {
     const { uiZipSha256, appId, appVersionActionHash } = opts.input;
@@ -769,6 +771,16 @@ const router = t.router({
       LAUNCHER_EMITTER.on(REFETCH_DATA_IN_ALL_WINDOWS, handler);
     });
   }),
+  factoryReset: t.procedure.mutation(() =>
+    factoryResetUtility({
+      launcherFileSystem: LAUNCHER_FILE_SYSTEM,
+      windowInfoMap: WINDOW_INFO_MAP,
+      privilegedLauncherWindows: PRIVILEDGED_LAUNCHER_WINDOWS,
+      holochainManagers: HOLOCHAIN_MANAGERS,
+      lairHandle: LAIR_HANDLE,
+      app,
+    }),
+  ),
 });
 
 export type AppRouter = typeof router;

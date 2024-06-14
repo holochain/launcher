@@ -2,19 +2,15 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	import { Button } from '$components';
-	import { Confirmation } from '$icons';
 	import { i18n } from '$services';
 
 	const modalStore = getModalStore();
 </script>
 
 {#if $modalStore[0]}
-	<div class="flex flex-col items-center gap-4">
-		<div class="pb-2">
-			<Confirmation />
-		</div>
-		<p class="mb-4 max-w-72 !bg-modal-background p-4 text-center leading-tight text-warning-500">
-			{$i18n.t('theDeveloperToolkitSyncs')}
+	<div class="flex flex-col items-center gap-4 rounded-lg bg-modal-background p-8">
+		<p class="mb-4 max-w-72 text-center leading-tight">
+			{$i18n.t('factoryResetModalBody')}
 		</p>
 		<div class="flex w-full gap-4">
 			<Button
@@ -32,10 +28,10 @@
 						modalStore.close();
 					},
 					type: 'submit',
-					class: 'btn-secondary bg-add-happ-button flex-1'
+					class: 'btn-secondary !bg-error-500 flex-1 text-al'
 				}}
 			>
-				<span>{$i18n.t('continue')}</span>
+				<span>{$i18n.t('factoryResetConfirm')}</span>
 			</Button>
 		</div>
 	</div>

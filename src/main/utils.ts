@@ -8,6 +8,7 @@ import {
 import { encode } from '@msgpack/msgpack';
 import { TRPCError } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
+import type { ChildProcessWithoutNullStreams } from 'child_process';
 import type { BrowserWindow } from 'electron';
 import { shell } from 'electron';
 import fs from 'fs';
@@ -22,15 +23,19 @@ import semver from 'semver';
 import type { ZodSchema } from 'zod';
 
 import { APP_STORE_APP_ID, DEVHUB_APP_ID, DISTRIBUTION_TYPE_DEFAULT_APP } from '$shared/const';
+import { getErrorMessage } from '$shared/helpers';
 import type { AppToInstall, DistributionInfoV1 } from '$shared/types';
 import {
+  APP_NAME_EXISTS_ERROR,
   type EventKeys,
   type EventMap,
   LOADING_PROGRESS_UPDATE,
+  type Screen,
   type WindowInfoRecord,
 } from '$shared/types';
 
 import { DEFAULT_HOLOCHAIN_VERSION } from './binaries';
+import type { LauncherFileSystem } from './filesystem';
 import type { HolochainManager } from './holochainManager';
 import type { LauncherEmitter } from './launcherEmitter';
 import { DEFAULT_APPS_DIRECTORY } from './paths';
@@ -268,3 +273,67 @@ export const installApp = async ({
     });
   }
 };
+
+export const handleInstallError = (error: unknown) => {
+  const errorMessage = getErrorMessage(error);
+  if (errorMessage.includes('AppAlreadyInstalled')) {
+    return throwTRPCErrorError({
+      message: APP_NAME_EXISTS_ERROR,
+      cause: errorMessage,
+    });
+  }
+  throw new Error(errorMessage);
+};
+
+export async function factoryResetUtility({
+  launcherFileSystem,
+  windowInfoMap,
+  privilegedLauncherWindows,
+  holochainManagers,
+  lairHandle,
+  app,
+}: {
+  launcherFileSystem: LauncherFileSystem;
+  windowInfoMap: WindowInfoRecord;
+  privilegedLauncherWindows?: Record<Screen, BrowserWindow>;
+  holochainManagers: Record<string, HolochainManager>;
+  lairHandle?: ChildProcessWithoutNullStreams;
+  app: Electron.App;
+}) {
+  if (!launcherFileSystem) {
+    throw new Error('LauncherFilesystem is undefined. Aborting Factory Reset.');
+  }
+
+  // 1. Close all windows to prevent chromium related files to be accessed by them
+  Object.values(windowInfoMap).forEach((info) => {
+    info.windowObject.close();
+  });
+  if (privilegedLauncherWindows) {
+    Object.values(privilegedLauncherWindows).forEach((window) => {
+      window.close();
+    });
+  }
+
+  // 2. Stop holochain and lair to prevent files being accessed by them
+  Object.values(holochainManagers).forEach((manager) => {
+    manager.processHandle?.kill();
+  });
+
+  lairHandle?.kill();
+
+  // 3. Remove all data
+  launcherFileSystem.factoryReset();
+
+  // 4. Relaunch
+  const options: Electron.RelaunchOptions = {
+    args: process.argv,
+  };
+  // https://github.com/electron-userland/electron-builder/issues/1727#issuecomment-769896927
+  if (process.env.APPIMAGE) {
+    console.log('process.execPath: ', process.execPath);
+    options.args!.unshift('--appimage-extract-and-run');
+    options.execPath = process.env.APPIMAGE;
+  }
+  app.relaunch(options);
+  app.quit();
+}
