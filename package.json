@@ -32,7 +32,7 @@
     "setupForCI": "cd rust-utils && yarn && yarn build && cd ..",
     "setup": "yarn setupForCI && yarn build:libs",
     "build:libs": "yarn workspace appstore-tools install && yarn workspace appstore-tools build && rimraf src/renderer/.svelte-kit && rimraf src/renderer/node_modules && rimraf node_modules && yarn install",
-    "fetch:default-apps": "mkdir -p resources/default-apps && curl -L --fail --output resources/default-apps/kando.webhapp https://github.com/holochain-apps/kando/releases/download/v0.10.0/kando.webhapp && curl -L --fail --output resources/default-apps/devhub.happ https://drive.switch.ch/index.php/s/dpqXafSa3VI9lP9/download && curl -L --fail --output resources/default-apps/appstore.happ https://drive.switch.ch/index.php/s/VGtEyqCUpNlcUfL/download",
+    "fetch:default-apps": "curl -L --fail --output resources/default-apps/kando.webhapp https://github.com/holochain-apps/kando/releases/download/v0.10.0/kando.webhapp && curl -L --fail --output resources/default-apps/devhub.happ https://drive.switch.ch/index.php/s/dpqXafSa3VI9lP9/download && curl -L --fail --output resources/default-apps/appstore.happ https://drive.switch.ch/index.php/s/VGtEyqCUpNlcUfL/download",
     "fetch:binaries": "node ./scripts/fetch-binaries.mjs",
     "check:binaries": "node ./scripts/check-binaries.mjs",
     "postinstall": "electron-builder install-app-deps",
