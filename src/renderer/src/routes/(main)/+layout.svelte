@@ -171,7 +171,7 @@
 
 <div class="relative grow overflow-y-auto bg-light-background px-4 dark:bg-apps-list-dark-gradient">
 	<slot />
-	<div class="absolute bottom-2 right-2 cursor-se-resize">
+	<div class="absolute bottom-2 right-2">
 		<ResizeIcon />
 	</div>
 </div>
