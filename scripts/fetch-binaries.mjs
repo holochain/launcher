@@ -7,6 +7,11 @@ const packageJson = JSON.parse(packageJSON);
 
 const binariesDir = path.join('resources', 'bins');
 
+// Ensure the binaries directory exists
+if (!fs.existsSync(binariesDir)) {
+  fs.mkdirSync(binariesDir, { recursive: true });
+}
+
 const holochainRemoteFilenames = {
   win32: `holochain-v${packageJson.binaries.holochain}-x86_64-pc-windows-msvc.exe `,
   darwin: `holochain-v${packageJson.binaries.holochain}-x86_64-apple-darwin `,
