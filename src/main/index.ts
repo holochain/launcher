@@ -682,7 +682,7 @@ const router = t.router({
     return !isInitializedValidated;
   }),
   defaultHolochainVersion: t.procedure.query(
-    () => HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION].version,
+    () => HOLOCHAIN_MANAGERS[breakingVersion(DEFAULT_HOLOCHAIN_VERSION)].version,
   ),
   declaredHolochainVersion: t.procedure.query(() => DEFAULT_HOLOCHAIN_VERSION),
   isDevhubInstalled: t.procedure.query(() => isDevhubInstalled(HOLOCHAIN_MANAGERS)),
@@ -735,7 +735,7 @@ const router = t.router({
     });
   }),
   installDevhub: t.procedure.mutation(async () => {
-    const defaultHolochainManager = HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION];
+    const defaultHolochainManager = HOLOCHAIN_MANAGERS[breakingVersion(DEFAULT_HOLOCHAIN_VERSION)];
     await processHeadlessAppInstallation({
       holochainManager: defaultHolochainManager,
       defaultAppsNetworkSeed: DEFAULT_APPS_NETWORK_SEED,
