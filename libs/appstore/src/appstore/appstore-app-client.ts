@@ -14,7 +14,7 @@ import type {
 } from '../devhub/types';
 import { MereMemoryZomeClient } from '../mere-memory/zomes/mere-memory-zome-client';
 import { PortalZomeClient } from '../portal/zomes/portal-zome-client';
-import type { AppStoreWhiteList, UpdateEntityInput } from '../types';
+import type { AppStoreBlackList, AppStoreWhiteList, UpdateEntityInput } from '../types';
 import { bundleToDeterministicBytes } from '../utils';
 import type {
   AppEntry,
@@ -104,10 +104,18 @@ export class AppstoreAppClient {
   async checkForUiUpdate(
     appVersionId: ActionHash,
     whitelist: AppStoreWhiteList,
+    blackList?: AppStoreBlackList,
   ): Promise<Entity<AppVersionEntry> | undefined> {
     // logic
     // we need to check that there is a new version available and that the happ bundle hash is the same but the ui hash is different
     const appVersionEntity = await this.appstoreZomeClient.getAppVersion(appVersionId);
+
+    if (blackList) {
+      if (blackList.includes(encodeHashToBase64(appVersionEntity.content.for_app))) {
+        return undefined;
+      }
+    }
+
     const appVersions = await this.appstoreZomeClient.getAppVersionsForApp(
       appVersionEntity.content.for_app,
     );

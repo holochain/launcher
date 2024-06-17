@@ -19,7 +19,7 @@ export type AppstoreFilterLists = {
   /**
    * A blacklist containing action hashes of AppEntrys that should be hidden completely
    */
-  blacklist: Array<ActionHashB64>;
+  blacklist: AppStoreBlackList;
 };
 
 /**
@@ -35,3 +35,8 @@ export type AppEntryWhitelist = {
   actions: Array<ActionHashB64> | 'all';
   appVersions: Array<ActionHashB64> | 'all';
 };
+
+/**
+ * A blacklist containing action hashes of AppEntrys that should be hidden completely
+ */
+export type AppStoreBlackList = Array<ActionHashB64>;
