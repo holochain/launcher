@@ -12,31 +12,31 @@ export type AgentInfo = {
 
 export type AppstoreFilterLists = {
   /**
-   * Named whitelists
+   * Named allowlists
    */
-  whitelists: Record<string, AppStoreWhiteList>;
+  allowlists: Record<string, AppStoreAllowList>;
 
   /**
-   * A blacklist containing action hashes of AppEntrys that should be hidden completely
+   * A denylist containing action hashes of AppEntrys that should be hidden completely
    */
-  blacklist: AppStoreBlackList;
+  denylist: AppStoreDenyList;
 };
 
 /**
- * A whitelist with AppEntry ids as keys
+ * A allowlist with AppEntry ids as keys
  */
-export type AppStoreWhiteList = Record<ActionHashB64, AppEntryWhitelist>;
+export type AppStoreAllowList = Record<ActionHashB64, AppEntryAllowList>;
 
 /**
- * A whitelist of AppEntry actions and ids of AppVersion entries associated
+ * A allowlist of AppEntry actions and ids of AppVersion entries associated
  * to the given AppEntry
  */
-export type AppEntryWhitelist = {
+export type AppEntryAllowList = {
   actions: Array<ActionHashB64> | 'all';
   appVersions: Array<ActionHashB64> | 'all';
 };
 
 /**
- * A blacklist containing action hashes of AppEntrys that should be hidden completely
+ * A denylist containing action hashes of AppEntrys that should be hidden completely
  */
-export type AppStoreBlackList = Array<ActionHashB64>;
+export type AppStoreDenyList = Array<ActionHashB64>;

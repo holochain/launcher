@@ -14,7 +14,7 @@ import type {
 } from '../devhub/types';
 import { MereMemoryZomeClient } from '../mere-memory/zomes/mere-memory-zome-client';
 import { PortalZomeClient } from '../portal/zomes/portal-zome-client';
-import type { AppStoreBlackList, AppStoreWhiteList, UpdateEntityInput } from '../types';
+import type { AppStoreAllowList, AppStoreDenyList, UpdateEntityInput } from '../types';
 import { bundleToDeterministicBytes } from '../utils';
 import type {
   AppEntry,
@@ -98,20 +98,20 @@ export class AppstoreAppClient {
    * - the AppVersionEntry is published later than the current AppVersionEntry
    *
    * @param appVersionId
-   * @param whitelist mandatory whitelist by which UI updates are filtered
+   * @param allowlist mandatory allowlist by which UI updates are filtered
    * @returns
    */
   async checkForUiUpdate(
     appVersionId: ActionHash,
-    whitelist: AppStoreWhiteList,
-    blackList?: AppStoreBlackList,
+    allowlist: AppStoreAllowList,
+    denyList?: AppStoreDenyList,
   ): Promise<Entity<AppVersionEntry> | undefined> {
     // logic
     // we need to check that there is a new version available and that the happ bundle hash is the same but the ui hash is different
     const appVersionEntity = await this.appstoreZomeClient.getAppVersion(appVersionId);
 
-    if (blackList) {
-      if (blackList.includes(encodeHashToBase64(appVersionEntity.content.for_app))) {
+    if (denyList) {
+      if (denyList.includes(encodeHashToBase64(appVersionEntity.content.for_app))) {
         return undefined;
       }
     }
@@ -133,7 +133,7 @@ export class AppstoreAppClient {
       )
       .sort((a, b) => b.content.published_at - a.content.published_at);
 
-    const appEntryList = whitelist[encodeHashToBase64(appVersionEntity.content.for_app)];
+    const appEntryList = allowlist[encodeHashToBase64(appVersionEntity.content.for_app)];
     if (appEntryList && appEntryList.appVersions !== 'all') {
       updateCandidates = updateCandidates.filter((entity) =>
         appEntryList.appVersions.includes(encodeHashToBase64(entity.action)),
