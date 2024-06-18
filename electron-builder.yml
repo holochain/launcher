@@ -1,5 +1,4 @@
 appId: holochain.launcher.electron
-productName: Holochain Launcher (0.4)
 directories:
   buildResources: build
 files:
