@@ -1,6 +1,6 @@
 import { optimizer } from '@electron-toolkit/utils';
-import type { AppClient, CallZomeRequest, InstalledAppId } from '@holochain/client';
-import { AppWebsocket } from '@holochain/client';
+import type { AppClient, CallZomeRequest, DnaHash, InstalledAppId } from '@holochain/client';
+import { AppWebsocket, encodeHashToBase64 } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
@@ -8,7 +8,7 @@ import { AppstoreAppClient, DevhubAppClient, webhappToHappAndUi } from 'appstore
 import { type ChildProcessWithoutNullStreams, spawnSync } from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
-import { app, dialog, ipcMain, protocol } from 'electron';
+import { app, dialog, ipcMain, net, protocol } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { createIPCHandler } from 'electron-trpc/main';
 import { autoUpdater } from 'electron-updater';
@@ -722,6 +722,25 @@ const router = t.router({
     const devhubAuthenticationToken = isDevhubInstalled(HOLOCHAIN_MANAGERS)
       ? await getTokenOrThrow(DEVHUB_APP_ID, NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND)
       : undefined;
+
+    // example of fetching allowlist
+    // ------------------------------------------------
+    const appStoreAppClient = await getAppstoreAppClient();
+    const appInfo = await appStoreAppClient.client.appInfo();
+    const cellInfo = appInfo!.cell_info['appstore'][0];
+
+    const branch = app.isPackaged ? 'main' : 'testing';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dnaHash = (cellInfo as any).provisioned.cell_id[0] as DnaHash;
+    console.log('dna hash: ', encodeHashToBase64(dnaHash));
+
+    const allowListUrl = `https://raw.githubusercontent.com/holochain/appstore-lists/${branch}/${encodeHashToBase64(dnaHash)}/lists.json`;
+    const response = await net.fetch(allowListUrl);
+    console.log('allowListUrl: ', allowListUrl);
+    console.log('response status: ', response.status);
+    const allowListJson = await response.json();
+    console.log('Got allowlist: ', allowListJson);
+    // ------------------------------------------------
 
     return validateWithZod({
       schema: InitializeAppPortsSchema,
