@@ -2,7 +2,7 @@ name: 'publish'
 on:
   push:
     branches:
-      - release
+      - release-test
 
 jobs:
   extract-versions:
@@ -163,24 +163,24 @@ jobs:
 
 
 
-  mark-as-prerelease:
-    needs: [publish, create-draft-release]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      - name: Mark release as pre-release
-        run: |
-          curl \
-            -X PATCH \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository }}/releases/${{ needs.create-draft-release.outputs.release_id }} \
-            -d '{
-              "prerelease": true,
-              "draft": false
-            }'
+  # mark-as-prerelease:
+  #   needs: [publish, create-draft-release]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '18'
+  #     - name: Mark release as pre-release
+  #       run: |
+  #         curl \
+  #           -X PATCH \
+  #           -H "Accept: application/vnd.github.v3+json" \
+  #           -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+  #           https://api.github.com/repos/${{ github.repository }}/releases/${{ needs.create-draft-release.outputs.release_id }} \
+  #           -d '{
+  #             "prerelease": true,
+  #             "draft": false
+  #           }'
 
 
