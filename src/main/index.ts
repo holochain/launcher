@@ -15,7 +15,6 @@ import { autoUpdater } from 'electron-updater';
 import fs from 'fs';
 import type { LauncherLairClient } from 'hc-launcher-rust-utils';
 import * as rustUtils from 'hc-launcher-rust-utils';
-import os from 'os';
 import path from 'path';
 import semver from 'semver';
 import z from 'zod';
@@ -193,7 +192,7 @@ const LAUNCHER_EMITTER = new LauncherEmitter();
 
 const DEFAULT_APPS_NETWORK_SEED = app.isPackaged
   ? `launcher-${breakingVersion(app.getVersion())}`
-  : `launcher-dev-${os.hostname()}`;
+  : `launcher-dev-${breakingVersion(app.getVersion())}`;
 
 setupLogs(LAUNCHER_EMITTER, LAUNCHER_FILE_SYSTEM);
 
