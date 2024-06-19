@@ -12,28 +12,42 @@ if (!fs.existsSync(binariesDir)) {
   fs.mkdirSync(binariesDir, { recursive: true });
 }
 
-const holochainRemoteFilenames = {
-  win32: `holochain-v${packageJson.binaries.holochain}-x86_64-pc-windows-msvc.exe `,
-  darwin: `holochain-v${packageJson.binaries.holochain}-x86_64-apple-darwin `,
-  linux: `holochain-v${packageJson.binaries.holochain}-x86_64-unknown-linux-gnu`,
-};
+fs.mkdirSync(binariesDir, { recursive: true });
+
+let targetEnding;
+switch (process.platform) {
+  case 'linux':
+    targetEnding = 'x86_64-unknown-linux-gnu';
+    break;
+  case 'win32':
+    targetEnding = 'x86_64-pc-windows-msvc.exe';
+    break;
+  case 'darwin':
+    switch (process.arch) {
+      case 'arm64':
+        targetEnding = 'aarch64-apple-darwin';
+        break;
+      case 'x64':
+        targetEnding = 'x86_64-apple-darwin';
+        break;
+      default:
+        throw new Error(`Got unexpected macOS architecture: ${process.arch}`);
+    }
+    break;
+  default:
+    throw new Error(`Got unexpected OS platform: ${process.platform}`);
+}
 
 const holochainBinaryFilename = `holochain-v${packageJson.binaries.holochain}${
   process.platform === 'win32' ? '.exe' : ''
 }`;
-
-const lairRemoteFilenames = {
-  win32: `lair-keystore-v${packageJson.binaries.lair_keystore}-x86_64-pc-windows-msvc.exe `,
-  darwin: `lair-keystore-v${packageJson.binaries.lair_keystore}-x86_64-apple-darwin `,
-  linux: `lair-keystore-v${packageJson.binaries.lair_keystore}-x86_64-unknown-linux-gnu`,
-};
 
 const lairBinaryFilename = `lair-keystore-v${packageJson.binaries.lair_keystore}${
   process.platform === 'win32' ? '.exe' : ''
 }`;
 
 function downloadHolochainBinary() {
-  const holochainBinaryRemoteFilename = holochainRemoteFilenames[process.platform];
+  const holochainBinaryRemoteFilename = `holochain-v${packageJson.binaries.holochain}-${targetEnding}`;
   const holochainBinaryUrl = `https://github.com/matthme/holochain-binaries/releases/download/holochain-binaries-${packageJson.binaries.holochain}/${holochainBinaryRemoteFilename}`;
 
   const destinationPath = path.join(binariesDir, holochainBinaryFilename);
@@ -47,6 +61,8 @@ function downloadHolochainBinary() {
         https.get(redirectUrl, (redirectResponse) => {
           redirectResponse.pipe(file);
         });
+      } else if (response.statusCode === 404) {
+        throw new Error('No binary found at the given URL');
       } else {
         response.pipe(file);
       }
@@ -66,13 +82,13 @@ function downloadHolochainBinary() {
 }
 
 function downloadLairBinary() {
-  const lairBinaryRemoteFilename = lairRemoteFilenames[process.platform];
+  const lairBinaryRemoteFilename = `lair-keystore-v${packageJson.binaries.lair_keystore}-${targetEnding}`;
   const lairBinaryUrl = `https://github.com/matthme/holochain-binaries/releases/download/lair-binaries-${packageJson.binaries.lair_keystore}/${lairBinaryRemoteFilename}`;
 
   const destinationPath = path.join(binariesDir, lairBinaryFilename);
 
   const file = fs.createWriteStream(destinationPath);
-  console.log('Fetching lair binary from ', lairBinaryFilename);
+  console.log('Fetching lair binary from ', lairBinaryUrl);
   https
     .get(lairBinaryUrl, (response) => {
       if (response.statusCode === 302) {
@@ -80,6 +96,8 @@ function downloadLairBinary() {
         https.get(redirectUrl, (redirectResponse) => {
           redirectResponse.pipe(file);
         });
+      } else if (response.statusCode === 404) {
+        throw new Error('No binary found at the given URL');
       } else {
         response.pipe(file);
       }
