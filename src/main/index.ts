@@ -734,12 +734,12 @@ const router = t.router({
     const dnaHash = (cellInfo as any).provisioned.cell_id[0] as DnaHash;
     console.log('dna hash: ', encodeHashToBase64(dnaHash));
 
-    const allowListUrl = `https://raw.githubusercontent.com/holochain/appstore-lists/${branch}/${encodeHashToBase64(dnaHash)}/lists.json`;
-    const response = await net.fetch(allowListUrl);
-    console.log('allowListUrl: ', allowListUrl);
+    const allowListsUrl = `https://raw.githubusercontent.com/holochain/appstore-lists/${branch}/${encodeHashToBase64(dnaHash)}/lists.json`;
+    const response = await net.fetch(allowListsUrl);
+    console.log('allowListsUrl: ', allowListsUrl);
     console.log('response status: ', response.status);
-    const allowListJson = await response.json();
-    console.log('Got allowlist: ', allowListJson);
+    const allowLists = await response.json();
+    console.log('Got allowlists: ', allowLists);
     // ------------------------------------------------
 
     return validateWithZod({
