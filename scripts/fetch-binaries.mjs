@@ -47,7 +47,7 @@ const lairBinaryFilename = `lair-keystore-v${packageJson.binaries.lair_keystore}
 }`;
 
 function downloadHolochainBinary() {
-  const holochainBinaryRemoteFilename = `holochain-v${packageJson.binaries.holochain}-${targetEnding}`;
+  const holochainBinaryRemoteFilename = `holochain-v${mossConfig.holochainVersion}-${targetEnding}`;
   const holochainBinaryUrl = `https://github.com/matthme/holochain-binaries/releases/download/holochain-binaries-${packageJson.binaries.holochain}/${holochainBinaryRemoteFilename}`;
 
   const destinationPath = path.join(binariesDir, holochainBinaryFilename);
@@ -82,7 +82,7 @@ function downloadHolochainBinary() {
 }
 
 function downloadLairBinary() {
-  const lairBinaryRemoteFilename = `lair-keystore-v${packageJson.binaries.lair_keystore}-${targetEnding}`;
+  const lairBinaryRemoteFilename = `lair-keystore-v${mossConfig.lairVersion}-${targetEnding}`;
   const lairBinaryUrl = `https://github.com/matthme/holochain-binaries/releases/download/lair-binaries-${packageJson.binaries.lair_keystore}/${lairBinaryRemoteFilename}`;
 
   const destinationPath = path.join(binariesDir, lairBinaryFilename);
