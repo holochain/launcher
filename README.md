@@ -19,7 +19,6 @@ bash ./scripts/setup-binaries.sh
 or fetch with
 
 ```bash
-mkdir resources/bins
 yarn fetch:binaries
 ```
 
@@ -32,7 +31,6 @@ yarn setup
 Download default app
 
 ```bash
-mkdir resources/default-apps
 yarn fetch:default-apps
 ```
 

@@ -35,7 +35,7 @@
 
 {#if $modalStore[0]}
 	<div
-		class="card w-modal flex flex-col items-center justify-center !bg-modal-background p-4 !ring-transparent"
+		class="card w-modal flex flex-col items-center justify-center !bg-modal-background p-2 !ring-transparent"
 	>
 		<header class="pt-4 text-2xl font-bold">
 			{$i18n.t('addNewRelease')}

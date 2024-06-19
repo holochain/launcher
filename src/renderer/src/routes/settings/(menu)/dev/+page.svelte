@@ -18,7 +18,7 @@
 	let appData = { ...EMPTY_APP_DATA };
 	let bytesFiles: FileList | null = null;
 
-	let isLoading = false;
+	$: isLoading = false;
 
 	const setAppDataBytes = async (files: FileList | null) => {
 		if (files && files.length > 0) {
@@ -35,31 +35,37 @@
 	};
 
 	$: setAppDataBytes(bytesFiles);
+
+	const submitForm = async () => {
+		isLoading = true;
+		setTimeout(() => {
+			if (isAppDataValid(appData)) {
+				$publishHappMutation.mutate(appData, {
+					onSuccess: (id) => {
+						appData = { ...EMPTY_APP_DATA };
+						bytesFiles = null;
+						goto(`/${DEV_APP_PAGE}/${id}`);
+					},
+					onError: (error) => {
+						console.error(error);
+						isLoading = false;
+						showModalError({
+							modalStore,
+							errorTitle: $i18n.t('appError'),
+							errorMessage: $i18n.t(error.message)
+						});
+					}
+				});
+			} else {
+				isLoading = false;
+			}
+		}, 100); // 100ms delay to display loading before spinner freezes
+	};
 </script>
 
 <form
 	class="modal-form mx-auto my-4 flex w-full max-w-xs flex-col space-y-4"
-	on:submit|preventDefault={async () => {
-		if (isAppDataValid(appData)) {
-			isLoading = true;
-			$publishHappMutation.mutate(appData, {
-				onSuccess: (id) => {
-					appData = { ...EMPTY_APP_DATA };
-					bytesFiles = null;
-					goto(`/${DEV_APP_PAGE}/${id}`);
-				},
-				onError: (error) => {
-					console.error(error);
-					isLoading = false;
-					showModalError({
-						modalStore,
-						errorTitle: $i18n.t('appError'),
-						errorMessage: $i18n.t(error.message)
-					});
-				}
-			});
-		}
-	}}
+	on:submit|preventDefault={submitForm}
 >
 	<IconInput bind:icon={appData.icon} handleFileUpload={handleIconUpload} />
 	<InputWithLabel bind:files={bytesFiles} id="webbhapp" label={`${$i18n.t('uploadYourBundle')}*`} />
