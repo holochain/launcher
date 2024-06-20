@@ -110,35 +110,29 @@ export class AppstoreAppClient {
     // we need to check that there is a new version available and that the happ bundle hash is the same but the ui hash is different
     const appVersionEntity = await this.appstoreZomeClient.getAppVersion(appVersionId);
 
-    if (denyList) {
-      if (denyList.includes(encodeHashToBase64(appVersionEntity.content.for_app))) {
-        return undefined;
-      }
+    if (denyList && denyList.includes(encodeHashToBase64(appVersionEntity.content.for_app))) {
+      return undefined;
     }
 
     const appVersions = await this.appstoreZomeClient.getAppVersionsForApp(
       appVersionEntity.content.for_app,
     );
-    // Check for newer versions
-    let updateCandidates = appVersions
-      .filter((entity) => entity.content.published_at > appVersionEntity.content.published_at)
-      .filter(
-        (entity) =>
-          entity.content.bundle_hashes.happ_hash ===
-          appVersionEntity.content.bundle_hashes.happ_hash,
-      )
-      .filter(
-        (entity) =>
-          entity.content.bundle_hashes.ui_hash !== appVersionEntity.content.bundle_hashes.ui_hash,
-      )
-      .sort((a, b) => b.content.published_at - a.content.published_at);
+
+    const isUpdateCandidate = (entity: Entity<AppVersionEntry>) =>
+      entity.content.published_at > appVersionEntity.content.published_at &&
+      entity.content.bundle_hashes.happ_hash === appVersionEntity.content.bundle_hashes.happ_hash &&
+      entity.content.bundle_hashes.ui_hash !== appVersionEntity.content.bundle_hashes.ui_hash;
 
     const appEntryList = allowlist[encodeHashToBase64(appVersionEntity.content.for_app)];
-    if (appEntryList && appEntryList.appVersions !== 'all') {
-      updateCandidates = updateCandidates.filter((entity) =>
-        appEntryList.appVersions.includes(encodeHashToBase64(entity.action)),
-      );
-    }
+    const isAllowedVersion = (entity: Entity<AppVersionEntry>) =>
+      !appEntryList ||
+      appEntryList.appVersions === 'all' ||
+      appEntryList.appVersions.includes(encodeHashToBase64(entity.action));
+
+    const updateCandidates = appVersions
+      .filter(isUpdateCandidate)
+      .filter(isAllowedVersion)
+      .sort((a, b) => b.content.published_at - a.content.published_at);
 
     if (updateCandidates.length > 0) return updateCandidates[0];
     return undefined;

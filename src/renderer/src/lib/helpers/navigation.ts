@@ -36,3 +36,5 @@ export const goBack = () => {
 	const lastSlashIndex = url.pathname.lastIndexOf('/');
 	goto(url.pathname.substring(0, lastSlashIndex));
 };
+
+export const isDev = () => get(page).url.hostname === 'localhost';

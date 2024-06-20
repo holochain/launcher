@@ -15,6 +15,7 @@
 		getAppStoreDistributionHash,
 		getCellId,
 		getVersionByActionHash,
+		isDev,
 		showModalError,
 		validateApp
 	} from '$helpers';
@@ -61,11 +62,12 @@
 	$: uiUpdates = checkForAppUiUpdatesQuery(
 		$installedApps?.data
 			?.map((app) => getAppStoreDistributionHash(app.distributionInfo))
-			.filter(filterHash) ?? []
+			.filter(filterHash) ?? [],
+		isDev()
 	);
 	$: update =
 		selectedApp && uiUpdates && selectedAppDistributionInfoData
-			? $uiUpdates.data?.[selectedAppDistributionInfoData.appVersionActionHash]
+			? $uiUpdates?.data?.[selectedAppDistributionInfoData.appVersionActionHash]
 			: undefined;
 
 	$: appVersionsDetailsQuery = selectedAppDistributionInfoData?.appEntryActionHash

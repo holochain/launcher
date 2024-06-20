@@ -22,10 +22,11 @@ import {
 	APP_STORE_HAPPS_QUERY_KEY,
 	APP_STORE_MY_HAPPS_QUERY_KEY,
 	CHECK_FOR_APP_UI_UPDATES_QUERY_KEY,
+	FETCH_ALLOWLIST_QUERY_KEY,
 	GET_APP_DETAILS_QUERY_KEY,
 	PUBLISHERS_QUERY_KEY
 } from '$const';
-import { uint8ArrayToURIComponent } from '$helpers';
+import { fetchFilterLists, uint8ArrayToURIComponent } from '$helpers';
 import { getAppStoreClient, getDevHubClient } from '$services';
 import {
 	APP_STORE_CLIENT_NOT_INITIALIZED_ERROR,
@@ -352,23 +353,29 @@ export const createFetchUiBytesMutation = () => {
 	});
 };
 
-export const createCheckForAppUiUpdatesQuery = () => (appVersionActionHashes: string[]) => {
-	return createQuery({
-		queryKey: [CHECK_FOR_APP_UI_UPDATES_QUERY_KEY, appVersionActionHashes],
-		queryFn: async () => {
-			const appStoreClient = getAppStoreClientOrThrow();
-			const distinctVersionHashes = appVersionActionHashes;
-			const updates = await Promise.all(
-				distinctVersionHashes.map(async (hash) => {
-					const maybeUpdate = await appStoreClient.checkForUiUpdate(decodeHashFromBase64(hash!));
-					return maybeUpdate ? { [hash]: maybeUpdate } : null;
-				})
-			);
+export const createCheckForAppUiUpdatesQuery =
+	() => (appVersionActionHashes: string[], isDev: boolean) => {
+		return createQuery({
+			queryKey: [CHECK_FOR_APP_UI_UPDATES_QUERY_KEY, appVersionActionHashes],
+			queryFn: async () => {
+				const appStoreClient = getAppStoreClientOrThrow();
+				const distinctVersionHashes = appVersionActionHashes;
+				const filterLists = await fetchFilterLists(appStoreClient, isDev);
+				const updates = await Promise.all(
+					distinctVersionHashes.map(async (hash) => {
+						const maybeUpdate = await appStoreClient.checkForUiUpdate(
+							decodeHashFromBase64(hash!),
+							filterLists.allowlists[hash!],
+							filterLists.denylist
+						);
+						return maybeUpdate ? { [hash]: maybeUpdate } : null;
+					})
+				);
 
-			return updates.reduce((acc, update) => (update ? { ...acc, ...update } : acc), {});
-		}
-	});
-};
+				return updates.reduce((acc, update) => (update ? { ...acc, ...update } : acc), {});
+			}
+		});
+	};
 
 export const createGetAppDetailsQuery = () => (actionHash: Uint8Array) => {
 	return createQuery({
@@ -397,6 +404,17 @@ export const createAppVersionsAppstoreQuery = () => (appEntryId?: ActionHash) =>
 			const appVersions = await appstoreClient.appstoreZomeClient.getAppVersionsForApp(appEntryId);
 
 			return appVersions;
+		}
+	});
+};
+
+export const createFetchAllowlistQuery = () => (isDev: boolean) => {
+	return createQuery({
+		queryKey: [FETCH_ALLOWLIST_QUERY_KEY],
+		queryFn: async () => {
+			const appstoreClient = getAppStoreClientOrThrow();
+			const filterLists = await fetchFilterLists(appstoreClient, isDev);
+			return filterLists;
 		}
 	});
 };

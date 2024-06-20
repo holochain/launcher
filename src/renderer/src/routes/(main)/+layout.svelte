@@ -13,6 +13,7 @@
 		getAppStoreDistributionHash,
 		handleNavigationWithAnimationDelay,
 		initializeDefaultAppPorts,
+		isDev,
 		setSearchInput,
 		showModalError
 	} from '$helpers';
@@ -66,7 +67,8 @@
 	$: uiUpdates = checkForAppUiUpdatesQuery(
 		$installedApps?.data
 			?.map((app) => getAppStoreDistributionHash(app.distributionInfo))
-			.filter(filterHash) ?? []
+			.filter(filterHash) ?? [],
+		isDev()
 	);
 
 	const handleNavigation = handleNavigationWithAnimationDelay(() => (inputExpanded = false));
