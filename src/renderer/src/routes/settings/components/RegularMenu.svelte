@@ -11,7 +11,13 @@
 		SYSTEM_INFORMATION,
 		SYSTEM_SETTINGS
 	} from '$const';
-	import { filterHash, getAppStoreDistributionHash, showModalError, validateApp } from '$helpers';
+	import {
+		filterHash,
+		getAppStoreDistributionHash,
+		isDev,
+		showModalError,
+		validateApp
+	} from '$helpers';
 	import { Gear, MenuInfo } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
@@ -37,7 +43,8 @@
 	$: uiUpdates = checkForAppUiUpdatesQuery(
 		$installedApps?.data
 			?.map((app) => getAppStoreDistributionHash(app.distributionInfo))
-			.filter(filterHash) ?? []
+			.filter(filterHash) ?? [],
+		isDev()
 	);
 
 	$: if ($installedApps.isError) {

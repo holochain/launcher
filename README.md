@@ -36,6 +36,14 @@ yarn fetch:default-apps
 
 ### Development
 
+## Nix Installation
+
+Nix needs to be installed. For detailed instructions, visit the [Nix installation guide](https://nixos.org/manual/nix/stable/#chap-installation).
+
+```bash
+nix develop
+```
+
 ```bash
 $ yarn dev
 ```
