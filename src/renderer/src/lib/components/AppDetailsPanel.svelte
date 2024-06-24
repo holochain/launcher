@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { encodeHashToBase64 } from '@holochain/client';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import clsx from 'clsx';
 
@@ -6,6 +7,7 @@
 
 	export let imageUrl: string | undefined = undefined;
 	export let title: string;
+	export let id: Uint8Array | undefined = undefined;
 	export let subtitle = '';
 	export let appVersion = '';
 	export let selectedIndex = 0;
@@ -25,7 +27,17 @@
 			/>
 			<div class="flex flex-col">
 				<div class="flex items-end">
-					<h3 class="h3">{title}</h3>
+					{#if id}
+						<button
+							type="button"
+							class="h3"
+							on:click={() => navigator.clipboard.writeText(encodeHashToBase64(id))}
+						>
+							{title}
+						</button>
+					{:else}
+						<h3 class="h3">{title}</h3>
+					{/if}
 					{#if appVersion}
 						<p class="ml-2 text-xs">{appVersion}</p>
 					{/if}

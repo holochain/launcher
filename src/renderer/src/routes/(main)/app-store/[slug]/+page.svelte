@@ -139,6 +139,7 @@
 	<AppDetailsPanel
 		imageUrl={createImageUrl(app.icon)}
 		title={app.title}
+		id={app.id}
 		appVersion={latestVersion?.content.version}
 		subtitle={app.subtitle}
 		buttons={[$i18n.t('description'), $i18n.t('versionHistory')]}

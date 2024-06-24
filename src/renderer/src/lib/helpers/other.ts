@@ -1,6 +1,7 @@
 import { encodeHashToBase64 } from '@holochain/client';
 import type { ModalStore, ToastStore } from '@skeletonlabs/skeleton';
 import type { AppstoreAppClient, AppVersionEntry, Entity } from 'appstore-tools';
+import localforage from 'localforage';
 
 import { MAX_IMAGE_WIDTH_AND_HEIGHT } from '$const';
 import { createAppStoreClient, createDevHubClient } from '$services';
@@ -127,9 +128,12 @@ export const fetchFilterLists = async (appstoreClient: AppstoreAppClient, isDev:
 
 	try {
 		const response = await fetch(allowListsUrl);
-		return AppstoreFilterListsSchema.parse(await response.json());
+		const responseData = await response.json();
+		await localforage.setItem(allowListsUrl, responseData);
+		return AppstoreFilterListsSchema.parse(responseData);
 	} catch (error) {
-		return AppstoreFilterListsSchema.parse({});
+		const data = await localforage.getItem(allowListsUrl);
+		return AppstoreFilterListsSchema.parse(data);
 	}
 };
 
