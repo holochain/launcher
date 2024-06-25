@@ -114,29 +114,23 @@ export const getAppStoreDistributionHash = (app: unknown): string | undefined =>
 	return parsedAppData.data.appVersionActionHash;
 };
 
-const fetchWithTimeout = (
+const fetchWithTimeout = async (
 	input: RequestInfo,
 	init: RequestInit = {},
 	timeout = 2000
 ): Promise<Response> => {
-	return new Promise((resolve, reject) => {
-		const controller = new AbortController();
-		const signal = controller.signal;
-		const fetchTimeout = setTimeout(() => {
-			controller.abort();
-			reject(new Error('Fetch request timed out'));
-		}, timeout);
+	const controller = new AbortController();
+	const signal = controller.signal;
+	const fetchTimeout = setTimeout(() => controller.abort(), timeout);
 
-		fetch(input, { ...init, signal })
-			.then((response) => {
-				clearTimeout(fetchTimeout);
-				resolve(response);
-			})
-			.catch((error) => {
-				clearTimeout(fetchTimeout);
-				reject(error);
-			});
-	});
+	try {
+		const response = await fetch(input, { ...init, signal });
+		clearTimeout(fetchTimeout);
+		return response;
+	} catch (error) {
+		clearTimeout(fetchTimeout);
+		throw new Error('Fetch request timed out');
+	}
 };
 
 export const fetchFilterLists = async (appstoreClient: AppstoreAppClient, isDev: boolean) => {
