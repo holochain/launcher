@@ -48,6 +48,10 @@ export type AppMetadata<T> = {
   data: T;
 };
 
+export type LauncherConfig = {
+  backupLocation?: string;
+};
+
 export class LauncherFileSystem {
   public profileDataDir: string;
   public profileLogsDir: string;
@@ -94,6 +98,7 @@ export class LauncherFileSystem {
   createInitialDirectoryStructure = () => {
     createDirIfNotExists(this.keystoreDir);
     createDirIfNotExists(this.holochainDir);
+    createDirIfNotExists(this.configDir);
   };
 
   setIntegrityChecker(integrityChecker: IntegrityChecker) {
@@ -106,6 +111,10 @@ export class LauncherFileSystem {
 
   get holochainDir() {
     return path.join(this.profileDataDir, 'holochain');
+  }
+
+  get configDir() {
+    return path.join(this.profileDataDir, 'config');
   }
 
   holochainPartitionDir(partitionName: string) {
@@ -203,6 +212,117 @@ export class LauncherFileSystem {
   factoryReset(keepLogs = false) {
     if (keepLogs) throw new Error('Keeping logs across factory reset is currently not supported.');
     fs.rmSync(this.profileDataDir, { recursive: true });
+  }
+
+  get launcherConfigPath() {
+    return path.join(this.configDir, 'launcher-config.json');
+  }
+
+  get launcherConfig(): LauncherConfig | undefined {
+    if (fs.existsSync(this.launcherConfigPath)) {
+      const configStr = fs.readFileSync(this.launcherConfigPath, 'utf-8');
+      return JSON.parse(configStr) as LauncherConfig;
+    }
+    return undefined;
+  }
+
+  /**
+   *
+   * @param path
+   * @returns
+   */
+  setBackupLocation(path: string) {
+    if (!fs.existsSync(path)) {
+      throw new Error(
+        'The specified path does not exist. The backup location must be set to an existing directory.',
+      );
+    }
+    if (!fs.statSync(path).isDirectory()) {
+      throw new Error('The backup location must point to a directory.');
+    }
+    const launcherConfig = this.launcherConfig;
+    if (launcherConfig) {
+      launcherConfig.backupLocation = path;
+      return launcherConfig;
+    } else {
+      const launcherConfig = {
+        backupLocation: path,
+      };
+      fs.writeFileSync(this.launcherConfigPath, JSON.stringify(launcherConfig));
+      return launcherConfig;
+    }
+  }
+
+  get backupLocation() {
+    const launcherConfig = this.launcherConfig;
+    if (launcherConfig) {
+      return launcherConfig.backupLocation;
+    }
+    return undefined;
+  }
+
+  /**
+   * Backs up all relevant data required for a full recovery of launcher in its current state
+   */
+  async backupFullState() {
+    const backupLocation = this.backupLocation;
+    if (!backupLocation)
+      throw new Error('Failed to backup launcher data. No backup location defined.');
+    const backupRoot = path.join(backupLocation, 'launcher-backup');
+    createDirIfNotExists(backupRoot);
+    const start = Date.now();
+    // 1. back up all lair related data
+    // function that starts at the leaves, overwrites directory by directory by copying it over
+    fs.cp(this.keystoreDir, path.join(backupRoot, 'lair'), { recursive: true }, (err) => {
+      if (err?.message.includes('socket file')) {
+        // socket file cannot and does not need to be copied
+        return;
+      }
+      throw Error(`Failed to copy keystore directory: ${err}`);
+    });
+
+    fs.cp(
+      this.holochainDir,
+      path.join(backupRoot, 'holochain'),
+      { recursive: true, filter: (src, _dst) => !src.endsWith('wasm-cache') },
+      (err) => {
+        if (err) {
+          throw Error(`Failed to copy holochain directory: ${err}`);
+        }
+        console.log('Copying took ', Date.now() - start, 'ms');
+      },
+    );
+
+    // Store information about last successful backup, i.e. timestamp
+  }
+
+  async restoreFromBackup(backupRoot: string) {
+    const backupHolochainDir = path.join(backupRoot, 'holochain');
+    const backupLairDir = path.join(backupRoot, 'lair');
+    if (!fs.existsSync(backupHolochainDir)) {
+      throw new Error('Incomplete backup. Holochain data is missing.');
+    }
+    if (!fs.existsSync(backupLairDir)) {
+      throw new Error('Incomplete backup. Lair data is missing.');
+    }
+    if (fs.readdirSync(this.holochainDir).length !== 0) {
+      throw new Error('Existing holochain directory is not empty');
+    }
+    if (fs.readdirSync(this.keystoreDir).length !== 0) {
+      throw new Error('Existing keystore directory is not empty');
+    }
+
+    // fs.cp(backupLairDir, this.keystoreDir, { recursive: true }, (err) => {
+    //   if (err) throw Error(`Failed to copy lair backup: ${err.message}`);
+    //   console.log('COPIED LAIR FOLDER.');
+    // });
+    // fs.cp(backupHolochainDir, this.holochainDir, { recursive: true }, (err) => {
+    //   if (err) throw Error(`Failed to copy holochain backup: ${err.message}`);
+    //   console.log('COPIED HOLOCHAIN FOLDER.');
+    // });
+
+    fs.cpSync(backupLairDir, this.keystoreDir, { recursive: true });
+    fs.cpSync(backupHolochainDir, this.holochainDir, { recursive: true });
   }
 }
 

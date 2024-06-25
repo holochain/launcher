@@ -329,6 +329,10 @@ async function handleSetupAndLaunch(password: string) {
     throw new Error('Main window needs to exist before launching.');
 
   if (VALIDATED_CLI_ARGS.holochainVersion.type !== 'running-external') {
+    // await LAUNCHER_FILE_SYSTEM.restoreFromBackup(
+    //   '/home/matthias/test_launcher_backups/launcher-backup',
+    // );
+    // console.log('RESTORING FINISHED.');
     const lairHandleTemp = spawnSync(VALIDATED_CLI_ARGS.lairBinaryPath, ['--version']);
     if (!lairHandleTemp.stdout) {
       console.error(`Failed to run lair-keystore binary:\n${lairHandleTemp}`);
@@ -353,6 +357,12 @@ async function handleLaunch(password: string) {
   LAUNCHER_FILE_SYSTEM.setIntegrityChecker(INTEGRITY_CHECKER);
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingLairKeystore');
   let lairUrl: string;
+
+  // // Test backup
+  LAUNCHER_FILE_SYSTEM.setBackupLocation('/home/matthias/test_launcher_backups');
+  console.log('Backing up full state...');
+  await LAUNCHER_FILE_SYSTEM.backupFullState();
+  console.log('Full state backed up.');
 
   if (VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external') {
     lairUrl = VALIDATED_CLI_ARGS.holochainVersion.lairUrl;
