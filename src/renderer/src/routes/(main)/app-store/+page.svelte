@@ -25,7 +25,7 @@
 	);
 </script>
 
-{#if $appStoreHappsQuery.isFetching || $allowlist.isFetching}
+{#if $appStoreHappsQuery.isLoading || $allowlist.isLoading}
 	<CenterProgressRadial />
 {:else}
 	<div class="text-token grid w-full gap-4 py-4 md:grid-cols-2">
