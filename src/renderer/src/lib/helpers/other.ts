@@ -114,6 +114,31 @@ export const getAppStoreDistributionHash = (app: unknown): string | undefined =>
 	return parsedAppData.data.appVersionActionHash;
 };
 
+const fetchWithTimeout = (
+	input: RequestInfo,
+	init: RequestInit = {},
+	timeout = 2000
+): Promise<Response> => {
+	return new Promise((resolve, reject) => {
+		const controller = new AbortController();
+		const signal = controller.signal;
+		const fetchTimeout = setTimeout(() => {
+			controller.abort();
+			reject(new Error('Fetch request timed out'));
+		}, timeout);
+
+		fetch(input, { ...init, signal })
+			.then((response) => {
+				clearTimeout(fetchTimeout);
+				resolve(response);
+			})
+			.catch((error) => {
+				clearTimeout(fetchTimeout);
+				reject(error);
+			});
+	});
+};
+
 export const fetchFilterLists = async (appstoreClient: AppstoreAppClient, isDev: boolean) => {
 	const appInfo = await appstoreClient.client.appInfo();
 	const cellInfo = appInfo!.cell_info['appstore'][0];
@@ -127,7 +152,7 @@ export const fetchFilterLists = async (appstoreClient: AppstoreAppClient, isDev:
 	const allowListsUrl = `https://raw.githubusercontent.com/holochain/appstore-lists/${branch}/${dnaHashBase64}/lists.json`;
 
 	try {
-		const response = await fetch(allowListsUrl);
+		const response = await fetchWithTimeout(allowListsUrl, { cache: 'no-cache' });
 		const responseData = await response.json();
 		await localforage.setItem(allowListsUrl, responseData);
 		return AppstoreFilterListsSchema.parse(responseData);
