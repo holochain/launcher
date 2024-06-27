@@ -16,8 +16,8 @@ export const HolochainFoundationList = z.literal('Holochain Foundation');
 const ListName = z.string().or(HolochainFoundationList);
 
 export const AppstoreFilterListsSchema = z.object({
-	allowlists: z.record(ListName, AppStoreAllowListSchema).default({}),
-	denylist: AppStoreDenyListSchema.default([])
+	allowlists: z.record(ListName, AppStoreAllowListSchema),
+	denylist: AppStoreDenyListSchema
 });
 
 export type AppstoreFilterLists = z.infer<typeof AppstoreFilterListsSchema>;

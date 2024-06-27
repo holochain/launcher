@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import clsx from 'clsx';
+	import { onMount } from 'svelte';
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -47,9 +48,13 @@
 		isDev()
 	);
 
-	$: if ($installedApps.isError) {
-		showErrorModal($installedApps.error.message);
-	}
+	onMount(() =>
+		installedApps.subscribe((value) => {
+			if (value.isError) {
+				showErrorModal(value.error.message);
+			}
+		})
+	);
 
 	const selectView = (view: string) => goto(`/${SETTINGS_SCREEN}/${view}`);
 

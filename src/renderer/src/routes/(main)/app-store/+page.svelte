@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { onMount } from 'svelte';
+
 	import { page } from '$app/stores';
 	import { CenterProgressRadial } from '$components';
 	import { SEARCH_URL_QUERY } from '$const';
@@ -7,6 +10,7 @@
 		filterOutDenylisted,
 		getAllowlistKeys,
 		isDev,
+		showModalError,
 		uint8ArrayToURIComponent
 	} from '$helpers';
 	import { Eye } from '$icons';
@@ -15,6 +19,8 @@
 
 	import { AppCard, InstallFromDeviceCard } from './components';
 	const { appStoreHappsQuery, fetchAllowlistQuery } = createAppQueries();
+
+	const modalStore = getModalStore();
 
 	const allowlist = fetchAllowlistQuery(isDev());
 
@@ -28,28 +34,42 @@
 	$: filteredApps = filterOutDenylisted($appStoreHappsQuery?.data ?? [], $allowlist?.data);
 	$: verifiedApps = filterAppsBySearchAndAllowlist(filteredApps, searchInput, allowlistKeys);
 	$: unverifiedApps = (filteredApps ?? []).filter((app) => !verifiedApps.includes(app));
+
+	onMount(() =>
+		allowlist.subscribe((value) => {
+			if (value.isError) {
+				showModalError({
+					modalStore,
+					errorTitle: $i18n.t('appError'),
+					errorMessage: $i18n.t('allowListError')
+				});
+			}
+		})
+	);
 </script>
 
 {#if $appStoreHappsQuery.isLoading || $allowlist.isLoading}
 	<CenterProgressRadial />
 {:else}
 	<div class="text-token grid w-full gap-4 py-4 md:grid-cols-2">
-		{#each verifiedApps as app}
-			<AppCard
-				verified
-				icon={app.icon}
-				title={app.title}
-				subtitle={app.subtitle}
-				id={uint8ArrayToURIComponent(app.id)}
-			/>
-		{/each}
+		{#if !$allowlist.error}
+			{#each verifiedApps as app}
+				<AppCard
+					verified
+					icon={app.icon}
+					title={app.title}
+					subtitle={app.subtitle}
+					id={uint8ArrayToURIComponent(app.id)}
+				/>
+			{/each}
+		{/if}
 		{#if isKandoInSearch}
 			<AppCard />
 		{/if}
 		<InstallFromDeviceCard />
 	</div>
 
-	{#if unverifiedApps.length > 0}
+	{#if !$allowlist.error && unverifiedApps.length > 0}
 		{#if hideUnverifiedApps}
 			<div class="flex w-full flex-row items-center justify-center">
 				<div class="w-full border-t border-dashed border-gray-500"></div>
