@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { onMount } from 'svelte';
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -26,9 +27,13 @@
 
 	$: view = $page.params.slug;
 
-	$: if ($appStoreMyHappsQuery.isError) {
-		showErrorModal($appStoreMyHappsQuery.error.message);
-	}
+	onMount(() =>
+		appStoreMyHappsQuery.subscribe((value) => {
+			if (value.isError) {
+				showErrorModal(value.error.message);
+			}
+		})
+	);
 </script>
 
 <MenuEntry

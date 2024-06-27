@@ -1,4 +1,5 @@
 {
+	"allowListError": "Unable to retrieve apps from the app store",
 	"appNameExistsError": "An app with the same name is already installed. Please choose a different name",
 	"appStoreClientNotInitializedError": "AppStoreClient not initialized",
 	"checkInitializedKeystoreError": "Error checking initialized keystore",

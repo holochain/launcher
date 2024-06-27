@@ -1,6 +1,7 @@
 import { encodeHashToBase64 } from '@holochain/client';
 import type { ModalStore, ToastStore } from '@skeletonlabs/skeleton';
 import type { AppstoreAppClient, AppVersionEntry, Entity } from 'appstore-tools';
+import localforage from 'localforage';
 
 import { MAX_IMAGE_WIDTH_AND_HEIGHT } from '$const';
 import { createAppStoreClient, createDevHubClient } from '$services';
@@ -113,6 +114,25 @@ export const getAppStoreDistributionHash = (app: unknown): string | undefined =>
 	return parsedAppData.data.appVersionActionHash;
 };
 
+const fetchWithTimeout = async (
+	input: RequestInfo,
+	init: RequestInit = {},
+	timeout = 4000
+): Promise<Response> => {
+	const controller = new AbortController();
+	const signal = controller.signal;
+	const fetchTimeout = setTimeout(() => controller.abort(), timeout);
+
+	try {
+		const response = await fetch(input, { ...init, signal, cache: 'no-cache' });
+		clearTimeout(fetchTimeout);
+		return response;
+	} catch (error) {
+		clearTimeout(fetchTimeout);
+		throw new Error('Fetch request timed out');
+	}
+};
+
 export const fetchFilterLists = async (appstoreClient: AppstoreAppClient, isDev: boolean) => {
 	const appInfo = await appstoreClient.client.appInfo();
 	const cellInfo = appInfo!.cell_info['appstore'][0];
@@ -126,10 +146,13 @@ export const fetchFilterLists = async (appstoreClient: AppstoreAppClient, isDev:
 	const allowListsUrl = `https://raw.githubusercontent.com/holochain/appstore-lists/${branch}/${dnaHashBase64}/lists.json`;
 
 	try {
-		const response = await fetch(allowListsUrl);
-		return AppstoreFilterListsSchema.parse(await response.json());
+		const response = await fetchWithTimeout(allowListsUrl, { cache: 'no-cache' });
+		const responseData = await response.json();
+		await localforage.setItem(allowListsUrl, responseData);
+		return AppstoreFilterListsSchema.parse(responseData);
 	} catch (error) {
-		return AppstoreFilterListsSchema.parse({});
+		const data = await localforage.getItem(allowListsUrl);
+		return AppstoreFilterListsSchema.parse(data);
 	}
 };
 

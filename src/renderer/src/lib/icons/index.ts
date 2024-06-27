@@ -1,3 +1,4 @@
+export { default as AppWarning } from './AppWarning.svelte';
 export { default as ArrowLeft } from './ArrowLeft.svelte';
 export { default as ArrowRight } from './ArrowRight.svelte';
 export { default as BackArrow } from './BackArrow.svelte';
@@ -6,6 +7,7 @@ export { default as Confirmation } from './Confirmation.svelte';
 export { default as defaultIcon } from './default-icon.png?base64';
 export { default as Download } from './Download.svelte';
 export { default as Edit } from './Edit.svelte';
+export { default as Eye } from './Eye.svelte';
 export { default as Gear } from './Gear.svelte';
 export { default as Home } from './Home.svelte';
 export { default as Info } from './Info.svelte';
@@ -17,4 +19,5 @@ export { default as ResizeIcon } from './ResizeIcon.svelte';
 export { default as Rocket } from './Rocket.svelte';
 export { default as Upload } from './Upload.svelte';
 export { default as UploadImage } from './UploadImage.svelte';
+export { default as Verified } from './Verified.svelte';
 export { default as Warning } from './Warning.svelte';
