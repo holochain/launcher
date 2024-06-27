@@ -117,14 +117,14 @@ export const getAppStoreDistributionHash = (app: unknown): string | undefined =>
 const fetchWithTimeout = async (
 	input: RequestInfo,
 	init: RequestInit = {},
-	timeout = 2000
+	timeout = 4000
 ): Promise<Response> => {
 	const controller = new AbortController();
 	const signal = controller.signal;
 	const fetchTimeout = setTimeout(() => controller.abort(), timeout);
 
 	try {
-		const response = await fetch(input, { ...init, signal });
+		const response = await fetch(input, { ...init, signal, cache: 'no-cache' });
 		clearTimeout(fetchTimeout);
 		return response;
 	} catch (error) {

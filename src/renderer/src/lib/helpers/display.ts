@@ -1,4 +1,4 @@
-import { decodeHashFromBase64 } from '@holochain/client';
+import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import type { ModalSettings, ModalStore } from '@skeletonlabs/skeleton';
 
 import type { AppWithIcon, Modals } from '$types';
@@ -53,7 +53,17 @@ export const getAllowlistKeys = (allowlist: AppstoreFilterLists | undefined) => 
 		.map(([key]) => decodeHashFromBase64(key));
 };
 
-export const filterApps = (
+export const filterOutDenylisted = (
+	apps: AppWithIcon[],
+	allowlist: AppstoreFilterLists | undefined
+) => {
+	const denylist = allowlist?.denylist;
+	if (!denylist) return apps;
+
+	return apps.filter((app) => !denylist.includes(encodeHashToBase64(app.id)));
+};
+
+export const filterAppsBySearchAndAllowlist = (
 	apps: AppWithIcon[],
 	searchInput: string,
 	allowlistKeys: Uint8Array[]

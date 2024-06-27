@@ -2,7 +2,13 @@
 	import { page } from '$app/stores';
 	import { CenterProgressRadial } from '$components';
 	import { SEARCH_URL_QUERY } from '$const';
-	import { filterApps, getAllowlistKeys, isDev, uint8ArrayToURIComponent } from '$helpers';
+	import {
+		filterAppsBySearchAndAllowlist,
+		filterOutDenylisted,
+		getAllowlistKeys,
+		isDev,
+		uint8ArrayToURIComponent
+	} from '$helpers';
 	import { Eye } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
@@ -19,10 +25,9 @@
 	$: isKandoInSearch = 'kando'.includes(searchInputLower);
 
 	$: allowlistKeys = getAllowlistKeys($allowlist?.data);
-	$: verifiedApps = filterApps($appStoreHappsQuery?.data ?? [], searchInput, allowlistKeys);
-	$: unverifiedApps = ($appStoreHappsQuery?.data ?? []).filter(
-		(app) => !verifiedApps.includes(app)
-	);
+	$: filteredApps = filterOutDenylisted($appStoreHappsQuery?.data ?? [], $allowlist?.data);
+	$: verifiedApps = filterAppsBySearchAndAllowlist(filteredApps, searchInput, allowlistKeys);
+	$: unverifiedApps = (filteredApps ?? []).filter((app) => !verifiedApps.includes(app));
 </script>
 
 {#if $appStoreHappsQuery.isLoading || $allowlist.isLoading}
