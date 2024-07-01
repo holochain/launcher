@@ -1,4 +1,3 @@
-import type { CellId, InstalledAppId } from '@holochain/client';
 import type { App } from 'electron';
 import fs from 'fs';
 import path from 'path';
@@ -265,64 +264,61 @@ export class LauncherFileSystem {
   /**
    * Backs up all relevant data required for a full recovery of launcher in its current state
    */
-  async backupFullState() {
+  backupFullState() {
     const backupLocation = this.backupLocation;
     if (!backupLocation)
       throw new Error('Failed to backup launcher data. No backup location defined.');
-    const backupRoot = path.join(backupLocation, 'launcher-backup');
+    const backupRoot = path.join(backupLocation, 'holochain-launcher-backup');
     createDirIfNotExists(backupRoot);
     const start = Date.now();
     // 1. back up all lair related data
     // function that starts at the leaves, overwrites directory by directory by copying it over
-    fs.cp(
-      this.keystoreDir,
-      path.join(backupRoot, 'lair'),
-      { recursive: true, preserveTimestamps: true },
-      (err) => {
-        if (err?.message.includes('socket file')) {
-          // socket file cannot and does not need to be copied
-          return;
-        }
-        throw Error(`Failed to copy keystore directory: ${err}`);
-      },
-    );
+    try {
+      console.log('backing up lair...');
+      fs.cpSync(this.keystoreDir, path.join(backupRoot, 'lair'), {
+        recursive: true,
+        preserveTimestamps: true,
+      });
+      console.log('lair backed up');
+    } catch (e) {
+      if (e?.toString().includes('socket file')) {
+        // socket file cannot and does not need to be copied -> do nothing
+      } else {
+        throw Error(`Failed to copy keystore directory: ${e}`);
+      }
+    }
 
     // TODO check for .happ files and UIs that are not in use and don't copy them over
 
     // TODO
-
-    fs.cp(
-      this.holochainDir,
-      path.join(backupRoot, 'holochain'),
-      {
+    try {
+      fs.cpSync(this.holochainDir, path.join(backupRoot, 'holochain'), {
         recursive: true,
         preserveTimestamps: true,
         filter: (src, _dst) => !src.endsWith('wasm-cache'),
-      },
-      (err) => {
-        if (err) {
-          throw Error(`Failed to copy holochain directory: ${err}`);
-        }
-        console.log('Copying took ', Date.now() - start, 'ms');
-      },
-    );
+      });
+    } catch (err) {
+      throw Error(`Failed to copy holochain directory: ${err}`);
+    }
+
+    console.log('Copying took ', Date.now() - start, 'ms');
 
     // Store information about last successful backup, i.e. timestamp
   }
 
-  async backupAppMetaData(
-    installedAppId: InstalledAppId,
-    dataRoot: HolochainDataRoot,
-    cellIds: CellId[],
-  ) {
-    // data from external data roots do not get backed up
-    if (dataRoot.type === 'external') return;
+  // async backupAppMetaData(
+  //   installedAppId: InstalledAppId,
+  //   dataRoot: HolochainDataRoot,
+  //   cellIds: CellId[],
+  // ) {
+  //   // data from external data roots do not get backed up
+  //   if (dataRoot.type === 'external') return;
 
-    // 1. Get dna hashes of app id to back up all authored dbs
+  //   // 1. Get dna hashes of app id to back up all authored dbs
 
-    // 2. back up app metadata
-    // 3. back up happ file and UI folder if necessary
-  }
+  //   // 2. back up app metadata
+  //   // 3. back up happ file and UI folder if necessary
+  // }
 
   async restoreFromBackup(backupRoot: string) {
     const backupHolochainDir = path.join(backupRoot, 'holochain');

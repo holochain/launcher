@@ -20,8 +20,9 @@
 	const factoryReset = client.factoryReset.createMutation();
 
 	const loginAndLaunch = () => {
+		console.log("window.__BACKUP_PATH__: ", (window as any).__BACKUP_PATH__);
 		$launch.mutate(
-			{ password: passwordInput },
+			{ password: passwordInput, backupPath: (window as any).__BACKUP_PATH__ },
 			{
 				onSuccess: () => goto(`/${APPS_VIEW}`),
 				onError: (error) =>
