@@ -322,9 +322,11 @@ app.on('quit', () => {
 
   // // Test backup
   // LAUNCHER_FILE_SYSTEM.setBackupLocation(BACKUP_LOCATION);
-  console.log('Backing up full state to ', LAUNCHER_FILE_SYSTEM.backupLocation);
-  LAUNCHER_FILE_SYSTEM.backupFullState();
-  console.log('Full state backed up.');
+  if (LAUNCHER_FILE_SYSTEM.backupLocation) {
+    console.log('Backing up full state to ', LAUNCHER_FILE_SYSTEM.backupLocation);
+    LAUNCHER_FILE_SYSTEM.backupFullState();
+    console.log('Full state backed up.');
+  }
 });
 
 // In this file you can include the rest of your app's specific main process
@@ -336,7 +338,9 @@ async function handleSetupAndLaunch(password: string, backupPath?: string) {
 
   if (VALIDATED_CLI_ARGS.holochainVersion.type !== 'running-external') {
     if (backupPath) {
-      await LAUNCHER_FILE_SYSTEM.restoreFromBackup(backupPath);
+      await LAUNCHER_FILE_SYSTEM.restoreFromBackup(
+        path.join(backupPath, 'holochain-launcher-backup'),
+      );
       console.log('RESTORED FROM BACKUP.');
     }
     const lairHandleTemp = spawnSync(VALIDATED_CLI_ARGS.lairBinaryPath, ['--version']);

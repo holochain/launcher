@@ -1,11 +1,12 @@
 import type { App } from 'electron';
 import fs from 'fs';
+import { nanoid } from 'nanoid';
 import path from 'path';
 
 import type { DistributionInfoV1, HolochainDataRoot } from '$shared/types';
 
 import { type IntegrityChecker } from './integrityChecker';
-import { breakingVersion } from './utils';
+import { breakingVersion, isWindows, readYamlValue, replaceYamlValue } from './utils';
 
 export type Profile = string;
 
@@ -119,6 +120,10 @@ export class LauncherFileSystem {
 
   holochainPartitionDir(partitionName: string) {
     return path.join(this.holochainDir, partitionName);
+  }
+
+  get keystoreConfigPath() {
+    return path.join(this.keystoreDir, 'lair-keystore-config.yaml');
   }
 
   conductorConfigPath(partitionName: string) {
@@ -320,6 +325,12 @@ export class LauncherFileSystem {
   //   // 3. back up happ file and UI folder if necessary
   // }
 
+  /**
+   * Restores launcher from a backup folder. Optionally accepts a partition name into which the
+   *
+   * @param backupRoot
+   * @param partitionName
+   */
   async restoreFromBackup(backupRoot: string) {
     const backupHolochainDir = path.join(backupRoot, 'holochain');
     const backupLairDir = path.join(backupRoot, 'lair');
@@ -347,6 +358,74 @@ export class LauncherFileSystem {
 
     fs.cpSync(backupLairDir, this.keystoreDir, { recursive: true });
     fs.cpSync(backupHolochainDir, this.holochainDir, { recursive: true });
+
+    // Modify lair-keystore-config.yaml and conductor-config.yaml to point to the environment specific file locations
+    this.osAdjustConfigFiles();
+  }
+
+  /**
+   * Overwrites paths in lair-keystore-config.yaml and conductor-config.yaml files to the
+   * appropriate paths on the new host OS in case data gets restored on a different
+   * OS than the backup has been created.
+   */
+  osAdjustConfigFiles() {
+    // Adjust lair-keystore-config.yaml file
+    let lairConfigString = fs.readFileSync(this.keystoreConfigPath, 'utf-8');
+
+    // read the connectionUrl and check whether it's unix or windows
+    const connectionUrl = readYamlValue(lairConfigString, 'connectionUrl');
+    if (!connectionUrl) throw Error('Failed to read connectionUrl from lair-keystore-config.yaml');
+
+    // https://github.com/holochain/lair/blob/6a84ed490fc7074d107e38bbb4a8d707e9b8e066/crates/lair_keystore_api/src/config.rs#L229
+    if (connectionUrl.startsWith('unix://')) {
+      if (isWindows) {
+        const id = nanoid(21);
+        const id_pk = connectionUrl.split('socket?k=')[1];
+        const modifiedUrl = `named-pipe:\\\\.\\pipe\\${id}?k=${id_pk}`;
+        lairConfigString = replaceYamlValue(lairConfigString, 'connectionUrl', modifiedUrl);
+      }
+    } else if (connectionUrl.startsWith('named-pipe:')) {
+      if (!isWindows) {
+        const id_pk = connectionUrl.split('?k=')[1];
+        const modifiedUrl = `unix://${this.keystoreDir}/socket?k=${id_pk}`;
+        lairConfigString = replaceYamlValue(lairConfigString, 'connectionUrl', modifiedUrl);
+      }
+    }
+
+    // Overwrite the pidFile and storeFile values to point to the OS specific paths
+    lairConfigString = replaceYamlValue(
+      lairConfigString,
+      'pidFile',
+      path.join(this.keystoreDir, 'pid_file'),
+    );
+
+    lairConfigString = replaceYamlValue(
+      lairConfigString,
+      'storeFile',
+      path.join(this.keystoreDir, 'store_file'),
+    );
+
+    fs.writeFileSync(this.keystoreConfigPath, lairConfigString);
+
+    // Adjust data_root_path in conductor-config.yaml files of all partitions
+    const folders = fs.readdirSync(this.holochainDir, { withFileTypes: true });
+    const partitions = folders.filter((dirent) => dirent.isDirectory());
+    partitions.forEach((dirent) => {
+      const partitionName = dirent.name;
+      const conductorConfigString = fs.readFileSync(
+        this.conductorConfigPath(partitionName),
+        'utf-8',
+      );
+      const dataRootPath = readYamlValue(conductorConfigString, 'data_root_path');
+      if (!dataRootPath)
+        throw Error('Failed to read data_root_path value of conductor-config.yaml');
+      const modifiedConductorConfigString = replaceYamlValue(
+        conductorConfigString,
+        'data_root_path',
+        this.conductorEnvironmentDir(partitionName),
+      );
+      fs.writeFileSync(this.conductorConfigPath(partitionName), modifiedConductorConfigString);
+    });
   }
 }
 

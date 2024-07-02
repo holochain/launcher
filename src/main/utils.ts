@@ -40,6 +40,10 @@ import type { HolochainManager } from './holochainManager';
 import type { LauncherEmitter } from './launcherEmitter';
 import { DEFAULT_APPS_DIRECTORY } from './paths';
 
+export const isMac = process.platform === 'darwin';
+export const isWindows = process.platform === 'win32';
+export const isLinux = process.platform === 'linux';
+
 export function encodeQuery(query: Record<string, string>) {
   return Object.entries(query)
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
@@ -336,4 +340,41 @@ export async function factoryResetUtility({
   }
   app.relaunch(options);
   app.quit();
+}
+
+/**
+ * Reads the value of a key in a yaml string. Only works for single-line values
+ *
+ * @param yamlString
+ * @param key
+ */
+export function readYamlValue(yamlString: string, key: string) {
+  const lines = yamlString.split('\n');
+  const idx = lines.findIndex((line) => line.includes(`${key}:`));
+  if (idx === -1) {
+    return undefined;
+  }
+  const relevantLine = lines[idx];
+  return relevantLine.replace(`${key}:`, '').trim();
+}
+
+/**
+ * Replaces the value of a key in a yaml string with the specified new value. Only works for
+ * single-line values
+ *
+ * This function is being used instead of something like the js-yaml package in order
+ * to retain comments in the yaml file
+ *
+ * @param yamlString
+ * @param key
+ * @param newValue
+ */
+export function replaceYamlValue(yamlString: string, key: string, newValue: string) {
+  const lines = yamlString.split('\n');
+  const idx = lines.findIndex((line) => line.includes(`${key}:`));
+  if (idx === -1) {
+    throw Error(`Failed to set yaml value for key '${key}'. Key not found.`);
+  }
+  lines[idx] = `${key}: ${newValue}`;
+  return lines.join('\n');
 }
