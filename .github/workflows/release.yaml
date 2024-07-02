@@ -33,7 +33,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-12]
+        # platform: [macos-12]
+        platform: [windows-2019, macos-12, ubuntu-22.04]
         # platform: [windows-2019, macos-12, macos-latest, ubuntu-22.04]
         # platform: [windows-2019]
     env:

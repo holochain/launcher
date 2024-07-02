@@ -332,6 +332,10 @@ export class LauncherFileSystem {
    * @param partitionName
    */
   async restoreFromBackup(backupRoot: string) {
+    // TODO
+    // #######  I M P O R T A N T  ########
+    // CHECK LAUNCHER VERSION COMPATIBILITY
+
     const backupHolochainDir = path.join(backupRoot, 'holochain');
     const backupLairDir = path.join(backupRoot, 'lair');
     if (!fs.existsSync(backupHolochainDir)) {
