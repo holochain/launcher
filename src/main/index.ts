@@ -8,7 +8,7 @@ import { AppstoreAppClient, DevhubAppClient, webhappToHappAndUi } from 'appstore
 import { type ChildProcessWithoutNullStreams, spawnSync } from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
-import { app, dialog, ipcMain, protocol } from 'electron';
+import { app, dialog, ipcMain, Menu, protocol } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { createIPCHandler } from 'electron-trpc/main';
 import { autoUpdater } from 'electron-updater';
@@ -70,6 +70,7 @@ import { IntegrityChecker } from './integrityChecker';
 import { initializeLairKeystore, launchLairKeystore } from './lairKeystore';
 import { LauncherEmitter } from './launcherEmitter';
 import { setupLogs } from './logs';
+import { launcherMenu } from './menu';
 import { DEFAULT_APPS_DIRECTORY } from './paths';
 import {
   breakingVersion,
@@ -244,6 +245,8 @@ const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeReques
   if (!DEFAULT_LAIR_CLIENT) throw Error('Lair signer is not ready');
   return signZomeCall(DEFAULT_LAIR_CLIENT, request);
 };
+
+Menu.setApplicationMenu(launcherMenu(LAUNCHER_FILE_SYSTEM));
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

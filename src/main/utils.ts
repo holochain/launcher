@@ -40,6 +40,10 @@ import type { HolochainManager } from './holochainManager';
 import type { LauncherEmitter } from './launcherEmitter';
 import { DEFAULT_APPS_DIRECTORY } from './paths';
 
+export const isMac = process.platform === 'darwin';
+export const isWindows = process.platform === 'win32';
+export const isLinux = process.platform === 'linux';
+
 export function encodeQuery(query: Record<string, string>) {
   return Object.entries(query)
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
