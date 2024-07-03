@@ -19,6 +19,9 @@ const UIS_DIRNAME = 'uis';
 const HAPPS_DIRNAME = 'happs';
 const APPS_DIRNAME = 'apps';
 
+const BACKUP_INFO_FILENAME = 'backup.info.json';
+const BACKUP_LOG_FILENAME = 'backups.log';
+
 /**
  * Version 1 of app metadata structure.
  */
@@ -60,6 +63,13 @@ export type AppMetadata<T> = {
 
 export type LauncherConfig = {
   backupLocation?: string;
+};
+
+type BackupInfo = {
+  launcherVersion: string;
+  platform: string;
+  lastFullBackup: string;
+  lastPartialbackup?: string;
 };
 
 export class LauncherFileSystem {
@@ -283,7 +293,8 @@ export class LauncherFileSystem {
     if (!backupLocation)
       throw new Error('Failed to backup launcher data. No backup location defined.');
     const backupRoot = path.join(backupLocation, 'holochain-launcher-backup');
-    const backupLogPath = path.join(backupRoot, 'backups.log');
+    const backupLogPath = path.join(backupRoot, BACKUP_LOG_FILENAME);
+    const backupInfoPath = path.join(backupRoot, BACKUP_INFO_FILENAME);
     createDirIfNotExists(backupRoot);
     const start = Date.now();
     // 1. back up all lair related data
@@ -324,6 +335,17 @@ export class LauncherFileSystem {
 
     const successLog = `${platformLogString('BACKUP')} Full state backup successful.`;
     fs.appendFileSync(backupLogPath, successLog);
+    let previousBackupInfo: BackupInfo | undefined;
+    if (fs.existsSync(backupInfoPath)) {
+      previousBackupInfo = JSON.parse(fs.readFileSync(backupInfoPath, 'utf-8'));
+    }
+    const backupInfo: BackupInfo = {
+      launcherVersion: app.getVersion(),
+      platform: process.platform,
+      lastFullBackup: new Date().toISOString(),
+      lastPartialbackup: previousBackupInfo ? previousBackupInfo.lastPartialbackup : undefined,
+    };
+    fs.writeFileSync(backupInfoPath, JSON.stringify(backupInfo));
 
     // Store information about last successful backup, i.e. timestamp
   }
@@ -346,12 +368,29 @@ export class LauncherFileSystem {
    * Restores launcher from a backup folder. Optionally accepts a partition name into which the
    *
    * @param backupRoot
-   * @param partitionName
+   * @param ignoreMissingLogfile If the log file is missing, take the risk and contiue anyway
    */
-  async restoreFromBackup(backupRoot: string) {
-    // TODO
-    // #######  I M P O R T A N T  ########
-    // CHECK LAUNCHER VERSION COMPATIBILITY
+  async restoreFromBackup(backupRoot: string, ignoreMissingBackupInfoFile?: boolean) {
+    // Check launcher version compatiblity
+    let backupInfo: BackupInfo | undefined;
+    try {
+      backupInfo = JSON.parse(
+        fs.readFileSync(path.join(backupRoot, BACKUP_INFO_FILENAME), 'utf-8'),
+      );
+    } catch (e) {
+      if (ignoreMissingBackupInfoFile) {
+        console.warn(`WARNING Failed to read ${BACKUP_INFO_FILENAME}: ${e}`);
+      } else {
+        throw Error(`Failed to read ${BACKUP_INFO_FILENAME}: ${e}`);
+      }
+    }
+    if (backupInfo) {
+      if (breakingVersion(backupInfo.launcherVersion) !== breakingVersion(app.getVersion())) {
+        throw new Error(
+          'The chosen backup has been made with a version of Holochain Launcher which is incompatible with this version of the Holochain Launcher.',
+        );
+      }
+    }
 
     const backupHolochainDir = path.join(backupRoot, 'holochain');
     const backupLairDir = path.join(backupRoot, 'lair');

@@ -1,6 +1,6 @@
 {
   "name": "holochain-launcher-electron",
-  "version": "0.400.0-backup.2",
+  "version": "0.400.0-backup.3",
   "private": true,
   "description": "Holochain Launcher (0.4)",
   "author": "Holochain Foundation <info@holochain.org> (http://holochain.org)",
