@@ -12,14 +12,14 @@ const fetchFile = (url, file) => {
             .get(redirectUrl, (redirectResponse) => {
               handleResponse(redirectResponse, file, resolve, reject);
             })
-            .on('error', reject);
+            .on('error', (err) => reject({ err, url: redirectUrl }));
         } else if (response.statusCode === 404) {
-          reject(new Error('No file found at the given URL'));
+          reject(new Error(`No file found at the given URL: ${url}`));
         } else {
           handleResponse(response, file, resolve, reject);
         }
       })
-      .on('error', reject);
+      .on('error', (err) => reject({ err, url }));
   });
 };
 
@@ -53,9 +53,9 @@ export async function downloadFile(url, targetDir, fileName) {
       console.log(`${fileName} saved successfully.`);
     });
     chmodSync(destinationPath, 511);
-  } catch (err) {
+  } catch ({ err, url: errorUrl }) {
     unlink(destinationPath, () => {});
-    console.error(err.message);
+    console.error(`Error downloading from ${errorUrl || url}: ${err.message}`);
   }
   console.log(`Download process for ${fileName} completed.`);
 }
