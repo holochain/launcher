@@ -79,7 +79,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: rust-utils/dist
-          key: ${{ runner.os }}-rust-utils-${{ needs.extract-versions.outputs.rust_utils_version }}
+          key: ${{ matrix.platform }}-rust-utils-${{ needs.extract-versions.outputs.rust_utils_version }}
 
       - name: Conditionally Setup rust-utils
         if: steps.cache-rust-utils.outputs.cache-hit != 'true'
