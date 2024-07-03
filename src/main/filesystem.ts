@@ -564,5 +564,5 @@ export function createDirIfNotExists(path: fs.PathLike) {
 }
 
 export function platformLogString(name: string) {
-  return `[${name} @ Holochain Launcher ${app.getVersion()} @ ${process.platform} @ ${new Date().toISOString()}]`;
+  return `\n[${name} @ Holochain Launcher ${app.getVersion()} @ ${process.platform} @ ${new Date().toISOString()}]`;
 }
