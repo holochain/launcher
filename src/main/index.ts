@@ -338,6 +338,8 @@ async function handleSetupAndLaunch(password: string, backupPath?: string) {
 
   if (VALIDATED_CLI_ARGS.holochainVersion.type !== 'running-external') {
     if (backupPath) {
+      INTEGRITY_CHECKER = new IntegrityChecker(password);
+      LAUNCHER_FILE_SYSTEM.setIntegrityChecker(INTEGRITY_CHECKER);
       await LAUNCHER_FILE_SYSTEM.restoreFromBackup(
         path.join(backupPath, 'holochain-launcher-backup'),
       );
@@ -367,8 +369,10 @@ async function handleLaunch(password: string, backupPath?: string) {
   if (backupPath) {
     LAUNCHER_FILE_SYSTEM.setBackupLocation(backupPath);
   }
-  INTEGRITY_CHECKER = new IntegrityChecker(password);
-  LAUNCHER_FILE_SYSTEM.setIntegrityChecker(INTEGRITY_CHECKER);
+  if (!INTEGRITY_CHECKER) {
+    INTEGRITY_CHECKER = new IntegrityChecker(password);
+    LAUNCHER_FILE_SYSTEM.setIntegrityChecker(INTEGRITY_CHECKER);
+  }
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingLairKeystore');
   let lairUrl: string;
 

@@ -1,14 +1,23 @@
-import type { App } from 'electron';
+import { type App, app } from 'electron';
 import fs from 'fs';
 import { nanoid } from 'nanoid';
 import path from 'path';
 
 import type { DistributionInfoV1, HolochainDataRoot } from '$shared/types';
 
+import type { UiHashes } from './holochainManager';
 import { type IntegrityChecker } from './integrityChecker';
 import { breakingVersion, isWindows, readYamlValue, replaceYamlValue } from './utils';
 
 export type Profile = string;
+
+const KEYSTORE_DIRNAME = 'lair';
+const HOLOCHAIN_DIRNAME = 'holochain';
+const CONFIG_DIRNAME = 'config';
+const CONDUCTOR_ENV_DIRNAME = 'dbs';
+const UIS_DIRNAME = 'uis';
+const HAPPS_DIRNAME = 'happs';
+const APPS_DIRNAME = 'apps';
 
 /**
  * Version 1 of app metadata structure.
@@ -107,15 +116,15 @@ export class LauncherFileSystem {
   }
 
   get keystoreDir() {
-    return path.join(this.profileDataDir, 'lair');
+    return path.join(this.profileDataDir, KEYSTORE_DIRNAME);
   }
 
   get holochainDir() {
-    return path.join(this.profileDataDir, 'holochain');
+    return path.join(this.profileDataDir, HOLOCHAIN_DIRNAME);
   }
 
   get configDir() {
-    return path.join(this.profileDataDir, 'config');
+    return path.join(this.profileDataDir, CONFIG_DIRNAME);
   }
 
   holochainPartitionDir(partitionName: string) {
@@ -131,7 +140,7 @@ export class LauncherFileSystem {
   }
 
   conductorEnvironmentDir(partitionName: string) {
-    return path.join(this.holochainDir, partitionName, 'dbs');
+    return path.join(this.holochainDir, partitionName, CONDUCTOR_ENV_DIRNAME);
   }
 
   /**
@@ -143,7 +152,7 @@ export class LauncherFileSystem {
    * @returns
    */
   appsDir(holochainDataRoot: HolochainDataRoot) {
-    return path.join(this.holochainDataBase(holochainDataRoot), 'apps');
+    return path.join(this.holochainDataBase(holochainDataRoot), APPS_DIRNAME);
   }
 
   /**
@@ -154,7 +163,7 @@ export class LauncherFileSystem {
    * @returns
    */
   happsDir(holochainDataRoot: HolochainDataRoot) {
-    return path.join(this.holochainDataBase(holochainDataRoot), 'happs');
+    return path.join(this.holochainDataBase(holochainDataRoot), HAPPS_DIRNAME);
   }
 
   /**
@@ -170,7 +179,7 @@ export class LauncherFileSystem {
    * @returns
    */
   uisDir(holochainDataRoot: HolochainDataRoot) {
-    return path.join(this.holochainDataBase(holochainDataRoot), 'uis');
+    return path.join(this.holochainDataBase(holochainDataRoot), UIS_DIRNAME);
   }
 
   /**
@@ -274,13 +283,14 @@ export class LauncherFileSystem {
     if (!backupLocation)
       throw new Error('Failed to backup launcher data. No backup location defined.');
     const backupRoot = path.join(backupLocation, 'holochain-launcher-backup');
+    const backupLogPath = path.join(backupRoot, 'backups.log');
     createDirIfNotExists(backupRoot);
     const start = Date.now();
     // 1. back up all lair related data
     // function that starts at the leaves, overwrites directory by directory by copying it over
     try {
       console.log('backing up lair...');
-      fs.cpSync(this.keystoreDir, path.join(backupRoot, 'lair'), {
+      fs.cpSync(this.keystoreDir, path.join(backupRoot, KEYSTORE_DIRNAME), {
         recursive: true,
         preserveTimestamps: true,
       });
@@ -289,6 +299,8 @@ export class LauncherFileSystem {
       if (e?.toString().includes('socket file')) {
         // socket file cannot and does not need to be copied -> do nothing
       } else {
+        const errLog = `${platformLogString('BACKUP')} ERROR: Failed to copy keystore directory: ${e}`;
+        fs.appendFileSync(backupLogPath, errLog);
         throw Error(`Failed to copy keystore directory: ${e}`);
       }
     }
@@ -297,16 +309,21 @@ export class LauncherFileSystem {
 
     // TODO
     try {
-      fs.cpSync(this.holochainDir, path.join(backupRoot, 'holochain'), {
+      fs.cpSync(this.holochainDir, path.join(backupRoot, HOLOCHAIN_DIRNAME), {
         recursive: true,
         preserveTimestamps: true,
         filter: (src, _dst) => !src.endsWith('wasm-cache'),
       });
     } catch (err) {
+      const errLog = `${platformLogString('BACKUP')} ERROR: Failed to copy holochain directory: ${err}`;
+      fs.appendFileSync(backupLogPath, errLog);
       throw Error(`Failed to copy holochain directory: ${err}`);
     }
 
     console.log('Copying took ', Date.now() - start, 'ms');
+
+    const successLog = `${platformLogString('BACKUP')} Full state backup successful.`;
+    fs.appendFileSync(backupLogPath, successLog);
 
     // Store information about last successful backup, i.e. timestamp
   }
@@ -371,6 +388,7 @@ export class LauncherFileSystem {
    * Overwrites paths in lair-keystore-config.yaml and conductor-config.yaml files to the
    * appropriate paths on the new host OS in case data gets restored on a different
    * OS than the backup has been created.
+   * Also adjusts the paths in hashes.json file when switching between unix/windows
    */
   osAdjustConfigFiles() {
     // Adjust lair-keystore-config.yaml file
@@ -380,9 +398,13 @@ export class LauncherFileSystem {
     const connectionUrl = readYamlValue(lairConfigString, 'connectionUrl');
     if (!connectionUrl) throw Error('Failed to read connectionUrl from lair-keystore-config.yaml');
 
+    let unixToWindows = false;
+    let windowsToUnix = false;
+
     // https://github.com/holochain/lair/blob/6a84ed490fc7074d107e38bbb4a8d707e9b8e066/crates/lair_keystore_api/src/config.rs#L229
     if (connectionUrl.startsWith('unix://')) {
       if (isWindows) {
+        unixToWindows = true;
         const id = nanoid(21);
         const id_pk = connectionUrl.split('socket?k=')[1];
         const modifiedUrl = `named-pipe:\\\\.\\pipe\\${id}?k=${id_pk}`;
@@ -390,6 +412,7 @@ export class LauncherFileSystem {
       }
     } else if (connectionUrl.startsWith('named-pipe:')) {
       if (!isWindows) {
+        windowsToUnix = true;
         const id_pk = connectionUrl.split('?k=')[1];
         const modifiedUrl = `unix://${this.keystoreDir}/socket?k=${id_pk}`;
         lairConfigString = replaceYamlValue(lairConfigString, 'connectionUrl', modifiedUrl);
@@ -415,6 +438,7 @@ export class LauncherFileSystem {
     const folders = fs.readdirSync(this.holochainDir, { withFileTypes: true });
     const partitions = folders.filter((dirent) => dirent.isDirectory());
     partitions.forEach((dirent) => {
+      // Adjust data_root_path to new environment
       const partitionName = dirent.name;
       const conductorConfigString = fs.readFileSync(
         this.conductorConfigPath(partitionName),
@@ -429,6 +453,67 @@ export class LauncherFileSystem {
         this.conductorEnvironmentDir(partitionName),
       );
       fs.writeFileSync(this.conductorConfigPath(partitionName), modifiedConductorConfigString);
+
+      // Adjust all paths in hashes.json files if necessary
+      if (unixToWindows) {
+        console.log('Restoring on Windows from a backup made on Unix');
+        const uisDirectory = path.join(this.holochainDir, partitionName, UIS_DIRNAME);
+        const uiFolders = fs
+          .readdirSync(uisDirectory, { withFileTypes: true })
+          .filter((dirent) => dirent.isDirectory());
+        uiFolders.forEach((dirent) => {
+          const hashesFilePath = path.join(uisDirectory, dirent.name, 'hashes.json');
+          if (!this.integrityChecker) {
+            throw new Error(
+              'Failed to convert hashes.json files to Windows format when restoring a backup made on Unix: IntegrityChecker undefined.',
+            );
+          }
+          if (fs.existsSync(hashesFilePath)) {
+            const uiHashes = this.integrityChecker.readSignedJSON<UiHashes>(hashesFilePath);
+            const modifiedUiHashes = {};
+            Object.keys(uiHashes).forEach((key) => {
+              const newKey = key.replace('/', '\\');
+              modifiedUiHashes[newKey] = uiHashes[key];
+            });
+            this.integrityChecker.storeToSignedJSON<UiHashes>(hashesFilePath, modifiedUiHashes);
+          } else {
+            console.warn(
+              'WARNING: No hashes.json file found at expected location: ',
+              hashesFilePath,
+            );
+          }
+        });
+      }
+
+      if (windowsToUnix) {
+        console.log('Restoring on Unix from a backup made on Windows');
+        const uisDirectory = path.join(this.holochainDir, partitionName, UIS_DIRNAME);
+        const uiFolders = fs
+          .readdirSync(uisDirectory, { withFileTypes: true })
+          .filter((dirent) => dirent.isDirectory());
+        uiFolders.forEach((dirent) => {
+          const hashesFilePath = path.join(uisDirectory, dirent.name, 'hashes.json');
+          if (!this.integrityChecker) {
+            throw new Error(
+              'Failed to convert hashes.json files to Unix format when restoring a backup made on Windows: IntegrityChecker undefined.',
+            );
+          }
+          if (fs.existsSync(hashesFilePath)) {
+            const uiHashes = this.integrityChecker.readSignedJSON<UiHashes>(hashesFilePath);
+            const modifiedUiHashes = {};
+            Object.keys(uiHashes).forEach((key) => {
+              const newKey = key.replace('\\', '/');
+              modifiedUiHashes[newKey] = uiHashes[key];
+            });
+            this.integrityChecker.storeToSignedJSON<UiHashes>(hashesFilePath, modifiedUiHashes);
+          } else {
+            console.warn(
+              'WARNING: No hashes.json file found at expected location: ',
+              hashesFilePath,
+            );
+          }
+        });
+      }
     });
   }
 }
@@ -437,4 +522,8 @@ export function createDirIfNotExists(path: fs.PathLike) {
   if (!fs.existsSync(path)) {
     fs.mkdirSync(path, { recursive: true });
   }
+}
+
+export function platformLogString(name: string) {
+  return `[${name} @ Holochain Launcher ${app.getVersion()} @ ${process.platform} @ ${new Date().toISOString()}]`;
 }
