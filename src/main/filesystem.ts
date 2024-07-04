@@ -153,6 +153,10 @@ export class LauncherFileSystem {
     return path.join(this.holochainDir, partitionName, CONDUCTOR_ENV_DIRNAME);
   }
 
+  get backupFileName() {
+    return `launcher-${breakingVersion(app.getVersion())}-backup-${this.profile}`;
+  }
+
   /**
    * This is the directory in which app metadata is stored like the UI associated to the
    * app and the sha256 hash of the .happ file that belongs to it or potentially an alias
@@ -292,7 +296,7 @@ export class LauncherFileSystem {
     const backupLocation = this.backupLocation;
     if (!backupLocation)
       throw new Error('Failed to backup launcher data. No backup location defined.');
-    const backupRoot = path.join(backupLocation, 'holochain-launcher-backup');
+    const backupRoot = path.join(backupLocation);
     const backupLogPath = path.join(backupRoot, BACKUP_LOG_FILENAME);
     const backupInfoPath = path.join(backupRoot, BACKUP_INFO_FILENAME);
     createDirIfNotExists(backupRoot);
