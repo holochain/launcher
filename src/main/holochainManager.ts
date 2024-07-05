@@ -43,7 +43,7 @@ export type AppPort = number;
 export type UiHashes = Record<string, string>;
 
 const DEFAULT_BOOTSTRAP_SERVER = 'https://bootstrap.holo.host';
-const DEFAULT_SIGNALING_SERVER = 'wss://signal.holo.host';
+const DEFAULT_SIGNALING_SERVER = 'wss://sbd-0.main.infra.holo.host';
 const DEFAULT_RUST_LOG =
   'warn,' +
   // this thrashes on startup
@@ -246,12 +246,21 @@ export class HolochainManager {
     });
 
     return new Promise((resolve, reject) => {
-      conductorHandle.stdout.pipe(split()).on('data', async (line: string) => {
-        if (line.includes('FATAL PANIC PanicInfo')) {
+      conductorHandle.stderr.pipe(split()).on('data', async (line: string) => {
+        if (line.includes('holochain had a problem and crashed')) {
           reject(
             `Holochain version ${JSON.stringify(
               version,
             )} failed to start up and crashed. Check the logs for details.`,
+          );
+        }
+      });
+      conductorHandle.stdout.pipe(split()).on('data', async (line: string) => {
+        if (line.includes('could not be parsed, because it is not valid YAML')) {
+          reject(
+            `Holochain version ${JSON.stringify(
+              version,
+            )} failed to start up. Check the logs for details.`,
           );
         }
         if (line.includes('Conductor ready.')) {
