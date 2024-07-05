@@ -321,7 +321,6 @@
 	<DashedSection title={$i18n.t('factoryReset')}>
 		<Button
 			props={{
-				isLoading: $installDevhub.isPending,
 				onClick: showFactoryResetModal,
 				class: 'btn-install'
 			}}
