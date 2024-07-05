@@ -772,7 +772,7 @@ const router = t.router({
     return createObservableGeneric(LAUNCHER_EMITTER, HIDE_SETTINGS_WINDOW, false);
   }),
   refetchDataSubscription: t.procedure.subscription(() => {
-    return createObservableGeneric(LAUNCHER_EMITTER, REFETCH_DATA_IN_ALL_WINDOWS);
+    return createObservableGeneric(LAUNCHER_EMITTER, REFETCH_DATA_IN_ALL_WINDOWS, false);
   }),
   factoryReset: t.procedure.mutation(() =>
     factoryResetUtility({
