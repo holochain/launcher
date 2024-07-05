@@ -282,11 +282,11 @@
 				{#if cellIdResult}
 					<div class="mb-2 text-sm">
 						<p class="break-all">
-							<span class="font-semibold">{capitalizeFirstLetter(roleName)}:</span>
+							<span class="font-semibold">{roleName}:</span>
 							{encodeHashToBase64(cellIdResult[0])}
 						</p>
 						<p class="break-all">
-							<span class="font-semibold">Pubkey:</span>
+							<span class="font-semibold">pubkey:</span>
 							{encodeHashToBase64(cellIdResult[1])}
 						</p>
 					</div>
@@ -321,6 +321,7 @@
 	<DashedSection title={$i18n.t('factoryReset')}>
 		<Button
 			props={{
+				disabled: $installDevhub.isPending,
 				onClick: showFactoryResetModal,
 				class: 'btn-install'
 			}}
