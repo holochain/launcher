@@ -61,6 +61,7 @@
 	$: view = $page.params.slug;
 </script>
 
+<span class="pb-2 text-sm">{$i18n.t('launcherSettings')}</span>
 <MenuEntry name={$i18n.t(SYSTEM_INFORMATION)} onClick={() => selectView('')} isSelected={!view}>
 	<div slot="leading" class={clsx('ml-[1.5px] mr-[14px]')}>
 		<MenuInfo fillColor={view ? NOT_SELECTED_ICON_STYLE : SELECTED_ICON_STYLE} />
@@ -77,6 +78,7 @@
 	</div>
 </MenuEntry>
 <div class="!my-2 h-px w-full bg-tertiary-800"></div>
+<span class="pb-2 text-sm">{$i18n.t('appSettings')}</span>
 {#if $installedApps.isPending}
 	<CenterProgressRadial width="w-12" />
 {:else if $installedApps.isSuccess}

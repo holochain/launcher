@@ -13,6 +13,14 @@
 	const client = trpc();
 	const isDevhubInstalled = client.isDevhubInstalled.createQuery();
 
+	client.hideSettingsWindow.createSubscription(undefined, {
+		onData: (value) => {
+			if (value) {
+				goto(`/${SETTINGS_SCREEN}`);
+			}
+		}
+	});
+
 	const { publishersQuery } = createAppQueries();
 
 	$: isDevPage = $page.url.pathname.includes(DEV_PAGE);

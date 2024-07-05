@@ -171,9 +171,9 @@
 	</IconButton>
 </TopBar>
 
-<div class="relative grow overflow-y-auto bg-light-background px-4 dark:bg-apps-list-dark-gradient">
+<div class="grow overflow-y-auto bg-light-background px-4 dark:bg-apps-list-dark-gradient">
 	<slot />
-	<div class="absolute bottom-2 right-2">
-		<ResizeIcon />
-	</div>
+</div>
+<div class="absolute bottom-[0.3rem] right-[0.3rem]">
+	<ResizeIcon />
 </div>
