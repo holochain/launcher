@@ -6,7 +6,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { AppDetailsPanel, Button } from '$components';
-	import { MODAL_DEVHUB_INSTALLATION_CONFIRMATION } from '$const';
+	import { MODAL_DEVHUB_INSTALLATION_CONFIRMATION, MODAL_FACTORY_RESET_CONFIRMATION } from '$const';
 	import {
 		capitalizeFirstLetter,
 		createImageUrl,
@@ -25,6 +25,7 @@
 	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_SCREEN } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
 	import { type UpdateUiFromHash } from '$shared/types';
+	import type { Modals } from '$types/components';
 
 	import { DashedSection } from '../../components';
 	import AppSettings from './components/AppSettings.svelte';
@@ -49,6 +50,7 @@
 	const installDevhub = client.installDevhub.createMutation();
 	const updateUiFromHash = client.updateUiFromHash.createMutation();
 	const storeUiBytes = client.storeUiBytes.createMutation();
+	const factoryReset = client.factoryReset.createMutation();
 
 	let selectedIndex = 0;
 
@@ -168,8 +170,13 @@
 		modalStore.close();
 	};
 
-	const showModal = () => {
-		const modal = createModalParams(MODAL_DEVHUB_INSTALLATION_CONFIRMATION, (shouldInstall) => {
+	const showModal = (modalType: Modals, response?: (r: unknown) => void) => {
+		const modal = createModalParams(modalType, response);
+		modalStore.trigger(modal);
+	};
+
+	const showDevhubInstallModal = () => {
+		showModal(MODAL_DEVHUB_INSTALLATION_CONFIRMATION, (shouldInstall) => {
 			if (shouldInstall) {
 				$installDevhub.mutate(undefined, {
 					onSuccess: handleDevhubInstallSuccess,
@@ -177,8 +184,21 @@
 				});
 			}
 		});
+	};
 
-		modalStore.trigger(modal);
+	const showFactoryResetModal = () => {
+		showModal(MODAL_FACTORY_RESET_CONFIRMATION, (confirm) => {
+			if (confirm) {
+				$factoryReset.mutate(undefined, {
+					onError: (error) =>
+						showModalError({
+							modalStore,
+							errorTitle: $i18n.t('factoryResetError'),
+							errorMessage: error.message
+						})
+				});
+			}
+		});
 	};
 
 	$: icon = selectedApp?.icon ? new Uint8Array(selectedApp.icon) : undefined;
@@ -254,15 +274,25 @@
 						goto(`/${SETTINGS_SCREEN}`);
 					}
 				})}
-			update={!!update}
+			update={Boolean(update)}
 		>
-			{#each Object.entries(selectedApp.appInfo.cell_info) as [roleName, cellId]}
+			{@const cellIds = Object.entries(selectedApp.appInfo.cell_info)}
+			{#each cellIds as [roleName, cellId], index}
 				{@const cellIdResult = getCellId(cellId[0])}
 				{#if cellIdResult}
-					<p class="break-all">
-						{roleName}: {encodeHashToBase64(cellIdResult[0])}
-						{'pubkey'}: {encodeHashToBase64(cellIdResult[1])}
-					</p>
+					<div class="mb-2 text-sm">
+						<p class="break-all">
+							<span class="font-semibold">{roleName}:</span>
+							{encodeHashToBase64(cellIdResult[0])}
+						</p>
+						<p class="break-all">
+							<span class="font-semibold">pubkey:</span>
+							{encodeHashToBase64(cellIdResult[1])}
+						</p>
+					</div>
+					{#if index !== cellIds.length - 1}
+						<div class="!my-2 h-px w-full bg-tertiary-800"></div>
+					{/if}
 				{/if}
 			{/each}
 		</AppSettings>
@@ -275,7 +305,7 @@
 			<Button
 				props={{
 					isLoading: $installDevhub.isPending,
-					onClick: showModal,
+					onClick: showDevhubInstallModal,
 					class: 'btn-install'
 				}}
 			>
@@ -287,5 +317,16 @@
 				<span class="font-semibold">{$i18n.t('uploadAndPublish')}</span>
 			</div>
 		{/if}
+	</DashedSection>
+	<DashedSection title={$i18n.t('factoryReset')}>
+		<Button
+			props={{
+				disabled: $installDevhub.isPending,
+				onClick: showFactoryResetModal,
+				class: 'btn-install'
+			}}
+		>
+			{$i18n.t('factoryResetClick')}
+		</Button>
 	</DashedSection>
 {/if}

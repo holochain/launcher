@@ -3,7 +3,6 @@ import type { AppClient, CallZomeRequest, InstalledAppId } from '@holochain/clie
 import { AppWebsocket } from '@holochain/client';
 import { decode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
-import { observable } from '@trpc/server/observable';
 import { AppstoreAppClient, DevhubAppClient, webhappToHappAndUi } from 'appstore-tools';
 import { type ChildProcessWithoutNullStreams, spawnSync } from 'child_process';
 import { Command, Option } from 'commander';
@@ -31,7 +30,6 @@ import {
 import { getErrorMessage } from '$shared/helpers';
 import type {
   DistributionInfoV1,
-  EventMap,
   HolochainDataRoot,
   HolochainPartition,
   Screen,
@@ -42,6 +40,7 @@ import {
   BytesSchema,
   CHECK_INITIALIZED_KEYSTORE_ERROR,
   ExtendedAppInfoSchema,
+  HIDE_SETTINGS_WINDOW,
   IncludeHeadlessSchema,
   InitializeAppPortsSchema,
   InstallDefaultAppSchema,
@@ -74,6 +73,7 @@ import { DEFAULT_APPS_DIRECTORY } from './paths';
 import {
   breakingVersion,
   createObservable,
+  createObservableGeneric,
   factoryResetUtility,
   getInstalledAppsInfo,
   handleInstallError,
@@ -159,6 +159,10 @@ contextMenu({
     {
       label: 'Reload',
       click: () => (browserWindow as BrowserWindow).reload(),
+    },
+    {
+      label: 'Quit',
+      click: () => app.quit(),
     },
   ],
 });
@@ -256,7 +260,7 @@ app.whenReady().then(async () => {
 
   console.log('BEING RUN IN __dirnmane: ', __dirname);
 
-  PRIVILEDGED_LAUNCHER_WINDOWS = setupAppWindows();
+  PRIVILEDGED_LAUNCHER_WINDOWS = setupAppWindows(LAUNCHER_EMITTER);
 
   createIPCHandler({ router, windows: Object.values(PRIVILEDGED_LAUNCHER_WINDOWS) });
 
@@ -757,18 +761,18 @@ const router = t.router({
     };
   }),
   onSetupProgressUpdate: t.procedure.subscription(() => {
-    return createObservable(LAUNCHER_EMITTER, LOADING_PROGRESS_UPDATE);
+    return createObservableGeneric(LAUNCHER_EMITTER, LOADING_PROGRESS_UPDATE);
   }),
   deriveAndImportSeedFromJsonFile: t.procedure.input(z.string()).mutation(async (opts) => {
     const jsonFilePath = opts.input;
     if (!DEFAULT_LAIR_CLIENT) throw new Error('Lair client is not ready.');
     return DEFAULT_LAIR_CLIENT.deriveAndImportSeedFromJsonFile(jsonFilePath);
   }),
+  hideSettingsWindow: t.procedure.subscription(() => {
+    return createObservableGeneric(LAUNCHER_EMITTER, HIDE_SETTINGS_WINDOW, false);
+  }),
   refetchDataSubscription: t.procedure.subscription(() => {
-    return observable<EventMap[typeof REFETCH_DATA_IN_ALL_WINDOWS]>((emit) => {
-      const handler = (data: EventMap[typeof REFETCH_DATA_IN_ALL_WINDOWS]) => emit.next(data);
-      LAUNCHER_EMITTER.on(REFETCH_DATA_IN_ALL_WINDOWS, handler);
-    });
+    return createObservableGeneric(LAUNCHER_EMITTER, REFETCH_DATA_IN_ALL_WINDOWS, false);
   }),
   factoryReset: t.procedure.mutation(() =>
     factoryResetUtility({

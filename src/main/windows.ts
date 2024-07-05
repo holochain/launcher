@@ -1,4 +1,4 @@
-import { is } from '@electron-toolkit/utils';
+import { is, platform } from '@electron-toolkit/utils';
 import type { AppAuthenticationToken } from '@holochain/client';
 import crypto from 'crypto';
 import {
@@ -24,7 +24,7 @@ import {
   WINDOW_SIZE,
 } from '$shared/const';
 import type { ExtendedAppInfo, Screen } from '$shared/types';
-import { LAUNCHER_ERROR } from '$shared/types';
+import { HIDE_SETTINGS_WINDOW, LAUNCHER_ERROR } from '$shared/types';
 
 import type { LauncherFileSystem } from './filesystem';
 import { type UiHashes } from './holochainManager';
@@ -91,11 +91,15 @@ export const focusVisibleWindow = (launcherWindows: Record<Screen, BrowserWindow
   }
 };
 
-export const setupAppWindows = () => {
+export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
   let isQuitting = false;
   // Create the browser window.
   const mainIcon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '../icon.png'));
-  const mainWindow = createAdminWindow({ title: 'Holochain Launcher', icon: mainIcon });
+  const mainWindow = createAdminWindow({
+    title: 'Holochain Launcher',
+    icon: mainIcon,
+    frame: platform.isWindows,
+  });
 
   const settingsWindow = createAdminWindow({
     title: 'Settings - Holochain Launcher',
@@ -168,6 +172,7 @@ export const setupAppWindows = () => {
   settingsWindow.on('close', (e) => {
     if (!isQuitting) {
       e.preventDefault();
+      launcherEmitter.emit(HIDE_SETTINGS_WINDOW, true);
       settingsWindow.hide();
       setTimeout(() => {
         mainWindow.show();

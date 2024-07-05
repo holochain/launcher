@@ -37,7 +37,7 @@
 </script>
 
 <MenuEntry
-	background={view ? 'bg-white/10' : 'bg-app-button-gradient'}
+	background={view ? 'transparent' : 'bg-white/30'}
 	name={$i18n.t('addhApp')}
 	onClick={() => goto(`/${DEV_PAGE}`)}
 	isSelected

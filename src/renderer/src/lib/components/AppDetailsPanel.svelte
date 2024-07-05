@@ -49,20 +49,22 @@
 		</div>
 		<slot name="install" />
 	</div>
-	{#each buttons as button, index}
-		<Button
-			props={{
-				type: 'button',
-				onClick: () => {
-					selectedIndex = index;
-				},
-				class: clsx(
-					'rounded-sm px-3 py-2 border-white/25 border mr-2 d',
-					index === selectedIndex ? 'bg-white/25 font-semibold' : 'bg-transparent text-white/80'
-				)
-			}}
-		>
-			{button}
-		</Button>
-	{/each}
+	{#if buttons.length > 1}
+		{#each buttons as button, index}
+			<Button
+				props={{
+					type: 'button',
+					onClick: () => {
+						selectedIndex = index;
+					},
+					class: clsx(
+						'rounded-sm px-3 py-2 border-white/25 border mr-2 d',
+						index === selectedIndex ? 'bg-white/25 font-semibold' : 'bg-transparent text-white/80'
+					)
+				}}
+			>
+				{button}
+			</Button>
+		{/each}
+	{/if}
 </div>

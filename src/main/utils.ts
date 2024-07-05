@@ -213,7 +213,11 @@ export async function signZomeCall(
   return zomeCallSigned;
 }
 
-export function createObservable<K extends EventKeys>(emitter: LauncherEmitter, eventName: K) {
+export function createObservableGeneric<K extends EventKeys>(
+  emitter: LauncherEmitter,
+  eventName: K,
+  withOff: boolean = true,
+) {
   return observable<EventMap[K]>((emit) => {
     const handler = (data: EventMap[K]) => {
       emit.next(data);
@@ -221,7 +225,10 @@ export function createObservable<K extends EventKeys>(emitter: LauncherEmitter, 
 
     emitter.on(eventName, handler);
 
-    return () => emitter.off(eventName, handler);
+    if (withOff) {
+      return () => emitter.off(eventName, handler);
+    }
+    return;
   });
 }
 
