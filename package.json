@@ -68,7 +68,7 @@
     "electron-context-menu": "3.6.1",
     "electron-serve": "^1.2.0",
     "electron-trpc": "^0.6.1",
-    "electron-updater": "6.2.1",
+    "@matthme/electron-updater": "6.3.0-alpha.0",
     "elliptic": "6.5.5",
     "hc-launcher-rust-utils": "file:./rust-utils/dist",
     "js-sha256": "^0.11.0",
