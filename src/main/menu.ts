@@ -45,9 +45,38 @@ export const launcherMenu = (launcherFileSystem: LauncherFileSystem) => {
     ],
   };
 
+  const fileMenu: Electron.MenuItemConstructorOptions = {
+    role: 'fileMenu',
+    submenu: [
+      {
+        label: 'Quit',
+        type: 'normal',
+        click() {
+          app.quit();
+        },
+      },
+      {
+        label: 'Restart',
+        click() {
+          const options: Electron.RelaunchOptions = {
+            args: process.argv,
+          };
+          // https://github.com/electron-userland/electron-builder/issues/1727#issuecomment-769896927
+          if (process.env.APPIMAGE) {
+            console.log('process.execPath: ', process.execPath);
+            options.args!.unshift('--appimage-extract-and-run');
+            options.execPath = process.env.APPIMAGE;
+          }
+          app.relaunch(options);
+          app.quit();
+        },
+      },
+    ],
+  };
+
   return Menu.buildFromTemplate([
     ...(isMac ? [macAppMenu] : []),
-    { role: 'fileMenu' },
+    fileMenu,
     { role: 'editMenu' },
     { role: 'viewMenu' },
     { role: 'windowMenu' },
