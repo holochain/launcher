@@ -36,11 +36,11 @@ switch (process.platform) {
     throw new Error(`Got unexpected OS platform: ${process.platform}`);
 }
 
-const holochainBinaryFilename = `holochain-v${packageJson.binaries.holochain}${
+const holochainBinaryFilename = `holochain-v${packageJson.binaries.holochain}${packageJson.name.replace('holochain', '')}${
   process.platform === 'win32' ? '.exe' : ''
 }`;
 
-const lairBinaryFilename = `lair-keystore-v${packageJson.binaries.lair_keystore}${
+const lairBinaryFilename = `lair-keystore-v${packageJson.binaries.lair_keystore}${packageJson.name.replace('holochain', '')}${
   process.platform === 'win32' ? '.exe' : ''
 }`;
 

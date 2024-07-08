@@ -10,9 +10,7 @@ const getFilePath = (relativePath: string) => path.join(app.getAppPath(), relati
 const getPackageJSONPath = () =>
   getFilePath(app.isPackaged ? '../app.asar.unpacked/package.json' : './package.json');
 
-const readJSONFile = (filePath: string) => JSON.parse(readFileSync(filePath, 'utf8'));
-
-const packageJSON = readJSONFile(getPackageJSONPath());
+const packageJSON = JSON.parse(readFileSync(getPackageJSONPath(), 'utf8'));
 
 const HolochainLairVersion = HolochainLairVersionSchema.parse(packageJSON);
 
@@ -26,13 +24,13 @@ const BINARIES_DIRECTORY = getFilePath(
 const HOLOCHAIN_BINARIES = {
   [DEFAULT_HOLOCHAIN_VERSION]: path.join(
     BINARIES_DIRECTORY,
-    `holochain-v${DEFAULT_HOLOCHAIN_VERSION}${process.platform === 'win32' ? '.exe' : ''}`,
+    `holochain-v${DEFAULT_HOLOCHAIN_VERSION}${packageJSON.name.replace('holochain', '')}${process.platform === 'win32' ? '.exe' : ''}`,
   ),
 };
 
 const LAIR_BINARY = path.join(
   BINARIES_DIRECTORY,
-  `lair-keystore-v${DEFAULT_LAIR_KEYSTORE_VERSION}${process.platform === 'win32' ? '.exe' : ''}`,
+  `lair-keystore-v${DEFAULT_LAIR_KEYSTORE_VERSION}${packageJSON.name.replace('holochain', '')}${process.platform === 'win32' ? '.exe' : ''}`,
 );
 
 const checkHolochainLairBinariesExist = () =>
