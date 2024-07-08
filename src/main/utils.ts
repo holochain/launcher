@@ -311,12 +311,17 @@ export async function factoryResetUtility({
     throw new Error('LauncherFilesystem is undefined. Aborting Factory Reset.');
   }
 
+  console.log('Closing happ windows...');
+
   // 1. Close all windows to prevent chromium related files to be accessed by them
   Object.values(windowInfoMap).forEach((info) => {
     if (info.windowObject) {
       info.windowObject.close();
     }
   });
+
+  console.log('Closing priviledged windows...');
+
   if (privilegedLauncherWindows) {
     Object.values(privilegedLauncherWindows).forEach((window) => {
       if (window) {
@@ -325,12 +330,18 @@ export async function factoryResetUtility({
     });
   }
 
+  console.log('Killing holochain...');
+
   // 2. Stop holochain and lair to prevent files being accessed by them
   Object.values(holochainManagers).forEach((manager) => {
     manager.processHandle?.kill();
   });
 
+  console.log('Killing lair...');
+
   lairHandle?.kill();
+
+  console.log('factory reset...');
 
   // 3. Remove all data
   launcherFileSystem.factoryReset();
@@ -345,6 +356,10 @@ export async function factoryResetUtility({
     options.args!.unshift('--appimage-extract-and-run');
     options.execPath = process.env.APPIMAGE;
   }
+  console.log('setting relaunch options...');
+
   app.relaunch(options);
+  console.log('quit...');
+
   app.quit();
 }

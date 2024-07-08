@@ -124,6 +124,7 @@ pub fn default_conductor_config(
 
   network_config.transport_pool.push(TransportConfig::WebRTC {
     signal_url: signaling_server_url,
+    webrtc_config: None,
   });
 
   let mut allowed_origins_map = HashSet::new();
