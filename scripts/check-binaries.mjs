@@ -6,7 +6,7 @@ const packageJson = JSON.parse(packageJSON);
 
 // Check whether holochain binary is in resources/bins folder
 const binariesDirectory = path.join('resources', 'bins');
-const expectedHolochainBinary = `holochain-v${packageJson.binaries.holochain}${
+const expectedHolochainBinary = `holochain-v${packageJson.binaries.holochain}${packageJson.name.replace('holochain', '')}${
   process.platform === 'win32' ? '.exe' : ''
 }`;
 if (!fs.existsSync(path.join(binariesDirectory, expectedHolochainBinary))) {
@@ -17,7 +17,7 @@ if (!fs.existsSync(path.join(binariesDirectory, expectedHolochainBinary))) {
 }
 
 // Check whether lair binary is in resources/bins folder
-const expectedLairBinary = `lair-keystore-v${packageJson.binaries.lair_keystore}${
+const expectedLairBinary = `lair-keystore-v${packageJson.binaries.lair_keystore}${packageJson.name.replace('holochain', '')}${
   process.platform === 'win32' ? '.exe' : ''
 }`;
 if (!fs.existsSync(path.join(binariesDirectory, expectedLairBinary))) {
