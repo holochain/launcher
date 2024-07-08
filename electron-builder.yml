@@ -1,4 +1,4 @@
-appId: holochain.launcher.electron
+appId: holochain-launcher-0.4
 directories:
   buildResources: build
 files:
@@ -9,7 +9,7 @@ asarUnpack:
   - package.json
 afterSign: scripts/notarize.js
 win:
-  executableName: holochain-launcher-electron
+  executableName: holochain-launcher-0.4
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
