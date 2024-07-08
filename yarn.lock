@@ -634,12 +634,12 @@
     lodash "^4.17.15"
     tmp-promise "^3.0.2"
 
-"@matthme/electron-updater@6.3.0-alpha.0":
-  version "6.3.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@matthme/electron-updater/-/electron-updater-6.3.0-alpha.0.tgz#b1371268e93f26ca882e462a7311b1e48c1b0cdd"
-  integrity sha512-YBSMWj11wCbCVfKLTqflAGTiuglb/NULELJzHkOMPMB9Luq54jcCPdbm2fozAyiLnLuvq3ACkxXsA84zgiJBaQ==
+"@matthme/electron-updater@6.3.0-alpha.1":
+  version "6.3.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@matthme/electron-updater/-/electron-updater-6.3.0-alpha.1.tgz#9bdf1200bba45a1d91f897523fb6e69efb53c6f3"
+  integrity sha512-k6oaZzT3XWE6hY1IchR5kZ0eEb9sVp9K3+BVtG88rA8aqvI9OJJrGZlCFStO4AXmLgZ/U/MUbWih4eHMS9eDcQ==
   dependencies:
-    builder-util-runtime "workspace:*"
+    builder-util-runtime "9.2.5-alpha.2"
     fs-extra "^10.1.0"
     js-yaml "^4.1.0"
     lazy-val "^1.0.5"
@@ -1703,7 +1703,7 @@ builder-util-runtime@9.2.4:
     debug "^4.3.4"
     sax "^1.2.4"
 
-"builder-util-runtime@workspace:*":
+builder-util-runtime@9.2.5-alpha.2:
   version "9.2.5-alpha.2"
   resolved "https://registry.yarnpkg.com/builder-util-runtime/-/builder-util-runtime-9.2.5-alpha.2.tgz#b0a1737996717d7ae0b71e5efdf0bfbd1dd2c21e"
   integrity sha512-/Ln2ddejGj2HNMJ+X66mKHRcOvmRzUO/dSi8t4hSV64J7IA+DE+mqDb+zogIE2gin7p7YwcGiOkKny4nwPPPXg==
