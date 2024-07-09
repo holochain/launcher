@@ -228,7 +228,7 @@ export function deleteRecursively(root: string) {
       if (fs.statSync(root).isDirectory()) {
         console.log('Removing files and subfolders.');
         const filesAndSubFolders = fs.readdirSync(root);
-        filesAndSubFolders.forEach((file) => deleteRecursively(file));
+        filesAndSubFolders.forEach((file) => deleteRecursively(path.join(root, file)));
       } else {
         console.log('fs.statSync(root): ', fs.statSync(root));
       }
