@@ -219,14 +219,18 @@ export function createDirIfNotExists(path: fs.PathLike) {
  */
 export function deleteRecursively(root: string) {
   try {
+    console.log('Attempting to remove file or folder: ', root);
     fs.rmSync(root, { recursive: true });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     if (e.toString && e.toString().includes('EPERM')) {
       console.log('Got EPERM error for file or folder: ', root);
       if (fs.statSync(root).isDirectory()) {
+        console.log('Removing files and subfolders.');
         const filesAndSubFolders = fs.readdirSync(root);
         filesAndSubFolders.forEach((file) => deleteRecursively(file));
+      } else {
+        console.log('fs.statSync(root): ', fs.statSync(root));
       }
     }
   }
