@@ -1,6 +1,6 @@
-# Holochain Launcher Prototype
+# Holochain Launcher
 
-Electron based version of the Holochain Launcher. Currently in prototype phase.
+Cross-platform Desktop app to run [Holochain](https://www.holochain.org) apps.
 
 ## Recommended IDE Setup
 

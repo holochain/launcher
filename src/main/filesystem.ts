@@ -202,12 +202,32 @@ export class LauncherFileSystem {
 
   factoryReset(keepLogs = false) {
     if (keepLogs) throw new Error('Keeping logs across factory reset is currently not supported.');
-    fs.rmSync(this.profileDataDir, { recursive: true });
+    deleteRecursively(this.profileDataDir);
   }
 }
 
 export function createDirIfNotExists(path: fs.PathLike) {
   if (!fs.existsSync(path)) {
     fs.mkdirSync(path, { recursive: true });
+  }
+}
+
+/**
+ * Deletes a folder recursively and if a file or folder fails with an EPERM error,
+ * it deletes all other folders
+ * @param root
+ */
+export function deleteRecursively(root: string) {
+  try {
+    fs.rmSync(root, { recursive: true });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (e: any) {
+    if (e.toString && e.toString().includes('EPERM')) {
+      console.log('Got EPERM error for file or folder: ', root);
+      if (fs.statSync(root).isDirectory()) {
+        const filesAndSubFolders = fs.readdirSync(root);
+        filesAndSubFolders.forEach((file) => deleteRecursively(file));
+      }
+    }
   }
 }
