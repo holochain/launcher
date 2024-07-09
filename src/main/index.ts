@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { optimizer } from '@electron-toolkit/utils';
 import type { AppClient, CallZomeRequest, InstalledAppId } from '@holochain/client';
 import { AppWebsocket } from '@holochain/client';
@@ -782,14 +783,26 @@ const router = t.router({
 
       // 1. Close all windows to prevent chromium related files to be accessed by them
       Object.values(WINDOW_INFO_MAP).forEach((info) => {
-        info.windowObject.close();
+        try {
+          console.log('trying to close happ window...');
+          info.windowObject.close();
+        } catch (e: any) {
+          console.error(`Error closing happ window (plain error): ${e}`);
+          console.error(`Error closing happ window (stringified error): ${e.toString()}`);
+        }
       });
 
       console.log('$ Closing priviledged windows...');
 
       if (PRIVILEDGED_LAUNCHER_WINDOWS) {
         Object.values(PRIVILEDGED_LAUNCHER_WINDOWS).forEach((window) => {
-          window.close();
+          try {
+            console.log('trying to close priviledged window...');
+            window.close();
+          } catch (e: any) {
+            console.error(`Error closing privileged window (plain error): ${e}`);
+            console.error(`Error closing privileged window (stringified error): ${e.toString()}`);
+          }
         });
       }
 
