@@ -1,8 +1,8 @@
+import { platform } from '@electron-toolkit/utils';
 import AdmZip from 'adm-zip';
 import { app, dialog, Menu, shell } from 'electron';
 
 import type { LauncherFileSystem } from './filesystem';
-import { isMac } from './utils';
 
 // extending from electron's default menu: https://github.com/electron/electron/blob/398dde9dfbdfcfd7757ead9a30785c01de9f0808/lib/browser/default-menu.ts#L12
 export const launcherMenu = (launcherFileSystem: LauncherFileSystem) => {
@@ -75,7 +75,7 @@ export const launcherMenu = (launcherFileSystem: LauncherFileSystem) => {
   };
 
   return Menu.buildFromTemplate([
-    ...(isMac ? [macAppMenu] : []),
+    ...(platform.isMacOS ? [macAppMenu] : []),
     fileMenu,
     { role: 'editMenu' },
     { role: 'viewMenu' },
