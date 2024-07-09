@@ -778,22 +778,33 @@ const router = t.router({
         throw new Error('LauncherFilesystem is undefined. Aborting Factory Reset.');
       }
 
+      console.log('$ Closing happ windows...');
+
       // 1. Close all windows to prevent chromium related files to be accessed by them
       Object.values(WINDOW_INFO_MAP).forEach((info) => {
         info.windowObject.close();
       });
+
+      console.log('$ Closing priviledged windows...');
+
       if (PRIVILEDGED_LAUNCHER_WINDOWS) {
         Object.values(PRIVILEDGED_LAUNCHER_WINDOWS).forEach((window) => {
           window.close();
         });
       }
 
+      console.log('$ Killing holochain...');
+
       // 2. Stop holochain and lair to prevent files being accessed by them
       Object.values(HOLOCHAIN_MANAGERS).forEach((manager) => {
         manager.processHandle?.kill();
       });
 
+      console.log('$ Killing lair...');
+
       LAIR_HANDLE?.kill();
+
+      console.log('$ factory reset...');
 
       // 3. Remove all data
       LAUNCHER_FILE_SYSTEM.factoryReset();
@@ -808,7 +819,9 @@ const router = t.router({
         options.args!.unshift('--appimage-extract-and-run');
         options.execPath = process.env.APPIMAGE;
       }
+      console.log('$ setting relaunch options...');
       app.relaunch(options);
+      console.log('$ quit...');
       app.quit();
     },
     // factoryResetUtility({

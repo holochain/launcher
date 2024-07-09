@@ -140,19 +140,19 @@ jobs:
           dotnet tool install --global --version 4.0.1 AzureSignTool
 
           echo "sha512 before code signing"
-          CertUtil -hashfile "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" SHA512
+          CertUtil -hashfile "dist/holochain-launcher-0.4-${{ steps.version.outputs.APP_VERSION }}-setup.exe" SHA512
 
-          AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe"
+          AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v "dist/holochain-launcher-0.4-${{ steps.version.outputs.APP_VERSION }}-setup.exe"
 
           echo "sha512 after code signing"
-          CertUtil -hashfile "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" SHA512
+          CertUtil -hashfile "dist/holochain-launcher-0.4-${{ steps.version.outputs.APP_VERSION }}-setup.exe" SHA512
 
           # Overwrite the latest.yml with one containing the sha512 of the code signed setup.exe file
           node ./scripts/latest-yaml.js
           gh release upload "latest.yml" "latest.yml" --clobber
 
           # Overwrite the setup.exe file with the code signed one
-          gh release upload "v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" --clobber
+          gh release upload "v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-0.4-${{ steps.version.outputs.APP_VERSION }}-setup.exe" --clobber
 
       - name: Merge latest-mac.yml mac release files
         if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-11'
