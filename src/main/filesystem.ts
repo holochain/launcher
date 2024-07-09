@@ -204,8 +204,8 @@ export class LauncherFileSystem {
     console.log('before keep logs.');
     if (keepLogs) throw new Error('Keeping logs across factory reset is currently not supported.');
     console.log('after keep logs but before removing all data.');
-    fs.rmSync(this.profileDataDir, { recursive: true });
-    console.log('all data removed.');
+    // fs.rmSync(this.profileDataDir, { recursive: true });
+    console.log('No data removed, rmSync skipped.');
   }
 }
 
