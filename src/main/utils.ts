@@ -112,7 +112,6 @@ export const validateWithZod = <T>({
 export const isDevhubInstalled = (
   HOLOCHAIN_MANAGERS: Record<string, HolochainManager>,
 ): boolean => {
-  console.log('HOLOCHAIN_MANAGERS keys: ', Object.keys(HOLOCHAIN_MANAGERS));
   return HOLOCHAIN_MANAGERS[BREAKING_DEFAULT_HOLOCHAIN_VERSION].installedApps.some(
     (app) => app.installed_app_id === DEVHUB_APP_ID,
   );
