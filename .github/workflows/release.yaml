@@ -125,6 +125,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          shasum resources/default-apps/devhub.happ
+          shasum resources/default-apps/appstore.happ
           yarn build:linux
           ls dist
 
