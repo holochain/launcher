@@ -1,3 +1,4 @@
+import { platform } from '@electron-toolkit/utils';
 import type {
   ActionHashB64,
   AppAuthenticationToken,
@@ -577,7 +578,10 @@ export class HolochainManager {
     const zip = new AdmZip(Buffer.from(uiBytes));
     zip.getEntries().forEach((entry) => {
       const hash = crypto.createHash('sha256').update(entry.getData()).digest('hex');
-      hashes[entry.entryName] = hash;
+      const relativeFilePath = platform.isWindows
+        ? entry.entryName.replaceAll('/', '\\')
+        : entry.entryName;
+      hashes[relativeFilePath] = hash;
     });
 
     this.integrityChecker.storeToSignedJSON(path.join(uiDir, 'hashes.json'), hashes);
