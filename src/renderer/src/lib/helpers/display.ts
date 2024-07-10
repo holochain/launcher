@@ -7,16 +7,19 @@ import { All, type AppstoreFilterLists, HolochainFoundationList } from '$types/h
 export const showModalError = ({
 	modalStore,
 	errorTitle,
-	errorMessage
+	errorMessage,
+	response
 }: {
 	modalStore: ModalStore;
 	errorTitle: string;
 	errorMessage: string;
+	response?: (r: unknown) => void;
 }) => {
 	const modal: ModalSettings = {
 		type: 'alert',
 		title: errorTitle,
-		body: errorMessage
+		body: errorMessage,
+		response: response
 	};
 	modalStore.trigger(modal);
 };

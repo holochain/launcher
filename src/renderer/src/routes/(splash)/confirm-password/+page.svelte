@@ -19,11 +19,12 @@
 
 	let confirmPasswordInput = '';
 
-	const handleError = (errorMessage: string) => {
+	const handleError = (errorMessage: string, response?: (r: unknown) => void) => {
 		showModalError({
 			modalStore,
 			errorTitle: $i18n.t('setupError'),
-			errorMessage
+			errorMessage,
+			response
 		});
 	};
 
@@ -38,7 +39,7 @@
 				onSuccess: () => goto(`/${APP_STORE}`),
 				onError: (error) => {
 					console.error(error);
-					handleError($i18n.t(error.message || 'unknownError'));
+					handleError($i18n.t(error.message || 'unknownError'), () => goto('/'));
 				}
 			}
 		);

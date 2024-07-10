@@ -28,7 +28,8 @@
 					showModalError({
 						modalStore,
 						errorTitle: $i18n.t('setupError'),
-						errorMessage: $i18n.t(error.message || 'unknownError')
+						errorMessage: $i18n.t(error.message || 'unknownError'),
+						response: () => goto('/')
 					})
 			}
 		);
