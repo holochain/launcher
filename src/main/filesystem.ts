@@ -202,11 +202,15 @@ export class LauncherFileSystem {
 
   async factoryReset(keepLogs = false) {
     if (keepLogs) throw new Error('Keeping logs across factory reset is currently not supported.');
-    await session.defaultSession.clearCache();
-    await session.defaultSession.clearStorageData();
-    await session.defaultSession.clearAuthCache();
-    await session.defaultSession.clearCodeCaches({});
-    await session.defaultSession.clearHostResolverCache();
+    try {
+      await session.defaultSession.clearCache();
+      await session.defaultSession.clearStorageData();
+      await session.defaultSession.clearAuthCache();
+      await session.defaultSession.clearCodeCaches({});
+      await session.defaultSession.clearHostResolverCache();
+    } catch (e) {
+      console.warn('Failed to clear cache or parts of it: ', e);
+    }
     deleteRecursively(this.profileDataDir);
   }
 }
