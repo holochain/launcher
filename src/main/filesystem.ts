@@ -1,4 +1,4 @@
-import type { App } from 'electron';
+import { type App, session } from 'electron';
 import fs from 'fs';
 import path from 'path';
 
@@ -200,8 +200,13 @@ export class LauncherFileSystem {
     return fs.existsSync(path.join(this.keystoreDir, 'lair-keystore-config.yaml'));
   };
 
-  factoryReset(keepLogs = false) {
+  async factoryReset(keepLogs = false) {
     if (keepLogs) throw new Error('Keeping logs across factory reset is currently not supported.');
+    await session.defaultSession.clearCache();
+    await session.defaultSession.clearStorageData();
+    await session.defaultSession.clearAuthCache();
+    await session.defaultSession.clearCodeCaches({});
+    await session.defaultSession.clearHostResolverCache();
     deleteRecursively(this.profileDataDir);
   }
 }
@@ -229,8 +234,6 @@ export function deleteRecursively(root: string) {
         console.log('Removing files and subfolders.');
         const filesAndSubFolders = fs.readdirSync(root);
         filesAndSubFolders.forEach((file) => deleteRecursively(path.join(root, file)));
-      } else {
-        console.log('fs.statSync(root): ', fs.statSync(root));
       }
     }
   }

@@ -344,7 +344,7 @@ export async function factoryResetUtility({
   console.log('factory reset...');
 
   // 3. Remove all data
-  launcherFileSystem.factoryReset();
+  await launcherFileSystem.factoryReset();
 
   // 4. Relaunch
   const options: Electron.RelaunchOptions = {
