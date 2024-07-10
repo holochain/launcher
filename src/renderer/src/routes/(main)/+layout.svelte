@@ -27,11 +27,13 @@
 
 	const { checkForAppUiUpdatesQuery } = createAppQueries();
 
-	const hideApp = client.hideApp.createMutation();
 	const installedApps = client.getInstalledApps.createQuery();
-	const openApp = client.openApp.createMutation();
+	const defaultHolochainVersion = client.declaredHolochainVersion.createQuery();
 
+	const openApp = client.openApp.createMutation();
+	const hideApp = client.hideApp.createMutation();
 	const openSettings = client.openSettings.createMutation();
+
 	const utils = client.createUtils();
 
 	const modalStore = getModalStore();
@@ -177,3 +179,8 @@
 <div class="absolute bottom-[0.3rem] right-[0.3rem]">
 	<ResizeIcon />
 </div>
+{#if $defaultHolochainVersion.isSuccess}
+	<p class="absolute bottom-0 left-0 p-1 text-xs opacity-30">
+		{$defaultHolochainVersion.data}
+	</p>
+{/if}

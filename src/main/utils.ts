@@ -315,18 +315,14 @@ export async function factoryResetUtility({
 
   // 1. Close all windows to prevent chromium related files to be accessed by them
   Object.values(windowInfoMap).forEach((info) => {
-    if (info.windowObject) {
-      info.windowObject.close();
-    }
+    info.windowObject?.close();
   });
 
   console.log('Closing priviledged windows...');
 
   if (privilegedLauncherWindows) {
     Object.values(privilegedLauncherWindows).forEach((window) => {
-      if (window) {
-        window.close();
-      }
+      window?.close();
     });
   }
 

@@ -365,6 +365,10 @@ async function handleLaunch(password: string) {
     const externalLairClient = await rustUtils.LauncherLairClient.connect(lairUrl, password);
     CUSTOM_LAIR_CLIENTS[VALIDATED_CLI_ARGS.holochainVersion.adminPort] = externalLairClient;
   } else {
+    if (LAIR_HANDLE) {
+      LAIR_HANDLE.kill();
+      LAIR_HANDLE = undefined;
+    }
     const [lairHandle, lairUrl2] = await launchLairKeystore(
       VALIDATED_CLI_ARGS.lairBinaryPath,
       LAUNCHER_FILE_SYSTEM.keystoreDir,
@@ -373,7 +377,6 @@ async function handleLaunch(password: string) {
     );
 
     lairUrl = lairUrl2;
-
     LAIR_HANDLE = lairHandle;
     DEFAULT_LAIR_CLIENT = await rustUtils.LauncherLairClient.connect(lairUrl, password);
   }

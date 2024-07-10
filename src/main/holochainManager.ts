@@ -248,9 +248,15 @@ export class HolochainManager {
     });
 
     return new Promise((resolve, reject) => {
+      const handleError = (error: unknown) => {
+        console.error(error);
+        conductorHandle.kill();
+        reject(error);
+      };
+
       conductorHandle.stderr.pipe(split()).on('data', async (line: string) => {
         if (line.includes('holochain had a problem and crashed')) {
-          reject(
+          handleError(
             `Holochain version ${JSON.stringify(
               version,
             )} failed to start up and crashed. Check the logs for details.`,
@@ -259,47 +265,51 @@ export class HolochainManager {
       });
       conductorHandle.stdout.pipe(split()).on('data', async (line: string) => {
         if (line.includes('could not be parsed, because it is not valid YAML')) {
-          reject(
+          handleError(
             `Holochain version ${JSON.stringify(
               version,
             )} failed to start up. Check the logs for details.`,
           );
         }
         if (line.includes('Conductor ready.')) {
-          const adminWebsocket = await AdminWebsocket.connect({
-            url: new URL(`ws://localhost:${adminPort}`),
-            wsClientOptions: {
-              origin: 'holochain-launcher',
-            },
-          });
-          console.log('Connected to admin websocket.');
-          const installedApps = await adminWebsocket.listApps({});
-          const appInterfaces = await adminWebsocket.listAppInterfaces();
-          console.log('Got appInterfaces: ', appInterfaces);
+          try {
+            const adminWebsocket = await AdminWebsocket.connect({
+              url: new URL(`ws://localhost:${adminPort}`),
+              wsClientOptions: {
+                origin: 'holochain-launcher',
+              },
+            });
+            console.log('Connected to admin websocket.');
+            const installedApps = await adminWebsocket.listApps({});
+            const appInterfaces = await adminWebsocket.listAppInterfaces();
+            console.log('Got appInterfaces: ', appInterfaces);
 
-          const attachAppInterfaceResponse = await adminWebsocket.attachAppInterface({
-            allowed_origins: app.isPackaged
-              ? 'app://-,webhapp://webhappwindow,holochain-launcher'
-              : 'http://localhost:5173,webhapp://webhappwindow,holochain-launcher',
-          });
-          console.log('Attached app interface port: ', attachAppInterfaceResponse);
-          const appPort = attachAppInterfaceResponse.port;
+            const attachAppInterfaceResponse = await adminWebsocket.attachAppInterface({
+              allowed_origins: app.isPackaged
+                ? 'app://-,webhapp://webhappwindow,holochain-launcher'
+                : 'http://localhost:5173,webhapp://webhappwindow,holochain-launcher',
+            });
+            console.log('Attached app interface port: ', attachAppInterfaceResponse);
+            const appPort = attachAppInterfaceResponse.port;
 
-          resolve([
-            new HolochainManager(
-              conductorHandle,
-              launcherEmitter,
-              launcherFileSystem,
-              integrityChecker,
-              adminPort,
-              appPort,
-              adminWebsocket,
-              installedApps,
-              version,
+            resolve([
+              new HolochainManager(
+                conductorHandle,
+                launcherEmitter,
+                launcherFileSystem,
+                integrityChecker,
+                adminPort,
+                appPort,
+                adminWebsocket,
+                installedApps,
+                version,
+                holochainDataRoot,
+              ),
               holochainDataRoot,
-            ),
-            holochainDataRoot,
-          ]);
+            ]);
+          } catch (error) {
+            handleError(error);
+          }
         }
       });
     });
