@@ -66,9 +66,9 @@
 				id={uint8ArrayToURIComponent(app.id)}
 			/>
 		{/each}
-		{#if isKandoInSearch}
+		<!-- {#if isKandoInSearch}
 			<AppCard />
-		{/if}
+		{/if} -->
 		<InstallFromDeviceCard />
 	</div>
 

@@ -11,7 +11,6 @@ import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
 import { app, dialog, ipcMain, Menu, protocol } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { createIPCHandler } from 'electron-trpc/main';
-import fs from 'fs';
 import type { LauncherLairClient } from 'hc-launcher-rust-utils';
 import * as rustUtils from 'hc-launcher-rust-utils';
 import path from 'path';
@@ -59,11 +58,7 @@ import {
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '$shared/types';
 
-import {
-  BREAKING_DEFAULT_HOLOCHAIN_VERSION,
-  checkHolochainLairBinariesExist,
-  DEFAULT_HOLOCHAIN_VERSION,
-} from './binaries';
+import { BREAKING_DEFAULT_HOLOCHAIN_VERSION, checkHolochainLairBinariesExist } from './binaries';
 import { validateArgs } from './cli';
 import { DEFAULT_APPS_TO_INSTALL, DEVHUB_INSTALL } from './const';
 import { LauncherFileSystem } from './filesystem';
@@ -667,11 +662,11 @@ const router = t.router({
     const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
     return holochainManager.updateUiFromHash(uiZipSha256, appId, appVersionActionHash);
   }),
-  getKandoBytes: t.procedure.query(async () => {
-    const filePath = path.join(DEFAULT_APPS_DIRECTORY, 'kando.webhapp');
-    const kandoBytesBuffer = fs.readFileSync(filePath);
-    return new Uint8Array(kandoBytesBuffer);
-  }),
+  // getKandoBytes: t.procedure.query(async () => {
+  //   const filePath = path.join(DEFAULT_APPS_DIRECTORY, 'kando.webhapp');
+  //   const kandoBytesBuffer = fs.readFileSync(filePath);
+  //   return new Uint8Array(kandoBytesBuffer);
+  // }),
   lairSetupRequired: t.procedure.query(() => {
     const holochainLairBinariesExist = checkHolochainLairBinariesExist();
 
@@ -696,7 +691,7 @@ const router = t.router({
   defaultHolochainVersion: t.procedure.query(
     () => HOLOCHAIN_MANAGERS[BREAKING_DEFAULT_HOLOCHAIN_VERSION].version,
   ),
-  declaredHolochainVersion: t.procedure.query(() => DEFAULT_HOLOCHAIN_VERSION),
+  getLauncherVersion: t.procedure.query(() => app.getVersion()),
   isDevhubInstalled: t.procedure.query(() => isDevhubInstalled(HOLOCHAIN_MANAGERS)),
   getInstalledApps: t.procedure.input(IncludeHeadlessSchema).query((opts) => {
     const { input: includeHeadless } = opts;

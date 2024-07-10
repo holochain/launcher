@@ -16,21 +16,19 @@
 		MODAL_DEVHUB_INSTALLATION_CONFIRMATION,
 		MODAL_FACTORY_RESET_CONFIRMATION,
 		MODAL_INSTALL_FROM_FILE,
-		MODAL_INSTALL_KANDO
 	} from '$const';
 	import { startViewTransition } from '$helpers';
 	import {
 		DevHubInstallationConfirmation,
 		FactoryResetConformation,
 		InstallFromFile,
-		InstallKando
 	} from '$modal';
 
 	const queryClient = new QueryClient();
 
 	const modalRegistry: Record<string, ModalComponent> = {
 		[MODAL_INSTALL_FROM_FILE]: { ref: InstallFromFile },
-		[MODAL_INSTALL_KANDO]: { ref: InstallKando },
+		// [MODAL_INSTALL_KANDO]: { ref: InstallKando },
 		[MODAL_DEVHUB_INSTALLATION_CONFIRMATION]: { ref: DevHubInstallationConfirmation },
 		[MODAL_FACTORY_RESET_CONFIRMATION]: { ref: FactoryResetConformation }
 	};
