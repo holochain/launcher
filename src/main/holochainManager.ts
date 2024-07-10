@@ -45,7 +45,7 @@ export type AppPort = number;
 export type UiHashes = Record<string, string>;
 
 const DEFAULT_BOOTSTRAP_SERVER = 'https://bootstrap.holo.host';
-const DEFAULT_SIGNALING_SERVER = 'wss://sbd-0.main.infra.holo.host';
+const DEFAULT_SIGNALING_SERVER = 'wss://signal.holo.host';
 const DEFAULT_RUST_LOG =
   'warn,' +
   // this thrashes on startup

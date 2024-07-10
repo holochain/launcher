@@ -1,17 +1,17 @@
 {
-  "name": "holochain-launcher-0.4",
-  "version": "0.400.0-alpha.7",
+  "name": "holochain-launcher-0.3",
+  "version": "0.300.0-rc.2",
   "private": true,
-  "description": "Holochain Launcher (0.4)",
+  "description": "Holochain Launcher (0.3)",
   "author": "Holochain Foundation <info@holochain.org> (http://holochain.org)",
   "license": "CAL-1.0",
   "main": "./out/main/index.js",
   "binaries": {
-    "holochain": "0.4.0-dev.9",
-    "lair_keystore": "0.4.5"
+    "holochain": "0.3.1",
+    "lair_keystore": "0.4.4"
   },
   "defaultApps": {
-    "kando": "https://github.com/holochain-apps/kando/releases/download/v0.10.4/kando.webhapp",
+    "kando": "https://github.com/holochain-apps/kando/releases/download/v0.10.5/kando.webhapp",
     "devhub": "https://drive.switch.ch/index.php/s/dpqXafSa3VI9lP9/download",
     "appstore": "https://drive.switch.ch/index.php/s/VGtEyqCUpNlcUfL/download"
   },

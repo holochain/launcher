@@ -34,7 +34,7 @@ import {
   type WindowInfoRecord,
 } from '$shared/types';
 
-import { DEFAULT_HOLOCHAIN_VERSION } from './binaries';
+import { BREAKING_DEFAULT_HOLOCHAIN_VERSION } from './binaries';
 import type { LauncherFileSystem } from './filesystem';
 import type { HolochainManager } from './holochainManager';
 import type { LauncherEmitter } from './launcherEmitter';
@@ -112,7 +112,8 @@ export const validateWithZod = <T>({
 export const isDevhubInstalled = (
   HOLOCHAIN_MANAGERS: Record<string, HolochainManager>,
 ): boolean => {
-  return HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION].installedApps.some(
+  console.log('HOLOCHAIN_MANAGERS keys: ', Object.keys(HOLOCHAIN_MANAGERS));
+  return HOLOCHAIN_MANAGERS[BREAKING_DEFAULT_HOLOCHAIN_VERSION].installedApps.some(
     (app) => app.installed_app_id === DEVHUB_APP_ID,
   );
 };
