@@ -246,7 +246,6 @@ export class HolochainManager {
         data: line,
       });
     });
-    console.log('1');
 
     return new Promise((resolve, reject) => {
       const handleError = (error: unknown) => {
@@ -256,7 +255,6 @@ export class HolochainManager {
       };
 
       conductorHandle.stderr.pipe(split()).on('data', async (line: string) => {
-        console.log('stderr', line);
         if (line.includes('holochain had a problem and crashed')) {
           handleError(
             `Holochain version ${JSON.stringify(
@@ -266,7 +264,6 @@ export class HolochainManager {
         }
       });
       conductorHandle.stdout.pipe(split()).on('data', async (line: string) => {
-        console.log('stdout', line);
         if (line.includes('could not be parsed, because it is not valid YAML')) {
           handleError(
             `Holochain version ${JSON.stringify(
