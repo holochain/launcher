@@ -1,3 +1,4 @@
+import { platform } from '@electron-toolkit/utils';
 import type {
   ActionHashB64,
   AppAuthenticationToken,
@@ -27,6 +28,7 @@ import {
   APP_INSTALLED,
   HOLOCHAIN_ERROR,
   HOLOCHAIN_LOG,
+  LAUNCHER_ERROR,
   REFETCH_DATA_IN_ALL_WINDOWS,
 } from '$shared/types';
 
@@ -366,13 +368,34 @@ export class HolochainManager {
     writeFile(happFilePath, Buffer.from(happBytes));
 
     const pubKey = await this.adminWebsocket.generateAgentPubKey();
-    const appInfo = await this.adminWebsocket.installApp({
-      agent_key: pubKey,
-      installed_app_id: appId,
-      membrane_proofs: membrane_proofs ? membrane_proofs : {},
-      path: happFilePath,
-      network_seed: networkSeed,
-    });
+
+    let appInfo: AppInfo | undefined;
+    try {
+      appInfo = await this.adminWebsocket.installApp({
+        agent_key: pubKey,
+        installed_app_id: appId,
+        membrane_proofs: membrane_proofs ? membrane_proofs : {},
+        path: happFilePath,
+        network_seed: networkSeed,
+      });
+    } catch (e) {
+      // If this fails, e.g. due to a timeout, the app may actually still be installed in the conductor
+      // and should get removed again to ensure that there is no app installed without associated meta-data
+      try {
+        await this.adminWebsocket.uninstallApp({ installed_app_id: appId });
+        this.launcherEmitter.emit(
+          LAUNCHER_ERROR,
+          `Uninstalled app after failed installation. Installation error: ${e}`,
+        );
+      } catch (err) {
+        this.launcherEmitter.emit(
+          LAUNCHER_ERROR,
+          `Failed to uninstall app after failed installation: ${err}`,
+        );
+        console.warn('Failed to uninstall app after failed installation: ', err);
+      }
+      return Promise.reject(`Failed to install app: ${e}`);
+    }
 
     // store app metadata to installed app directory
     const metaData: AppMetadata<AppMetadataV1> = {
@@ -434,13 +457,34 @@ export class HolochainManager {
 
     // install happ into conductor
     const pubKey = await this.adminWebsocket.generateAgentPubKey();
-    const appInfo = await this.adminWebsocket.installApp({
-      agent_key: pubKey,
-      installed_app_id: appId,
-      membrane_proofs: membrane_proofs ? membrane_proofs : {},
-      path: this.happFilePath(happSha256),
-      network_seed: networkSeed,
-    });
+
+    let appInfo: AppInfo | undefined;
+    try {
+      appInfo = await this.adminWebsocket.installApp({
+        agent_key: pubKey,
+        installed_app_id: appId,
+        membrane_proofs: membrane_proofs ? membrane_proofs : {},
+        path: this.happFilePath(happSha256),
+        network_seed: networkSeed,
+      });
+    } catch (e) {
+      // If this fails, e.g. due to a timeout, the app may actually still be installed in the conductor
+      // and should get removed again to ensure that there is no app installed without associated meta-data
+      try {
+        await this.adminWebsocket.uninstallApp({ installed_app_id: appId });
+        this.launcherEmitter.emit(
+          LAUNCHER_ERROR,
+          `Uninstalled app after failed installation. Installation error: ${e}`,
+        );
+      } catch (err) {
+        this.launcherEmitter.emit(
+          LAUNCHER_ERROR,
+          `Failed to uninstall app after failed installation: ${err}`,
+        );
+        console.warn('Failed to uninstall app after failed installation: ', err);
+      }
+      return Promise.reject(`Failed to install app: ${e}`);
+    }
 
     // store app metadata to installed app directory
     const metaData: AppMetadata<AppMetadataV1> = {
@@ -577,7 +621,10 @@ export class HolochainManager {
     const zip = new AdmZip(Buffer.from(uiBytes));
     zip.getEntries().forEach((entry) => {
       const hash = crypto.createHash('sha256').update(entry.getData()).digest('hex');
-      hashes[entry.entryName] = hash;
+      const relativeFilePath = platform.isWindows
+        ? entry.entryName.replaceAll('/', '\\')
+        : entry.entryName;
+      hashes[relativeFilePath] = hash;
     });
 
     this.integrityChecker.storeToSignedJSON(path.join(uiDir, 'hashes.json'), hashes);

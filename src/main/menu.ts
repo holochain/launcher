@@ -49,13 +49,6 @@ export const launcherMenu = (launcherFileSystem: LauncherFileSystem) => {
     role: 'fileMenu',
     submenu: [
       {
-        label: 'Quit',
-        type: 'normal',
-        click() {
-          app.quit();
-        },
-      },
-      {
         label: 'Restart',
         click() {
           const options: Electron.RelaunchOptions = {
@@ -68,6 +61,13 @@ export const launcherMenu = (launcherFileSystem: LauncherFileSystem) => {
             options.execPath = process.env.APPIMAGE;
           }
           app.relaunch(options);
+          app.quit();
+        },
+      },
+      {
+        label: 'Quit',
+        type: 'normal',
+        click() {
           app.quit();
         },
       },
