@@ -1,3 +1,4 @@
+import { platform } from '@electron-toolkit/utils';
 import { type App, session } from 'electron';
 import fs from 'fs';
 import path from 'path';
@@ -202,14 +203,16 @@ export class LauncherFileSystem {
 
   async factoryReset(keepLogs = false) {
     if (keepLogs) throw new Error('Keeping logs across factory reset is currently not supported.');
-    try {
-      await session.defaultSession.clearCache();
-      await session.defaultSession.clearStorageData();
-      await session.defaultSession.clearAuthCache();
-      await session.defaultSession.clearCodeCaches({});
-      await session.defaultSession.clearHostResolverCache();
-    } catch (e) {
-      console.warn('Failed to clear cache or parts of it: ', e);
+    if (platform.isWindows) {
+      try {
+        await session.defaultSession.clearCache();
+        await session.defaultSession.clearStorageData();
+        await session.defaultSession.clearAuthCache();
+        await session.defaultSession.clearCodeCaches({});
+        await session.defaultSession.clearHostResolverCache();
+      } catch (e) {
+        console.warn('Failed to clear cache or parts of it: ', e);
+      }
     }
     deleteRecursively(this.profileDataDir);
   }

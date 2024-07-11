@@ -5,7 +5,7 @@
 	import { ANIMATION_DURATION } from '$shared/const';
 
 	const client = trpc();
-	const defaultHolochainVersion = client.declaredHolochainVersion.createQuery();
+	const launcherVerion = client.getLauncherVersion.createQuery();
 </script>
 
 <div class="relative flex h-screen flex-col bg-login-background bg-fixed bg-center bg-no-repeat">
@@ -16,9 +16,9 @@
 	>
 		<slot />
 	</div>
-	{#if $defaultHolochainVersion.isSuccess}
+	{#if $launcherVerion.isSuccess}
 		<p class="absolute bottom-0 left-0 p-1 text-xs opacity-30">
-			{$defaultHolochainVersion.data}
+			{$launcherVerion.data}
 		</p>
 	{/if}
 </div>
