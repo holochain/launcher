@@ -23,12 +23,18 @@ const downloadAllFiles = async () => {
   });
 
   await Promise.all(downloadPromises);
-  console.log('All files downloaded successfully.');
 };
 
-downloadAllFiles()
-  .then(() => process.exit(0))
-  .catch((err) => {
+const main = async () => {
+  try {
+    await downloadAllFiles();
+    // Add a small delay to ensure all file operations are complete
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log('Operation completed successfully.');
+  } catch (err) {
     console.error('Error downloading files:', err);
     process.exit(1);
-  });
+  }
+};
+
+main();

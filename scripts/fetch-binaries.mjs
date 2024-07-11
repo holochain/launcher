@@ -57,12 +57,18 @@ const downloadAllBinaries = async () => {
   ];
 
   await Promise.all(downloadPromises);
-  console.log('All binaries downloaded successfully.');
 };
 
-downloadAllBinaries()
-  .then(() => process.exit(0))
-  .catch((err) => {
+const main = async () => {
+  try {
+    await downloadAllBinaries();
+    // Add a small delay to ensure all file operations are complete
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log('Operation completed successfully.');
+  } catch (err) {
     console.error('Error downloading binaries:', err);
     process.exit(1);
-  });
+  }
+};
+
+main();
