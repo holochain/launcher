@@ -5,6 +5,8 @@ import * as path from 'path';
 
 import { HolochainLairVersionSchema } from '$shared/types';
 
+import { breakingVersion } from './utils';
+
 const getFilePath = (relativePath: string) => path.join(app.getAppPath(), relativePath);
 
 const getPackageJSONPath = () =>
@@ -16,6 +18,7 @@ const HolochainLairVersion = HolochainLairVersionSchema.parse(packageJSON);
 
 const DEFAULT_HOLOCHAIN_VERSION = HolochainLairVersion.binaries.holochain;
 const DEFAULT_LAIR_KEYSTORE_VERSION = HolochainLairVersion.binaries.lair_keystore;
+export const BREAKING_DEFAULT_HOLOCHAIN_VERSION = breakingVersion(DEFAULT_HOLOCHAIN_VERSION);
 
 const BINARIES_DIRECTORY = getFilePath(
   app.isPackaged ? '../app.asar.unpacked/resources/bins' : './resources/bins',

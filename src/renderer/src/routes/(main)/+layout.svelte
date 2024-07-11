@@ -28,7 +28,7 @@
 	const { checkForAppUiUpdatesQuery } = createAppQueries();
 
 	const installedApps = client.getInstalledApps.createQuery();
-	const defaultHolochainVersion = client.declaredHolochainVersion.createQuery();
+	const launcherVerion = client.getLauncherVersion.createQuery();
 
 	const openApp = client.openApp.createMutation();
 	const hideApp = client.hideApp.createMutation();
@@ -179,8 +179,8 @@
 <div class="absolute bottom-[0.3rem] right-[0.3rem]">
 	<ResizeIcon />
 </div>
-{#if $defaultHolochainVersion.isSuccess}
+{#if $launcherVerion.isSuccess}
 	<p class="absolute bottom-0 left-0 p-1 text-xs opacity-30">
-		{$defaultHolochainVersion.data}
+		{$launcherVerion.data}
 	</p>
 {/if}
