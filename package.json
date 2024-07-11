@@ -1,6 +1,6 @@
 {
   "name": "holochain-launcher-0.3",
-  "version": "0.300.0-rc.2",
+  "version": "0.300.0-rc.3",
   "private": true,
   "description": "Holochain Launcher (0.3)",
   "author": "Holochain Foundation <info@holochain.org> (http://holochain.org)",

@@ -33,8 +33,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-12, ubuntu-22.04]
-        # platform: [windows-2019, macos-12, macos-latest, ubuntu-22.04]
+        # platform: [macos-12, ubuntu-22.04]
+        platform: [windows-2019, macos-12, macos-latest, ubuntu-22.04]
         # platform: [windows-2019]
     env:
       MACOSX_DEPLOYMENT_TARGET: 10.13
@@ -105,6 +105,8 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           DEBUG: electron-osx-sign*,electron-notarize*
         run: |
+          shasum resources/default-apps/devhub.happ
+          shasum resources/default-apps/appstore.happ
           yarn build:mac-arm64
           ls dist
 
@@ -118,6 +120,8 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           DEBUG: electron-osx-sign*,electron-notarize*
         run: |
+          shasum resources/default-apps/devhub.happ
+          shasum resources/default-apps/appstore.happ
           yarn build:mac-x64
           ls dist
 
