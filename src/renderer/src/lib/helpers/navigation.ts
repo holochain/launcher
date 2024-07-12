@@ -18,17 +18,26 @@ export const setSearchInput = (event: CustomEvent) => {
 	goto(`?${SEARCH_URL_QUERY}=${target.value}`);
 };
 
+const getWindowSize = (destination: MainScreenRoute) =>
+	destination === APPS_VIEW
+		? { width: WINDOW_SIZE, height: MIN_HEIGH }
+		: { width: WINDOW_SIZE_LARGE, height: WINDOW_SIZE };
+
+const resizeWindow = ({ width, height }: { width: number; height: number }) =>
+	window.resizeTo(width, height);
+
+const navigateTo = (destination: MainScreenRoute) => goto(`/${destination}`);
+
+export const resizeWindowAndNavigate = (destination: MainScreenRoute) => {
+	const size = getWindowSize(destination);
+	resizeWindow(size);
+	navigateTo(destination);
+};
+
 export const handleNavigationWithAnimationDelay =
 	(setInputExpandedFalse?: () => void) => (destination: MainScreenRoute) => () => {
 		setInputExpandedFalse?.();
-		setTimeout(() => {
-			const windowSize =
-				destination === APPS_VIEW
-					? { width: WINDOW_SIZE, height: MIN_HEIGH }
-					: { width: WINDOW_SIZE_LARGE, height: WINDOW_SIZE };
-			window.resizeTo(windowSize.width, windowSize.height);
-			goto(`/${destination}`);
-		}, ANIMATION_DURATION);
+		setTimeout(() => resizeWindowAndNavigate(destination), ANIMATION_DURATION);
 	};
 
 export const goBack = () => {

@@ -3,7 +3,7 @@
 
 	import { goto } from '$app/navigation';
 	import { Button } from '$components';
-	import { showModalError } from '$helpers';
+	import { resizeWindowAndNavigate, showModalError } from '$helpers';
 	import { ArrowLeft, Warning } from '$icons';
 	import { i18n, trpc } from '$services';
 	import { APP_STORE } from '$shared/const';
@@ -36,7 +36,7 @@
 		$setupAndLaunch.mutate(
 			{ password: $appPassword },
 			{
-				onSuccess: () => goto(`/${APP_STORE}`),
+				onSuccess: () => resizeWindowAndNavigate(APP_STORE),
 				onError: (error) => {
 					console.error(error);
 					handleError($i18n.t(error.message || 'unknownError'), () => goto('/'));
