@@ -5,7 +5,7 @@
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { AppDetailsPanel, Button } from '$components';
+	import { AppDetailsPanel, Button, NoClickOverlay } from '$components';
 	import { MODAL_DEVHUB_INSTALLATION_CONFIRMATION, MODAL_FACTORY_RESET_CONFIRMATION } from '$const';
 	import {
 		capitalizeFirstLetter,
@@ -203,6 +203,10 @@
 
 	$: icon = selectedApp?.icon ? new Uint8Array(selectedApp.icon) : undefined;
 </script>
+
+{#if $installDevhub.isPending}
+	<NoClickOverlay />
+{/if}
 
 {#if selectedApp}
 	{@const appVersion = getVersionByActionHash(
