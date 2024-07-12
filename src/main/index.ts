@@ -59,11 +59,7 @@ import {
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '$shared/types';
 
-import {
-  BREAKING_DEFAULT_HOLOCHAIN_VERSION,
-  checkHolochainLairBinariesExist,
-  DEFAULT_HOLOCHAIN_VERSION,
-} from './binaries';
+import { BREAKING_DEFAULT_HOLOCHAIN_VERSION, checkHolochainLairBinariesExist } from './binaries';
 import { validateArgs } from './cli';
 import { DEFAULT_APPS_TO_INSTALL, DEVHUB_INSTALL } from './const';
 import { LauncherFileSystem } from './filesystem';
@@ -355,10 +351,10 @@ async function handleSetupAndLaunch(password: string) {
     }
   }
 
-  await handleLaunch(password);
+  await handleLaunch(password, false);
 }
 
-async function handleLaunch(password: string) {
+async function handleLaunch(password: string, isDirectLaunch = true) {
   INTEGRITY_CHECKER = new IntegrityChecker(password);
   LAUNCHER_FILE_SYSTEM.setIntegrityChecker(INTEGRITY_CHECKER);
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingLairKeystore');
@@ -430,7 +426,9 @@ async function handleLaunch(password: string) {
     ),
   );
 
-  PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE, MIN_HEIGH, true);
+  if (isDirectLaunch) {
+    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE, MIN_HEIGH, true);
+  }
   loadOrServe(PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN], { screen: SETTINGS_SCREEN });
   return;
 }
