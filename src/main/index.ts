@@ -654,7 +654,7 @@ const router = t.router({
         happAndUiBytes,
         appId,
         distributionInfo: { type: DISTRIBUTION_TYPE_DEFAULT_APP },
-        networkSeed: networkSeed,
+        networkSeed,
       });
     } catch (error) {
       handleInstallError(error);

@@ -7,6 +7,7 @@
 	import { page } from '$app/stores';
 	import { CenterProgressRadial } from '$components';
 	import {
+		KEY_MANAGEMENT,
 		NOT_SELECTED_ICON_STYLE,
 		SELECTED_ICON_STYLE,
 		SYSTEM_INFORMATION,
@@ -19,7 +20,7 @@
 		showModalError,
 		validateApp
 	} from '$helpers';
-	import { Gear, MenuInfo } from '$icons';
+	import { Gear, Key, MenuInfo } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
 	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_SCREEN } from '$shared/const';
@@ -75,6 +76,15 @@
 >
 	<div slot="leading" class={clsx('mr-3', view !== SYSTEM_SETTINGS)}>
 		<Gear fillColor={view === SYSTEM_SETTINGS ? SELECTED_ICON_STYLE : NOT_SELECTED_ICON_STYLE} />
+	</div>
+</MenuEntry>
+<MenuEntry
+	name={$i18n.t(KEY_MANAGEMENT)}
+	onClick={() => selectView(KEY_MANAGEMENT)}
+	isSelected={view === KEY_MANAGEMENT}
+>
+	<div slot="leading" class={clsx('mr-3', view !== KEY_MANAGEMENT)}>
+		<Key fillColor={view === KEY_MANAGEMENT ? SELECTED_ICON_STYLE : NOT_SELECTED_ICON_STYLE} />
 	</div>
 </MenuEntry>
 <div class="!my-2 h-px w-full bg-tertiary-800"></div>

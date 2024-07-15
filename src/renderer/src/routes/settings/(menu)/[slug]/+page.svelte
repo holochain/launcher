@@ -5,12 +5,11 @@
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { AppDetailsPanel, Button, NoClickOverlay } from '$components';
-	import { MODAL_DEVHUB_INSTALLATION_CONFIRMATION, MODAL_FACTORY_RESET_CONFIRMATION } from '$const';
+	import { AppDetailsPanel, Button } from '$components';
+	import { KEY_MANAGEMENT } from '$const';
 	import {
 		capitalizeFirstLetter,
 		createImageUrl,
-		createModalParams,
 		filterHash,
 		getAppStoreDistributionHash,
 		getCellId,
@@ -21,14 +20,15 @@
 	} from '$helpers';
 	import { Download } from '$icons';
 	import { createAppQueries } from '$queries';
-	import { createDevHubClient, i18n, trpc } from '$services';
+	import { i18n, trpc } from '$services';
 	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_SCREEN } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
 	import { type UpdateUiFromHash } from '$shared/types';
-	import type { Modals } from '$types/components';
 
 	import { DashedSection } from '../../components';
 	import AppSettings from './components/AppSettings.svelte';
+	import KeyManagement from './components/KeyManagement.svelte';
+	import SystemSettings from './components/SystemSettings.svelte';
 
 	const client = trpc();
 
@@ -46,11 +46,9 @@
 
 	const installedApps = client.getInstalledApps.createQuery(true);
 	const uninstallApp = client.uninstallApp.createMutation();
-	const isDevhubInstalled = client.isDevhubInstalled.createQuery();
-	const installDevhub = client.installDevhub.createMutation();
+
 	const updateUiFromHash = client.updateUiFromHash.createMutation();
 	const storeUiBytes = client.storeUiBytes.createMutation();
-	const factoryReset = client.factoryReset.createMutation();
 
 	let selectedIndex = 0;
 
@@ -151,62 +149,8 @@
 		});
 	};
 
-	const handleDevhubInstallSuccess = async ({
-		appPort,
-		authenticationToken
-	}: {
-		appPort?: number;
-		authenticationToken: number[];
-	}) => {
-		if (!appPort) {
-			handleError({
-				message: $i18n.t('noAppPortError'),
-				title: $i18n.t('appError')
-			});
-			return;
-		}
-		await createDevHubClient(appPort, authenticationToken);
-		$isDevhubInstalled.refetch();
-		modalStore.close();
-	};
-
-	const showModal = (modalType: Modals, response?: (r: unknown) => void) => {
-		const modal = createModalParams(modalType, response);
-		modalStore.trigger(modal);
-	};
-
-	const showDevhubInstallModal = () => {
-		showModal(MODAL_DEVHUB_INSTALLATION_CONFIRMATION, (shouldInstall) => {
-			if (shouldInstall) {
-				$installDevhub.mutate(undefined, {
-					onSuccess: handleDevhubInstallSuccess,
-					onError: handleError
-				});
-			}
-		});
-	};
-
-	const showFactoryResetModal = () => {
-		showModal(MODAL_FACTORY_RESET_CONFIRMATION, (confirm) => {
-			if (confirm) {
-				$factoryReset.mutate(undefined, {
-					onError: (error) =>
-						showModalError({
-							modalStore,
-							errorTitle: $i18n.t('factoryResetError'),
-							errorMessage: error.message
-						})
-				});
-			}
-		});
-	};
-
 	$: icon = selectedApp?.icon ? new Uint8Array(selectedApp.icon) : undefined;
 </script>
-
-{#if $installDevhub.isPending}
-	<NoClickOverlay />
-{/if}
 
 {#if selectedApp}
 	{@const appVersion = getVersionByActionHash(
@@ -301,36 +245,8 @@
 			{/each}
 		</AppSettings>
 	{/if}
+{:else if $page.params.slug === KEY_MANAGEMENT}
+	<KeyManagement />
 {:else}
-	<DashedSection title={$i18n.t('developerTools')}>
-		{#if $isDevhubInstalled.data}
-			<p>{$i18n.t('devhubInstalled')}</p>
-		{:else}
-			<Button
-				props={{
-					isLoading: $installDevhub.isPending,
-					onClick: showDevhubInstallModal,
-					class: 'btn-install'
-				}}
-			>
-				<div class="mr-2"><Download /></div>
-				{$i18n.t('install')}
-			</Button>
-			<div class="text-sm">
-				<span class="font-normal">{$i18n.t('developerToolsAllow')}</span>
-				<span class="font-semibold">{$i18n.t('uploadAndPublish')}</span>
-			</div>
-		{/if}
-	</DashedSection>
-	<DashedSection title={$i18n.t('factoryReset')}>
-		<Button
-			props={{
-				disabled: $installDevhub.isPending,
-				onClick: showFactoryResetModal,
-				class: 'btn-install'
-			}}
-		>
-			{$i18n.t('factoryResetClick')}
-		</Button>
-	</DashedSection>
+	<SystemSettings />
 {/if}

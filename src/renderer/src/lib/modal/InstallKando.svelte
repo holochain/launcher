@@ -8,6 +8,7 @@
 	import { APPS_VIEW } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
 	import { APP_NAME_EXISTS_ERROR } from '$shared/types';
+	import type { AppInstallFormData } from '$types';
 
 	import ModalInstallForm from './ModalInstallForm.svelte';
 
@@ -16,7 +17,7 @@
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
 
-	let formData = {
+	let formData: AppInstallFormData = {
 		appId: '',
 		networkSeed: ''
 	};
@@ -32,7 +33,8 @@
 			{
 				name: 'kando.webhapp',
 				appId: formData.appId,
-				networkSeed: formData.networkSeed
+				networkSeed: formData.networkSeed,
+				agentPubKey: formData.pubKey
 			},
 			{
 				onSuccess: () => {
