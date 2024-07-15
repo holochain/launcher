@@ -16,6 +16,13 @@ const launcherVersion = packageJson.version;
 const debFileName = `${launcherAppId}_${launcherVersion}_amd64.deb`;
 const debFilePath = `dist/${debFileName}`;
 
+const fileBytesBefore = fs.readFileSync(debFilePath);
+const hasher1 = crypto.createHash('sha512');
+hasher.update(fileBytesBefore);
+const sha512_before = hasher1.digest('base64');
+console.log("sha512 before modification: ", sha512_before);
+console.log("fileSize before modification: ", fileBytesBefore.length);
+
 const unpackDirectory = `dist/modified-deb`;
 console.log("Unpacking deb file for subsequent modification. This may take a while...");
 const stdout = child_process.execSync(`dpkg-deb -R ${debFilePath} ${unpackDirectory}`);
@@ -60,7 +67,7 @@ const stdout2 = child_process.execSync(`dpkg-deb -b ${unpackDirectory} ${debFile
 console.log("Modified deb file packaged.");
 
 
-// // Modify sha512 hashes of latest-linux.yaml
+// Modify  sha512 hashes of latest-linux.yaml
 const fileBytes = fs.readFileSync(debFilePath);
 const hasher = crypto.createHash('sha512');
 hasher.update(fileBytes);
