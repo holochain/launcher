@@ -59,34 +59,38 @@
 
 	const selectView = (view: string) => goto(`/${SETTINGS_SCREEN}/${view}`);
 
-	$: view = $page.params.slug;
+	$: view = $page.params.slug || '';
+
+	const menuEntries = [
+		{
+			name: $i18n.t(SYSTEM_INFORMATION),
+			view: '',
+			icon: MenuInfo,
+			iconStyle: 'ml-[1.5px] mr-[14px]'
+		},
+		{
+			name: $i18n.t(SYSTEM_SETTINGS),
+			view: SYSTEM_SETTINGS,
+			icon: Gear,
+			iconStyle: 'mr-3'
+		},
+		{
+			name: $i18n.t(KEY_MANAGEMENT),
+			view: KEY_MANAGEMENT,
+			icon: Key,
+			iconStyle: 'mr-3'
+		}
+	];
 </script>
 
 <span class="pb-2 text-sm">{$i18n.t('launcherSettings')}</span>
-<MenuEntry name={$i18n.t(SYSTEM_INFORMATION)} onClick={() => selectView('')} isSelected={!view}>
-	<div slot="leading" class={clsx('ml-[1.5px] mr-[14px]')}>
-		<MenuInfo fillColor={view ? NOT_SELECTED_ICON_STYLE : SELECTED_ICON_STYLE} />
-	</div>
-</MenuEntry>
-
-<MenuEntry
-	name={$i18n.t(SYSTEM_SETTINGS)}
-	onClick={() => selectView(SYSTEM_SETTINGS)}
-	isSelected={view === SYSTEM_SETTINGS}
->
-	<div slot="leading" class={clsx('mr-3', view !== SYSTEM_SETTINGS)}>
-		<Gear fillColor={view === SYSTEM_SETTINGS ? SELECTED_ICON_STYLE : NOT_SELECTED_ICON_STYLE} />
-	</div>
-</MenuEntry>
-<MenuEntry
-	name={$i18n.t(KEY_MANAGEMENT)}
-	onClick={() => selectView(KEY_MANAGEMENT)}
-	isSelected={view === KEY_MANAGEMENT}
->
-	<div slot="leading" class={clsx('mr-3', view !== KEY_MANAGEMENT)}>
-		<Key fillColor={view === KEY_MANAGEMENT ? SELECTED_ICON_STYLE : NOT_SELECTED_ICON_STYLE} />
-	</div>
-</MenuEntry>
+{#each menuEntries as { name, view: entryView, icon: Icon, iconStyle }}
+	<MenuEntry {name} onClick={() => selectView(entryView)} isSelected={view === entryView}>
+		<div slot="leading" class={clsx(iconStyle, view !== entryView)}>
+			<Icon fillColor={view === entryView ? SELECTED_ICON_STYLE : NOT_SELECTED_ICON_STYLE} />
+		</div>
+	</MenuEntry>
+{/each}
 <div class="!my-2 h-px w-full bg-tertiary-800"></div>
 <span class="pb-2 text-sm">{$i18n.t('appSettings')}</span>
 {#if $installedApps.isPending}
