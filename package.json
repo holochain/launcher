@@ -11,9 +11,9 @@
     "lair_keystore": "0.4.5"
   },
   "defaultApps": {
-    "kando": "https://github.com/holochain-apps/kando/releases/download/v0.10.4/kando.webhapp",
-    "devhub": "https://drive.switch.ch/index.php/s/dpqXafSa3VI9lP9/download",
-    "appstore": "https://drive.switch.ch/index.php/s/VGtEyqCUpNlcUfL/download"
+    "kando": "https://github.com/holochain-apps/kando/releases/download/v0.10.5/kando.webhapp",
+    "devhub": "https://drive.switch.ch/index.php/s/CsTltnSv9nVvghb/download",
+    "appstore": "https://drive.switch.ch/index.php/s/fbIbcVaImkn0ibY/download"
   },
   "workspaces": [
     "src/renderer",
