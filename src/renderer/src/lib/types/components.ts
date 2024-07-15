@@ -45,4 +45,5 @@ export type ButtonProps = {
 export type AppInstallFormData = {
 	appId: string;
 	networkSeed: string;
+	pubKey?: string;
 };

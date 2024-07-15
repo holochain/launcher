@@ -1,3 +1,4 @@
+import type { AgentPubKeyB64 } from '@holochain/client';
 import {
   type AppInfo,
   type CallZomeRequest,
@@ -255,6 +256,7 @@ export const installApp = async ({
   distributionInfo,
   networkSeed,
   icon,
+  agentPubKey,
 }: {
   holochainManager: HolochainManager;
   happAndUiBytes: rustUtils.HappAndUiBytes;
@@ -262,6 +264,7 @@ export const installApp = async ({
   distributionInfo: DistributionInfoV1;
   networkSeed: string;
   icon?: Uint8Array;
+  agentPubKey?: AgentPubKeyB64;
 }): Promise<void> => {
   if (happAndUiBytes.uiBytes) {
     await holochainManager.installWebHappFromBytes({
@@ -270,6 +273,7 @@ export const installApp = async ({
       distributionInfo,
       networkSeed,
       icon,
+      agentPubKey,
     });
   } else {
     await holochainManager.installHeadlessHappFromBytes({
@@ -277,6 +281,7 @@ export const installApp = async ({
       appId,
       distributionInfo,
       networkSeed,
+      agentPubKey,
     });
   }
 };

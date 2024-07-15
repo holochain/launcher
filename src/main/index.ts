@@ -596,7 +596,7 @@ const router = t.router({
   }),
   installHappFromPath: t.procedure.input(InstallHappFromPathSchema).mutation(async (opts) => {
     try {
-      const { filePath, appId, networkSeed } = opts.input;
+      const { filePath, appId, networkSeed, agentPubKey } = opts.input;
       const happAndUiBytes = await rustUtils.readAndDecodeHappOrWebhapp(filePath);
       const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
       const distributionInfo: DistributionInfoV1 = { type: 'filesystem' };
@@ -606,6 +606,7 @@ const router = t.router({
         appId,
         distributionInfo,
         networkSeed,
+        agentPubKey,
       });
     } catch (error) {
       handleInstallError(error);
@@ -631,7 +632,7 @@ const router = t.router({
   installWebhappFromBytes: t.procedure
     .input(InstallHappOrWebhappFromBytesSchema)
     .mutation(async (opts) => {
-      const { bytes, appId, distributionInfo, networkSeed, icon } = opts.input;
+      const { bytes, appId, distributionInfo, networkSeed, icon, agentPubKey } = opts.input;
       const happAndUiBytes = await rustUtils.decodeHappOrWebhapp(Array.from(bytes));
       const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
       await installApp({
@@ -641,11 +642,12 @@ const router = t.router({
         distributionInfo,
         networkSeed,
         icon,
+        agentPubKey,
       });
     }),
   installDefaultApp: t.procedure.input(InstallDefaultAppSchema).mutation(async (opts) => {
     try {
-      const { name, appId, networkSeed } = opts.input;
+      const { name, appId, networkSeed, agentPubKey } = opts.input;
       const filePath = path.join(DEFAULT_APPS_DIRECTORY, name);
       const happAndUiBytes = await rustUtils.readAndDecodeHappOrWebhapp(filePath);
       const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
@@ -654,7 +656,8 @@ const router = t.router({
         happAndUiBytes,
         appId,
         distributionInfo: { type: DISTRIBUTION_TYPE_DEFAULT_APP },
-        networkSeed: networkSeed,
+        networkSeed,
+        agentPubKey,
       });
     } catch (error) {
       handleInstallError(error);

@@ -4,7 +4,7 @@
 
 	export let label = '';
 	export let id: string;
-	export let value: string;
+	export let value: string | undefined;
 	export let placeholder = '';
 
 	let input: Input;

@@ -6,7 +6,7 @@
 
 	import { Button, Input } from '$components';
 	import { convertFileToUint8Array } from '$helpers';
-	import { Info } from '$icons';
+	import { Gear, Info } from '$icons';
 	import { i18n } from '$services';
 	import type { AppInstallFormData } from '$types';
 
@@ -20,6 +20,8 @@
 	export let onSubmit: () => void;
 	export let isPending = false;
 	export let acceptFileType = false;
+
+	let showAdvancedInput = false;
 
 	onMount(() => {
 		if (!acceptFileType) {
@@ -92,23 +94,26 @@
 					<div class="arrow bg-primary-900" />
 				</div>
 			</InputModal>
-			<footer class="modal-footer flex justify-between gap-2">
+			{#if showAdvancedInput}
+				<InputModal bind:value={formData.pubKey} id="pubKey" label={$i18n.t('pubKey')} />
+			{/if}
+			<footer class="flex justify-between gap-1">
 				<Button
 					props={{
-						type: 'reset',
-						onClick: modalStore.close,
-						class: 'btn-app-store-modal-secondary flex-1',
-						disabled: isPending
+						type: 'button',
+						onClick: () => (showAdvancedInput = !showAdvancedInput),
+						class: 'input-button-style w-1/2 flex items-center justify-center gap-1'
 					}}
 				>
-					{$i18n.t('cancel')}
+					<div class="scale-75"><Gear /></div>
+					<span class="pr-2">{$i18n.t('advanced')}</span>
 				</Button>
 				<Button
 					props={{
 						disabled: formData.appId.length === 0 || isPending,
 						type: 'submit',
 						isLoading: isPending,
-						class: 'btn-app-store-modal flex-1'
+						class: 'btn-app-store-modal w-1/2 !mb-0'
 					}}
 				>
 					<span>{$i18n.t('install')}</span>
