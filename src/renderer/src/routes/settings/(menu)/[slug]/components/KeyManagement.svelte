@@ -14,6 +14,13 @@
 	const deriveAndImportSeedFromJsonFile = client.deriveAndImportSeedFromJsonFile.createMutation();
 	const modalStore = getModalStore();
 
+	const clearFileInput = () => {
+		const fileInput = document.getElementById('file-input') as HTMLInputElement;
+		if (fileInput) {
+			fileInput.value = '';
+		}
+	};
+
 	const handleError = (error: unknown) => {
 		console.error(error);
 		const errorMessage = getErrorMessage(error);
@@ -22,17 +29,18 @@
 			errorTitle: $i18n.t('appError'),
 			errorMessage: $i18n.t(errorMessage)
 		});
+		clearFileInput();
 	};
 
 	const handleFileChange = async (event: Event) => {
 		const target = event.target as HTMLInputElement;
 		const file = target.files?.[0];
 		if (file && file.type === 'application/json') {
-			console.log(file.path);
 			$deriveAndImportSeedFromJsonFile.mutate(file.path, {
 				onError: handleError,
 				onSuccess: (result) => {
 					$importedKeys = [result, ...$importedKeys];
+					clearFileInput();
 				}
 			});
 		}
