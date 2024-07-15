@@ -337,6 +337,7 @@ export class HolochainManager {
     networkSeed,
     membrane_proofs,
     icon,
+    agentPubKey,
   }: {
     happAndUiBytes: HappAndUiBytes;
     appId: string;
@@ -344,6 +345,7 @@ export class HolochainManager {
     networkSeed?: string;
     membrane_proofs?: { [key: string]: MembraneProof };
     icon?: Uint8Array;
+    agentPubKey?: AgentPubKeyB64;
   }) {
     if (!happAndUiBytes.uiBytes) throw new Error('UI bytes undefined.');
 
@@ -351,6 +353,7 @@ export class HolochainManager {
     const uiZipSha256 = this.storeUiIfNecessary(happAndUiBytes.uiBytes, icon);
 
     await this.installWebhappFromHashes({
+      agentPubKey,
       happSha256,
       uiZipSha256,
       appId,
