@@ -18,7 +18,7 @@ const debFilePath = `dist/${debFileName}`;
 
 const fileBytesBefore = fs.readFileSync(debFilePath);
 const hasher1 = crypto.createHash('sha512');
-hasher.update(fileBytesBefore);
+hasher1.update(fileBytesBefore);
 const sha512_before = hasher1.digest('base64');
 console.log("sha512 before modification: ", sha512_before);
 console.log("fileSize before modification: ", fileBytesBefore.length);
