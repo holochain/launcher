@@ -1,12 +1,14 @@
 import { platform } from '@electron-toolkit/utils';
 import type {
   ActionHashB64,
+  AgentPubKey,
+  AgentPubKeyB64,
   AppAuthenticationToken,
   AppInfo,
   InstalledAppId,
   MembraneProof,
 } from '@holochain/client';
-import { AdminWebsocket } from '@holochain/client';
+import { AdminWebsocket, decodeHashFromBase64 } from '@holochain/client';
 import AdmZip from 'adm-zip';
 import * as childProcess from 'child_process';
 import crypto from 'crypto';
@@ -364,12 +366,14 @@ export class HolochainManager {
     distributionInfo,
     networkSeed,
     membrane_proofs,
+    agentPubKey,
   }: {
     happBytes: Array<number>;
     appId: string;
     distributionInfo: DistributionInfoV1;
     networkSeed?: string;
     membrane_proofs?: { [key: string]: MembraneProof };
+    agentPubKey?: AgentPubKeyB64;
   }) {
     // write [sha256].happ to happs directory
     const happHasher = crypto.createHash('sha256');
@@ -377,7 +381,13 @@ export class HolochainManager {
     const happFilePath = path.join(this.fs.happsDir(this.holochainDataRoot), `${happSha256}.happ`);
     writeFile(happFilePath, Buffer.from(happBytes));
 
-    const pubKey = await this.adminWebsocket.generateAgentPubKey();
+    let pubKey: AgentPubKey;
+
+    if (agentPubKey) {
+      pubKey = decodeHashFromBase64(agentPubKey);
+    } else {
+      pubKey = await this.adminWebsocket.generateAgentPubKey();
+    }
 
     let appInfo: AppInfo | undefined;
     try {
@@ -448,6 +458,7 @@ export class HolochainManager {
     distributionInfo,
     networkSeed,
     membrane_proofs,
+    agentPubKey,
   }: {
     happSha256: string;
     uiZipSha256: string;
@@ -455,6 +466,7 @@ export class HolochainManager {
     distributionInfo: DistributionInfoV1;
     networkSeed?: string;
     membrane_proofs?: { [key: string]: MembraneProof };
+    agentPubKey?: AgentPubKeyB64;
   }): Promise<void> {
     if (!this.isUiAvailable(uiZipSha256)) {
       throw new Error('UI not found for this hash. UI needs to be stored from bytes first.');
@@ -465,8 +477,13 @@ export class HolochainManager {
       );
     }
 
-    // install happ into conductor
-    const pubKey = await this.adminWebsocket.generateAgentPubKey();
+    let pubKey: AgentPubKey;
+
+    if (agentPubKey) {
+      pubKey = decodeHashFromBase64(agentPubKey);
+    } else {
+      pubKey = await this.adminWebsocket.generateAgentPubKey();
+    }
 
     let appInfo: AppInfo | undefined;
     try {
