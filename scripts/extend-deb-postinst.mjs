@@ -77,7 +77,7 @@ const latestYaml = yaml.load(fs.readFileSync('dist/latest-linux.yml'));
 
 console.log("latestYaml before modification:\n", latestYaml);
 
-const files = latestYaml.files.filter((file) => file.url === debFileName);
+const files = latestYaml.files.filter((file) => file.url !== debFileName);
 files.push({
   url: debFileName,
   sha512,
