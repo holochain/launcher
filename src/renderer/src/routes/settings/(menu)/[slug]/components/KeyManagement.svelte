@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 
 	import { Button } from '$components';
 	import { showModalError } from '$helpers';
@@ -10,9 +10,12 @@
 
 	import { DashedSection } from '../../../components';
 
-	const client = trpc();
-	const deriveAndImportSeedFromJsonFile = client.deriveAndImportSeedFromJsonFile.createMutation();
 	const modalStore = getModalStore();
+	const toastStore = getToastStore();
+
+	const client = trpc();
+
+	const deriveAndImportSeedFromJsonFile = client.deriveAndImportSeedFromJsonFile.createMutation();
 
 	const clearFileInput = () => {
 		const fileInput = document.getElementById('file-input') as HTMLInputElement;
@@ -58,7 +61,12 @@
 				<Button
 					props={{
 						class: ' flex',
-						onClick: () => navigator.clipboard.writeText(key)
+						onClick: async () => {
+							await navigator.clipboard.writeText(key);
+							toastStore.trigger({
+								message: $i18n.t('copiedToClipboard')
+							});
+						}
 					}}
 				>
 					<div class="ml-2 mr-1 pt-1"><Copy /></div>
