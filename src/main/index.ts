@@ -539,16 +539,12 @@ const router = t.router({
   disableApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
     const { appInfo, holochainDataRoot } = opts.input;
     const holochainManager = getHolochainManager(holochainDataRoot.name);
-    await holochainManager.adminWebsocket.disableApp({
-      installed_app_id: appInfo.installed_app_id,
-    });
+    await holochainManager.disableApp(appInfo.installed_app_id);
   }),
   enableApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
     const { appInfo, holochainDataRoot } = opts.input;
     const holochainManager = getHolochainManager(holochainDataRoot.name);
-    await holochainManager.adminWebsocket.enableApp({
-      installed_app_id: appInfo.installed_app_id,
-    });
+    await holochainManager.enableApp(appInfo.installed_app_id);
   }),
   fetchWebhapp: t.procedure.input(AppVersionEntrySchemaWithIcon).mutation(async (opts) => {
     const { app_version, icon } = opts.input;
