@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
-	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
+	import { getModalStore, getToastStore, SlideToggle } from '@skeletonlabs/skeleton';
 	import type { AppVersionEntry } from 'appstore-tools';
 
 	import { goto } from '$app/navigation';
@@ -46,6 +46,7 @@
 
 	const installedApps = client.getInstalledApps.createQuery(true);
 	const uninstallApp = client.uninstallApp.createMutation();
+	const toggleApp = client.toggleApp.createMutation();
 	const isDevhubInstalled = client.isDevhubInstalled.createQuery();
 	const installDevhub = client.installDevhub.createMutation();
 	const updateUiFromHash = client.updateUiFromHash.createMutation();
@@ -221,7 +222,32 @@
 			? [$i18n.t('details'), capitalizeFirstLetter($i18n.t('settings'))]
 			: [capitalizeFirstLetter($i18n.t('settings'))]}
 		bind:selectedIndex
-	/>
+	>
+		<div slot="topRight">
+			{#if !selectedApp.isHeadless}
+				{@const isDisabled =
+					selectedApp.appInfo.status !== 'running' && 'disabled' in selectedApp.appInfo.status}
+				<div class="flex h-full items-center justify-center">
+					<SlideToggle
+						on:click={() => {
+							if (validateApp(selectedApp)) {
+								$toggleApp.mutate({
+									...selectedApp,
+									enable: isDisabled
+								});
+							}
+						}}
+						checked={!isDisabled}
+						active="bg-success-500"
+						name="enabled-disabled-app-slider"
+						size="lg"
+					>
+						{isDisabled ? $i18n.t('disabled') : $i18n.t('enabled')}
+					</SlideToggle>
+				</div>
+			{/if}
+		</div>
+	</AppDetailsPanel>
 	{#if update && selectedApp.distributionInfo.type === DISTRIBUTION_TYPE_APPSTORE}
 		<DashedSection borderColor="border-warning-500/30">
 			<div class="flex w-full items-center justify-between">

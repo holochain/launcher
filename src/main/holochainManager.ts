@@ -716,6 +716,20 @@ export class HolochainManager {
     // at a later time
   }
 
+  async enableApp(appId: string) {
+    await this.adminWebsocket.enableApp({ installed_app_id: appId });
+    const installedApps = await this.adminWebsocket.listApps({});
+    this.installedApps = installedApps;
+    this.launcherEmitter.emit(REFETCH_DATA_IN_ALL_WINDOWS, `enableApp-${appId}`);
+  }
+
+  async disableApp(appId: string) {
+    await this.adminWebsocket.disableApp({ installed_app_id: appId });
+    const installedApps = await this.adminWebsocket.listApps({});
+    this.installedApps = installedApps;
+    this.launcherEmitter.emit(REFETCH_DATA_IN_ALL_WINDOWS, `disableApp-${appId}`);
+  }
+
   /**
    * Checks whether a UI with this hash is already stored on disk. If yes, it does not need
    * to be fetched from devhub

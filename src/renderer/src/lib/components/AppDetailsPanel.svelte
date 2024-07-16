@@ -47,7 +47,7 @@
 				{/if}
 			</div>
 		</div>
-		<slot name="install" />
+		<slot name="topRight" />
 	</div>
 	{#if buttons.length > 1}
 		{#each buttons as button, index}
