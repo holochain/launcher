@@ -144,7 +144,7 @@
 		buttons={[$i18n.t('description'), $i18n.t('versionHistory')]}
 		bind:selectedIndex
 	>
-		<div slot="install">
+		<div slot="topRight">
 			<InstallButton
 				disabled={isLoading}
 				{loadingString}

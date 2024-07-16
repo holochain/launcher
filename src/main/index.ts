@@ -536,16 +536,17 @@ const router = t.router({
     const holochainManager = getHolochainManager(holochainDataRoot.name);
     await holochainManager.uninstallApp(appInfo.installed_app_id);
   }),
-  disableApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
-    const { appInfo, holochainDataRoot } = opts.input;
-    const holochainManager = getHolochainManager(holochainDataRoot.name);
-    await holochainManager.disableApp(appInfo.installed_app_id);
-  }),
-  enableApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
-    const { appInfo, holochainDataRoot } = opts.input;
-    const holochainManager = getHolochainManager(holochainDataRoot.name);
-    await holochainManager.enableApp(appInfo.installed_app_id);
-  }),
+  toggleApp: t.procedure
+    .input(ExtendedAppInfoSchema.extend({ enable: z.boolean() }))
+    .mutation(async (opts) => {
+      const { appInfo, holochainDataRoot, enable } = opts.input;
+      const holochainManager = getHolochainManager(holochainDataRoot.name);
+      if (enable) {
+        await holochainManager.enableApp(appInfo.installed_app_id);
+      } else {
+        await holochainManager.disableApp(appInfo.installed_app_id);
+      }
+    }),
   fetchWebhapp: t.procedure.input(AppVersionEntrySchemaWithIcon).mutation(async (opts) => {
     const { app_version, icon } = opts.input;
     const appVersionEntry = {
@@ -712,6 +713,8 @@ const router = t.router({
   getInstalledApps: t.procedure.input(IncludeHeadlessSchema).query((opts) => {
     const { input: includeHeadless } = opts;
     const installedApps = getInstalledAppsInfo(HOLOCHAIN_MANAGERS);
+
+    console.log('installedApps: ', installedApps);
 
     const processApps = (apps: typeof installedApps, includeHeadless: boolean) => {
       const sortedApps = apps.sort((a, b) =>
