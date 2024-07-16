@@ -714,8 +714,6 @@ const router = t.router({
     const { input: includeHeadless } = opts;
     const installedApps = getInstalledAppsInfo(HOLOCHAIN_MANAGERS);
 
-    console.log('installedApps: ', installedApps);
-
     const processApps = (apps: typeof installedApps, includeHeadless: boolean) => {
       const sortedApps = apps.sort((a, b) =>
         a.isHeadless === b.isHeadless ? 0 : a.isHeadless ? -1 : 1,
