@@ -11,8 +11,8 @@
     "lair_keystore": "0.4.4"
   },
   "defaultApps": {
-    "devhub": "https://drive.switch.ch/index.php/s/dpqXafSa3VI9lP9/download",
-    "appstore": "https://drive.switch.ch/index.php/s/VGtEyqCUpNlcUfL/download"
+    "devhub": "https://drive.switch.ch/index.php/s/CsTltnSv9nVvghb/download",
+    "appstore": "https://drive.switch.ch/index.php/s/fbIbcVaImkn0ibY/download"
   },
   "workspaces": [
     "src/renderer",
