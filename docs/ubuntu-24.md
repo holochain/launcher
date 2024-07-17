@@ -37,7 +37,7 @@ sudo nano /etc/apparmor.d/holochain-launcher-0.4
 
 # No template variables specified
 
-/opt/launcher-electron/holochain-launcher-0.4-[replace with correct version number].AppImage {
+/opt/holochain-launcher/holochain-launcher-0.4-[replace with correct version number].AppImage flags=(unconfined) {
 #include <abstractions/base>
 
 # No abstractions specified
@@ -57,5 +57,5 @@ sudo apparmor_parser -r /etc/apparmor.d/holochain-launcher-0.4
 
 6. Run the following to allow the launcher to run
 ```
-sudo aa-unconfined /opt/launcher-electron/holochain-launcher-[replace with correct version number].AppImage
+sudo aa-unconfined /opt/holochain-launcher/holochain-launcher-[replace with correct version number].AppImage
 ```
