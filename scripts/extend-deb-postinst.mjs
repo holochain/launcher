@@ -32,13 +32,20 @@ console.log(".deb file unpacked.");
 const posinstPath = `${unpackDirectory}/DEBIAN/postinst`;
 const postinstScript = fs.readFileSync(posinstPath, 'utf-8');
 const postinstScriptModified = postinstScript.replace("chrome-sandbox' || true", `chrome-sandbox' || true
+if [ -e /etc/lsb-release ]; then
 
-release_version=$(lsb_release -rs)
+  while IFS='=' read -r key value
 
-if [ $release_version == "24.04" ]; then
+  do
+    if [ "$key" == "DISTRIB_RELEASE" ]; then
+       release_version=$value
+    fi
+  done < /etc/lsb-release
 
-# add AppArmor profile on Ubuntu 24.04
-profile_content="# This profile allows everything and only exists to give the
+  if [ $release_version == "24.04" ]; then
+
+  # add AppArmor profile on Ubuntu 24.04
+  profile_content="# This profile allows everything and only exists to give the
 # application a name instead of having the label "unconfined"
 
 abi <abi/4.0>,
@@ -51,7 +58,9 @@ profile ${launcherAppId} '/opt/${launcherProductName}/${launcherAppId}' flags=(u
   include if exists <local/${launcherAppId}>
 }"
 
-echo "$profile_content" > /etc/apparmor.d/${launcherAppId}
+    echo "$profile_content" > /etc/apparmor.d/${launcherAppId}
+
+  fi
 
 fi
 `);
