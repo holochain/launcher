@@ -228,6 +228,7 @@ export class HolochainManager {
       env: {
         RUST_LOG: rustLog || DEFAULT_RUST_LOG,
         WASM_LOG: wasmLog || DEFAULT_WASM_LOG,
+        NO_COLOR: '1',
       },
     });
     conductorHandle.stdin.write(password);
