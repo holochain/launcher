@@ -7,6 +7,7 @@ files:
 asarUnpack:
   - resources/**
   - package.json
+  - "**/*.node"
 afterSign: scripts/notarize.js
 win:
   executableName: holochain-launcher-0.3
