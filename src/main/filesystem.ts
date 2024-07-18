@@ -6,22 +6,22 @@ import path from 'path';
 
 import type { DistributionInfoV1, HolochainDataRoot } from '$shared/types';
 
+import {
+  APPS_DIRNAME,
+  BACKUP_INFO_FILENAME,
+  BACKUP_LOG_FILENAME,
+  CONDUCTOR_ENV_DIRNAME,
+  CONFIG_DIRNAME,
+  HAPPS_DIRNAME,
+  HOLOCHAIN_DIRNAME,
+  KEYSTORE_DIRNAME,
+  UIS_DIRNAME,
+} from './const';
 import type { UiHashes } from './holochainManager';
 import { type IntegrityChecker } from './integrityChecker';
 import { breakingVersion, readYamlValue, replaceYamlValue } from './utils';
 
 export type Profile = string;
-
-const KEYSTORE_DIRNAME = 'lair';
-const HOLOCHAIN_DIRNAME = 'holochain';
-const CONFIG_DIRNAME = 'config';
-const CONDUCTOR_ENV_DIRNAME = 'dbs';
-const UIS_DIRNAME = 'uis';
-const HAPPS_DIRNAME = 'happs';
-const APPS_DIRNAME = 'apps';
-
-const BACKUP_INFO_FILENAME = 'backup.info.json';
-const BACKUP_LOG_FILENAME = 'backups.log';
 
 /**
  * Version 1 of app metadata structure.
