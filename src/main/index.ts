@@ -319,32 +319,16 @@ app.on('quit', () => {
       manager.processHandle.kill();
     }
   });
-
-  // // Test backup
-  // LAUNCHER_FILE_SYSTEM.setBackupLocation(BACKUP_LOCATION);
-  if (LAUNCHER_FILE_SYSTEM.backupLocation) {
-    console.log('Backing up full state to ', LAUNCHER_FILE_SYSTEM.backupLocation);
-    LAUNCHER_FILE_SYSTEM.backupFullState();
-    console.log('Full state backed up.');
-  }
 });
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
 
-async function handleSetupAndLaunch(password: string, backupPath?: string) {
+async function handleSetupAndLaunch(password: string) {
   if (!PRIVILEDGED_LAUNCHER_WINDOWS)
     throw new Error('Main window needs to exist before launching.');
 
   if (VALIDATED_CLI_ARGS.holochainVersion.type !== 'running-external') {
-    if (backupPath) {
-      INTEGRITY_CHECKER = new IntegrityChecker(password);
-      LAUNCHER_FILE_SYSTEM.setIntegrityChecker(INTEGRITY_CHECKER);
-      await LAUNCHER_FILE_SYSTEM.restoreFromBackup(
-        path.join(backupPath, 'holochain-launcher-backup'),
-      );
-      console.log('RESTORED FROM BACKUP.');
-    }
     const lairHandleTemp = spawnSync(VALIDATED_CLI_ARGS.lairBinaryPath, ['--version']);
     if (!lairHandleTemp.stdout) {
       console.error(`Failed to run lair-keystore binary:\n${lairHandleTemp}`);
@@ -361,18 +345,12 @@ async function handleSetupAndLaunch(password: string, backupPath?: string) {
     }
   }
 
-  await handleLaunch(password, backupPath);
+  await handleLaunch(password);
 }
 
-async function handleLaunch(password: string, backupPath?: string) {
-  console.log('LAUNCHING WITH BACKUP PATH: ', backupPath);
-  if (backupPath) {
-    LAUNCHER_FILE_SYSTEM.setBackupLocation(backupPath);
-  }
-  if (!INTEGRITY_CHECKER) {
-    INTEGRITY_CHECKER = new IntegrityChecker(password);
-    LAUNCHER_FILE_SYSTEM.setIntegrityChecker(INTEGRITY_CHECKER);
-  }
+async function handleLaunch(password: string) {
+  INTEGRITY_CHECKER = new IntegrityChecker(password);
+  LAUNCHER_FILE_SYSTEM.setIntegrityChecker(INTEGRITY_CHECKER);
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingLairKeystore');
   let lairUrl: string;
 
@@ -444,15 +422,13 @@ async function handleLaunch(password: string, backupPath?: string) {
   return;
 }
 
-const handlePasswordInput = (handler: (password: string, backupPath?: string) => Promise<void>) =>
-  t.procedure
-    .input(z.object({ password: z.string(), backupPath: z.optional(z.string()) }))
-    .mutation((req) => {
-      const {
-        input: { password, backupPath },
-      } = req;
-      return handler(password, backupPath);
-    });
+const handlePasswordInput = (handler: (password: string) => Promise<void>) =>
+  t.procedure.input(z.object({ password: z.string() })).mutation((req) => {
+    const {
+      input: { password },
+    } = req;
+    return handler(password);
+  });
 
 const getHolochainManager = (dataRootName: string) => {
   const holochainManager = HOLOCHAIN_MANAGERS[dataRootName];

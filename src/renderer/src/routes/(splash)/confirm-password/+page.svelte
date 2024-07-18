@@ -33,7 +33,7 @@
 		}
 
 		$setupAndLaunch.mutate(
-			{ password: $appPassword, backupPath: (window as any).__BACKUP_PATH__ },
+			{ password: $appPassword },
 			{
 				onSuccess: () => goto(`/${APP_STORE}`),
 				onError: (error) => {

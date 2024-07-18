@@ -1,3 +1,4 @@
+import { platform } from '@electron-toolkit/utils';
 import { type App, app } from 'electron';
 import fs from 'fs';
 import { nanoid } from 'nanoid';
@@ -7,7 +8,7 @@ import type { DistributionInfoV1, HolochainDataRoot } from '$shared/types';
 
 import type { UiHashes } from './holochainManager';
 import { type IntegrityChecker } from './integrityChecker';
-import { breakingVersion, isWindows, readYamlValue, replaceYamlValue } from './utils';
+import { breakingVersion, readYamlValue, replaceYamlValue } from './utils';
 
 export type Profile = string;
 
@@ -322,7 +323,6 @@ export class LauncherFileSystem {
 
     // TODO check for .happ files and UIs that are not in use and don't copy them over
 
-    // TODO
     try {
       fs.cpSync(this.holochainDir, path.join(backupRoot, HOLOCHAIN_DIRNAME), {
         recursive: true,
@@ -354,6 +354,10 @@ export class LauncherFileSystem {
     // Store information about last successful backup, i.e. timestamp
   }
 
+  // This is a placeholder for a function that could be called for example on closing
+  // the window of a single happ to update all app related data.
+  // It is however not clear whether this would work smoothly, especially on Windows
+  // as there may be file locks in place for some of the files and copying would fail
   // async backupAppMetaData(
   //   installedAppId: InstalledAppId,
   //   dataRoot: HolochainDataRoot,
@@ -369,7 +373,7 @@ export class LauncherFileSystem {
   // }
 
   /**
-   * Restores launcher from a backup folder. Optionally accepts a partition name into which the
+   * Restores launcher from a backup folder.
    *
    * @param backupRoot
    * @param ignoreMissingLogfile If the log file is missing, take the risk and contiue anyway
@@ -411,15 +415,6 @@ export class LauncherFileSystem {
       throw new Error('Existing keystore directory is not empty');
     }
 
-    // fs.cp(backupLairDir, this.keystoreDir, { recursive: true }, (err) => {
-    //   if (err) throw Error(`Failed to copy lair backup: ${err.message}`);
-    //   console.log('COPIED LAIR FOLDER.');
-    // });
-    // fs.cp(backupHolochainDir, this.holochainDir, { recursive: true }, (err) => {
-    //   if (err) throw Error(`Failed to copy holochain backup: ${err.message}`);
-    //   console.log('COPIED HOLOCHAIN FOLDER.');
-    // });
-
     fs.cpSync(backupLairDir, this.keystoreDir, { recursive: true });
     fs.cpSync(backupHolochainDir, this.holochainDir, { recursive: true });
 
@@ -446,7 +441,7 @@ export class LauncherFileSystem {
 
     // https://github.com/holochain/lair/blob/6a84ed490fc7074d107e38bbb4a8d707e9b8e066/crates/lair_keystore_api/src/config.rs#L229
     if (connectionUrl.startsWith('unix://')) {
-      if (isWindows) {
+      if (platform.isWindows) {
         unixToWindows = true;
         const id = nanoid(21);
         const id_pk = connectionUrl.split('socket?k=')[1];
@@ -454,7 +449,7 @@ export class LauncherFileSystem {
         lairConfigString = replaceYamlValue(lairConfigString, 'connectionUrl', modifiedUrl);
       }
     } else if (connectionUrl.startsWith('named-pipe:')) {
-      if (!isWindows) {
+      if (!platform.isWindows) {
         windowsToUnix = true;
         const id_pk = connectionUrl.split('?k=')[1];
         const modifiedUrl = `unix://${this.keystoreDir}/socket?k=${id_pk}`;

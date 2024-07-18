@@ -2,7 +2,7 @@ name: 'publish'
 on:
   push:
     branches:
-      - release-backup
+      - release
 
 jobs:
   extract-versions:
@@ -34,8 +34,8 @@ jobs:
       fail-fast: false
       matrix:
         # platform: [macos-12]
-        platform: [windows-2019, macos-12, ubuntu-22.04]
-        # platform: [windows-2019, macos-12, macos-latest, ubuntu-22.04]
+        # platform: [windows-2019, macos-12, ubuntu-22.04]
+        platform: [windows-2019, macos-12, macos-latest, ubuntu-22.04]
         # platform: [windows-2019]
     env:
       MACOSX_DEPLOYMENT_TARGET: 10.13
