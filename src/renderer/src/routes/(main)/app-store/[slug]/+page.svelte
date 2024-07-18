@@ -5,7 +5,7 @@
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { AppDetailsPanel, Button } from '$components';
+	import { AppDetailsPanel } from '$components';
 	import { PRESEARCH_URL_QUERY } from '$const';
 	import {
 		createImageUrl,
@@ -20,6 +20,7 @@
 	import { getErrorMessage } from '$shared/helpers';
 	import { APP_NAME_EXISTS_ERROR } from '$shared/types';
 
+	import InstallButton from './components/InstallButton.svelte';
 	import VersionEntry from './components/VersionEntry.svelte';
 
 	const client = trpc();
@@ -35,12 +36,14 @@
 
 	const slug: string = $page.params.slug;
 	let selectedIndex = 0;
+	let loadingString = '';
 	const app = $appStoreHappsQuery.data?.find(({ id }) => uint8ArrayToURIComponent(id) === slug);
 
 	$: appVersionsDetailsQuery = appVersionsAppstoreQueryFunction(app?.id);
 
 	const handleError = (error: unknown, versionEntity?: Entity<AppVersionEntry>) => {
 		console.error(error);
+		loadingString = '';
 		const errorMessage = getErrorMessage(error);
 		if (errorMessage === APP_NAME_EXISTS_ERROR && versionEntity) {
 			toastStore.trigger({
@@ -70,6 +73,7 @@
 				if (appId.length === 0) {
 					return;
 				}
+				loadingString = 'installingApp';
 				$installWebhappFromHashes.mutate(
 					{
 						uiZipSha256: versionEntity.content.bundle_hashes.ui_hash,
@@ -98,35 +102,30 @@
 			}
 		});
 	};
-
-	const handleSuccess = (
-		toastTimeout: ReturnType<typeof setTimeout> | null,
-		versionEntity: Entity<AppVersionEntry>
+	const clearTimeoutAndHandle = (
+		timeout: ReturnType<typeof setTimeout> | null,
+		callback: () => void
 	) => {
-		if (toastTimeout) clearTimeout(toastTimeout);
-		createModalInstallAppFromHashes(versionEntity);
-	};
-
-	const handleErrorWithTimeout = (
-		toastTimeout: ReturnType<typeof setTimeout> | null,
-		error: unknown,
-		versionEntity: Entity<AppVersionEntry>
-	) => {
-		if (toastTimeout) clearTimeout(toastTimeout);
-		handleError(error, versionEntity);
+		if (timeout) {
+			clearTimeout(timeout);
+			loadingString = '';
+		}
+		callback();
 	};
 
 	const installLogic = async (versionEntity: Entity<AppVersionEntry>) => {
-		const toastTimeout = setTimeout(
-			() => toastStore.trigger({ message: $i18n.t('fetchingAppData') }),
-			1000
-		);
+		loadingString = 'connectingToPeers';
+		const gettingAppBytesTimeout = setTimeout(() => (loadingString = 'gettingAppBytes'), 2000);
 
 		$fetchWebapp.mutate(
 			{ app_version: versionEntity.content, icon: app?.icon },
 			{
-				onSuccess: () => handleSuccess(toastTimeout, versionEntity),
-				onError: (error) => handleErrorWithTimeout(toastTimeout, error, versionEntity)
+				onSuccess: () =>
+					clearTimeoutAndHandle(gettingAppBytesTimeout, () =>
+						createModalInstallAppFromHashes(versionEntity)
+					),
+				onError: (error) =>
+					clearTimeoutAndHandle(gettingAppBytesTimeout, () => handleError(error, versionEntity))
 			}
 		);
 	};
@@ -139,22 +138,21 @@
 	<AppDetailsPanel
 		imageUrl={createImageUrl(app.icon)}
 		title={app.title}
+		id={app.id}
 		appVersion={latestVersion?.content.version}
 		subtitle={app.subtitle}
 		buttons={[$i18n.t('description'), $i18n.t('versionHistory')]}
 		bind:selectedIndex
 	>
-		<div slot="install">
-			<Button
-				props={{
-					class: 'btn-app-store variant-filled',
-					onClick: async () =>
-						latestVersion ? installLogic(latestVersion) : handleError($i18n.t('appError')),
-					isLoading
-				}}
+		<div slot="topRight">
+			<InstallButton
+				disabled={isLoading}
+				{loadingString}
+				onClick={async () =>
+					latestVersion ? installLogic(latestVersion) : handleError($i18n.t('appError'))}
 			>
 				{$i18n.t('install')}
-			</Button>
+			</InstallButton>
 		</div>
 	</AppDetailsPanel>
 {/if}

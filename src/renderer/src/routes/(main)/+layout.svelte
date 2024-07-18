@@ -13,6 +13,7 @@
 		getAppStoreDistributionHash,
 		handleNavigationWithAnimationDelay,
 		initializeDefaultAppPorts,
+		isDev,
 		setSearchInput,
 		showModalError
 	} from '$helpers';
@@ -26,11 +27,13 @@
 
 	const { checkForAppUiUpdatesQuery } = createAppQueries();
 
-	const hideApp = client.hideApp.createMutation();
 	const installedApps = client.getInstalledApps.createQuery();
-	const openApp = client.openApp.createMutation();
+	const launcherVerion = client.getLauncherVersion.createQuery();
 
+	const openApp = client.openApp.createMutation();
+	const hideApp = client.hideApp.createMutation();
 	const openSettings = client.openSettings.createMutation();
+
 	const utils = client.createUtils();
 
 	const modalStore = getModalStore();
@@ -66,7 +69,8 @@
 	$: uiUpdates = checkForAppUiUpdatesQuery(
 		$installedApps?.data
 			?.map((app) => getAppStoreDistributionHash(app.distributionInfo))
-			.filter(filterHash) ?? []
+			.filter(filterHash) ?? [],
+		isDev()
 	);
 
 	const handleNavigation = handleNavigationWithAnimationDelay(() => (inputExpanded = false));
@@ -169,9 +173,14 @@
 	</IconButton>
 </TopBar>
 
-<div class="relative grow overflow-y-auto bg-light-background px-4 dark:bg-apps-list-dark-gradient">
+<div class="grow overflow-y-auto bg-light-background px-4 dark:bg-apps-list-dark-gradient">
 	<slot />
-	<div class="absolute bottom-2 right-2">
-		<ResizeIcon />
-	</div>
 </div>
+<div class="absolute bottom-[0.3rem] right-[0.3rem]">
+	<ResizeIcon />
+</div>
+{#if $launcherVerion.isSuccess}
+	<p class="absolute bottom-0 left-0 p-1 text-xs opacity-30">
+		{$launcherVerion.data}
+	</p>
+{/if}

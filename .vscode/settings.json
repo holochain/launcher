@@ -22,8 +22,8 @@
   "prettier.requireConfig": true,
   "prettier.documentSelectors": ["**/*.svelte"],
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit",
-},
+    "source.fixAll.eslint": "explicit",
+  },
   "eslint.validate": ["javascript", "typescript", "svelte"],
   "cSpell.words": [
     "APP_STORE",

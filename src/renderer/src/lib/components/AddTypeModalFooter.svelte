@@ -8,7 +8,7 @@
 	export let onCancel: () => void;
 </script>
 
-<footer class="modal-footer flex justify-between gap-2">
+<footer class="flex justify-between gap-2">
 	<Button
 		props={{
 			type: 'reset',

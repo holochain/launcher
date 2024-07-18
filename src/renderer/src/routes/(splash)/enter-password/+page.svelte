@@ -28,7 +28,8 @@
 					showModalError({
 						modalStore,
 						errorTitle: $i18n.t('setupError'),
-						errorMessage: error.message
+						errorMessage: $i18n.t(error.message || 'unknownError'),
+						response: () => goto('/')
 					})
 			}
 		);
@@ -42,7 +43,7 @@
 						showModalError({
 							modalStore,
 							errorTitle: $i18n.t('factoryResetError'),
-							errorMessage: error.message
+							errorMessage: $i18n.t(error.message || 'unknownError')
 						})
 				});
 			}

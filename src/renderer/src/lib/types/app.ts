@@ -8,10 +8,13 @@ type BaseAppData = {
 	description: string;
 };
 
-export type AppWithHrlTarget = BaseAppData & {
-	id: ActionHash;
-	apphubHrlTarget: AnyDhtHash;
+export type AppWithIcon = BaseAppData & {
 	icon?: Uint8Array;
+	id: Uint8Array;
+};
+
+export type AppWithHrlTarget = AppWithIcon & {
+	apphubHrlTarget: AnyDhtHash;
 };
 
 export type AppWithAction = BaseAppData & {

@@ -28,6 +28,7 @@
 		{@const imageUrl = createImageUrl(app.icon)}
 
 		<AppDetailsPanel
+			id={app.id}
 			{imageUrl}
 			title={app.title}
 			buttons={[$i18n.t('releases'), $i18n.t('settings')]}

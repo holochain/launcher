@@ -9,3 +9,5 @@ rust-utils/
 /.vscode
 *.rs
 out-tests
+flake.lock
+flake.nix

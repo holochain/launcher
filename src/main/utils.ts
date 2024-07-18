@@ -1,3 +1,4 @@
+import type { AgentPubKeyB64 } from '@holochain/client';
 import {
   type AppInfo,
   type CallZomeRequest,
@@ -34,7 +35,7 @@ import {
   type WindowInfoRecord,
 } from '$shared/types';
 
-import { DEFAULT_HOLOCHAIN_VERSION } from './binaries';
+import { BREAKING_DEFAULT_HOLOCHAIN_VERSION } from './binaries';
 import type { LauncherFileSystem } from './filesystem';
 import type { HolochainManager } from './holochainManager';
 import type { LauncherEmitter } from './launcherEmitter';
@@ -112,7 +113,7 @@ export const validateWithZod = <T>({
 export const isDevhubInstalled = (
   HOLOCHAIN_MANAGERS: Record<string, HolochainManager>,
 ): boolean => {
-  return HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION].installedApps.some(
+  return HOLOCHAIN_MANAGERS[BREAKING_DEFAULT_HOLOCHAIN_VERSION].installedApps.some(
     (app) => app.installed_app_id === DEVHUB_APP_ID,
   );
 };
@@ -213,7 +214,11 @@ export async function signZomeCall(
   return zomeCallSigned;
 }
 
-export function createObservable<K extends EventKeys>(emitter: LauncherEmitter, eventName: K) {
+export function createObservableGeneric<K extends EventKeys>(
+  emitter: LauncherEmitter,
+  eventName: K,
+  withOff: boolean = true,
+) {
   return observable<EventMap[K]>((emit) => {
     const handler = (data: EventMap[K]) => {
       emit.next(data);
@@ -221,7 +226,10 @@ export function createObservable<K extends EventKeys>(emitter: LauncherEmitter, 
 
     emitter.on(eventName, handler);
 
-    return () => emitter.off(eventName, handler);
+    if (withOff) {
+      return () => emitter.off(eventName, handler);
+    }
+    return;
   });
 }
 
@@ -248,6 +256,7 @@ export const installApp = async ({
   distributionInfo,
   networkSeed,
   icon,
+  agentPubKey,
 }: {
   holochainManager: HolochainManager;
   happAndUiBytes: rustUtils.HappAndUiBytes;
@@ -255,6 +264,7 @@ export const installApp = async ({
   distributionInfo: DistributionInfoV1;
   networkSeed: string;
   icon?: Uint8Array;
+  agentPubKey?: AgentPubKeyB64;
 }): Promise<void> => {
   if (happAndUiBytes.uiBytes) {
     await holochainManager.installWebHappFromBytes({
@@ -263,6 +273,7 @@ export const installApp = async ({
       distributionInfo,
       networkSeed,
       icon,
+      agentPubKey,
     });
   } else {
     await holochainManager.installHeadlessHappFromBytes({
@@ -270,6 +281,7 @@ export const installApp = async ({
       appId,
       distributionInfo,
       networkSeed,
+      agentPubKey,
     });
   }
 };
@@ -304,25 +316,36 @@ export async function factoryResetUtility({
     throw new Error('LauncherFilesystem is undefined. Aborting Factory Reset.');
   }
 
+  console.log('Closing happ windows...');
+
   // 1. Close all windows to prevent chromium related files to be accessed by them
   Object.values(windowInfoMap).forEach((info) => {
-    info.windowObject.close();
+    info.windowObject?.close();
   });
+
+  console.log('Closing priviledged windows...');
+
   if (privilegedLauncherWindows) {
     Object.values(privilegedLauncherWindows).forEach((window) => {
-      window.close();
+      window?.close();
     });
   }
+
+  console.log('Killing holochain...');
 
   // 2. Stop holochain and lair to prevent files being accessed by them
   Object.values(holochainManagers).forEach((manager) => {
     manager.processHandle?.kill();
   });
 
+  console.log('Killing lair...');
+
   lairHandle?.kill();
 
+  console.log('factory reset...');
+
   // 3. Remove all data
-  launcherFileSystem.factoryReset();
+  await launcherFileSystem.factoryReset();
 
   // 4. Relaunch
   const options: Electron.RelaunchOptions = {
@@ -334,7 +357,11 @@ export async function factoryResetUtility({
     options.args!.unshift('--appimage-extract-and-run');
     options.execPath = process.env.APPIMAGE;
   }
+  console.log('setting relaunch options...');
+
   app.relaunch(options);
+  console.log('quit...');
+
   app.quit();
 }
 

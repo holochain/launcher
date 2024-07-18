@@ -14,7 +14,7 @@ import type {
 } from '../devhub/types';
 import { MereMemoryZomeClient } from '../mere-memory/zomes/mere-memory-zome-client';
 import { PortalZomeClient } from '../portal/zomes/portal-zome-client';
-import type { UpdateEntityInput } from '../types';
+import type { AppStoreAllowList, AppStoreDenyList, UpdateEntityInput } from '../types';
 import { bundleToDeterministicBytes } from '../utils';
 import type {
   AppEntry,
@@ -90,37 +90,48 @@ export class AppstoreAppClient {
   }
 
   /**
-   * Checks whether a new update is available for a given AppVersionEntry action hash
+   * Checks whether a new update is available for a given AppVersionEntry id
    *
    * An update is considered valid if
    * - the happ sha256 is identical to the happ sha256 of the existing AppVersionEntry
    * - the ui sha256 is different from the ui sha256 of the existing AppVersionEntry
    * - the AppVersionEntry is published later than the current AppVersionEntry
    *
-   * @param appVersionActionHash
+   * @param appVersionId
+   * @param allowlist mandatory allowlist by which UI updates are filtered
    * @returns
    */
   async checkForUiUpdate(
-    appVersionActionHash: ActionHash,
+    appVersionId: ActionHash,
+    allowlist: AppStoreAllowList,
+    denyList?: AppStoreDenyList,
   ): Promise<Entity<AppVersionEntry> | undefined> {
     // logic
     // we need to check that there is a new version available and that the happ bundle hash is the same but the ui hash is different
-    const appVersionEntity = await this.appstoreZomeClient.getAppVersion(appVersionActionHash);
+    const appVersionEntity = await this.appstoreZomeClient.getAppVersion(appVersionId);
+
+    if (denyList && denyList.includes(encodeHashToBase64(appVersionEntity.content.for_app))) {
+      return undefined;
+    }
+
     const appVersions = await this.appstoreZomeClient.getAppVersionsForApp(
       appVersionEntity.content.for_app,
     );
-    // Check for newer versions
+
+    const isUpdateCandidate = (entity: Entity<AppVersionEntry>) =>
+      entity.content.published_at > appVersionEntity.content.published_at &&
+      entity.content.bundle_hashes.happ_hash === appVersionEntity.content.bundle_hashes.happ_hash &&
+      entity.content.bundle_hashes.ui_hash !== appVersionEntity.content.bundle_hashes.ui_hash;
+
+    const appEntryList = allowlist[encodeHashToBase64(appVersionEntity.content.for_app)];
+    const isAllowedVersion = (entity: Entity<AppVersionEntry>) =>
+      !appEntryList ||
+      appEntryList.appVersions === 'all' ||
+      appEntryList.appVersions.includes(encodeHashToBase64(entity.action));
+
     const updateCandidates = appVersions
-      .filter((entity) => entity.content.published_at > appVersionEntity.content.published_at)
-      .filter(
-        (entity) =>
-          entity.content.bundle_hashes.happ_hash ===
-          appVersionEntity.content.bundle_hashes.happ_hash,
-      )
-      .filter(
-        (entity) =>
-          entity.content.bundle_hashes.ui_hash !== appVersionEntity.content.bundle_hashes.ui_hash,
-      )
+      .filter(isUpdateCandidate)
+      .filter(isAllowedVersion)
       .sort((a, b) => b.content.published_at - a.content.published_at);
 
     if (updateCandidates.length > 0) return updateCandidates[0];

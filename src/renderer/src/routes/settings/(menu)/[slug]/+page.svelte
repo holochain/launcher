@@ -1,32 +1,34 @@
 <script lang="ts">
 	import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
-	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
+	import { getModalStore, getToastStore, SlideToggle } from '@skeletonlabs/skeleton';
 	import type { AppVersionEntry } from 'appstore-tools';
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { AppDetailsPanel, Button } from '$components';
-	import { MODAL_DEVHUB_INSTALLATION_CONFIRMATION } from '$const';
+	import { KEY_MANAGEMENT } from '$const';
 	import {
 		capitalizeFirstLetter,
 		createImageUrl,
-		createModalParams,
 		filterHash,
 		getAppStoreDistributionHash,
 		getCellId,
 		getVersionByActionHash,
+		isDev,
 		showModalError,
 		validateApp
 	} from '$helpers';
 	import { Download } from '$icons';
 	import { createAppQueries } from '$queries';
-	import { createDevHubClient, i18n, trpc } from '$services';
+	import { i18n, trpc } from '$services';
 	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_SCREEN } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
 	import { type UpdateUiFromHash } from '$shared/types';
 
 	import { DashedSection } from '../../components';
 	import AppSettings from './components/AppSettings.svelte';
+	import KeyManagement from './components/KeyManagement.svelte';
+	import SystemSettings from './components/SystemSettings.svelte';
 
 	const client = trpc();
 
@@ -44,8 +46,8 @@
 
 	const installedApps = client.getInstalledApps.createQuery(true);
 	const uninstallApp = client.uninstallApp.createMutation();
-	const isDevhubInstalled = client.isDevhubInstalled.createQuery();
-	const installDevhub = client.installDevhub.createMutation();
+	const toggleApp = client.toggleApp.createMutation();
+
 	const updateUiFromHash = client.updateUiFromHash.createMutation();
 	const storeUiBytes = client.storeUiBytes.createMutation();
 
@@ -61,11 +63,12 @@
 	$: uiUpdates = checkForAppUiUpdatesQuery(
 		$installedApps?.data
 			?.map((app) => getAppStoreDistributionHash(app.distributionInfo))
-			.filter(filterHash) ?? []
+			.filter(filterHash) ?? [],
+		isDev()
 	);
 	$: update =
 		selectedApp && uiUpdates && selectedAppDistributionInfoData
-			? $uiUpdates.data?.[selectedAppDistributionInfoData.appVersionActionHash]
+			? $uiUpdates?.data?.[selectedAppDistributionInfoData.appVersionActionHash]
 			: undefined;
 
 	$: appVersionsDetailsQuery = selectedAppDistributionInfoData?.appEntryActionHash
@@ -147,38 +150,6 @@
 		});
 	};
 
-	const handleDevhubInstallSuccess = async ({
-		appPort,
-		authenticationToken
-	}: {
-		appPort?: number;
-		authenticationToken: number[];
-	}) => {
-		if (!appPort) {
-			handleError({
-				message: $i18n.t('noAppPortError'),
-				title: $i18n.t('appError')
-			});
-			return;
-		}
-		await createDevHubClient(appPort, authenticationToken);
-		$isDevhubInstalled.refetch();
-		modalStore.close();
-	};
-
-	const showModal = () => {
-		const modal = createModalParams(MODAL_DEVHUB_INSTALLATION_CONFIRMATION, (shouldInstall) => {
-			if (shouldInstall) {
-				$installDevhub.mutate(undefined, {
-					onSuccess: handleDevhubInstallSuccess,
-					onError: handleError
-				});
-			}
-		});
-
-		modalStore.trigger(modal);
-	};
-
 	$: icon = selectedApp?.icon ? new Uint8Array(selectedApp.icon) : undefined;
 </script>
 
@@ -195,7 +166,32 @@
 			? [$i18n.t('details'), capitalizeFirstLetter($i18n.t('settings'))]
 			: [capitalizeFirstLetter($i18n.t('settings'))]}
 		bind:selectedIndex
-	/>
+	>
+		<div slot="topRight">
+			{#if !selectedApp.isHeadless}
+				{@const isDisabled =
+					selectedApp.appInfo.status !== 'running' && 'disabled' in selectedApp.appInfo.status}
+				<div class="flex h-full items-center justify-center">
+					<SlideToggle
+						on:click={() => {
+							if (validateApp(selectedApp)) {
+								$toggleApp.mutate({
+									...selectedApp,
+									enable: isDisabled
+								});
+							}
+						}}
+						checked={!isDisabled}
+						active="bg-success-500"
+						name="enabled-disabled-app-slider"
+						size="lg"
+					>
+						{isDisabled ? $i18n.t('disabled') : $i18n.t('enabled')}
+					</SlideToggle>
+				</div>
+			{/if}
+		</div>
+	</AppDetailsPanel>
 	{#if update && selectedApp.distributionInfo.type === DISTRIBUTION_TYPE_APPSTORE}
 		<DashedSection borderColor="border-warning-500/30">
 			<div class="flex w-full items-center justify-between">
@@ -252,38 +248,31 @@
 						goto(`/${SETTINGS_SCREEN}`);
 					}
 				})}
-			update={!!update}
+			update={Boolean(update)}
 		>
-			{#each Object.entries(selectedApp.appInfo.cell_info) as [roleName, cellId]}
+			{@const cellIds = Object.entries(selectedApp.appInfo.cell_info)}
+			{#each cellIds as [roleName, cellId], index}
 				{@const cellIdResult = getCellId(cellId[0])}
 				{#if cellIdResult}
-					<p class="break-all">
-						{roleName}: {encodeHashToBase64(cellIdResult[0])}
-						{'pubkey'}: {encodeHashToBase64(cellIdResult[1])}
-					</p>
+					<div class="mb-2 text-sm">
+						<p class="break-all">
+							<span class="font-semibold">{roleName}:</span>
+							{encodeHashToBase64(cellIdResult[0])}
+						</p>
+						<p class="break-all">
+							<span class="font-semibold">pubkey:</span>
+							{encodeHashToBase64(cellIdResult[1])}
+						</p>
+					</div>
+					{#if index !== cellIds.length - 1}
+						<div class="!my-2 h-px w-full bg-tertiary-800"></div>
+					{/if}
 				{/if}
 			{/each}
 		</AppSettings>
 	{/if}
+{:else if $page.params.slug === KEY_MANAGEMENT}
+	<KeyManagement />
 {:else}
-	<DashedSection title={$i18n.t('developerTools')}>
-		{#if $isDevhubInstalled.data}
-			<p>{$i18n.t('devhubInstalled')}</p>
-		{:else}
-			<Button
-				props={{
-					isLoading: $installDevhub.isPending,
-					onClick: showModal,
-					class: 'btn-install'
-				}}
-			>
-				<div class="mr-2"><Download /></div>
-				{$i18n.t('install')}
-			</Button>
-			<div class="text-sm">
-				<span class="font-normal">{$i18n.t('developerToolsAllow')}</span>
-				<span class="font-semibold">{$i18n.t('uploadAndPublish')}</span>
-			</div>
-		{/if}
-	</DashedSection>
+	<SystemSettings />
 {/if}

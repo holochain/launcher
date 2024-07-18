@@ -1,11 +1,14 @@
+import { platform } from '@electron-toolkit/utils';
 import type {
   ActionHashB64,
+  AgentPubKey,
+  AgentPubKeyB64,
   AppAuthenticationToken,
   AppInfo,
   InstalledAppId,
   MembraneProof,
 } from '@holochain/client';
-import { AdminWebsocket } from '@holochain/client';
+import { AdminWebsocket, decodeHashFromBase64 } from '@holochain/client';
 import AdmZip from 'adm-zip';
 import * as childProcess from 'child_process';
 import crypto from 'crypto';
@@ -27,6 +30,7 @@ import {
   APP_INSTALLED,
   HOLOCHAIN_ERROR,
   HOLOCHAIN_LOG,
+  LAUNCHER_ERROR,
   REFETCH_DATA_IN_ALL_WINDOWS,
 } from '$shared/types';
 
@@ -43,7 +47,7 @@ export type AppPort = number;
 export type UiHashes = Record<string, string>;
 
 const DEFAULT_BOOTSTRAP_SERVER = 'https://bootstrap.holo.host';
-const DEFAULT_SIGNALING_SERVER = 'wss://signal.holo.host';
+const DEFAULT_SIGNALING_SERVER = 'wss://sbd-0.main.infra.holo.host';
 const DEFAULT_RUST_LOG =
   'warn,' +
   // this thrashes on startup
@@ -226,6 +230,7 @@ export class HolochainManager {
       env: {
         RUST_LOG: rustLog || DEFAULT_RUST_LOG,
         WASM_LOG: wasmLog || DEFAULT_WASM_LOG,
+        NO_COLOR: '1',
       },
     });
     conductorHandle.stdin.write(password);
@@ -246,49 +251,68 @@ export class HolochainManager {
     });
 
     return new Promise((resolve, reject) => {
-      conductorHandle.stdout.pipe(split()).on('data', async (line: string) => {
-        if (line.includes('FATAL PANIC PanicInfo')) {
-          reject(
+      const handleError = (error: unknown) => {
+        console.error(error);
+        conductorHandle.kill();
+        reject(error);
+      };
+
+      conductorHandle.stderr.pipe(split()).on('data', async (line: string) => {
+        if (line.includes('holochain had a problem and crashed')) {
+          handleError(
             `Holochain version ${JSON.stringify(
               version,
             )} failed to start up and crashed. Check the logs for details.`,
           );
         }
-        if (line.includes('Conductor ready.')) {
-          const adminWebsocket = await AdminWebsocket.connect({
-            url: new URL(`ws://localhost:${adminPort}`),
-            wsClientOptions: {
-              origin: 'holochain-launcher',
-            },
-          });
-          console.log('Connected to admin websocket.');
-          const installedApps = await adminWebsocket.listApps({});
-          const appInterfaces = await adminWebsocket.listAppInterfaces();
-          console.log('Got appInterfaces: ', appInterfaces);
-
-          const attachAppInterfaceResponse = await adminWebsocket.attachAppInterface({
-            allowed_origins: app.isPackaged
-              ? 'app://-,webhapp://webhappwindow,holochain-launcher'
-              : 'http://localhost:5173,webhapp://webhappwindow,holochain-launcher',
-          });
-          console.log('Attached app interface port: ', attachAppInterfaceResponse);
-          const appPort = attachAppInterfaceResponse.port;
-
-          resolve([
-            new HolochainManager(
-              conductorHandle,
-              launcherEmitter,
-              launcherFileSystem,
-              integrityChecker,
-              adminPort,
-              appPort,
-              adminWebsocket,
-              installedApps,
+      });
+      conductorHandle.stdout.pipe(split()).on('data', async (line: string) => {
+        if (line.includes('could not be parsed, because it is not valid YAML')) {
+          handleError(
+            `Holochain version ${JSON.stringify(
               version,
+            )} failed to start up. Check the logs for details.`,
+          );
+        }
+        if (line.includes('Conductor ready.')) {
+          try {
+            const adminWebsocket = await AdminWebsocket.connect({
+              url: new URL(`ws://localhost:${adminPort}`),
+              wsClientOptions: {
+                origin: 'holochain-launcher',
+              },
+            });
+            console.log('Connected to admin websocket.');
+            const installedApps = await adminWebsocket.listApps({});
+            const appInterfaces = await adminWebsocket.listAppInterfaces();
+            console.log('Got appInterfaces: ', appInterfaces);
+
+            const attachAppInterfaceResponse = await adminWebsocket.attachAppInterface({
+              allowed_origins: app.isPackaged
+                ? 'app://-,webhapp://webhappwindow,holochain-launcher'
+                : 'http://localhost:5173,webhapp://webhappwindow,holochain-launcher',
+            });
+            console.log('Attached app interface port: ', attachAppInterfaceResponse);
+            const appPort = attachAppInterfaceResponse.port;
+
+            resolve([
+              new HolochainManager(
+                conductorHandle,
+                launcherEmitter,
+                launcherFileSystem,
+                integrityChecker,
+                adminPort,
+                appPort,
+                adminWebsocket,
+                installedApps,
+                version,
+                holochainDataRoot,
+              ),
               holochainDataRoot,
-            ),
-            holochainDataRoot,
-          ]);
+            ]);
+          } catch (error) {
+            handleError(error);
+          }
         }
       });
     });
@@ -314,6 +338,7 @@ export class HolochainManager {
     networkSeed,
     membrane_proofs,
     icon,
+    agentPubKey,
   }: {
     happAndUiBytes: HappAndUiBytes;
     appId: string;
@@ -321,6 +346,7 @@ export class HolochainManager {
     networkSeed?: string;
     membrane_proofs?: { [key: string]: MembraneProof };
     icon?: Uint8Array;
+    agentPubKey?: AgentPubKeyB64;
   }) {
     if (!happAndUiBytes.uiBytes) throw new Error('UI bytes undefined.');
 
@@ -328,6 +354,7 @@ export class HolochainManager {
     const uiZipSha256 = this.storeUiIfNecessary(happAndUiBytes.uiBytes, icon);
 
     await this.installWebhappFromHashes({
+      agentPubKey,
       happSha256,
       uiZipSha256,
       appId,
@@ -343,12 +370,14 @@ export class HolochainManager {
     distributionInfo,
     networkSeed,
     membrane_proofs,
+    agentPubKey,
   }: {
     happBytes: Array<number>;
     appId: string;
     distributionInfo: DistributionInfoV1;
     networkSeed?: string;
     membrane_proofs?: { [key: string]: MembraneProof };
+    agentPubKey?: AgentPubKeyB64;
   }) {
     // write [sha256].happ to happs directory
     const happHasher = crypto.createHash('sha256');
@@ -356,14 +385,41 @@ export class HolochainManager {
     const happFilePath = path.join(this.fs.happsDir(this.holochainDataRoot), `${happSha256}.happ`);
     writeFile(happFilePath, Buffer.from(happBytes));
 
-    const pubKey = await this.adminWebsocket.generateAgentPubKey();
-    const appInfo = await this.adminWebsocket.installApp({
-      agent_key: pubKey,
-      installed_app_id: appId,
-      membrane_proofs: membrane_proofs ? membrane_proofs : {},
-      path: happFilePath,
-      network_seed: networkSeed,
-    });
+    let pubKey: AgentPubKey;
+
+    if (agentPubKey) {
+      pubKey = decodeHashFromBase64(agentPubKey);
+    } else {
+      pubKey = await this.adminWebsocket.generateAgentPubKey();
+    }
+
+    let appInfo: AppInfo | undefined;
+    try {
+      appInfo = await this.adminWebsocket.installApp({
+        agent_key: pubKey,
+        installed_app_id: appId,
+        membrane_proofs: membrane_proofs ? membrane_proofs : {},
+        path: happFilePath,
+        network_seed: networkSeed,
+      });
+    } catch (e) {
+      // If this fails, e.g. due to a timeout, the app may actually still be installed in the conductor
+      // and should get removed again to ensure that there is no app installed without associated meta-data
+      try {
+        await this.adminWebsocket.uninstallApp({ installed_app_id: appId });
+        this.launcherEmitter.emit(
+          LAUNCHER_ERROR,
+          `Uninstalled app after failed installation. Installation error: ${e}`,
+        );
+      } catch (err) {
+        this.launcherEmitter.emit(
+          LAUNCHER_ERROR,
+          `Failed to uninstall app after failed installation: ${err}`,
+        );
+        console.warn('Failed to uninstall app after failed installation: ', err);
+      }
+      return Promise.reject(`Failed to install app: ${e}`);
+    }
 
     // store app metadata to installed app directory
     const metaData: AppMetadata<AppMetadataV1> = {
@@ -406,6 +462,7 @@ export class HolochainManager {
     distributionInfo,
     networkSeed,
     membrane_proofs,
+    agentPubKey,
   }: {
     happSha256: string;
     uiZipSha256: string;
@@ -413,6 +470,7 @@ export class HolochainManager {
     distributionInfo: DistributionInfoV1;
     networkSeed?: string;
     membrane_proofs?: { [key: string]: MembraneProof };
+    agentPubKey?: AgentPubKeyB64;
   }): Promise<void> {
     if (!this.isUiAvailable(uiZipSha256)) {
       throw new Error('UI not found for this hash. UI needs to be stored from bytes first.');
@@ -423,15 +481,41 @@ export class HolochainManager {
       );
     }
 
-    // install happ into conductor
-    const pubKey = await this.adminWebsocket.generateAgentPubKey();
-    const appInfo = await this.adminWebsocket.installApp({
-      agent_key: pubKey,
-      installed_app_id: appId,
-      membrane_proofs: membrane_proofs ? membrane_proofs : {},
-      path: this.happFilePath(happSha256),
-      network_seed: networkSeed,
-    });
+    let pubKey: AgentPubKey;
+
+    if (agentPubKey) {
+      pubKey = decodeHashFromBase64(agentPubKey);
+    } else {
+      pubKey = await this.adminWebsocket.generateAgentPubKey();
+    }
+
+    let appInfo: AppInfo | undefined;
+    try {
+      appInfo = await this.adminWebsocket.installApp({
+        agent_key: pubKey,
+        installed_app_id: appId,
+        membrane_proofs: membrane_proofs ? membrane_proofs : {},
+        path: this.happFilePath(happSha256),
+        network_seed: networkSeed,
+      });
+    } catch (e) {
+      // If this fails, e.g. due to a timeout, the app may actually still be installed in the conductor
+      // and should get removed again to ensure that there is no app installed without associated meta-data
+      try {
+        await this.adminWebsocket.uninstallApp({ installed_app_id: appId });
+        this.launcherEmitter.emit(
+          LAUNCHER_ERROR,
+          `Uninstalled app after failed installation. Installation error: ${e}`,
+        );
+      } catch (err) {
+        this.launcherEmitter.emit(
+          LAUNCHER_ERROR,
+          `Failed to uninstall app after failed installation: ${err}`,
+        );
+        console.warn('Failed to uninstall app after failed installation: ', err);
+      }
+      return Promise.reject(`Failed to install app: ${e}`);
+    }
 
     // store app metadata to installed app directory
     const metaData: AppMetadata<AppMetadataV1> = {
@@ -568,7 +652,10 @@ export class HolochainManager {
     const zip = new AdmZip(Buffer.from(uiBytes));
     zip.getEntries().forEach((entry) => {
       const hash = crypto.createHash('sha256').update(entry.getData()).digest('hex');
-      hashes[entry.entryName] = hash;
+      const relativeFilePath = platform.isWindows
+        ? entry.entryName.replaceAll('/', '\\')
+        : entry.entryName;
+      hashes[relativeFilePath] = hash;
     });
 
     this.integrityChecker.storeToSignedJSON(path.join(uiDir, 'hashes.json'), hashes);
@@ -650,6 +737,20 @@ export class HolochainManager {
     // at a later time
   }
 
+  async enableApp(appId: string) {
+    await this.adminWebsocket.enableApp({ installed_app_id: appId });
+    const installedApps = await this.adminWebsocket.listApps({});
+    this.installedApps = installedApps;
+    this.launcherEmitter.emit(REFETCH_DATA_IN_ALL_WINDOWS, `enableApp-${appId}`);
+  }
+
+  async disableApp(appId: string) {
+    await this.adminWebsocket.disableApp({ installed_app_id: appId });
+    const installedApps = await this.adminWebsocket.listApps({});
+    this.installedApps = installedApps;
+    this.launcherEmitter.emit(REFETCH_DATA_IN_ALL_WINDOWS, `disableApp-${appId}`);
+  }
+
   /**
    * Checks whether a UI with this hash is already stored on disk. If yes, it does not need
    * to be fetched from devhub
@@ -719,13 +820,16 @@ export class HolochainManager {
   }
 
   async getAppToken(appId: InstalledAppId): Promise<AppAuthenticationToken> {
-    const token = this.appTokens[appId];
+    const appTokens = this.appTokens;
+    const token = appTokens[appId];
     if (token) return token;
     const response = await this.adminWebsocket.issueAppAuthenticationToken({
       installed_app_id: appId,
       single_use: false,
       expiry_seconds: 99999999,
     });
+    appTokens[appId] = response.token;
+    this.appTokens = appTokens;
     return response.token;
   }
 }

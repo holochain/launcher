@@ -1,17 +1,16 @@
 import { optimizer } from '@electron-toolkit/utils';
 import type { AppClient, CallZomeRequest, InstalledAppId } from '@holochain/client';
 import { AppWebsocket } from '@holochain/client';
+import { autoUpdater } from '@matthme/electron-updater';
 import { decode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
-import { observable } from '@trpc/server/observable';
 import { AppstoreAppClient, DevhubAppClient, webhappToHappAndUi } from 'appstore-tools';
 import { type ChildProcessWithoutNullStreams, spawnSync } from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
-import { app, dialog, ipcMain, protocol } from 'electron';
+import { app, dialog, ipcMain, Menu, protocol } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { createIPCHandler } from 'electron-trpc/main';
-import { autoUpdater } from 'electron-updater';
 import fs from 'fs';
 import type { LauncherLairClient } from 'hc-launcher-rust-utils';
 import * as rustUtils from 'hc-launcher-rust-utils';
@@ -31,7 +30,6 @@ import {
 import { getErrorMessage } from '$shared/helpers';
 import type {
   DistributionInfoV1,
-  EventMap,
   HolochainDataRoot,
   HolochainPartition,
   Screen,
@@ -42,6 +40,7 @@ import {
   BytesSchema,
   CHECK_INITIALIZED_KEYSTORE_ERROR,
   ExtendedAppInfoSchema,
+  HIDE_SETTINGS_WINDOW,
   IncludeHeadlessSchema,
   InitializeAppPortsSchema,
   InstallDefaultAppSchema,
@@ -60,7 +59,7 @@ import {
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '$shared/types';
 
-import { checkHolochainLairBinariesExist, DEFAULT_HOLOCHAIN_VERSION } from './binaries';
+import { BREAKING_DEFAULT_HOLOCHAIN_VERSION, checkHolochainLairBinariesExist } from './binaries';
 import { validateArgs } from './cli';
 import { DEFAULT_APPS_TO_INSTALL, DEVHUB_INSTALL } from './const';
 import { LauncherFileSystem } from './filesystem';
@@ -70,10 +69,11 @@ import { IntegrityChecker } from './integrityChecker';
 import { initializeLairKeystore, launchLairKeystore } from './lairKeystore';
 import { LauncherEmitter } from './launcherEmitter';
 import { setupLogs } from './logs';
+import { launcherMenu } from './menu';
 import { DEFAULT_APPS_DIRECTORY } from './paths';
 import {
   breakingVersion,
-  createObservable,
+  createObservableGeneric,
   factoryResetUtility,
   getInstalledAppsInfo,
   handleInstallError,
@@ -160,6 +160,10 @@ contextMenu({
       label: 'Reload',
       click: () => (browserWindow as BrowserWindow).reload(),
     },
+    {
+      label: 'Quit',
+      click: () => app.quit(),
+    },
   ],
 });
 
@@ -245,6 +249,8 @@ const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeReques
   return signZomeCall(DEFAULT_LAIR_CLIENT, request);
 };
 
+Menu.setApplicationMenu(launcherMenu(LAUNCHER_FILE_SYSTEM));
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -256,7 +262,7 @@ app.whenReady().then(async () => {
 
   console.log('BEING RUN IN __dirnmane: ', __dirname);
 
-  PRIVILEDGED_LAUNCHER_WINDOWS = setupAppWindows();
+  PRIVILEDGED_LAUNCHER_WINDOWS = setupAppWindows(LAUNCHER_EMITTER);
 
   createIPCHandler({ router, windows: Object.values(PRIVILEDGED_LAUNCHER_WINDOWS) });
 
@@ -345,10 +351,10 @@ async function handleSetupAndLaunch(password: string) {
     }
   }
 
-  await handleLaunch(password);
+  await handleLaunch(password, false);
 }
 
-async function handleLaunch(password: string) {
+async function handleLaunch(password: string, isDirectLaunch = true) {
   INTEGRITY_CHECKER = new IntegrityChecker(password);
   LAUNCHER_FILE_SYSTEM.setIntegrityChecker(INTEGRITY_CHECKER);
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingLairKeystore');
@@ -359,6 +365,10 @@ async function handleLaunch(password: string) {
     const externalLairClient = await rustUtils.LauncherLairClient.connect(lairUrl, password);
     CUSTOM_LAIR_CLIENTS[VALIDATED_CLI_ARGS.holochainVersion.adminPort] = externalLairClient;
   } else {
+    if (LAIR_HANDLE) {
+      LAIR_HANDLE.kill();
+      LAIR_HANDLE = undefined;
+    }
     const [lairHandle, lairUrl2] = await launchLairKeystore(
       VALIDATED_CLI_ARGS.lairBinaryPath,
       LAUNCHER_FILE_SYSTEM.keystoreDir,
@@ -367,7 +377,6 @@ async function handleLaunch(password: string) {
     );
 
     lairUrl = lairUrl2;
-
     LAIR_HANDLE = lairHandle;
     DEFAULT_LAIR_CLIENT = await rustUtils.LauncherLairClient.connect(lairUrl, password);
   }
@@ -417,7 +426,9 @@ async function handleLaunch(password: string) {
     ),
   );
 
-  PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE, MIN_HEIGH, true);
+  if (isDirectLaunch) {
+    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE, MIN_HEIGH, true);
+  }
   loadOrServe(PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN], { screen: SETTINGS_SCREEN });
   return;
 }
@@ -525,6 +536,17 @@ const router = t.router({
     const holochainManager = getHolochainManager(holochainDataRoot.name);
     await holochainManager.uninstallApp(appInfo.installed_app_id);
   }),
+  toggleApp: t.procedure
+    .input(ExtendedAppInfoSchema.extend({ enable: z.boolean() }))
+    .mutation(async (opts) => {
+      const { appInfo, holochainDataRoot, enable } = opts.input;
+      const holochainManager = getHolochainManager(holochainDataRoot.name);
+      if (enable) {
+        await holochainManager.enableApp(appInfo.installed_app_id);
+      } else {
+        await holochainManager.disableApp(appInfo.installed_app_id);
+      }
+    }),
   fetchWebhapp: t.procedure.input(AppVersionEntrySchemaWithIcon).mutation(async (opts) => {
     const { app_version, icon } = opts.input;
     const appVersionEntry = {
@@ -585,7 +607,7 @@ const router = t.router({
   }),
   installHappFromPath: t.procedure.input(InstallHappFromPathSchema).mutation(async (opts) => {
     try {
-      const { filePath, appId, networkSeed } = opts.input;
+      const { filePath, appId, networkSeed, agentPubKey } = opts.input;
       const happAndUiBytes = await rustUtils.readAndDecodeHappOrWebhapp(filePath);
       const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
       const distributionInfo: DistributionInfoV1 = { type: 'filesystem' };
@@ -595,6 +617,7 @@ const router = t.router({
         appId,
         distributionInfo,
         networkSeed,
+        agentPubKey,
       });
     } catch (error) {
       handleInstallError(error);
@@ -620,7 +643,7 @@ const router = t.router({
   installWebhappFromBytes: t.procedure
     .input(InstallHappOrWebhappFromBytesSchema)
     .mutation(async (opts) => {
-      const { bytes, appId, distributionInfo, networkSeed, icon } = opts.input;
+      const { bytes, appId, distributionInfo, networkSeed, icon, agentPubKey } = opts.input;
       const happAndUiBytes = await rustUtils.decodeHappOrWebhapp(Array.from(bytes));
       const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
       await installApp({
@@ -630,11 +653,12 @@ const router = t.router({
         distributionInfo,
         networkSeed,
         icon,
+        agentPubKey,
       });
     }),
   installDefaultApp: t.procedure.input(InstallDefaultAppSchema).mutation(async (opts) => {
     try {
-      const { name, appId, networkSeed } = opts.input;
+      const { name, appId, networkSeed, agentPubKey } = opts.input;
       const filePath = path.join(DEFAULT_APPS_DIRECTORY, name);
       const happAndUiBytes = await rustUtils.readAndDecodeHappOrWebhapp(filePath);
       const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);
@@ -643,7 +667,8 @@ const router = t.router({
         happAndUiBytes,
         appId,
         distributionInfo: { type: DISTRIBUTION_TYPE_DEFAULT_APP },
-        networkSeed: networkSeed,
+        networkSeed,
+        agentPubKey,
       });
     } catch (error) {
       handleInstallError(error);
@@ -681,9 +706,9 @@ const router = t.router({
     return !isInitializedValidated;
   }),
   defaultHolochainVersion: t.procedure.query(
-    () => HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION].version,
+    () => HOLOCHAIN_MANAGERS[BREAKING_DEFAULT_HOLOCHAIN_VERSION].version,
   ),
-  declaredHolochainVersion: t.procedure.query(() => DEFAULT_HOLOCHAIN_VERSION),
+  getLauncherVersion: t.procedure.query(() => app.getVersion()),
   isDevhubInstalled: t.procedure.query(() => isDevhubInstalled(HOLOCHAIN_MANAGERS)),
   getInstalledApps: t.procedure.input(IncludeHeadlessSchema).query((opts) => {
     const { input: includeHeadless } = opts;
@@ -734,7 +759,7 @@ const router = t.router({
     });
   }),
   installDevhub: t.procedure.mutation(async () => {
-    const defaultHolochainManager = HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_VERSION];
+    const defaultHolochainManager = HOLOCHAIN_MANAGERS[BREAKING_DEFAULT_HOLOCHAIN_VERSION];
     await processHeadlessAppInstallation({
       holochainManager: defaultHolochainManager,
       defaultAppsNetworkSeed: DEFAULT_APPS_NETWORK_SEED,
@@ -757,18 +782,18 @@ const router = t.router({
     };
   }),
   onSetupProgressUpdate: t.procedure.subscription(() => {
-    return createObservable(LAUNCHER_EMITTER, LOADING_PROGRESS_UPDATE);
+    return createObservableGeneric(LAUNCHER_EMITTER, LOADING_PROGRESS_UPDATE);
   }),
   deriveAndImportSeedFromJsonFile: t.procedure.input(z.string()).mutation(async (opts) => {
     const jsonFilePath = opts.input;
     if (!DEFAULT_LAIR_CLIENT) throw new Error('Lair client is not ready.');
     return DEFAULT_LAIR_CLIENT.deriveAndImportSeedFromJsonFile(jsonFilePath);
   }),
+  hideSettingsWindow: t.procedure.subscription(() => {
+    return createObservableGeneric(LAUNCHER_EMITTER, HIDE_SETTINGS_WINDOW, false);
+  }),
   refetchDataSubscription: t.procedure.subscription(() => {
-    return observable<EventMap[typeof REFETCH_DATA_IN_ALL_WINDOWS]>((emit) => {
-      const handler = (data: EventMap[typeof REFETCH_DATA_IN_ALL_WINDOWS]) => emit.next(data);
-      LAUNCHER_EMITTER.on(REFETCH_DATA_IN_ALL_WINDOWS, handler);
-    });
+    return createObservableGeneric(LAUNCHER_EMITTER, REFETCH_DATA_IN_ALL_WINDOWS, false);
   }),
   factoryReset: t.procedure.mutation(() =>
     factoryResetUtility({

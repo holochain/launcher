@@ -33,9 +33,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # platform: [macos-12]
-        # platform: [windows-2019, macos-12, ubuntu-22.04]
         platform: [windows-2019, macos-12, macos-latest, ubuntu-22.04]
+        # platform: [ubuntu-22.04, macos-12]
         # platform: [windows-2019]
     env:
       MACOSX_DEPLOYMENT_TARGET: 10.13
@@ -81,7 +80,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: rust-utils/dist
-          key: ${{ runner.os }}-rust-utils-${{ needs.extract-versions.outputs.rust_utils_version }}
+          key: ${{ matrix.platform }}-rust-utils-${{ needs.extract-versions.outputs.rust_utils_version }}
 
       - name: Conditionally Setup rust-utils
         if: steps.cache-rust-utils.outputs.cache-hit != 'true'
@@ -130,6 +129,12 @@ jobs:
           yarn build:linux
           ls dist
 
+          # Modify the postinst script of the .deb file
+          node ./scripts/extend-deb-postinst.mjs
+          gh release upload "v${{ steps.version.outputs.APP_VERSION }}" "latest-linux.yml" --clobber
+
+
+
       - name: build, sign and upload the app (Windows)
         if: matrix.platform == 'windows-2019'
         env:
@@ -142,19 +147,19 @@ jobs:
           dotnet tool install --global --version 4.0.1 AzureSignTool
 
           echo "sha512 before code signing"
-          CertUtil -hashfile "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" SHA512
+          CertUtil -hashfile "dist/holochain-launcher-0.4-${{ steps.version.outputs.APP_VERSION }}-setup.exe" SHA512
 
-          AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe"
+          AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v "dist/holochain-launcher-0.4-${{ steps.version.outputs.APP_VERSION }}-setup.exe"
 
           echo "sha512 after code signing"
-          CertUtil -hashfile "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" SHA512
+          CertUtil -hashfile "dist/holochain-launcher-0.4-${{ steps.version.outputs.APP_VERSION }}-setup.exe" SHA512
 
           # Overwrite the latest.yml with one containing the sha512 of the code signed setup.exe file
           node ./scripts/latest-yaml.js
-          gh release upload "latest.yml" "latest.yml" --clobber
+          gh release upload "v${{ steps.version.outputs.APP_VERSION }}" "latest.yml" --clobber
 
           # Overwrite the setup.exe file with the code signed one
-          gh release upload "v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-electron-${{ steps.version.outputs.APP_VERSION }}-setup.exe" --clobber
+          gh release upload "v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-0.4-${{ steps.version.outputs.APP_VERSION }}-setup.exe" --clobber
 
       - name: Merge latest-mac.yml mac release files
         if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-12'

@@ -1,5 +1,5 @@
 import { platform } from '@electron-toolkit/utils';
-import { type App, app } from 'electron';
+import { type App, app, session } from 'electron';
 import fs from 'fs';
 import { nanoid } from 'nanoid';
 import path from 'path';
@@ -238,9 +238,20 @@ export class LauncherFileSystem {
     return fs.existsSync(path.join(this.keystoreDir, 'lair-keystore-config.yaml'));
   };
 
-  factoryReset(keepLogs = false) {
+  async factoryReset(keepLogs = false) {
     if (keepLogs) throw new Error('Keeping logs across factory reset is currently not supported.');
-    fs.rmSync(this.profileDataDir, { recursive: true });
+    if (platform.isWindows) {
+      try {
+        await session.defaultSession.clearCache();
+        await session.defaultSession.clearStorageData();
+        await session.defaultSession.clearAuthCache();
+        await session.defaultSession.clearCodeCaches({});
+        await session.defaultSession.clearHostResolverCache();
+      } catch (e) {
+        console.warn('Failed to clear cache or parts of it: ', e);
+      }
+    }
+    deleteRecursively(this.profileDataDir);
   }
 
   get launcherConfigPath() {
@@ -562,6 +573,28 @@ export function createDirIfNotExists(path: fs.PathLike) {
   }
 }
 
+
 export function platformLogString(name: string) {
   return `\n[${name} @ Holochain Launcher ${app.getVersion()} @ ${process.platform} @ ${new Date().toISOString()}]`;
+
+/**
+ * Deletes a folder recursively and if a file or folder fails with an EPERM error,
+ * it deletes all other folders
+ * @param root
+ */
+export function deleteRecursively(root: string) {
+  try {
+    console.log('Attempting to remove file or folder: ', root);
+    fs.rmSync(root, { recursive: true });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (e: any) {
+    if (e.toString && e.toString().includes('EPERM')) {
+      console.log('Got EPERM error for file or folder: ', root);
+      if (fs.statSync(root).isDirectory()) {
+        console.log('Removing files and subfolders.');
+        const filesAndSubFolders = fs.readdirSync(root);
+        filesAndSubFolders.forEach((file) => deleteRecursively(path.join(root, file)));
+      }
+    }
+  }
 }

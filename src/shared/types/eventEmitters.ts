@@ -3,6 +3,7 @@ import type { HolochainData, LoadingProgressUpdate } from './holochain';
 export const LOADING_PROGRESS_UPDATE = 'loading-progress-update';
 export const REFETCH_DATA_IN_ALL_WINDOWS = 'refetch-data-in-all-windows';
 export const APP_INSTALLED = 'app-installed';
+export const HIDE_SETTINGS_WINDOW = 'hide-settings-window';
 export const LAUNCHER_ERROR = 'launcher-error';
 export const LAIR_ERROR = 'lair-error';
 export const LAIR_FATAL_PANIC = 'lair-fatal-panic';
@@ -17,6 +18,7 @@ export type EventMap = {
   [LOADING_PROGRESS_UPDATE]: LoadingProgressUpdate;
   [APP_INSTALLED]: HolochainData;
   [LAUNCHER_ERROR]: string;
+  [HIDE_SETTINGS_WINDOW]: boolean;
   [LAIR_ERROR]: string;
   [LAIR_FATAL_PANIC]: string;
   [LAIR_LOG]: string;
