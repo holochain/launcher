@@ -33,6 +33,7 @@ linux:
     # - snap
   maintainer: electronjs.org
   category: Utility
+  icon: ./build/icon.icns
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
