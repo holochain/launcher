@@ -8,7 +8,7 @@
 	import { Gear, Upload } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
-	import { SETTINGS_SCREEN } from '$shared/const';
+	import { SETTINGS_WINDOW } from '$shared/const';
 
 	const client = trpc();
 	const isDevhubInstalled = client.isDevhubInstalled.createQuery();
@@ -16,7 +16,7 @@
 	client.hideSettingsWindow.createSubscription(undefined, {
 		onData: (value) => {
 			if (value) {
-				goto(`/${SETTINGS_SCREEN}`);
+				goto(`/${SETTINGS_WINDOW}`);
 			}
 		}
 	});
@@ -29,7 +29,7 @@
 <div class="app-region-drag flex p-3 dark:bg-apps-input-dark-gradient">
 	<IconButton
 		onClick={() => {
-			goto(`/${SETTINGS_SCREEN}`);
+			goto(`/${SETTINGS_WINDOW}`);
 		}}
 		buttonClass={clsx('p-2 mr-2', isDevPage ? undefined : 'bg-black rounded-md')}
 	>
@@ -54,7 +54,7 @@
 					$publishersQuery.data.length < 1
 						? `/${PUBLISHER_SCREEN}`
 						: isDevPage
-							? `/${SETTINGS_SCREEN}`
+							? `/${SETTINGS_WINDOW}`
 							: `/${DEV_PAGE}`;
 
 				goto(targetScreen);

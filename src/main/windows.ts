@@ -1,26 +1,17 @@
 import { is, platform } from '@electron-toolkit/utils';
 import type { AppAuthenticationToken } from '@holochain/client';
 import crypto from 'crypto';
-import {
-  app,
-  BrowserWindow,
-  globalShortcut,
-  Menu,
-  nativeImage,
-  net,
-  session,
-  Tray,
-} from 'electron';
+import { app, BrowserWindow, globalShortcut, nativeImage, net, session } from 'electron';
 import serve from 'electron-serve';
 import path from 'path';
 import url from 'url';
 
 import {
   ANIMATION_DURATION,
-  MAIN_SCREEN,
+  MAIN_WINDOW,
   MIN_HEIGH,
-  SETTINGS_SCREEN,
   SETTINGS_SIZE,
+  SETTINGS_WINDOW,
   WINDOW_SIZE,
 } from '$shared/const';
 import type { ExtendedAppInfo, Screen } from '$shared/types';
@@ -80,17 +71,6 @@ const createAdminWindow = ({
     },
   });
 
-export const focusVisibleWindow = (launcherWindows: Record<Screen, BrowserWindow>) => {
-  const windows = Object.values(launcherWindows);
-  const anyVisible = windows.some((window) => !window.isMinimized() && window.isVisible());
-
-  if (!anyVisible) {
-    launcherWindows[MAIN_SCREEN].show();
-  } else {
-    windows.find((window) => !window.isMinimized() && window.isVisible())?.focus();
-  }
-};
-
 export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
   let isQuitting = false;
   // Create the browser window.
@@ -108,57 +88,12 @@ export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
     icon: mainIcon,
   });
 
-  const trayIcon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '16x16.png'));
-  const tray = new Tray(trayIcon);
-
-  loadOrServe(mainWindow, { screen: MAIN_SCREEN });
+  loadOrServe(mainWindow, { screen: MAIN_WINDOW });
 
   const windows: Record<Screen, BrowserWindow> = {
-    [MAIN_SCREEN]: mainWindow,
-    [SETTINGS_SCREEN]: settingsWindow,
+    [MAIN_WINDOW]: mainWindow,
+    [SETTINGS_WINDOW]: settingsWindow,
   };
-
-  const trayContextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Open',
-      type: 'normal',
-      click() {
-        focusVisibleWindow(windows);
-      },
-    },
-    {
-      label: 'Restart',
-      type: 'normal',
-      click() {
-        const options: Electron.RelaunchOptions = {
-          args: process.argv,
-        };
-        // https://github.com/electron-userland/electron-builder/issues/1727#issuecomment-769896927
-        if (process.env.APPIMAGE) {
-          console.log('process.execPath: ', process.execPath);
-          options.args!.unshift('--appimage-extract-and-run');
-          options.execPath = process.env.APPIMAGE;
-        }
-        app.relaunch(options);
-        app.quit();
-      },
-    },
-    {
-      label: 'Quit',
-      type: 'normal',
-      click() {
-        app.quit();
-      },
-    },
-  ]);
-
-  tray.setToolTip('Holochain Launcher');
-  tray.setContextMenu(trayContextMenu);
-
-  globalShortcut.register('CommandOrControl+Shift+L', () => {
-    mainWindow.setSize(WINDOW_SIZE, MIN_HEIGH);
-    focusVisibleWindow(windows);
-  });
 
   app.on('will-quit', () => {
     // Unregister all shortcuts.

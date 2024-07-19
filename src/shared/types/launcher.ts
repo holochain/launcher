@@ -8,11 +8,11 @@ import {
   DISTRIBUTION_TYPE_APPSTORE,
   DISTRIBUTION_TYPE_DEFAULT_APP,
   DISTRIBUTION_TYPE_FILESYSTEM,
-  type MAIN_SCREEN,
-  type SETTINGS_SCREEN,
+  type MAIN_WINDOW,
+  type SETTINGS_WINDOW,
 } from '../const';
 
-export type Screen = typeof MAIN_SCREEN | typeof SETTINGS_SCREEN;
+export type Screen = typeof MAIN_WINDOW | typeof SETTINGS_WINDOW;
 
 export const MainScreenRouteSchema = z.union([z.literal(APP_STORE), z.literal(APPS_VIEW)]);
 

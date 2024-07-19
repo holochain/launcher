@@ -22,7 +22,7 @@
 	import { Download } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { createDevHubClient, i18n, trpc } from '$services';
-	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_SCREEN } from '$shared/const';
+	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_WINDOW } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
 	import { type UpdateUiFromHash } from '$shared/types';
 	import type { Modals } from '$types/components';
@@ -301,7 +301,7 @@
 				$uninstallApp.mutate(selectedApp, {
 					onSuccess: () => {
 						$installedApps.refetch();
-						goto(`/${SETTINGS_SCREEN}`);
+						goto(`/${SETTINGS_WINDOW}`);
 					}
 				})}
 			update={Boolean(update)}

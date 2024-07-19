@@ -7,7 +7,7 @@
 	import { showModalError } from '$helpers';
 	import { CenterProgressRadial } from '$lib/components';
 	import { i18n, trpc } from '$services';
-	import { SETTINGS_SCREEN } from '$shared/const';
+	import { SETTINGS_WINDOW } from '$shared/const';
 	const client = trpc();
 
 	const modalStore = getModalStore();
@@ -16,8 +16,8 @@
 	onMount(() => {
 		const url = $page.url;
 
-		if (url.searchParams.get('screen') === SETTINGS_SCREEN) {
-			return goto(`/${SETTINGS_SCREEN}`);
+		if (url.searchParams.get('screen') === SETTINGS_WINDOW) {
+			return goto(`/${SETTINGS_WINDOW}`);
 		}
 
 		return lairSetupRequired.subscribe((setupData) => {

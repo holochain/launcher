@@ -8,7 +8,7 @@ import { AppstoreAppClient, DevhubAppClient, webhappToHappAndUi } from 'appstore
 import { type ChildProcessWithoutNullStreams, spawnSync } from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
-import { app, dialog, ipcMain, Menu, protocol } from 'electron';
+import { app, dialog, globalShortcut, ipcMain, Menu, nativeImage, protocol, Tray } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { createIPCHandler } from 'electron-trpc/main';
 import type { LauncherLairClient } from 'hc-launcher-rust-utils';
@@ -21,9 +21,9 @@ import {
   APP_STORE_APP_ID,
   DEVHUB_APP_ID,
   DISTRIBUTION_TYPE_DEFAULT_APP,
-  MAIN_SCREEN,
+  MAIN_WINDOW,
   MIN_HEIGH,
-  SETTINGS_SCREEN,
+  SETTINGS_WINDOW,
   WINDOW_SIZE,
 } from '$shared/const';
 import { getErrorMessage } from '$shared/helpers';
@@ -69,7 +69,7 @@ import { initializeLairKeystore, launchLairKeystore } from './lairKeystore';
 import { LauncherEmitter } from './launcherEmitter';
 import { setupLogs } from './logs';
 import { launcherMenu } from './menu';
-import { DEFAULT_APPS_DIRECTORY } from './paths';
+import { DEFAULT_APPS_DIRECTORY, ICONS_DIRECTORY } from './paths';
 import {
   breakingVersion,
   createObservableGeneric,
@@ -84,7 +84,7 @@ import {
   throwTRPCErrorError,
   validateWithZod,
 } from './utils';
-import { createHappWindow, focusVisibleWindow, loadOrServe, setupAppWindows } from './windows';
+import { createHappWindow, loadOrServe, setupAppWindows } from './windows';
 
 const t = initTRPC.create({ isServer: true });
 
@@ -176,11 +176,11 @@ if (!isFirstInstance && app.isPackaged && !VALIDATED_CLI_ARGS.profile) {
 }
 
 app.on('second-instance', () => {
-  focusVisibleWindow(PRIVILEDGED_LAUNCHER_WINDOWS);
+  focusVisibleWindow();
 });
 
 app.on('activate', () => {
-  focusVisibleWindow(PRIVILEDGED_LAUNCHER_WINDOWS);
+  focusVisibleWindow();
 });
 
 protocol.registerSchemesAsPrivileged([
@@ -262,6 +262,58 @@ app.whenReady().then(async () => {
   console.log('BEING RUN IN __dirnmane: ', __dirname);
 
   PRIVILEDGED_LAUNCHER_WINDOWS = setupAppWindows(LAUNCHER_EMITTER);
+
+  const trayIcon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '16x16.png'));
+  const tray = new Tray(trayIcon);
+
+  const trayContextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Open',
+      type: 'normal',
+      click() {
+        focusVisibleWindow();
+      },
+    },
+    {
+      label: 'Restart',
+      type: 'normal',
+      click() {
+        const options: Electron.RelaunchOptions = {
+          args: process.argv,
+        };
+        // https://github.com/electron-userland/electron-builder/issues/1727#issuecomment-769896927
+        if (process.env.APPIMAGE) {
+          console.log('process.execPath: ', process.execPath);
+          options.args!.unshift('--appimage-extract-and-run');
+          options.execPath = process.env.APPIMAGE;
+        }
+        app.relaunch(options);
+        app.quit();
+      },
+    },
+    {
+      label: 'Quit',
+      type: 'normal',
+      click() {
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setToolTip('Holochain Launcher');
+  tray.setContextMenu(trayContextMenu);
+
+  globalShortcut.register('CommandOrControl+Shift+L', () => {
+    const mainWindow = PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW];
+    if (mainWindow) {
+      if (mainWindow.isFocused()) {
+        mainWindow.hide();
+      } else {
+        mainWindow.setSize(WINDOW_SIZE, MIN_HEIGH);
+        focusVisibleWindow();
+      }
+    }
+  });
 
   createIPCHandler({ router, windows: Object.values(PRIVILEDGED_LAUNCHER_WINDOWS) });
 
@@ -426,9 +478,9 @@ async function handleLaunch(password: string, isDirectLaunch = true) {
   );
 
   if (isDirectLaunch) {
-    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE, MIN_HEIGH, true);
+    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].setSize(WINDOW_SIZE, MIN_HEIGH, true);
   }
-  loadOrServe(PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN], { screen: SETTINGS_SCREEN });
+  loadOrServe(PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW], { screen: SETTINGS_WINDOW });
   return;
 }
 
@@ -491,10 +543,10 @@ const getDevhubAppClient = async () => {
 
 const router = t.router({
   openSettings: t.procedure.mutation(() => {
-    PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN].show();
+    PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW].show();
   }),
   hideApp: t.procedure.mutation(() => {
-    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].hide();
+    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].hide();
   }),
   openApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
     const { appInfo, holochainDataRoot } = opts.input;
@@ -804,3 +856,14 @@ const router = t.router({
 });
 
 export type AppRouter = typeof router;
+
+export const focusVisibleWindow = () => {
+  const windows = Object.values(PRIVILEDGED_LAUNCHER_WINDOWS);
+  const anyVisible = windows.some((window) => !window.isMinimized() && window.isVisible());
+
+  if (!anyVisible && PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW]) {
+    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].show();
+  } else {
+    windows.find((window) => !window.isMinimized() && window.isVisible())?.focus();
+  }
+};
