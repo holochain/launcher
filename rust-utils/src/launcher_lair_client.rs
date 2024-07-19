@@ -9,7 +9,7 @@ use holochain_zome_types::prelude::{Signature, ZomeCallUnsigned};
 use lair_keystore_api::{
     dependencies::{sodoken::BufRead, url::Url},
     ipc_keystore::ipc_keystore_connect,
-    lair_store::LairEntryInfo,
+    lair_store::{LairEntryInfo, SeedInfo},
     LairClient,
 };
 use pinentry::PassphraseInput;
@@ -71,13 +71,66 @@ impl LauncherLairClient {
         Ok(signed_zome_call)
     }
 
+    pub async fn import_locked_seed_bundle(
+        &self,
+        import_locked_seed_bundle: String,
+        passphrase: String,
+        tag: String,
+    ) -> Result<String> {
+        let unlocked_seed_bundle = unlock_device_bundle(&import_locked_seed_bundle, passphrase)
+            .await
+            .map_err(|e| {
+                napi::Error::from_reason(format!("Failed to generate random seed: {}", e))
+            })?;
+
+        let encryption_key = get_or_create_seed(&self, "import-encryption-key").await?;
+        let decryption_key = get_or_create_seed(&self, "import-decryption-key").await?;
+
+        let secret = SecretKey::from_bytes(&*unlocked_seed_bundle.get_seed().read_lock())
+            .map_err(|e| napi::Error::from_reason(format!("Failed to get seed: {:?}", e)))?;
+
+        // encrypt seed that shall be imported
+        let (nonce, cipher) = self
+            .lair_client
+            .crypto_box_xsalsa_by_pub_key(
+                encryption_key.x25519_pub_key.clone(),
+                decryption_key.x25519_pub_key.clone(),
+                None,
+                secret.as_ref().into(),
+            )
+            .await
+            .map_err(|e| {
+                napi::Error::from_reason(format!("Failed to encrypt the device_bundle_seed: {}", e))
+            })?;
+
+        // import the encrypted seed into lair
+        let imported_seed = self
+            .lair_client
+            .import_seed(
+                encryption_key.x25519_pub_key,
+                decryption_key.x25519_pub_key,
+                None,
+                nonce,
+                cipher,
+                tag.into(),
+                false,
+            )
+            .await
+            .map_err(|e| {
+                napi::Error::from_reason(format!("Failed to import seed into lair: {}", e))
+            })?;
+
+        let imported_pubkey_b64 = AgentPubKeyB64::from(AgentPubKey::from_raw_32(
+            imported_seed.ed25519_pub_key.as_ref().to_vec(),
+        ));
+
+        Ok(imported_pubkey_b64.to_string())
+    }
+
     /// Reads a json file containing the device bundle and the device derivation path,
     /// then derives the device seed and from it a sub seed at index 1 whose base64 encoded
     /// public part should equal the initial_host_pub_key field.
-    pub async fn derive_and_import_seed_from_json_file(
-        &self,
-        path: String,
-    ) -> Result<String> {
+    pub async fn derive_and_import_seed_from_json_file(&self, path: String) -> Result<String> {
         let json_string = std::fs::read_to_string(path)?;
         let parsed_string: serde_json::Value = serde_json::from_str(&json_string)?;
         let device_bundle = parsed_string["device_bundle"]
@@ -100,9 +153,13 @@ impl LauncherLairClient {
                 .with_description("Enter Seed Bundle Passphrase")
                 .with_prompt("Passphrase:")
                 .interact()
-                .map_err(|e| napi::Error::from_reason(format!("Failed to collect passphrase: {e}")))?
+                .map_err(|e| {
+                    napi::Error::from_reason(format!("Failed to collect passphrase: {e}"))
+                })?
         } else {
-            return Err(napi::Error::from_reason("No pinentry binary available to collect the passphrase."));
+            return Err(napi::Error::from_reason(
+                "No pinentry binary available to collect the passphrase.",
+            ));
         };
 
         // Unlock the device bundle and derive the sub seed at index 1 which whose public part should
@@ -251,10 +308,21 @@ impl JsLauncherLairClient {
     }
 
     #[napi]
-    pub async fn derive_and_import_seed_from_json_file(
+    pub async fn import_locked_seed_bundle(
         &self,
-        path: String,
+        import_locked_seed_bundle: String,
+        passphrase: String,
+        tag: String,
     ) -> Result<String> {
+        self.launcher_lair_client
+            .as_ref()
+            .unwrap()
+            .import_locked_seed_bundle(import_locked_seed_bundle, passphrase, tag)
+            .await
+    }
+
+    #[napi]
+    pub async fn derive_and_import_seed_from_json_file(&self, path: String) -> Result<String> {
         self.launcher_lair_client
             .as_ref()
             .unwrap()
@@ -270,19 +338,19 @@ pub async fn derive_seed_from_device_bundle(
     passphrase: SecretString,
     index: u32,
 ) -> napi::Result<Keypair> {
-    let cipher = base64::decode(device_bundle).map_err(|e| {
+    let locked_bundle = base64::decode(device_bundle).map_err(|e| {
         napi::Error::from_reason(format!("Failed to decode device bundle: {:?}", e))
     })?;
-    match UnlockedSeedBundle::from_locked(&cipher)
+    match UnlockedSeedBundle::from_locked(&locked_bundle)
         .await
         .map_err(|e| {
             napi::Error::from_reason(format!("Failed to create UnlockedSeedBundle: {:?}", e))
         })?
         .remove(0)
     {
-        LockedSeedCipher::PwHash(cipher) => {
+        LockedSeedCipher::PwHash(bundle) => {
             let passphrase_bufread = BufRead::from(passphrase.expose_secret().as_bytes());
-            let seed = cipher.unlock(passphrase_bufread).await.map_err(|e| {
+            let seed = bundle.unlock(passphrase_bufread).await.map_err(|e| {
                 napi::Error::from_reason(format!(
                     "Failed to unlock cipher with the given passphrase: {:?}",
                     e
@@ -300,6 +368,65 @@ pub async fn derive_seed_from_device_bundle(
                 )?,
             })
         }
-        _ => Err(napi::Error::from_reason("Unsupported Cipher".to_string())),
+        _ => Err(napi::Error::from_reason(
+            "Unsupported LockedSeedCipher variant".to_string(),
+        )),
     }
+}
+
+pub async fn unlock_device_bundle(
+    device_bundle: &String,
+    passphrase: String,
+) -> napi::Result<UnlockedSeedBundle> {
+    let locked_bundle = base64::decode(device_bundle).map_err(|e| {
+        napi::Error::from_reason(format!("Failed to decode device bundle: {:?}", e))
+    })?;
+    match UnlockedSeedBundle::from_locked(&locked_bundle)
+        .await
+        .map_err(|e| {
+            napi::Error::from_reason(format!("Failed to create UnlockedSeedBundle: {:?}", e))
+        })?
+        .remove(0)
+    {
+        LockedSeedCipher::PwHash(bundle) => {
+            let passphrase_bufread = BufRead::from(passphrase.as_bytes());
+            let seed = bundle.unlock(passphrase_bufread).await.map_err(|e| {
+                napi::Error::from_reason(format!(
+                    "Failed to unlock cipher with the given passphrase: {:?}",
+                    e
+                ))
+            })?;
+
+            Ok(seed)
+        }
+        _ => Err(napi::Error::from_reason(
+            "Unsupported LockedSeedCipher variant".to_string(),
+        )),
+    }
+}
+
+async fn get_or_create_seed(client: &LauncherLairClient, tag: &str) -> Result<SeedInfo> {
+    // Get or generate key for encryption of the seed
+    let encryption_key = match client.lair_client.get_entry(tag.into()).await {
+        Ok(key) => match key {
+            LairEntryInfo::Seed { tag: _, seed_info } => seed_info,
+            _ => {
+                return Err(napi::Error::from_reason(
+                    "The import encryption key in lair is of the wrong format.",
+                ))
+            }
+        },
+        Err(_) => client
+            .lair_client
+            .new_seed(tag.into(), None, false)
+            .await
+            .map_err(|e| {
+                napi::Error::from_reason(format!(
+                    "Failed to create new import encryption key in lair: {}",
+                    e
+                ))
+            })?,
+    };
+
+    Ok(encryption_key)
 }
