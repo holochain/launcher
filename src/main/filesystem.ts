@@ -259,11 +259,9 @@ export class LauncherFileSystem {
   }
 
   get launcherConfig(): LauncherConfig | undefined {
-    if (fs.existsSync(this.launcherConfigPath)) {
-      const configStr = fs.readFileSync(this.launcherConfigPath, 'utf-8');
-      return JSON.parse(configStr) as LauncherConfig;
-    }
-    return undefined;
+    if (!fs.existsSync(this.launcherConfigPath)) return;
+    const configStr = fs.readFileSync(this.launcherConfigPath, 'utf-8');
+    return JSON.parse(configStr) as LauncherConfig;
   }
 
   /**
@@ -295,10 +293,8 @@ export class LauncherFileSystem {
 
   get backupLocation() {
     const launcherConfig = this.launcherConfig;
-    if (launcherConfig) {
-      return launcherConfig.backupLocation;
-    }
-    return undefined;
+    if (!launcherConfig) return;
+    return launcherConfig.backupLocation;
   }
 
   /**
@@ -335,6 +331,7 @@ export class LauncherFileSystem {
     // TODO check for .happ files and UIs that are not in use and don't copy them over
 
     try {
+      console.log('backing up holochain...');
       fs.cpSync(this.holochainDir, path.join(backupRoot, HOLOCHAIN_DIRNAME), {
         recursive: true,
         preserveTimestamps: true,
@@ -361,8 +358,6 @@ export class LauncherFileSystem {
       lastPartialbackup: previousBackupInfo ? previousBackupInfo.lastPartialbackup : undefined,
     };
     fs.writeFileSync(backupInfoPath, JSON.stringify(backupInfo));
-
-    // Store information about last successful backup, i.e. timestamp
   }
 
   // This is a placeholder for a function that could be called for example on closing
@@ -573,9 +568,9 @@ export function createDirIfNotExists(path: fs.PathLike) {
   }
 }
 
-
 export function platformLogString(name: string) {
   return `\n[${name} @ Holochain Launcher ${app.getVersion()} @ ${process.platform} @ ${new Date().toISOString()}]`;
+}
 
 /**
  * Deletes a folder recursively and if a file or folder fails with an EPERM error,
