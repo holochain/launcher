@@ -83,8 +83,8 @@ impl LauncherLairClient {
                 napi::Error::from_reason(format!("Failed to generate random seed: {}", e))
             })?;
 
-        let encryption_key = get_or_create_seed(&self, "import-encryption-key").await?;
-        let decryption_key = get_or_create_seed(&self, "import-decryption-key").await?;
+        let encryption_key = self.get_or_create_seed("import-encryption-key").await?;
+        let decryption_key = self.get_or_create_seed("import-decryption-key").await?;
 
         let secret = SecretKey::from_bytes(&*unlocked_seed_bundle.get_seed().read_lock())
             .map_err(|e| napi::Error::from_reason(format!("Failed to get seed: {:?}", e)))?;
@@ -176,56 +176,8 @@ impl LauncherLairClient {
         }
 
         // Get or generate key for encryption of the seed
-        let encryption_key = match self
-            .lair_client
-            .get_entry("import-encryption-key".into())
-            .await
-        {
-            Ok(key) => match key {
-                LairEntryInfo::Seed { tag: _, seed_info } => seed_info,
-                _ => {
-                    return Err(napi::Error::from_reason(
-                        "The import encryption key in lair is of the wrong format.",
-                    ))
-                }
-            },
-            Err(_) => self
-                .lair_client
-                .new_seed("import-encryption-key".into(), None, false)
-                .await
-                .map_err(|e| {
-                    napi::Error::from_reason(format!(
-                        "Failed to create new import encryption key in lair: {}",
-                        e
-                    ))
-                })?,
-        };
-
-        // Get or generate key for decryption of the seed
-        let decryption_key = match self
-            .lair_client
-            .get_entry("import-decryption-key".into())
-            .await
-        {
-            Ok(key) => match key {
-                LairEntryInfo::Seed { tag: _, seed_info } => seed_info,
-                _ => {
-                    return Err(napi::Error::from_reason(
-                        "The import decryption key in lair is of the wrong format.",
-                    ))
-                }
-            },
-            Err(_) => self
-                .lair_client
-                .new_seed("import-decryption-key".into(), None, false)
-                .await
-                .map_err(|e| {
-                    napi::Error::from_reason(format!(
-                        "Failed to create new import decryption key in lair: {}",
-                        e
-                    ))
-                })?,
-        };
+        let encryption_key = self.get_or_create_seed("import-encryption-key").await?;
+        let decryption_key = self.get_or_create_seed("import-decryption-key").await?;
 
         // encrypt seed that shall be imported
         let (nonce, cipher) = self
@@ -269,6 +221,32 @@ impl LauncherLairClient {
         }
 
         Ok(imported_pubkey_b64.to_string())
+    }
+
+    async fn get_or_create_seed(&self, tag: &str) -> Result<SeedInfo> {
+        // Get or generate key for encryption of the seed
+        let encryption_key = match self.lair_client.get_entry(tag.into()).await {
+            Ok(key) => match key {
+                LairEntryInfo::Seed { tag: _, seed_info } => seed_info,
+                _ => {
+                    return Err(napi::Error::from_reason(
+                        "The import encryption key in lair is of the wrong format.",
+                    ))
+                }
+            },
+            Err(_) => self
+                .lair_client
+                .new_seed(tag.into(), None, false)
+                .await
+                .map_err(|e| {
+                    napi::Error::from_reason(format!(
+                        "Failed to create new import encryption key in lair: {}",
+                        e
+                    ))
+                })?,
+        };
+
+        Ok(encryption_key)
     }
 }
 
@@ -405,28 +383,4 @@ pub async fn unlock_device_bundle(
     }
 }
 
-async fn get_or_create_seed(client: &LauncherLairClient, tag: &str) -> Result<SeedInfo> {
-    // Get or generate key for encryption of the seed
-    let encryption_key = match client.lair_client.get_entry(tag.into()).await {
-        Ok(key) => match key {
-            LairEntryInfo::Seed { tag: _, seed_info } => seed_info,
-            _ => {
-                return Err(napi::Error::from_reason(
-                    "The import encryption key in lair is of the wrong format.",
-                ))
-            }
-        },
-        Err(_) => client
-            .lair_client
-            .new_seed(tag.into(), None, false)
-            .await
-            .map_err(|e| {
-                napi::Error::from_reason(format!(
-                    "Failed to create new import encryption key in lair: {}",
-                    e
-                ))
-            })?,
-    };
 
-    Ok(encryption_key)
-}
