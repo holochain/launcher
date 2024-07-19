@@ -227,7 +227,7 @@ impl LauncherLairClient {
         // Get or generate key for encryption of the seed
         let encryption_key = match self.lair_client.get_entry(tag.into()).await {
             Ok(key) => match key {
-                LairEntryInfo::Seed { tag: _, seed_info } => seed_info,
+                LairEntryInfo::Seed { seed_info, .. } => seed_info,
                 _ => {
                     return Err(napi::Error::from_reason(
                         "The import encryption key in lair is of the wrong format.",
