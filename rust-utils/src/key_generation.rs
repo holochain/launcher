@@ -52,12 +52,7 @@ pub async fn generate_seeds(passphrase: String) -> napi::Result<KeyFile> {
         .await
         .map_err(|e| napi::Error::from_reason(format!("Failed to derive device key: {}", e)))?;
 
-    // print public key to later check that it has been installed correctly into lairs
-    let device_pub_key = device_key.get_sign_pub_key().read_lock().to_vec();
-    let device_pub_key_b64 = base64::encode(device_pub_key);
-    println!("Device public key: {}", device_pub_key_b64);
-
-    let device_key_encrypted = revocation_key
+    let device_key_encrypted = device_key
         .lock()
         .add_pwhash_cipher(passphrase.as_bytes().to_owned())
         .lock()
