@@ -381,19 +381,6 @@ async function handleLaunch(password: string, isDirectLaunch = true) {
     DEFAULT_LAIR_CLIENT = await rustUtils.LauncherLairClient.connect(lairUrl, password);
   }
 
-  // Generate seed pair and log it
-  const seedFile = await rustUtils.generateSeeds('test');
-  console.log('\n\n###################\nGenerated seed file: ', seedFile);
-
-  // import device seed into lair
-  console.log('\n\n###################\nImporting device seed into lair.');
-  const importedPubkeyB64 = await DEFAULT_LAIR_CLIENT?.importLockedSeedBundle(
-    seedFile.deviceKey,
-    'test',
-    'hello2',
-  );
-  console.log('\n\n###################\nImported device seed with public key: ', importedPubkeyB64);
-
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingHolochain');
 
   if (!PRIVILEDGED_LAUNCHER_WINDOWS)
