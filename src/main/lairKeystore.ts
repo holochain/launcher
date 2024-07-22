@@ -118,6 +118,6 @@ export async function launchLairKeystore(
     if (errorMessage.includes('InternalSodium')) {
       return throwTRPCErrorError({ message: WRONG_PASSWORD, cause: error });
     }
-    throwTRPCErrorError({ message: LAUNCH_LAIR_KEYSTORE_ERROR, cause: error });
+    throwTRPCErrorError({ message: `${LAUNCH_LAIR_KEYSTORE_ERROR}: ${error}`, cause: error });
   }
 }

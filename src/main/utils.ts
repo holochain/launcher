@@ -364,3 +364,40 @@ export async function factoryResetUtility({
 
   app.quit();
 }
+
+/**
+ * Reads the value of a key in a yaml string. Only works for single-line values
+ *
+ * @param yamlString
+ * @param key
+ */
+export function readYamlValue(yamlString: string, key: string) {
+  const lines = yamlString.split('\n');
+  const idx = lines.findIndex((line) => line.includes(`${key}:`));
+  if (idx === -1) {
+    return undefined;
+  }
+  const relevantLine = lines[idx];
+  return relevantLine.replace(`${key}:`, '').trim();
+}
+
+/**
+ * Replaces the value of a key in a yaml string with the specified new value. Only works for
+ * single-line values
+ *
+ * This function is being used instead of something like the js-yaml package in order
+ * to retain comments in the yaml file
+ *
+ * @param yamlString
+ * @param key
+ * @param newValue
+ */
+export function replaceYamlValue(yamlString: string, key: string, newValue: string) {
+  const lines = yamlString.split('\n');
+  const idx = lines.findIndex((line) => line.includes(`${key}:`));
+  if (idx === -1) {
+    throw Error(`Failed to set yaml value for key '${key}'. Key not found.`);
+  }
+  lines[idx] = `${key}: ${newValue}`;
+  return lines.join('\n');
+}

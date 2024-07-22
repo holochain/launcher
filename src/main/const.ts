@@ -14,3 +14,17 @@ export const DEVHUB_INSTALL: AppToInstall = {
 };
 
 export const DEFAULT_APPS_TO_INSTALL: AppToInstall[] = [APP_STORE_INSTALL];
+
+/**
+ * Filesystem related constants
+ */
+export const KEYSTORE_DIRNAME = 'lair';
+export const HOLOCHAIN_DIRNAME = 'holochain';
+export const CONFIG_DIRNAME = 'config';
+export const CONDUCTOR_ENV_DIRNAME = 'dbs';
+export const UIS_DIRNAME = 'uis';
+export const HAPPS_DIRNAME = 'happs';
+export const APPS_DIRNAME = 'apps';
+
+export const BACKUP_INFO_FILENAME = 'backup.info.json';
+export const BACKUP_LOG_FILENAME = 'backups.log';
