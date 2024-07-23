@@ -132,7 +132,7 @@ jobs:
           # Modify the postinst script of the .deb file
           node ./scripts/extend-deb-postinst.mjs
           gh release upload "v${{ steps.version.outputs.APP_VERSION }}" "latest-linux.yml" --clobber
-
+          gh release upload "v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-0.4_${{ steps.version.outputs.APP_VERSION }}_amd64.deb" --clobber
 
 
       - name: build, sign and upload the app (Windows)
