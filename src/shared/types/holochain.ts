@@ -50,6 +50,7 @@ export const InstalledAppInfoStatusSchema = z.union([
     disabled: z.object({}),
   }),
   z.literal('running'),
+  z.literal('awaiting_memproofs'),
 ]);
 
 export type InstalledAppInfoStatus = z.infer<typeof InstalledAppInfoStatusSchema>;
@@ -132,7 +133,6 @@ export type LoadingProgressUpdate =
 
 export type AppToInstall = {
   id: string;
-  sha256: string;
   name: string;
   progressUpdate: LoadingProgressUpdate;
 };

@@ -230,6 +230,7 @@ export class HolochainManager {
       env: {
         RUST_LOG: rustLog || DEFAULT_RUST_LOG,
         WASM_LOG: wasmLog || DEFAULT_WASM_LOG,
+        NO_COLOR: '1',
       },
     });
     conductorHandle.stdin.write(password);
@@ -441,7 +442,13 @@ export class HolochainManager {
       metaData,
     );
 
-    await this.adminWebsocket.enableApp({ installed_app_id: appId });
+    // Enabling is expected to fail for apps with deferred memproof
+    try {
+      await this.adminWebsocket.enableApp({ installed_app_id: appId });
+    } catch (e) {
+      // do nothing
+    }
+
     console.log('Installed app.');
     const installedApps = await this.adminWebsocket.listApps({});
     // console.log('Installed apps: ', installedApps);
@@ -544,7 +551,13 @@ export class HolochainManager {
       metaData,
     );
 
-    await this.adminWebsocket.enableApp({ installed_app_id: appId });
+    // Enabling is expected to fail for apps with deferred memproof
+    try {
+      await this.adminWebsocket.enableApp({ installed_app_id: appId });
+    } catch (e) {
+      // do nothing
+    }
+
     const installedApps = await this.adminWebsocket.listApps({});
     // console.log('Installed apps: ', installedApps);
     this.installedApps = installedApps;

@@ -135,7 +135,6 @@ jobs:
           gh release upload "v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-0.4_${{ steps.version.outputs.APP_VERSION }}_amd64.deb" --clobber
 
 
-
       - name: build, sign and upload the app (Windows)
         if: matrix.platform == 'windows-2019'
         env:

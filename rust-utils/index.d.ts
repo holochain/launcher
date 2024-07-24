@@ -8,6 +8,18 @@ export function defaultConductorConfig(adminPort: number, keystoreConnectionUrl:
 export function decodeHappOrWebhapp(happOrWebhappBytes: Array<number>): Promise<HappAndUiBytes>
 export function readAndDecodeHappOrWebhapp(path: string): Promise<HappAndUiBytes>
 export function saveWebhapp(path: string, uiTargetDir: string): Promise<string>
+export interface KeyFile {
+  rootSeed: string
+  revocationKey: string
+  deviceKey: string
+  timestamp: number
+}
+/**
+ * Generates root seed, revocation key and device seed
+ *
+ * Use a single passphrase for the whole file for starters
+ */
+export function generateSeeds(passphrase: string): Promise<KeyFile>
 export interface ZomeCallUnsignedNapi {
   cellId: Array<Array<number>>
   zomeName: string
@@ -38,5 +50,6 @@ export class LauncherLairClient {
   constructor()
   static connect(connectionUrl: string, passphrase: string): Promise<LauncherLairClient>
   signZomeCall(zomeCallUnsignedJs: ZomeCallUnsignedNapi): Promise<ZomeCallNapi>
+  importLockedSeedBundle(importLockedSeedBundle: string, passphrase: string, tag: string): Promise<string>
   deriveAndImportSeedFromJsonFile(path: string): Promise<string>
 }

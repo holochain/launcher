@@ -4,11 +4,11 @@ Cross-platform Desktop app to run [Holochain](https://www.holochain.org) apps.
 
 ## Download Holochain Launcher
 
-| Operating System | [Latest Stable Release](https://github.com/holochain/launcher/releases/tag/v0.11.5)<br>(Holochain v0.2.6) | How to Install                          |
-| ---------------- | --------------------------- | --------------------------------------- |
-| Windows          | [Download](https://github.com/holochain/launcher/releases/download/v0.11.5/Holochain.Launcher.Beta.2_0.11.5_x64_en-US.msi)<br>          | [Instructions](docs/install-windows.md) |
-| macOS | [Download](https://github.com/holochain/launcher/releases/download/v0.11.5/Holochain.Launcher.Beta.2_0.11.5_x64.dmg) |  [Instructions](docs/install-macos.md) |
-| Linux | [.AppImage](https://github.com/holochain/launcher/releases/download/v0.11.5/holochain-launcher-beta-2_0.11.5_amd64.AppImage)<br>[.deb](https://github.com/holochain/launcher/releases/download/v0.11.5/holochain-launcher-beta-2_0.11.5_amd64.deb) | [Instructions](docs/install-linux.md) |
+[Latest Stable Release](https://github.com/holochain/launcher-electron/releases/tag/v0.300.0)<br>(Holochain v0.3.1)
+
+### Download Previous Versions
+
+[Latest Stable Release](https://github.com/holochain/launcher/releases/tag/v0.11.5)<br>(Holochain v0.2.6)
 
 
 # Developers
@@ -19,8 +19,24 @@ To get started with building holochain apps, you can follow the guide on https:/
 
 ## Publish an App to Launcher's App Store
 
-[ TODO ]
+### Enable Developer Mode and Create your Publisher Profile
+- Once installed, open the settings window by clicking the gear icon in the upper right.
+- The "Publish" tab is hidden by default.  To make it visible, click "System Settings" on the left
+- In System Settings, click the button to install developer tools.  This will insall devhub, and enable Launcher as a devhub node and enable the "Publish" tab.
+- Switch to the "Publish" tab.
+- Follow the instructions and click the "Set up your publisher profile" button
+- Choose a publisher icon image, enter your name, location, and website then click the "add" button.
 
+### Publish your App
+- Select an icon image for your App (TODO: add image specs)
+- Click "Choose File" and browse to your .webhapp file (TODO: add links and refs for creating .webhapp files)
+- Complete the form by editing the name, adding a short description and long description if you want, as well as the version number for your App
+- Click "Publish your App"
+
+You will now see your published app settings in the publish tab, and your app will now appear in the Appstore where you can install it!  Your app will also be available to others after a short time as it is distributed via DevHub.
+
+# Verified Apps
+TODO: add verified app content and instructions to request verification.
 
 # Launcher Development Setup
 
