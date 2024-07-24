@@ -51,7 +51,7 @@ if [ -e /etc/lsb-release ]; then
 abi <abi/4.0>,
 include <tunables/global>
 
-profile ${launcherAppId} '/opt/${launcherProductName}/${launcherAppId}' flags=(unconfined) {
+profile ${launcherAppId} "/opt/${launcherProductName}/${launcherAppId}" flags=(unconfined) {
   userns,
 
   # Site-specific additions and overrides. See local/README for details.
