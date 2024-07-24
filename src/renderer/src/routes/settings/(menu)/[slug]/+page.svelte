@@ -170,7 +170,9 @@
 		<div slot="topRight">
 			{#if !selectedApp.isHeadless}
 				{@const isDisabled =
-					selectedApp.appInfo.status !== 'running' && 'disabled' in selectedApp.appInfo.status}
+					selectedApp.appInfo.status !== 'running' &&
+					selectedApp.appInfo.status !== 'awaiting_memproofs' &&
+					'disabled' in selectedApp.appInfo.status}
 				<div class="flex h-full items-center justify-center">
 					<SlideToggle
 						on:click={() => {

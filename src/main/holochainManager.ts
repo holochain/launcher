@@ -442,7 +442,13 @@ export class HolochainManager {
       metaData,
     );
 
-    await this.adminWebsocket.enableApp({ installed_app_id: appId });
+    // Enabling is expected to fail for apps with deferred memproof
+    try {
+      await this.adminWebsocket.enableApp({ installed_app_id: appId });
+    } catch (e) {
+      // do nothing
+    }
+
     console.log('Installed app.');
     const installedApps = await this.adminWebsocket.listApps({});
     // console.log('Installed apps: ', installedApps);
@@ -545,7 +551,13 @@ export class HolochainManager {
       metaData,
     );
 
-    await this.adminWebsocket.enableApp({ installed_app_id: appId });
+    // Enabling is expected to fail for apps with deferred memproof
+    try {
+      await this.adminWebsocket.enableApp({ installed_app_id: appId });
+    } catch (e) {
+      // do nothing
+    }
+
     const installedApps = await this.adminWebsocket.listApps({});
     // console.log('Installed apps: ', installedApps);
     this.installedApps = installedApps;
