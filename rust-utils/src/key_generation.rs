@@ -6,16 +6,11 @@ pub struct KeyFile {
     pub root_seed: String,
     pub revocation_seed: String,
     pub device_seeds_seed: String,
-    pub devices: Vec<DeviceKeys>,
+    pub revocation_key_0: String,
+    pub device_seed_0: String,
     pub timestamp: f64,
 }
 
-#[napi(object)]
-pub struct DeviceKeys {
-    pub device_nr: i32,
-    pub revocation_key: String,
-    pub device_seed: String,
-}
 
 /// Generates root seed, revocation key and device seed
 ///
@@ -71,8 +66,6 @@ pub async fn generate_initial_seeds(passphrase: String) -> napi::Result<KeyFile>
         base64::encode_config(device_seeds_seed_encrypted, base64::URL_SAFE_NO_PAD);
 
     // Derive, encrypt and base64 encode revocation key and device seed for first device
-    let mut devices: Vec<DeviceKeys> = Vec::new();
-
     let revocation_key_0 = revocation_seed
         .derive(0)
         .await
@@ -113,17 +106,12 @@ pub async fn generate_initial_seeds(passphrase: String) -> napi::Result<KeyFile>
             napi::Error::from_reason(format!("Failed to get system time since Unix epoch: {}", e))
         })?;
 
-    devices.push(DeviceKeys{
-        device_nr: 0,
-        revocation_key: revocation_key_0_b64,
-        device_seed: device_seed_0_b64,
-    });
-
     Ok(KeyFile {
         root_seed: root_seed_b64,
         revocation_seed: revocation_seed_b64,
         device_seeds_seed: device_seeds_seed_b64,
-        devices,
+        revocation_key_0: revocation_key_0_b64,
+        device_seed_0: device_seed_0_b64,
         timestamp: timestamp.as_secs_f64(),
     })
 }
