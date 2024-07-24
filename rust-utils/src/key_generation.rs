@@ -1,25 +1,31 @@
 use hc_seed_bundle::UnlockedSeedBundle;
 use std::time::SystemTime;
 
-
 #[napi(object)]
 pub struct KeyFile {
     pub root_seed: String,
-    pub revocation_key: String,
-    pub device_key: String,
+    pub revocation_seed: String,
+    pub device_seeds_seed: String,
+    pub devices: Vec<DeviceKeys>,
     pub timestamp: f64,
+}
+
+#[napi(object)]
+pub struct DeviceKeys {
+    pub device_nr: i32,
+    pub revocation_key: String,
+    pub device_seed: String,
 }
 
 /// Generates root seed, revocation key and device seed
 ///
 /// Use a single passphrase for the whole file for starters
 #[napi]
-pub async fn generate_seeds(passphrase: String) -> napi::Result<KeyFile> {
+pub async fn generate_initial_seeds(passphrase: String) -> napi::Result<KeyFile> {
     // Generate, encrypt and base64 encode root seed
     let root_seed = UnlockedSeedBundle::new_random()
         .await
         .map_err(|e| napi::Error::from_reason(format!("Failed to generate random seed: {}", e)))?;
-
 
     let root_seed_encrypted = root_seed
         .lock()
@@ -28,39 +34,78 @@ pub async fn generate_seeds(passphrase: String) -> napi::Result<KeyFile> {
         .await
         .map_err(|e| napi::Error::from_reason(format!("Failed to encrypt root seed: {}", e)))?;
 
-    let root_seed_b64 = base64::encode(root_seed_encrypted);
+    let root_seed_b64 = base64::encode_config(root_seed_encrypted, base64::URL_SAFE_NO_PAD);
 
-    // Derive, encrypt and base64 encode revocation key
-    let revocation_key = root_seed
+    // Derive, encrypt and base64 encode revocation seed
+    let revocation_seed = root_seed.derive(0).await.map_err(|e| {
+        napi::Error::from_reason(format!("Failed to derive revocation seed: {}", e))
+    })?;
+
+    let revocation_seed_encrypted = revocation_seed
+        .lock()
+        .add_pwhash_cipher(passphrase.as_bytes().to_owned())
+        .lock()
+        .await
+        .map_err(|e| {
+            napi::Error::from_reason(format!("Failed to encrypt revocation seed: {}", e))
+        })?;
+
+    let revocation_seed_b64 =
+        base64::encode_config(revocation_seed_encrypted, base64::URL_SAFE_NO_PAD);
+
+    // Derive, encrypt and base64 encode device seeds seed
+    let device_seeds_seed = root_seed.derive(1).await.map_err(|e| {
+        napi::Error::from_reason(format!("Failed to derive device seeds seed: {}", e))
+    })?;
+
+    let device_seeds_seed_encrypted = device_seeds_seed
+        .lock()
+        .add_pwhash_cipher(passphrase.as_bytes().to_owned())
+        .lock()
+        .await
+        .map_err(|e| {
+            napi::Error::from_reason(format!("Failed to encrypt device seeds seed: {}", e))
+        })?;
+
+    let device_seeds_seed_b64 =
+        base64::encode_config(device_seeds_seed_encrypted, base64::URL_SAFE_NO_PAD);
+
+    // Derive, encrypt and base64 encode revocation key and device seed for first device
+    let mut devices: Vec<DeviceKeys> = Vec::new();
+
+    let revocation_key_0 = revocation_seed
         .derive(0)
         .await
         .map_err(|e| napi::Error::from_reason(format!("Failed to derive revocation key: {}", e)))?;
 
-    let revocation_key_encrypted = revocation_key
+    let revocation_key_0_encrypted = revocation_key_0
         .lock()
         .add_pwhash_cipher(passphrase.as_bytes().to_owned())
         .lock()
         .await
-        .map_err(|e| napi::Error::from_reason(format!("Failed to encrypt root seed: {}", e)))?;
+        .map_err(|e| {
+            napi::Error::from_reason(format!("Failed to encrypt revocation key: {}", e))
+        })?;
 
-    let revocation_key_b64 = base64::encode(revocation_key_encrypted);
+    let revocation_key_0_b64 =
+        base64::encode_config(revocation_key_0_encrypted, base64::URL_SAFE_NO_PAD);
 
-    // Derive, encrypt and base64 encode device key
-
-    let device_key = root_seed
-        .derive(1)
+    let device_seed_0 = device_seeds_seed
+        .derive(0)
         .await
-        .map_err(|e| napi::Error::from_reason(format!("Failed to derive device key: {}", e)))?;
+        .map_err(|e| napi::Error::from_reason(format!("Failed to derive device seed: {}", e)))?;
 
-    let device_key_encrypted = device_key
+    let device_seed_0_encrypted = device_seed_0
         .lock()
         .add_pwhash_cipher(passphrase.as_bytes().to_owned())
         .lock()
         .await
-        .map_err(|e| napi::Error::from_reason(format!("Failed to encrypt root seed: {}", e)))?;
+        .map_err(|e| {
+            napi::Error::from_reason(format!("Failed to encrypt device seed: {}", e))
+        })?;
 
-    let device_key_b64 = base64::encode(device_key_encrypted);
-
+    let device_seed_0_b64 =
+        base64::encode_config(device_seed_0_encrypted, base64::URL_SAFE_NO_PAD);
 
     let timestamp = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
@@ -68,12 +113,17 @@ pub async fn generate_seeds(passphrase: String) -> napi::Result<KeyFile> {
             napi::Error::from_reason(format!("Failed to get system time since Unix epoch: {}", e))
         })?;
 
-
+    devices.push(DeviceKeys{
+        device_nr: 0,
+        revocation_key: revocation_key_0_b64,
+        device_seed: device_seed_0_b64,
+    });
 
     Ok(KeyFile {
         root_seed: root_seed_b64,
-        revocation_key: revocation_key_b64,
-        device_key: device_key_b64,
+        revocation_seed: revocation_seed_b64,
+        device_seeds_seed: device_seeds_seed_b64,
+        devices,
         timestamp: timestamp.as_secs_f64(),
     })
 }

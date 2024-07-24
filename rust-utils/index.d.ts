@@ -10,16 +10,22 @@ export function readAndDecodeHappOrWebhapp(path: string): Promise<HappAndUiBytes
 export function saveWebhapp(path: string, uiTargetDir: string): Promise<string>
 export interface KeyFile {
   rootSeed: string
-  revocationKey: string
-  deviceKey: string
+  revocationSeed: string
+  deviceSeedsSeed: string
+  devices: Array<DeviceKeys>
   timestamp: number
+}
+export interface DeviceKeys {
+  deviceNr: number
+  revocationKey: string
+  deviceSeed: string
 }
 /**
  * Generates root seed, revocation key and device seed
  *
  * Use a single passphrase for the whole file for starters
  */
-export function generateSeeds(passphrase: string): Promise<KeyFile>
+export function generateInitialSeeds(passphrase: string): Promise<KeyFile>
 export interface ZomeCallUnsignedNapi {
   cellId: Array<Array<number>>
   zomeName: string
