@@ -52,7 +52,7 @@ abi <abi/4.0>,
 include <tunables/global>
 
 profile ${launcherAppId} '/opt/${launcherProductName}/${launcherAppId}' flags=(unconfined) {
-  userns,s
+  userns,
 
   # Site-specific additions and overrides. See local/README for details.
   include if exists <local/${launcherAppId}>
