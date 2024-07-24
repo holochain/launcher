@@ -12,7 +12,10 @@
 	export let isSearchInputFilled: boolean;
 	export let onClick = () => {};
 
-	$: isDisabled = app.appInfo.status !== 'running' && 'disabled' in app.appInfo.status;
+	$: isDisabled =
+		app.appInfo.status !== 'running' &&
+		app.appInfo.status !== 'awaiting_memproofs' &&
+		'disabled' in app.appInfo.status;
 	$: willBeOpen = isSearchInputFilled && index === 0;
 	$: borderClasses = clsx('border-4', {
 		'dark:border-2 border-white': willBeOpen,
