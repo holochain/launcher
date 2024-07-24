@@ -38,8 +38,6 @@ abi <abi/4.0>,
 /opt/holochain-launcher/holochain-launcher-0.4-[replace with correct version number].AppImage flags=(unconfined) {
   userns,
 
-# include <abstractions/base>
-
 # No abstractions specified
 
 # No policy groups specified
