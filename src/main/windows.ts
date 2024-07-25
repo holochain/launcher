@@ -133,7 +133,11 @@ export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
       label: 'Open',
       type: 'normal',
       click() {
-        focusVisibleWindow(windows);
+        try {
+          focusVisibleWindow(windows);
+        } catch (e) {
+          console.log('FAILED TO FOCUS VISIBLE WINDOW: ', e);
+        }
       },
     },
     {
