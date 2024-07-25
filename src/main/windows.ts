@@ -1,21 +1,14 @@
 import { is, platform } from '@electron-toolkit/utils';
 import type { AppAuthenticationToken } from '@holochain/client';
 import crypto from 'crypto';
-import { app, BrowserWindow, globalShortcut, nativeImage, net, session } from 'electron';
+import { BrowserWindow, nativeImage, net, session } from 'electron';
 import serve from 'electron-serve';
 import path from 'path';
 import url from 'url';
 
-import {
-  ANIMATION_DURATION,
-  MAIN_WINDOW,
-  MIN_HEIGH,
-  SETTINGS_SIZE,
-  SETTINGS_WINDOW,
-  WINDOW_SIZE,
-} from '$shared/const';
+import { MAIN_WINDOW, MIN_HEIGH, SETTINGS_SIZE, SETTINGS_WINDOW, WINDOW_SIZE } from '$shared/const';
 import type { ExtendedAppInfo, Screen } from '$shared/types';
-import { HIDE_SETTINGS_WINDOW, LAUNCHER_ERROR } from '$shared/types';
+import { LAUNCHER_ERROR } from '$shared/types';
 
 import type { LauncherFileSystem } from './filesystem';
 import { type UiHashes } from './holochainManager';
@@ -71,14 +64,13 @@ const createAdminWindow = ({
     },
   });
 
-export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
-  let isQuitting = false;
+export const setupAppWindows = () => {
   // Create the browser window.
   const mainIcon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '../icon.png'));
   const mainWindow = createAdminWindow({
     title: 'Holochain Launcher',
     icon: mainIcon,
-    frame: platform.isWindows,
+    frame: platform.isWindows || platform.isLinux,
   });
 
   const settingsWindow = createAdminWindow({
@@ -94,26 +86,6 @@ export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
     [MAIN_WINDOW]: mainWindow,
     [SETTINGS_WINDOW]: settingsWindow,
   };
-
-  app.on('will-quit', () => {
-    // Unregister all shortcuts.
-    globalShortcut.unregisterAll();
-  });
-
-  app.on('before-quit', () => {
-    isQuitting = true;
-  });
-
-  settingsWindow.on('close', (e) => {
-    if (!isQuitting) {
-      e.preventDefault();
-      launcherEmitter.emit(HIDE_SETTINGS_WINDOW, true);
-      settingsWindow.hide();
-      setTimeout(() => {
-        mainWindow.show();
-      }, ANIMATION_DURATION);
-    }
-  });
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();

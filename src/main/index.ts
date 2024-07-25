@@ -18,6 +18,7 @@ import semver from 'semver';
 import z from 'zod';
 
 import {
+  ANIMATION_DURATION,
   APP_STORE_APP_ID,
   DEVHUB_APP_ID,
   DISTRIBUTION_TYPE_DEFAULT_APP,
@@ -46,6 +47,7 @@ import {
   InstallHappFromPathSchema,
   InstallHappOrWebhappFromBytesSchema,
   InstallWebhappFromHashesSchema,
+  LAUNCHER_ERROR,
   LOADING_PROGRESS_UPDATE,
   MISSING_BINARIES,
   NO_APP_PORT_ERROR,
@@ -212,6 +214,8 @@ const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain ma
 let LAIR_HANDLE: ChildProcessWithoutNullStreams | undefined;
 let PRIVILEDGED_LAUNCHER_WINDOWS: Record<Screen, BrowserWindow>; // Admin windows with special zome call signing priviledges
 const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
+let IS_LAUNCHED = false;
+let IS_QUITTING = false;
 
 const APP_CLIENTS: Record<InstalledAppId, AppClient> = {};
 let APPSTORE_APP_CLIENT: AppstoreAppClient | undefined;
@@ -261,7 +265,39 @@ app.whenReady().then(async () => {
 
   console.log('BEING RUN IN __dirnmane: ', __dirname);
 
-  PRIVILEDGED_LAUNCHER_WINDOWS = setupAppWindows(LAUNCHER_EMITTER);
+  PRIVILEDGED_LAUNCHER_WINDOWS = setupAppWindows();
+
+  const mainWindow = PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW];
+  const settingsWindow = PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW];
+  mainWindow.on('close', (e) => {
+    if (IS_QUITTING) return;
+    // If launcher has already launched, i.e. not "Enter Password" screen anymore, only hide the window
+    if (IS_LAUNCHED) {
+      e.preventDefault();
+      mainWindow.hide();
+      return;
+    }
+    // Close all windows to have the 'window-all-close' event be triggered
+    settingsWindow.close();
+  });
+
+  settingsWindow.on('close', (e) => {
+    if (IS_QUITTING || !IS_LAUNCHED) return;
+
+    e.preventDefault();
+    LAUNCHER_EMITTER.emit(HIDE_SETTINGS_WINDOW, true);
+    settingsWindow.hide();
+    setTimeout(() => {
+      mainWindow.show();
+    }, ANIMATION_DURATION);
+  });
+
+  // make sure window objects get deleted after closing
+  Object.entries(PRIVILEDGED_LAUNCHER_WINDOWS).forEach(([key, window]) => {
+    window.on('closed', () => {
+      delete PRIVILEDGED_LAUNCHER_WINDOWS[key];
+    });
+  });
 
   const trayIcon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '16x16.png'));
   const tray = new Tray(trayIcon);
@@ -271,7 +307,11 @@ app.whenReady().then(async () => {
       label: 'Open',
       type: 'normal',
       click() {
-        focusVisibleWindow();
+        try {
+          focusVisibleWindow();
+        } catch (e) {
+          LAUNCHER_EMITTER.emit(LAUNCHER_ERROR, `Failed to focus visible window: ${e}`);
+        }
       },
     },
     {
@@ -352,19 +392,18 @@ app.whenReady().then(async () => {
   }
 });
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
-  // if (process.platform !== 'darwin') {
-  //   app.quit();
-  // }
+app.on('before-quit', () => {
+  IS_QUITTING = true;
 });
 
-// app.on('will-quit', (e: Event) => {
-//   // let the launcher run in the background (systray)
-//   // e.preventDefault();
-// })
+app.on('window-all-closed', () => {
+  app.quit();
+});
+
+app.on('will-quit', () => {
+  // Unregister all shortcuts.
+  globalShortcut.unregisterAll();
+});
 
 app.on('quit', () => {
   if (LAIR_HANDLE) {
@@ -477,6 +516,7 @@ async function handleLaunch(password: string, isDirectLaunch = true) {
     ),
   );
 
+  IS_LAUNCHED = true;
   if (isDirectLaunch) {
     PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].setSize(WINDOW_SIZE, MIN_HEIGH, true);
   }
