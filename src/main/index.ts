@@ -8,7 +8,7 @@ import { AppstoreAppClient, DevhubAppClient, webhappToHappAndUi } from 'appstore
 import { type ChildProcessWithoutNullStreams, spawnSync } from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
-import { app, dialog, ipcMain, Menu, protocol } from 'electron';
+import { app, dialog, globalShortcut, ipcMain, Menu, protocol } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { createIPCHandler } from 'electron-trpc/main';
 import fs from 'fs';
@@ -19,6 +19,7 @@ import semver from 'semver';
 import z from 'zod';
 
 import {
+  ANIMATION_DURATION,
   APP_STORE_APP_ID,
   DEVHUB_APP_ID,
   DISTRIBUTION_TYPE_DEFAULT_APP,
@@ -213,6 +214,8 @@ const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain ma
 let LAIR_HANDLE: ChildProcessWithoutNullStreams | undefined;
 let PRIVILEDGED_LAUNCHER_WINDOWS: Record<Screen, BrowserWindow>; // Admin windows with special zome call signing priviledges
 const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
+let IS_LAUNCHED = false;
+let IS_QUITTING = false;
 
 const APP_CLIENTS: Record<InstalledAppId, AppClient> = {};
 let APPSTORE_APP_CLIENT: AppstoreAppClient | undefined;
@@ -262,7 +265,37 @@ app.whenReady().then(async () => {
 
   console.log('BEING RUN IN __dirnmane: ', __dirname);
 
-  PRIVILEDGED_LAUNCHER_WINDOWS = setupAppWindows(LAUNCHER_EMITTER);
+  PRIVILEDGED_LAUNCHER_WINDOWS = setupAppWindows();
+
+  const mainWindow = PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN];
+  const settingsWindow = PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN];
+  mainWindow.on('close', (e) => {
+    console.log('CLOSING MAIN WINDOW.');
+    console.log('IS_QUITTING: ', IS_QUITTING);
+    console.log('IS_LAUNCHED: ', IS_LAUNCHED);
+
+    // If launcher has already launched, i.e. not "Enter Password" screen anymore, only hide the window
+    if (!IS_QUITTING) {
+      if (IS_LAUNCHED) {
+        e.preventDefault();
+        mainWindow.hide();
+      } else {
+        // Close all windows to have the 'window-all-close' event triggered
+        settingsWindow.close();
+      }
+    }
+  });
+
+  settingsWindow.on('close', (e) => {
+    if (!IS_QUITTING && IS_LAUNCHED) {
+      e.preventDefault();
+      LAUNCHER_EMITTER.emit(HIDE_SETTINGS_WINDOW, true);
+      settingsWindow.hide();
+      setTimeout(() => {
+        mainWindow.show();
+      }, ANIMATION_DURATION);
+    }
+  });
 
   // make sure window objects get deleted after closing
   Object.entries(PRIVILEDGED_LAUNCHER_WINDOWS).forEach(([key, window]) => {
@@ -309,14 +342,24 @@ app.whenReady().then(async () => {
   }
 });
 
+app.on('before-quit', () => {
+  IS_QUITTING = true;
+});
+
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
+  console.log('ALL WINDOWS CLOSED');
   app.quit();
   // if (process.platform !== 'darwin') {
   //   app.quit();
   // }
+});
+
+app.on('will-quit', () => {
+  // Unregister all shortcuts.
+  globalShortcut.unregisterAll();
 });
 
 // app.on('will-quit', (e: Event) => {
@@ -434,6 +477,8 @@ async function handleLaunch(password: string, isDirectLaunch = true) {
       }),
     ),
   );
+
+  IS_LAUNCHED = true;
 
   if (isDirectLaunch) {
     PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE, MIN_HEIGH, true);

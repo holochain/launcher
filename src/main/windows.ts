@@ -15,16 +15,9 @@ import serve from 'electron-serve';
 import path from 'path';
 import url from 'url';
 
-import {
-  ANIMATION_DURATION,
-  MAIN_SCREEN,
-  MIN_HEIGH,
-  SETTINGS_SCREEN,
-  SETTINGS_SIZE,
-  WINDOW_SIZE,
-} from '$shared/const';
+import { MAIN_SCREEN, MIN_HEIGH, SETTINGS_SCREEN, SETTINGS_SIZE, WINDOW_SIZE } from '$shared/const';
 import type { ExtendedAppInfo, Screen } from '$shared/types';
-import { HIDE_SETTINGS_WINDOW, LAUNCHER_ERROR } from '$shared/types';
+import { LAUNCHER_ERROR } from '$shared/types';
 
 import type { LauncherFileSystem } from './filesystem';
 import { type UiHashes } from './holochainManager';
@@ -101,14 +94,13 @@ export const focusVisibleWindow = (launcherWindows: Record<Screen, BrowserWindow
   // }
 };
 
-export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
-  let isQuitting = false;
+export const setupAppWindows = () => {
   // Create the browser window.
   const mainIcon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '../icon.png'));
   const mainWindow = createAdminWindow({
     title: 'Holochain Launcher',
     icon: mainIcon,
-    frame: platform.isWindows,
+    frame: platform.isWindows || platform.isLinux,
   });
 
   const settingsWindow = createAdminWindow({
@@ -172,26 +164,6 @@ export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
   globalShortcut.register('CommandOrControl+Shift+L', () => {
     mainWindow.setSize(WINDOW_SIZE, MIN_HEIGH);
     focusVisibleWindow(windows);
-  });
-
-  app.on('will-quit', () => {
-    // Unregister all shortcuts.
-    globalShortcut.unregisterAll();
-  });
-
-  app.on('before-quit', () => {
-    isQuitting = true;
-  });
-
-  settingsWindow.on('close', (e) => {
-    if (!isQuitting) {
-      e.preventDefault();
-      launcherEmitter.emit(HIDE_SETTINGS_WINDOW, true);
-      settingsWindow.hide();
-      setTimeout(() => {
-        mainWindow.show();
-      }, ANIMATION_DURATION);
-    }
   });
 
   mainWindow.once('ready-to-show', () => {
