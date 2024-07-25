@@ -6,9 +6,23 @@ Cross-platform Desktop app to run [Holochain](https://www.holochain.org) apps.
 
 [Latest Stable Release](https://github.com/holochain/launcher-electron/releases/tag/v0.300.0)<br>(Holochain v0.3.1)
 
+### Download Latest Stable Version
+
+> [!IMPORTANT]
+> If you are on Ubuntu 24.04, installation with the deb file is highly recommended. Otherwise, follow the instructions [here](./docs/ubuntu-24.md)
+
+| macOS | Windows | Linux |
+| ----- | ------- | ----- |
+| [Download (M1 / Apple Silicon)](https://github.com/holochain/launcher/releases/download/v0.300.0/holochain-launcher-0.3-0.300.0-arm64.dmg)<br> [Download (Intel)](https://github.com/holochain/launcher/releases/download/v0.300.0/holochain-launcher-0.3-0.300.0-arm64.dmg) | [Download](https://github.com/holochain/launcher/releases/download/v0.300.0/holochain-launcher-0.3-0.300.0-setup.exe) | [deb (recommended)](https://github.com/holochain/launcher/releases/download/v0.300.0/holochain-launcher-0.3_0.300.0_amd64.deb) <br> [AppImage](https://github.com/holochain/launcher/releases/download/v0.300.0/holochain-launcher-0.3-0.300.0.AppImage)<br>
+ |
+
+The latest version stable version uses Holochain v0.3.1. More details can be found on the [Release page](https://github.com/holochain/launcher-electron/releases/tag/v0.300.0)
+
+
+
 ### Download Previous Versions
 
-[Latest Stable Release](https://github.com/holochain/launcher/releases/tag/v0.11.5)<br>(Holochain v0.2.6)
+[Latest Release for Holochain 0.2](https://github.com/holochain/launcher/releases/tag/v0.11.5)<br>(Holochain v0.2.6)
 
 
 # Developers
