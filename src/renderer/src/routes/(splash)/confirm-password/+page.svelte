@@ -37,7 +37,7 @@
 			{ password: $appPassword },
 			{
 				onSuccess: () => {
-					appPassword.set('');
+					$appPassword = '';
 					resizeWindowAndNavigate(APP_STORE);
 				},
 				onError: (error) => {
