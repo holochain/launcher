@@ -1,4 +1,4 @@
-appId: holochain-launcher-0.4
+appId: launcher-0.4
 directories:
   buildResources: build
 files:
