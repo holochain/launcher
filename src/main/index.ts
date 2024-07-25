@@ -270,27 +270,26 @@ app.whenReady().then(async () => {
   const mainWindow = PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN];
   const settingsWindow = PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN];
   mainWindow.on('close', (e) => {
+    if (IS_QUITTING) return;
     // If launcher has already launched, i.e. not "Enter Password" screen anymore, only hide the window
-    if (!IS_QUITTING) {
-      if (IS_LAUNCHED) {
-        e.preventDefault();
-        mainWindow.hide();
-      } else {
-        // Close all windows to have the 'window-all-close' event be triggered
-        settingsWindow.close();
-      }
+    if (IS_LAUNCHED) {
+      e.preventDefault();
+      mainWindow.hide();
+      return;
     }
+    // Close all windows to have the 'window-all-close' event be triggered
+    settingsWindow.close();
   });
 
   settingsWindow.on('close', (e) => {
-    if (!IS_QUITTING && IS_LAUNCHED) {
-      e.preventDefault();
-      LAUNCHER_EMITTER.emit(HIDE_SETTINGS_WINDOW, true);
-      settingsWindow.hide();
-      setTimeout(() => {
-        mainWindow.show();
-      }, ANIMATION_DURATION);
-    }
+    if (IS_QUITTING || !IS_LAUNCHED) return;
+
+    e.preventDefault();
+    LAUNCHER_EMITTER.emit(HIDE_SETTINGS_WINDOW, true);
+    settingsWindow.hide();
+    setTimeout(() => {
+      mainWindow.show();
+    }, ANIMATION_DURATION);
   });
 
   // make sure window objects get deleted after closing
