@@ -81,14 +81,24 @@ const createAdminWindow = ({
   });
 
 export const focusVisibleWindow = (launcherWindows: Record<Screen, BrowserWindow>) => {
-  const windows = Object.values(launcherWindows);
-  const anyVisible = windows.some((window) => !window.isMinimized() && window.isVisible());
-
-  if (!anyVisible) {
+  if (launcherWindows[MAIN_SCREEN]) {
     launcherWindows[MAIN_SCREEN].show();
-  } else {
-    windows.find((window) => !window.isMinimized() && window.isVisible())?.focus();
   }
+  // const windows = Object.values(launcherWindows);
+
+  // console.log('@focusVisibleWindow: windows: ', windows);
+
+  // const anyVisible = windows.some((window) => {
+  //   let visible = false;
+
+  //   !window.isMinimized() && window.isVisible();
+  // });
+
+  // if (!anyVisible) {
+  //   launcherWindows[MAIN_SCREEN].show();
+  // } else {
+  //   windows.find((window) => !window.isMinimized() && window.isVisible())?.focus();
+  // }
 };
 
 export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
