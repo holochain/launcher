@@ -36,7 +36,10 @@
 		$setupAndLaunch.mutate(
 			{ password: $appPassword },
 			{
-				onSuccess: () => resizeWindowAndNavigate(APP_STORE),
+				onSuccess: () => {
+					appPassword.set('');
+					resizeWindowAndNavigate(APP_STORE);
+				},
 				onError: (error) => {
 					console.error(error);
 					handleError($i18n.t(error.message || 'unknownError'), () => goto('/'));
