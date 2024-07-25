@@ -28,24 +28,22 @@
 		});
 	};
 
-	const signupAndLaunch = () => {
+	const signupAndLaunch = async () => {
 		if ($appPassword !== confirmPasswordInput) {
 			return handleError($i18n.t('passwordsDontMatch'));
 		}
 
-		$setupAndLaunch.mutate(
-			{ password: $appPassword },
-			{
-				onSuccess: () => {
-					$appPassword = '';
-					resizeWindowAndNavigate(APP_STORE);
-				},
-				onError: (error) => {
-					console.error(error);
-					handleError($i18n.t(error.message || 'unknownError'), () => goto('/'));
-				}
-			}
-		);
+		try {
+			await $setupAndLaunch.mutateAsync({ password: $appPassword });
+			$appPassword = '';
+			resizeWindowAndNavigate(APP_STORE);
+		} catch (error) {
+			console.error(error);
+			handleError($i18n.t((error as Error).message || 'unknownError'), () => {
+				$appPassword = '';
+				goto('/');
+			});
+		}
 	};
 </script>
 
