@@ -264,6 +264,14 @@ app.whenReady().then(async () => {
 
   PRIVILEDGED_LAUNCHER_WINDOWS = setupAppWindows(LAUNCHER_EMITTER);
 
+  // make sure window objects get deleted after closing
+  Object.entries(PRIVILEDGED_LAUNCHER_WINDOWS).forEach(([key, window]) => {
+    window.on('closed', () => {
+      console.log('WINDOW ', key, 'IS GETTING CLOSED.');
+      delete PRIVILEDGED_LAUNCHER_WINDOWS[key];
+    });
+  });
+
   createIPCHandler({ router, windows: Object.values(PRIVILEDGED_LAUNCHER_WINDOWS) });
 
   ipcMain.handle('sign-zome-call', handleSignZomeCall);
