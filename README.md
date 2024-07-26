@@ -4,7 +4,7 @@ Cross-platform Desktop app to run [Holochain](https://www.holochain.org) apps.
 
 ## Download Holochain Launcher
 
-### Download Latest Stable Version
+### Download Latest Version
 
 | macOS | Windows | Linux |
 | ----- | ------- | ----- |
