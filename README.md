@@ -8,7 +8,7 @@ Cross-platform Desktop app to run [Holochain](https://www.holochain.org) apps.
 
 | macOS | Windows | Linux |
 | ----- | ------- | ----- |
-| [Download (M1 / Apple Silicon)](https://github.com/holochain/launcher/releases/download/v0.300.1/holochain-launcher-0.3-0.300.1-arm64.dmg)<br> [Download (Intel)](https://github.com/holochain/launcher/releases/download/v0.300.1/holochain-launcher-0.3-0.300.1-arm64.dmg) | [Download](https://github.com/holochain/launcher/releases/download/v0.300.1/holochain-launcher-0.3-0.300.1-setup.exe) | [deb](https://github.com/holochain/launcher/releases/download/v0.300.1/holochain-launcher-0.3_0.300.1_amd64.deb) (recommended) <br> [AppImage](https://github.com/holochain/launcher/releases/download/v0.300.1/holochain-launcher-0.3-0.300.1.AppImage) (read note below) |
+| [Download (M1 / Apple Silicon)](https://github.com/holochain/launcher/releases/download/v0.300.1/holochain-launcher-0.3-0.300.1-arm64.dmg)<br> [Download (Intel)](https://github.com/holochain/launcher/releases/download/v0.300.1/holochain-launcher-0.3-0.300.1-x64.dmg) | [Download](https://github.com/holochain/launcher/releases/download/v0.300.1/holochain-launcher-0.3-0.300.1-setup.exe) | [deb](https://github.com/holochain/launcher/releases/download/v0.300.1/holochain-launcher-0.3_0.300.1_amd64.deb) (recommended) <br> [AppImage](https://github.com/holochain/launcher/releases/download/v0.300.1/holochain-launcher-0.3-0.300.1.AppImage) (read note below) |
 
 > [!IMPORTANT]
 > If you are on **Ubuntu 24.04**, installation with the deb file is highly recommended. Otherwise, follow the instructions [here](./docs/ubuntu-24.md)
