@@ -35,7 +35,8 @@ jobs:
       matrix:
         # platform: [macos-12, ubuntu-22.04]
         # platform: [windows-2019, macos-12, macos-latest, ubuntu-22.04]
-        platform: [windows-2019]
+        platform: [ubuntu-22.04]
+        # platform: [windows-2019]
     env:
       MACOSX_DEPLOYMENT_TARGET: 10.13
 
@@ -138,6 +139,8 @@ jobs:
           # Modify the postinst script of the .deb file
           node ./scripts/extend-deb-postinst.mjs
           gh release upload "v${{ steps.version.outputs.APP_VERSION }}" "latest-linux.yml" --clobber
+          gh release upload "v${{ steps.version.outputs.APP_VERSION }}" "dist/holochain-launcher-0.3_${{ steps.version.outputs.APP_VERSION }}_amd64.deb" --clobber
+
 
       - name: build, sign and upload the app (Windows)
         if: matrix.platform == 'windows-2019'
