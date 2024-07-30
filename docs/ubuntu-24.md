@@ -2,7 +2,7 @@
 
 Ubuntu 24.04 [introduced restrictions](https://discourse.ubuntu.com/t/ubuntu-24-04-lts-noble-numbat-release-notes/39890) for unprivileged user namespaces that prevents Electron-based apps from running without an appropriate apparmor profile.
 
-## Solution 1
+## Solution 1 (recommended)
 
 Install launcher using the .deb file. This will create an appropriate apparmor profile under the hood for you and you don't need to bother about it.
 
