@@ -35,7 +35,7 @@ jobs:
       matrix:
         # platform: [windows-2019, macos-12, macos-latest, ubuntu-22.04]
         # platform: [ubuntu-22.04, macos-12]
-        platform: [windows-2020]
+        platform: [windows-latest]
     env:
       MACOSX_DEPLOYMENT_TARGET: 10.13
 
