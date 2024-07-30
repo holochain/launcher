@@ -2,7 +2,7 @@ name: 'publish'
 on:
   push:
     branches:
-      - release
+      - release-debug-windows-11
 
 jobs:
   extract-versions:

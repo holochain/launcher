@@ -28,14 +28,10 @@ dmg:
 linux:
   target:
     - AppImage
-    - deb
-    # - snap
   maintainer: electronjs.org
   category: Utility
   icon: ./build/icon.icns
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
-# publish:
-#   provider: generic
-#   url: https://example.com/auto-updates
+productName: Holochain Launcher (0.4)

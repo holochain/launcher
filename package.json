@@ -1,6 +1,6 @@
 {
   "name": "holochain-launcher-0.4",
-  "version": "0.400.0-alpha.9",
+  "version": "0.400.0-debug.0",
   "private": true,
   "description": "Holochain Launcher (0.4)",
   "author": "Holochain Foundation <info@holochain.org> (http://holochain.org)",
@@ -57,7 +57,7 @@
     "@electron-toolkit/utils": "^3.0.0",
     "@electron/notarize": "2.3.2",
     "@holochain/client": "0.18.0-dev.1",
-    "@matthme/electron-updater": "6.3.0-alpha.1",
+    "electron-updater": "6.2.1",
     "@msgpack/msgpack": "^2.8.0",
     "@spartan-hc/bundles": "0.2.5",
     "@trpc/client": "^10.44.1",

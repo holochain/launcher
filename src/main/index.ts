@@ -1,7 +1,6 @@
 import { optimizer } from '@electron-toolkit/utils';
 import type { AppClient, CallZomeRequest, InstalledAppId } from '@holochain/client';
 import { AppWebsocket } from '@holochain/client';
-import { autoUpdater } from '@matthme/electron-updater';
 import { decode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
 import { AppstoreAppClient, DevhubAppClient, webhappToHappAndUi } from 'appstore-tools';
@@ -11,6 +10,7 @@ import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
 import { app, dialog, globalShortcut, ipcMain, Menu, protocol } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { createIPCHandler } from 'electron-trpc/main';
+import { autoUpdater } from 'electron-updater';
 import fs from 'fs';
 import type { LauncherLairClient } from 'hc-launcher-rust-utils';
 import * as rustUtils from 'hc-launcher-rust-utils';
