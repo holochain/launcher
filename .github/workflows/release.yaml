@@ -136,7 +136,7 @@ jobs:
 
 
       - name: build, sign and upload the app (Windows)
-        if: matrix.platform == 'windows-2019'
+        if: matrix.platform == 'windows-latest'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
