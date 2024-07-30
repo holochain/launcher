@@ -12,13 +12,9 @@ export interface KeyFile {
   rootSeed: string
   revocationSeed: string
   deviceSeedsSeed: string
-  devices: Array<DeviceKeys>
+  revocationKey0: string
+  deviceSeed0: string
   timestamp: number
-}
-export interface DeviceKeys {
-  deviceNr: number
-  revocationKey: string
-  deviceSeed: string
 }
 /**
  * Generates root seed, revocation key and device seed
