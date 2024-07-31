@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-SPECIFIC_BRANCH="feat/enhancements-2"
+SPECIFIC_BRANCH="release"
 
 echo "BRANCH_NAME: $BRANCH_NAME"
 echo "SPECIFIC_BRANCH: $SPECIFIC_BRANCH"
