@@ -1,5 +1,5 @@
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-SPECIFIC_BRANCH="release"
+SPECIFIC_BRANCH="feat/enhancements-2 "
 
 if [ "$BRANCH_NAME" = "$SPECIFIC_BRANCH" ]; then
   # Search for TODOs in the code
