@@ -23,7 +23,7 @@
 			const toggleTheme = (isDark) => document.documentElement.classList.toggle('dark', isDark);
 			const matchMediaDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
 
-			// TODO: Fix colors in app to allow for light mode
+			// TODO(release-check): Fix colors in app to allow for light mode
 
 			// Set the default theme based on system preference with fallback to dark
 			toggleTheme(matchMediaDark ? matchMediaDark.matches : true);
