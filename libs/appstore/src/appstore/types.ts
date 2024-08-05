@@ -4,9 +4,7 @@ import type {
   AgentPubKey,
   DnaHash,
   EntryHash,
-  FunctionName,
   ZomeCallCapGrant,
-  ZomeName,
 } from '@holochain/client';
 
 import type { EntityId, HRL } from '../devhub/types';
@@ -228,12 +226,6 @@ export type BundleHashes = {
   hash: string;
   ui_hash: string;
   happ_hash: string;
-};
-
-export type DnaZomeFunction = {
-  dna: DnaHash;
-  zome: ZomeName;
-  function: FunctionName;
 };
 
 export interface HostEntry {
