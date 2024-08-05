@@ -252,7 +252,9 @@
 				})}
 			update={Boolean(update)}
 		>
-			{@const cellIds = Object.entries(selectedApp.appInfo.cell_info)}
+			{@const cellIds = Object.entries(selectedApp.appInfo.cell_info).sort(([a], [b]) =>
+				a.localeCompare(b)
+			)}
 			{#each cellIds as [roleName, cellId], index}
 				{@const cellIdResult = getCellId(cellId[0])}
 				{#if cellIdResult}

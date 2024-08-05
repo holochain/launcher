@@ -1,13 +1,8 @@
 import { type AgentPubKey } from '@holochain/client';
 
-import type {
-  CustomRemoteCallInput,
-  DnaZomeFunction,
-  HostAvailability,
-  HostEntry,
-} from '../../appstore/types';
+import type { CustomRemoteCallInput, HostAvailability, HostEntry } from '../../appstore/types';
 import type { Entity } from '../../devhub/types';
-import type { AgentInfo } from '../../types';
+import type { AgentInfo, DnaZomeFunction, TryWithHostsArgs } from '../../types';
 import { ZomeClient } from '../../zome-client/zome-client';
 
 export interface Response<T> {
@@ -126,16 +121,19 @@ export class PortalZomeClient extends ZomeClient {
     }
   }
 
-  async tryWithHosts<T>(
-    fn: (host: AgentPubKey) => Promise<T>,
-    dnaZomeFunction: DnaZomeFunction,
-    pingTimeout: number = 4000,
-  ): Promise<T> {
+  async tryWithHosts<T>({
+    fn,
+    dnaZomeFunction,
+    pingTimeout = 4000,
+    statusCallback = () => {},
+  }: TryWithHostsArgs<T>): Promise<T> {
     // try with first responding host
+    statusCallback('Getting available host...');
     const quickestHost: AgentPubKey = await this.getAvailableHostForZomeFunction(
       dnaZomeFunction,
       pingTimeout,
     );
+
     console.log('got quickest host: ', quickestHost);
     try {
       // console.log("@tryWithHosts: trying with first responding host: ", encodeHashToBase64(host));

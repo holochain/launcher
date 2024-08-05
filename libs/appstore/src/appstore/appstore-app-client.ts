@@ -147,8 +147,8 @@ export class AppstoreAppClient {
   async fetchUiBytes(appVersion: AppVersionEntry): Promise<Uint8Array> {
     // For simplicity make all calls with one host. If that proves to not work well, split into
     // separate calls to different hosts
-    return this.portalZomeClient.tryWithHosts<Uint8Array>(
-      async (host) => {
+    return this.portalZomeClient.tryWithHosts<Uint8Array>({
+      fn: async (host) => {
         // 1. get WebappPackageVersionEntry and verify its hash
         const webappPackageVersion =
           await this.portalZomeClient.customRemoteCall<WebAppPackageVersionEntry>({
@@ -224,13 +224,13 @@ export class AppstoreAppClient {
 
         return bytes;
       },
-      {
+      dnaZomeFunction: {
         dna: appVersion.apphub_hrl.dna,
         zome: 'apphub_csr',
         function: 'get_webapp_package_version_entry', // We just pick one of the functions for the sake of simplicity and assume that all other functions are callable as well by the same host
       },
-      4000,
-    );
+      pingTimeout: 4000,
+    });
   }
 
   /**
@@ -240,8 +240,8 @@ export class AppstoreAppClient {
   async fetchWebappBytes(appVersion: AppVersionEntry): Promise<Uint8Array> {
     // For simplicity make all calls with one host. If that proves to not work well, split into
     // separate calls to different hosts
-    return this.portalZomeClient.tryWithHosts<Uint8Array>(
-      async (host) => {
+    return this.portalZomeClient.tryWithHosts<Uint8Array>({
+      fn: async (host) => {
         // 1. get WebappPackageVersion and verify its hash
         const webappPackageVersion =
           await this.portalZomeClient.customRemoteCall<WebAppPackageVersionEntry>({
@@ -347,13 +347,13 @@ export class AppstoreAppClient {
 
         // return Promise.reject('fetchWebappBytes() is not implemented yet.');
       },
-      {
+      dnaZomeFunction: {
         dna: appVersion.apphub_hrl.dna,
         zome: 'apphub_csr',
         function: 'get_webapp_package_version_entry', // We just pick one of the functions for the sake of simplicity and assume that all other functions are callable as well by the same host
       },
-      4000,
-    );
+      pingTimeout: 4000,
+    });
   }
 
   bundleFromDnaAsset(dnaAsset: DnaAsset): any {

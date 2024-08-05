@@ -1,4 +1,24 @@
-import type { ActionHash, ActionHashB64, AgentPubKey } from '@holochain/client';
+import type {
+  ActionHash,
+  ActionHashB64,
+  AgentPubKey,
+  DnaHash,
+  FunctionName,
+  ZomeName,
+} from '@holochain/client';
+
+export type DnaZomeFunction = {
+  dna: DnaHash;
+  zome: ZomeName;
+  function: FunctionName;
+};
+
+export type TryWithHostsArgs<T> = {
+  fn: (host: AgentPubKey) => Promise<T>;
+  dnaZomeFunction: DnaZomeFunction;
+  pingTimeout?: number;
+  statusCallback?: (status: string) => void;
+};
 
 export type UpdateEntityInput<T> = {
   base: ActionHash;
