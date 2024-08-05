@@ -6,10 +6,11 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { AppDetailsPanel, Button } from '$components';
-	import { KEY_MANAGEMENT } from '$const';
+	import { KEY_MANAGEMENT, MODAL_UNINSTALL_APP_CONFIRMATION } from '$const';
 	import {
 		capitalizeFirstLetter,
 		createImageUrl,
+		createModalParams,
 		filterHash,
 		getAppStoreDistributionHash,
 		getCellId,
@@ -29,6 +30,7 @@
 	import AppSettings from './components/AppSettings.svelte';
 	import KeyManagement from './components/KeyManagement.svelte';
 	import SystemSettings from './components/SystemSettings.svelte';
+	import type { Modals } from '$types';
 
 	const client = trpc();
 
@@ -150,6 +152,25 @@
 		});
 	};
 
+	const showModal = (modalType: Modals, response?: (r: unknown) => void) => {
+		const modal = createModalParams(modalType, response);
+		modalStore.trigger(modal);
+	};
+
+	const showUninstallModal = () => {
+		showModal(MODAL_UNINSTALL_APP_CONFIRMATION, (confirm) => {
+			if (confirm) {
+				validateApp(selectedApp) &&
+				$uninstallApp.mutate(selectedApp, {
+					onSuccess: () => {
+						$installedApps.refetch();
+						goto(`/${SETTINGS_SCREEN}`);
+					}
+				})
+			}
+		});
+	};
+
 	$: icon = selectedApp?.icon ? new Uint8Array(selectedApp.icon) : undefined;
 </script>
 
@@ -242,14 +263,7 @@
 	{:else}
 		<AppSettings
 			isHeadless={selectedApp.isHeadless}
-			uninstallLogic={() =>
-				validateApp(selectedApp) &&
-				$uninstallApp.mutate(selectedApp, {
-					onSuccess: () => {
-						$installedApps.refetch();
-						goto(`/${SETTINGS_SCREEN}`);
-					}
-				})}
+			uninstallLogic={() => showUninstallModal()}
 			update={Boolean(update)}
 		>
 			{@const cellIds = Object.entries(selectedApp.appInfo.cell_info).sort(([a], [b]) =>
