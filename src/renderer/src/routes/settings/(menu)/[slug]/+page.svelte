@@ -6,7 +6,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { AppDetailsPanel, Button, NoClickOverlay } from '$components';
-	import { MODAL_DEVHUB_INSTALLATION_CONFIRMATION, MODAL_FACTORY_RESET_CONFIRMATION } from '$const';
+	import { MODAL_DEVHUB_INSTALLATION_CONFIRMATION, MODAL_FACTORY_RESET_CONFIRMATION, MODAL_UNINSTALL_APP_CONFIRMATION } from '$const';
 	import {
 		capitalizeFirstLetter,
 		createImageUrl,
@@ -202,6 +202,21 @@
 		});
 	};
 
+
+	const showUninstallModal = () => {
+		showModal(MODAL_UNINSTALL_APP_CONFIRMATION, (confirm) => {
+			if (confirm) {
+				validateApp(selectedApp) &&
+				$uninstallApp.mutate(selectedApp, {
+					onSuccess: () => {
+						$installedApps.refetch();
+						goto(`/${SETTINGS_WINDOW}`);
+					}
+				})
+			}
+		});
+	};
+
 	$: icon = selectedApp?.icon ? new Uint8Array(selectedApp.icon) : undefined;
 </script>
 
@@ -296,14 +311,7 @@
 	{:else}
 		<AppSettings
 			isHeadless={selectedApp.isHeadless}
-			uninstallLogic={() =>
-				validateApp(selectedApp) &&
-				$uninstallApp.mutate(selectedApp, {
-					onSuccess: () => {
-						$installedApps.refetch();
-						goto(`/${SETTINGS_WINDOW}`);
-					}
-				})}
+			uninstallLogic={() => showUninstallModal()}
 			update={Boolean(update)}
 		>
 			{@const cellIds = Object.entries(selectedApp.appInfo.cell_info)}

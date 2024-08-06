@@ -16,12 +16,14 @@
 		MODAL_DEVHUB_INSTALLATION_CONFIRMATION,
 		MODAL_FACTORY_RESET_CONFIRMATION,
 		MODAL_INSTALL_FROM_FILE,
+		MODAL_UNINSTALL_APP_CONFIRMATION,
 	} from '$const';
 	import { startViewTransition } from '$helpers';
 	import {
 		DevHubInstallationConfirmation,
 		FactoryResetConformation,
 		InstallFromFile,
+		UninstallAppConfirmation,
 	} from '$modal';
 
 	const queryClient = new QueryClient();
@@ -30,7 +32,8 @@
 		[MODAL_INSTALL_FROM_FILE]: { ref: InstallFromFile },
 		// [MODAL_INSTALL_KANDO]: { ref: InstallKando },
 		[MODAL_DEVHUB_INSTALLATION_CONFIRMATION]: { ref: DevHubInstallationConfirmation },
-		[MODAL_FACTORY_RESET_CONFIRMATION]: { ref: FactoryResetConformation }
+		[MODAL_FACTORY_RESET_CONFIRMATION]: { ref: FactoryResetConformation },
+		[MODAL_UNINSTALL_APP_CONFIRMATION]: { ref: UninstallAppConfirmation }
 	};
 
 	const setupStorePopup = () => {

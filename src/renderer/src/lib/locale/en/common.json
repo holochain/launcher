@@ -89,6 +89,7 @@
 	"theDeveloperToolkitSyncs": "The developer toolkit syncs with the app publishing network. Your local device will host files and potentially large amounts of data.",
 	"thisAppHasNotBeenVerifiedByTheHolochainFoundation": "This app has not been verified by the Holochain Foundation. Make sure you trust it before installing.",
 	"uninstall": "Uninstall",
+	"uninstallAppModalBody": "Are you sure you want to uninstall the app? This will delete all associated data.",
 	"updateAppDetails": "Update App Details",
 	"updateAvailable": "Update available",
 	"uploadAndPublish": "upload and publish apps",
