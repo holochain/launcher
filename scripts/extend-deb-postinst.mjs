@@ -63,9 +63,12 @@ profile ${launcherAppId} \\"/opt/${launcherProductName}/${launcherAppId}\\" flag
 
     echo "$profile_content" > /etc/apparmor.d/${launcherAppId}
 
+    systemctl reload apparmor.service
+
   fi
 
 fi
+
 
 # SUID chrome-sandbox for Electron 5+
 `);
