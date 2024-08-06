@@ -6,6 +6,10 @@ Ubuntu 24.04 [introduced restrictions](https://discourse.ubuntu.com/t/ubuntu-24-
 
 Install launcher using the .deb file. This will create an appropriate apparmor profile under the hood for you and you don't need to bother about it.
 
+```
+sudo apt install ./holochain-launcher-0.4-[replace with correct version number]_amd64.deb
+```
+
 ## Solution 2
 
 If you don't want to use the .deb file but the AppImage, then you will need to create an apparmor profile yourself that points to the location of the AppImage. Follow the instructions below, replacing the launcher version wherever necessary with the actual launcher version that you're trying to use.
