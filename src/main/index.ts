@@ -608,16 +608,32 @@ const router = t.router({
     if (isHappAvailable && isUiAvailable) return;
 
     try {
-      if (isHappAvailable && !isUiAvailable) {
-        const uiBytes = await appstoreAppClient.fetchUiBytes(appVersionEntry);
-        holochainManager.storeUiIfNecessary(Array.from(uiBytes), icon);
-        return;
-      }
+      console.log('Awaiting promises...');
+      await Promise.allSettled(
+        [isHappAvailable, isUiAvailable].map(async (_) => {
+          if (!isHappAvailable) {
+            console.log('fetching happ bytes...');
+            const happBytes = await appstoreAppClient.fetchHappBytes(appVersionEntry);
+            holochainManager.storeHapp(Array.from(happBytes));
+          }
+          if (!isUiAvailable) {
+            console.log('fetching UI bytes...');
+            const uiBytes = await appstoreAppClient.fetchUiBytes(appVersionEntry);
+            holochainManager.storeUiIfNecessary(Array.from(uiBytes), icon);
+          }
+        }),
+      );
 
-      const webhappBytes = await appstoreAppClient.fetchWebappBytes(appVersionEntry);
-      const { ui, happ } = webhappToHappAndUi(webhappBytes);
-      holochainManager.storeUiIfNecessary(Array.from(ui), icon);
-      holochainManager.storeHapp(Array.from(happ));
+      // if (isHappAvailable && !isUiAvailable) {
+      //   const uiBytes = await appstoreAppClient.fetchUiBytes(appVersionEntry);
+      //   holochainManager.storeUiIfNecessary(Array.from(uiBytes), icon);
+      //   return;
+      // }
+
+      // const webhappBytes = await appstoreAppClient.fetchWebappBytes(appVersionEntry);
+      // const { ui, happ } = webhappToHappAndUi(webhappBytes);
+      // holochainManager.storeUiIfNecessary(Array.from(ui), icon);
+      // holochainManager.storeHapp(Array.from(happ));
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       if (errorMessage.includes('No available peer host found.')) {
