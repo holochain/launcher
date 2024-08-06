@@ -169,8 +169,9 @@ export function breakingVersion(version: string) {
     throw new Error('Version is not valid semver.');
   }
 
-  if (semver.prerelease(version)) {
-    return version;
+  const prerelease = semver.prerelease(version);
+  if (prerelease) {
+    return `${semver.major(version)}.${semver.minor(version)}.${semver.patch(version)}-${prerelease[0]}`;
   }
 
   const major = semver.major(version);
