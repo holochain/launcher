@@ -141,99 +141,6 @@ export class AppstoreAppClient {
   // async fetchHappBytes();
 
   /**
-   * Fetches the UI bytes for a given app version
-   * @param appVersion
-   */
-  async fetchUiBytes(appVersion: AppVersionEntry): Promise<Uint8Array> {
-    // For simplicity make all calls with one host. If that proves to not work well, split into
-    // separate calls to different hosts
-    return this.portalZomeClient.tryWithHosts<Uint8Array>({
-      fn: async (host) => {
-        // 1. get WebappPackageVersionEntry and verify its hash
-        const webappPackageVersion =
-          await this.portalZomeClient.customRemoteCall<WebAppPackageVersionEntry>({
-            host,
-            call: {
-              dna: appVersion.apphub_hrl.dna,
-              zome: 'apphub_csr',
-              function: 'get_webapp_package_version_entry',
-              payload: appVersion.apphub_hrl.target,
-            },
-          });
-        // validate hash of received entry
-        const webappPackageVersionEntryHash =
-          await this.appstoreZomeClient.hashWebappPackageVersionEntry(webappPackageVersion);
-        if (webappPackageVersionEntryHash.toString() !== appVersion.apphub_hrl_hash.toString()) {
-          throw new Error(
-            'Hash of received WebappPackageVersionEntry does not match the expected hash.',
-          );
-        }
-
-        // 2. Get the WebappEntry to figure out the entry hash of the UI
-        const webappEntryEntity = await this.portalZomeClient.customRemoteCall<Entity<WebAppEntry>>(
-          {
-            host,
-            call: {
-              dna: appVersion.apphub_hrl.dna,
-              zome: 'apphub_csr',
-              function: 'get_webapp_entry',
-              payload: webappPackageVersion.webapp,
-            },
-          },
-        );
-        // validate hash of received entry
-        const webappEntryHash = await this.appstoreZomeClient.hashWebappEntry(
-          webappEntryEntity.content,
-        );
-        if (webappEntryHash.toString() !== webappPackageVersion.webapp.toString()) {
-          throw new Error('Hash of received WebappEntry does not match the expected hash.');
-        }
-
-        console.log('Got WebappEntry: ', webappEntryEntity.content);
-
-        // 2. Get UI asset
-        const uiResourcePath = webappEntryEntity.content.manifest.ui.bundled;
-        const uiEntryHash = webappEntryEntity.content.resources[uiResourcePath];
-        if (!uiEntryHash)
-          throw new Error('UI EntryHash not found in the resources field of the WebAppEntry');
-
-        // happy path
-        const uiAsset = await this.portalZomeClient.customRemoteCall<UiAsset>({
-          host,
-          call: {
-            dna: appVersion.apphub_hrl.dna,
-            zome: 'apphub_csr',
-            function: 'get_ui_asset',
-            payload: uiEntryHash,
-          },
-        });
-
-        console.log('Got uiAsset: ', uiAsset);
-
-        const bytes = this.mereMemoryZomeClient.decompressBytes(
-          uiAsset.memory_entry,
-          uiAsset.bytes,
-        );
-
-        // Verify integrity of bytes
-        const uiSha256 = sha256.hex(bytes);
-        if (appVersion.bundle_hashes.ui_hash !== uiSha256)
-          throw new Error(
-            `Hash of received UI bytes does not match the expected hash. Got ${uiSha256} but expecting ${appVersion.bundle_hashes.ui_hash}`,
-          );
-
-        return bytes;
-      },
-      dnaZomeFunction: {
-        dna: appVersion.apphub_hrl.dna,
-        zome: 'apphub_csr',
-        function: 'get_webapp_package_version_entry', // We just pick one of the functions for the sake of simplicity and assume that all other functions are callable as well by the same host
-      },
-      pingTimeout: 4000,
-    });
-  }
-
-  /**
    * Fetches the webhapp bytes for a given app version via sequential remote calls to devhub hosts
    * @param appVersion
    */
@@ -346,6 +253,176 @@ export class AppstoreAppClient {
         // 2.5 verify all hashes with the expected hashes
 
         // return Promise.reject('fetchWebappBytes() is not implemented yet.');
+      },
+      dnaZomeFunction: {
+        dna: appVersion.apphub_hrl.dna,
+        zome: 'apphub_csr',
+        function: 'get_webapp_package_version_entry', // We just pick one of the functions for the sake of simplicity and assume that all other functions are callable as well by the same host
+      },
+      pingTimeout: 4000,
+    });
+  }
+
+  /**
+   *
+   * @param appVersion
+   * @param webappPackageVersion Can be provided if the WebAppPackageVersionEntry has already been fetched
+   * otherwise in order to omit redundant remote calls
+   * @returns
+   */
+  async fetchHappBytes(
+    appVersion: AppVersionEntry,
+    webappPackageVersion?: WebAppPackageVersionEntry,
+  ): Promise<Uint8Array> {
+    // For simplicity make all calls with one host. If that proves to not work well, split into
+    // separate calls to different hosts
+    return this.portalZomeClient.tryWithHosts<Uint8Array>({
+      fn: async (host) => {
+        // 1. get WebappPackageVersion and verify its hash - only necessary if the entry is not already
+        // provided as a function argument.
+        if (!webappPackageVersion) {
+          webappPackageVersion =
+            await this.portalZomeClient.customRemoteCall<WebAppPackageVersionEntry>({
+              host,
+              call: {
+                dna: appVersion.apphub_hrl.dna,
+                zome: 'apphub_csr',
+                function: 'get_webapp_package_version_entry',
+                payload: appVersion.apphub_hrl.target,
+              },
+            });
+
+          console.log('Got webapp package version: ', webappPackageVersion);
+        }
+        // validate hash of received entry
+        const webappPackageVersionEntryHash =
+          await this.appstoreZomeClient.hashWebappPackageVersionEntry(webappPackageVersion);
+        if (
+          encodeHashToBase64(webappPackageVersionEntryHash) !==
+          encodeHashToBase64(appVersion.apphub_hrl_hash)
+        ) {
+          throw new Error(
+            `Hash of WebappPackageVersionEntry does not match expected hash. Got ${encodeHashToBase64(webappPackageVersionEntryHash)}, expected ${encodeHashToBase64(appVersion.apphub_hrl_hash)}`,
+          );
+        }
+        // 2. Get happ bundle
+        // happy path
+        const appAsset = await this.portalZomeClient.customRemoteCall<AppAsset>({
+          host,
+          call: {
+            dna: appVersion.apphub_hrl.dna,
+            zome: 'apphub_csr',
+            function: 'get_app_asset',
+            payload: webappPackageVersion.webapp,
+          },
+        });
+
+        console.log('Got AppAsset: ', appAsset);
+
+        // Create webapp bundle
+        const appBundle = this.bundleFromAppAsset(appAsset);
+        const deterministicBundleBytes = bundleToDeterministicBytes(appBundle);
+
+        const happSha256 = sha256.hex(deterministicBundleBytes);
+        if (appVersion.bundle_hashes.happ_hash !== happSha256)
+          throw new Error(
+            `Hash of received happ bytes does not match the expected hash. Got ${happSha256} but expecting ${appVersion.bundle_hashes.happ_hash}`,
+          );
+
+        return deterministicBundleBytes;
+      },
+      dnaZomeFunction: {
+        dna: appVersion.apphub_hrl.dna,
+        zome: 'apphub_csr',
+        function: 'get_app_asset', // We just pick one of the functions for the sake of simplicity and assume that all other functions are callable as well by the same host
+      },
+      pingTimeout: 4000,
+    });
+  }
+
+  /**
+   * Fetches the UI bytes for a given app version
+   * @param appVersion
+   */
+  async fetchUiBytes(appVersion: AppVersionEntry): Promise<Uint8Array> {
+    // For simplicity make all calls with one host. If that proves to not work well, split into
+    // separate calls to different hosts
+    return this.portalZomeClient.tryWithHosts<Uint8Array>({
+      fn: async (host) => {
+        // 1. get WebappPackageVersionEntry and verify its hash
+        const webappPackageVersion =
+          await this.portalZomeClient.customRemoteCall<WebAppPackageVersionEntry>({
+            host,
+            call: {
+              dna: appVersion.apphub_hrl.dna,
+              zome: 'apphub_csr',
+              function: 'get_webapp_package_version_entry',
+              payload: appVersion.apphub_hrl.target,
+            },
+          });
+        // validate hash of received entry
+        const webappPackageVersionEntryHash =
+          await this.appstoreZomeClient.hashWebappPackageVersionEntry(webappPackageVersion);
+        if (webappPackageVersionEntryHash.toString() !== appVersion.apphub_hrl_hash.toString()) {
+          throw new Error(
+            'Hash of received WebappPackageVersionEntry does not match the expected hash.',
+          );
+        }
+
+        // 2. Get the WebappEntry to figure out the entry hash of the UI
+        const webappEntryEntity = await this.portalZomeClient.customRemoteCall<Entity<WebAppEntry>>(
+          {
+            host,
+            call: {
+              dna: appVersion.apphub_hrl.dna,
+              zome: 'apphub_csr',
+              function: 'get_webapp_entry',
+              payload: webappPackageVersion.webapp,
+            },
+          },
+        );
+        // validate hash of received entry
+        const webappEntryHash = await this.appstoreZomeClient.hashWebappEntry(
+          webappEntryEntity.content,
+        );
+        if (webappEntryHash.toString() !== webappPackageVersion.webapp.toString()) {
+          throw new Error('Hash of received WebappEntry does not match the expected hash.');
+        }
+
+        console.log('Got WebappEntry: ', webappEntryEntity.content);
+
+        // 2. Get UI asset
+        const uiResourcePath = webappEntryEntity.content.manifest.ui.bundled;
+        const uiEntryHash = webappEntryEntity.content.resources[uiResourcePath];
+        if (!uiEntryHash)
+          throw new Error('UI EntryHash not found in the resources field of the WebAppEntry');
+
+        // happy path
+        const uiAsset = await this.portalZomeClient.customRemoteCall<UiAsset>({
+          host,
+          call: {
+            dna: appVersion.apphub_hrl.dna,
+            zome: 'apphub_csr',
+            function: 'get_ui_asset',
+            payload: uiEntryHash,
+          },
+        });
+
+        console.log('Got uiAsset: ', uiAsset);
+
+        const bytes = this.mereMemoryZomeClient.decompressBytes(
+          uiAsset.memory_entry,
+          uiAsset.bytes,
+        );
+
+        // Verify integrity of bytes
+        const uiSha256 = sha256.hex(bytes);
+        if (appVersion.bundle_hashes.ui_hash !== uiSha256)
+          throw new Error(
+            `Hash of received UI bytes does not match the expected hash. Got ${uiSha256} but expecting ${appVersion.bundle_hashes.ui_hash}`,
+          );
+
+        return bytes;
       },
       dnaZomeFunction: {
         dna: appVersion.apphub_hrl.dna,
