@@ -235,6 +235,7 @@ export const createHappWindow = (
     webPreferences: {
       preload: path.resolve(__dirname, '../preload/happs.js'),
       partition,
+      safeDialogs: true,
     },
   });
 
