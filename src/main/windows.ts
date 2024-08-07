@@ -14,7 +14,7 @@ import type { LauncherFileSystem } from './filesystem';
 import { type UiHashes } from './holochainManager';
 import { type LauncherEmitter } from './launcherEmitter';
 import { ICONS_DIRECTORY } from './paths';
-import { encodeQuery, setLinkOpenHandlers } from './utils';
+import { encodeQuery, happSessionName, setLinkOpenHandlers } from './utils';
 
 const serveURL = serve({ directory: path.join(__dirname, '..', 'renderer') });
 
@@ -115,7 +115,7 @@ export const createHappWindow = (
   const uiHashes = launcherFileSystem.integrityChecker.readSignedJSON<UiHashes>(
     path.join(appUiDir, 'hashes.json'),
   );
-  const partition = `persist:${holochainDataRoot.name}#${appId}`;
+  const partition = happSessionName(holochainDataRoot.name, appId);
   const ses = session.fromPartition(partition);
   ses.protocol.handle('webhapp', async (request) => {
     // console.log("### Got file request: ", request);
@@ -166,6 +166,7 @@ export const createHappWindow = (
     webPreferences: {
       preload: path.resolve(__dirname, '../preload/happs.js'),
       partition,
+      safeDialogs: true,
     },
   });
 
