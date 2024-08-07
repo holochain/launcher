@@ -12,7 +12,7 @@ import { AdminWebsocket, decodeHashFromBase64 } from '@holochain/client';
 import AdmZip from 'adm-zip';
 import * as childProcess from 'child_process';
 import crypto from 'crypto';
-import { app } from 'electron';
+import { app, session } from 'electron';
 import fs from 'fs';
 import getPort from 'get-port';
 import { type HappAndUiBytes } from 'hc-launcher-rust-utils';
@@ -39,7 +39,7 @@ import type { AppMetadata, AppMetadataV1, LauncherFileSystem } from './filesyste
 import { createDirIfNotExists } from './filesystem';
 import { type IntegrityChecker } from './integrityChecker';
 import type { LauncherEmitter } from './launcherEmitter';
-import { breakingVersion } from './utils';
+import { breakingVersion, happSessionName } from './utils';
 
 export type AdminPort = number;
 export type AppPort = number;
@@ -738,6 +738,11 @@ export class HolochainManager {
   async uninstallApp(appId: string) {
     await this.adminWebsocket.uninstallApp({ installed_app_id: appId });
     fs.rmSync(this.fs.appMetadataDir(appId, this.holochainDataRoot), { recursive: true });
+    // Delete persisted session data
+    const partition = happSessionName(this.holochainDataRoot.name, appId);
+    const ses = session.fromPartition(partition);
+    await ses.clearStorageData();
+
     console.log('Uninstalled app.');
     const installedApps = await this.adminWebsocket.listApps({});
     console.log('Installed apps: ', installedApps);

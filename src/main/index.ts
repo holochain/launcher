@@ -188,7 +188,7 @@ app.on('activate', () => {
 protocol.registerSchemesAsPrivileged([
   {
     scheme: 'webhapp',
-    privileges: { standard: true },
+    privileges: { standard: true, secure: true, stream: true },
   },
 ]);
 
