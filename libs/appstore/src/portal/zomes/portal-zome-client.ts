@@ -1,4 +1,4 @@
-import { type AgentPubKey } from '@holochain/client';
+import { type AgentPubKey, encodeHashToBase64 } from '@holochain/client';
 
 import type { CustomRemoteCallInput, HostAvailability, HostEntry } from '../../appstore/types';
 import type { Entity } from '../../devhub/types';
@@ -134,7 +134,7 @@ export class PortalZomeClient extends ZomeClient {
       pingTimeout,
     );
 
-    console.log('got quickest host: ', quickestHost);
+    console.log('got quickest host: ', encodeHashToBase64(quickestHost));
     try {
       // console.log("@tryWithHosts: trying with first responding host: ", encodeHashToBase64(host));
       const result = await fn(quickestHost);

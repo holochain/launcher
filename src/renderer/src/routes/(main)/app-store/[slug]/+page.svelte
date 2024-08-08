@@ -53,7 +53,7 @@
 		}
 		return showModalError({
 			modalStore,
-			errorTitle: $i18n.t('appError'),
+			errorTitle: $i18n.t('downloadError'),
 			errorMessage: $i18n.t(errorMessage)
 		});
 	};

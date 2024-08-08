@@ -292,7 +292,7 @@ export class AppstoreAppClient {
               },
             });
 
-          console.log('Got webapp package version: ', webappPackageVersion);
+          console.log('@fetchHappBytes Got WebAppPackageVersionEntry: ', webappPackageVersion);
         }
         // validate hash of received entry
         const webappPackageVersionEntryHash =
@@ -305,6 +305,35 @@ export class AppstoreAppClient {
             `Hash of WebappPackageVersionEntry does not match expected hash. Got ${encodeHashToBase64(webappPackageVersionEntryHash)}, expected ${encodeHashToBase64(appVersion.apphub_hrl_hash)}`,
           );
         }
+
+        // 2. Get the WebappEntry to figure out the entry hash of the UI
+        const webappEntryEntity = await this.portalZomeClient.customRemoteCall<Entity<WebAppEntry>>(
+          {
+            host,
+            call: {
+              dna: appVersion.apphub_hrl.dna,
+              zome: 'apphub_csr',
+              function: 'get_webapp_entry',
+              payload: webappPackageVersion.webapp,
+            },
+          },
+        );
+        // validate hash of received entry
+        const webappEntryHash = await this.appstoreZomeClient.hashWebappEntry(
+          webappEntryEntity.content,
+        );
+        if (webappEntryHash.toString() !== webappPackageVersion.webapp.toString()) {
+          throw new Error('Hash of received WebappEntry does not match the expected hash.');
+        }
+
+        console.log('Got WebappEntry: ', webappEntryEntity.content);
+
+        // 2. Get UI asset
+        const happResourcePath = webappEntryEntity.content.manifest.happ_manifest.bundled;
+        const happEntryHash = webappEntryEntity.content.resources[happResourcePath];
+        if (!happEntryHash)
+          throw new Error('AppEntry EntryHash not found in the resources field of the WebAppEntry');
+
         // 2. Get happ bundle
         // happy path
         const appAsset = await this.portalZomeClient.customRemoteCall<AppAsset>({
@@ -313,7 +342,7 @@ export class AppstoreAppClient {
             dna: appVersion.apphub_hrl.dna,
             zome: 'apphub_csr',
             function: 'get_app_asset',
-            payload: webappPackageVersion.webapp,
+            payload: happEntryHash,
           },
         });
 
@@ -360,12 +389,18 @@ export class AppstoreAppClient {
               payload: appVersion.apphub_hrl.target,
             },
           });
+
+        console.log('@fetchUiBytes Got WebAppPackageVersionEntry: ', webappPackageVersion);
+        // validate hash of received entry
         // validate hash of received entry
         const webappPackageVersionEntryHash =
           await this.appstoreZomeClient.hashWebappPackageVersionEntry(webappPackageVersion);
-        if (webappPackageVersionEntryHash.toString() !== appVersion.apphub_hrl_hash.toString()) {
+        if (
+          encodeHashToBase64(webappPackageVersionEntryHash) !==
+          encodeHashToBase64(appVersion.apphub_hrl_hash)
+        ) {
           throw new Error(
-            'Hash of received WebappPackageVersionEntry does not match the expected hash.',
+            `Hash of WebappPackageVersionEntry does not match expected hash. Got ${encodeHashToBase64(webappPackageVersionEntryHash)}, expected ${encodeHashToBase64(appVersion.apphub_hrl_hash)}`,
           );
         }
 
@@ -391,7 +426,7 @@ export class AppstoreAppClient {
 
         console.log('Got WebappEntry: ', webappEntryEntity.content);
 
-        // 2. Get UI asset
+        // 3. Get UI asset
         const uiResourcePath = webappEntryEntity.content.manifest.ui.bundled;
         const uiEntryHash = webappEntryEntity.content.resources[uiResourcePath];
         if (!uiEntryHash)
