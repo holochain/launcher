@@ -31,7 +31,7 @@ console.log(".deb file unpacked.");
 // Modify the postinst script
 const posinstPath = `${unpackDirectory}/DEBIAN/postinst`;
 const postinstScript = fs.readFileSync(posinstPath, 'utf-8');
-const postinstScriptModified = postinstScript.replace("chrome-sandbox' || true", `chrome-sandbox' || true
+const postinstScriptModified = postinstScript.replace("# SUID chrome-sandbox for Electron 5+", `
 if [ -e /etc/lsb-release ]; then
 
   while IFS='=' read -r key value
@@ -43,6 +43,9 @@ if [ -e /etc/lsb-release ]; then
   done < /etc/lsb-release
 
   if [ $release_version == "24.04" ]; then
+
+  # chown the sandbox on Ubuntu 24.04
+  chown root '/opt/${launcherProductName}/chrome-sandbox' || true
 
   # add AppArmor profile on Ubuntu 24.04
   profile_content="# This profile allows everything and only exists to give the
@@ -60,9 +63,14 @@ profile ${launcherAppId} \\"/opt/${launcherProductName}/${launcherAppId}\\" flag
 
     echo "$profile_content" > /etc/apparmor.d/${launcherAppId}
 
+    systemctl reload apparmor.service
+
   fi
 
 fi
+
+
+# SUID chrome-sandbox for Electron 5+
 `);
 
 fs.writeFileSync(posinstPath, postinstScriptModified);
