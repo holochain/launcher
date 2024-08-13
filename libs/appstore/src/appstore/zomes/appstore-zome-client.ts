@@ -7,11 +7,14 @@ import {
 
 import type {
   DevhubAppEntry,
+  DnaEntry,
   Entity,
   UiEntry,
   WebAppEntry,
   WebAppPackageVersionEntry,
+  ZomeEntry,
 } from '../../devhub/types';
+import type { MemoryBlockEntry, MemoryEntry } from '../../mere-memory';
 import type { UpdateEntityInput } from '../../types';
 import { ZomeClient } from '../../zome-client/zome-client';
 import type {
@@ -123,6 +126,22 @@ export class AppstoreZomeClient extends ZomeClient {
 
   async hashUiEntry(input: UiEntry): Promise<EntryHash> {
     return this.callZome('hash_ui_entry', input);
+  }
+
+  async hashDnaEntry(input: DnaEntry): Promise<EntryHash> {
+    return this.callZome('hash_dna_entry', input);
+  }
+
+  async hashZomeEntry(input: ZomeEntry): Promise<EntryHash> {
+    return this.callZome('hash_zome_entry', input);
+  }
+
+  async hashMereMemoryBlockEntry(input: MemoryBlockEntry) {
+    return this.callZome('hash_mere_memory_block_entry', input);
+  }
+
+  async hashMereMemoryEntry(input: MemoryEntry) {
+    return this.callZome('hash_mere_memory_entry', input);
   }
 
   // async verifyWebappAsset(webappAsset: WebAppAsset, expectedHash: EntryHash): Promise<void> {

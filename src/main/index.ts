@@ -612,7 +612,7 @@ const router = t.router({
       console.log('Awaiting promises (in sequence)...');
       if (!isHappAvailable) {
         console.log('fetching happ bytes...');
-        const happBytes = await appstoreAppClient.fetchHappBytes(appVersionEntry);
+        const happBytes = await appstoreAppClient.fetchHappBytesInChunks(appVersionEntry);
         holochainManager.storeHapp(Array.from(happBytes));
         console.log('happ stored.');
       }
