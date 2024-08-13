@@ -128,7 +128,7 @@ export class PortalZomeClient extends ZomeClient {
     statusCallback = () => {},
   }: TryWithHostsArgs<T>): Promise<T> {
     // try with first responding host
-    statusCallback('Getting available host...');
+    statusCallback('Searching available peer');
     const quickestHost: AgentPubKey = await this.getAvailableHostForZomeFunction(
       dnaZomeFunction,
       pingTimeout,
@@ -137,7 +137,7 @@ export class PortalZomeClient extends ZomeClient {
     console.log('got quickest host: ', encodeHashToBase64(quickestHost));
     try {
       // console.log("@tryWithHosts: trying with first responding host: ", encodeHashToBase64(host));
-      const result = await fn(quickestHost);
+      const result = await fn(quickestHost, statusCallback);
       return result;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
@@ -159,7 +159,7 @@ export class PortalZomeClient extends ZomeClient {
       for (const host of otherAvailableHosts) {
         try {
           // console.log("@tryWithHosts: retrying with other host: ", encodeHashToBase64(otherHost));
-          const response = await fn(host);
+          const response = await fn(host, statusCallback);
           return response;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {

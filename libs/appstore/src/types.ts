@@ -14,7 +14,7 @@ export type DnaZomeFunction = {
 };
 
 export type TryWithHostsArgs<T> = {
-  fn: (host: AgentPubKey) => Promise<T>;
+  fn: (host: AgentPubKey, statusCallback: (status: string) => void) => Promise<T>;
   dnaZomeFunction: DnaZomeFunction;
   pingTimeout?: number;
   statusCallback?: (status: string) => void;
