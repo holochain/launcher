@@ -609,7 +609,6 @@ const router = t.router({
     if (isHappAvailable && isUiAvailable) return;
 
     try {
-      console.log('Awaiting promises (in sequence)...');
       if (!isHappAvailable) {
         console.log('fetching happ bytes...');
         const happBytes = await appstoreAppClient.fetchHappBytesInChunks(appVersionEntry);
@@ -622,17 +621,6 @@ const router = t.router({
         holochainManager.storeUiIfNecessary(Array.from(uiBytes), icon);
         console.log('UI stored.');
       }
-
-      // if (isHappAvailable && !isUiAvailable) {
-      //   const uiBytes = await appstoreAppClient.fetchUiBytes(appVersionEntry);
-      //   holochainManager.storeUiIfNecessary(Array.from(uiBytes), icon);
-      //   return;
-      // }
-
-      // const webhappBytes = await appstoreAppClient.fetchWebappBytes(appVersionEntry);
-      // const { ui, happ } = webhappToHappAndUi(webhappBytes);
-      // holochainManager.storeUiIfNecessary(Array.from(ui), icon);
-      // holochainManager.storeHapp(Array.from(happ));
     } catch (error) {
       console.error(error);
       const errorMessage = getErrorMessage(error);
