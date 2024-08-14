@@ -147,7 +147,7 @@ export class AppstoreZomeClient extends ZomeClient {
   // async verifyWebappAsset(webappAsset: WebAppAsset, expectedHash: EntryHash): Promise<void> {
   //   // We recursively check that all hashes match, starting with the hash of the WebAppEntry
   //   const webappEntryHash = await this.hashWebappEntry(webappAsset.webapp_entry);
-  //   if (webappEntryHash.toString() !== expectedHash.toString())
+  //   if (encodeHashToBase64(webappEntryHash) !== encodeHashToBase64(expectedHash))
   //     throw new Error('WebAppEntry hash is invalid.');
   //   // verify AppAsset
   //   await this.verifyAppAsset(
@@ -160,7 +160,7 @@ export class AppstoreZomeClient extends ZomeClient {
 
   // async verifyUiAsset(uiAsset: UiAsset, expectedHash: EntryHash): Promise<void> {
   //   const uiEntryHash = await this.hashUiEntry(uiAsset.ui_entry);
-  //   if (uiEntryHash.toString() !== expectedHash.toString())
+  //   if (encodeHashToBase64(uiEntryHash) !== encodeHashToBase64(expectedHash))
   //     throw new Error('UiEntry hash is invalid.');
 
   //   uiAsset.ui_entry.mere_memory_addr
@@ -168,7 +168,7 @@ export class AppstoreZomeClient extends ZomeClient {
 
   // async verifyAppAsset(appAsset: AppAsset, expectedHash: EntryHash): Promise<void> {
   //   const appEntryHash = this.hashAppEntry(appAsset.app_entry);
-  //   if (appEntryHash.toString() !== expectedHash.toString())
+  //   if (encodeHashToBase64(appEntryHash) !== encodeHashToBase64(expectedHash))
   //     throw new Error('AppEntry hash is invalid.');
 
   //   if (appAsset.app_entry.manifest.roles.length !== Object.keys(appAsset.dna_assets).length)

@@ -75,6 +75,6 @@ export const filterAppsBySearchAndAllowlist = (
 	return apps.filter(
 		({ title, id }) =>
 			title.toLowerCase().includes(lowerCaseSearchInput) &&
-			allowlistKeys.some((key) => key.toString() === id.toString())
+			allowlistKeys.some((key) => encodeHashToBase64(key) === encodeHashToBase64(id))
 	);
 };

@@ -150,7 +150,7 @@ export class PortalZomeClient extends ZomeClient {
       const pingResult = await this.getVisibleHostsForZomeFunction(dnaZomeFunction, pingTimeout);
 
       const otherAvailableHosts = pingResult.responded.filter(
-        (host) => host.toString() !== quickestHost.toString(),
+        (host) => encodeHashToBase64(host) !== encodeHashToBase64(quickestHost),
       );
 
       // console.log("@tryWithHosts: other available hosts: ", availableHosts.map((hash) => encodeHashToBase64(hash)));

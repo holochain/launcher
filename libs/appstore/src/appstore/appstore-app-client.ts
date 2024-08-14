@@ -223,7 +223,7 @@ export class AppstoreAppClient {
         // const webappEntryHash = await this.appstoreZomeClient.hashWebappEntry(
         //   webappEntryEntity.content,
         // );
-        // if (webappEntryHash.toString() !== webappPackageVersion.webapp.toString()) {
+        // if (encodeHashToBase64(webappEntryHash) !== encodeHashToBase64(webappPackageVersion.webapp)) {
         //   throw new Error('Hash of received WebappEntry does not match the requested hash.');
         // }
 
@@ -329,7 +329,9 @@ export class AppstoreAppClient {
         const webappEntryHash = await this.appstoreZomeClient.hashWebappEntry(
           webappEntryEntity.content,
         );
-        if (webappEntryHash.toString() !== webappPackageVersion.webapp.toString()) {
+        if (
+          encodeHashToBase64(webappEntryHash) !== encodeHashToBase64(webappPackageVersion.webapp)
+        ) {
           throw new Error('Hash of received WebappEntry does not match the expected hash.');
         }
 
@@ -427,7 +429,9 @@ export class AppstoreAppClient {
         const webappEntryHash = await this.appstoreZomeClient.hashWebappEntry(
           webappEntryEntity.content,
         );
-        if (webappEntryHash.toString() !== webappPackageVersion.webapp.toString()) {
+        if (
+          encodeHashToBase64(webappEntryHash) !== encodeHashToBase64(webappPackageVersion.webapp)
+        ) {
           throw new Error('Hash of received WebappEntry does not match the expected hash.');
         }
 
@@ -536,7 +540,9 @@ export class AppstoreAppClient {
         const webappEntryHash = await this.appstoreZomeClient.hashWebappEntry(
           webappEntryEntity.content,
         );
-        if (webappEntryHash.toString() !== webappPackageVersion.webapp.toString()) {
+        if (
+          encodeHashToBase64(webappEntryHash) !== encodeHashToBase64(webappPackageVersion.webapp)
+        ) {
           throw new Error('Hash of received WebappEntry does not match the expected hash.');
         }
 
@@ -641,7 +647,9 @@ export class AppstoreAppClient {
         const webappEntryHash = await this.appstoreZomeClient.hashWebappEntry(
           webappEntryEntity.content,
         );
-        if (webappEntryHash.toString() !== webappPackageVersion.webapp.toString()) {
+        if (
+          encodeHashToBase64(webappEntryHash) !== encodeHashToBase64(webappPackageVersion.webapp)
+        ) {
           throw new Error('Hash of received WebappEntry does not match the expected hash.');
         }
 
