@@ -49,10 +49,10 @@ export class PortalZomeClient extends ZomeClient {
         const availableHost = await Promise.any(
           hosts.map(async (hostEntryEntity) => {
             const hostPubKey = hostEntryEntity.content.author;
-            // console.log(
-            //   '@getAvailableHostForZomeFunction: trying to ping host: ',
-            //   encodeHashToBase64(hostPubKey),
-            // );
+            console.log(
+              '@getAvailableHostForZomeFunction: trying to ping host: ',
+              encodeHashToBase64(hostPubKey),
+            );
 
             try {
               const result: Response<boolean> = await this.callZome('ping', hostPubKey, timeoutMs);
@@ -71,6 +71,7 @@ export class PortalZomeClient extends ZomeClient {
 
         return availableHost;
       } catch (e) {
+        console.error('Failed to find peer host: ', e);
         return Promise.reject('No available peer host found.');
       }
     } catch (e) {

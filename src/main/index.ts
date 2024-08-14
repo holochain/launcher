@@ -618,7 +618,7 @@ const router = t.router({
       }
       if (!isUiAvailable) {
         console.log('fetching UI bytes...');
-        const uiBytes = await appstoreAppClient.fetchUiBytes(appVersionEntry);
+        const uiBytes = await appstoreAppClient.fetchUiBytesInChunks(appVersionEntry);
         holochainManager.storeUiIfNecessary(Array.from(uiBytes), icon);
         console.log('UI stored.');
       }

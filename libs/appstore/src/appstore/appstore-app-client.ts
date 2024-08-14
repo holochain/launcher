@@ -11,6 +11,7 @@ import type {
   DnaEntry,
   Entity,
   UiAsset,
+  UiEntry,
   WebAppAsset,
   WebAppEntry,
   WebAppPackageVersionEntry,
@@ -434,8 +435,8 @@ export class AppstoreAppClient {
 
         // 3. Get UI asset
         const uiResourcePath = webappEntryEntity.content.manifest.ui.bundled;
-        const uiEntryHash = webappEntryEntity.content.resources[uiResourcePath];
-        if (!uiEntryHash)
+        const uiAssetEntryHash = webappEntryEntity.content.resources[uiResourcePath];
+        if (!uiAssetEntryHash)
           throw new Error('UI EntryHash not found in the resources field of the WebAppEntry');
 
         // happy path
@@ -446,7 +447,7 @@ export class AppstoreAppClient {
             dna: appVersion.apphub_hrl.dna,
             zome: 'apphub_csr',
             function: 'get_ui_asset',
-            payload: uiEntryHash,
+            payload: uiAssetEntryHash,
           },
         });
 
@@ -579,6 +580,98 @@ export class AppstoreAppClient {
     });
   }
 
+  /**
+   *
+   * @param appVersion
+   * @param webappPackageVersion Can be provided if the WebAppPackageVersionEntry has already been fetched
+   * otherwise in order to omit redundant remote calls
+   * @returns
+   */
+  async fetchUiBytesInChunks(
+    appVersion: AppVersionEntry,
+    webappPackageVersion?: WebAppPackageVersionEntry,
+  ): Promise<Uint8Array> {
+    console.log('%%% Fetching UI bytes in chunks');
+    // For simplicity make all calls with one host. If that proves to not work well, split into
+    // separate calls to different hosts
+    return this.portalZomeClient.tryWithHosts<Uint8Array>({
+      fn: async (host, statusCallback) => {
+        statusCallback('Fetching Metadata');
+        // 1. get WebappPackageVersion and verify its hash - only necessary if the entry is not already
+        // provided as a function argument.
+        if (!webappPackageVersion) {
+          webappPackageVersion =
+            await this.portalZomeClient.customRemoteCall<WebAppPackageVersionEntry>({
+              host,
+              call: {
+                dna: appVersion.apphub_hrl.dna,
+                zome: 'apphub_csr',
+                function: 'get_webapp_package_version_entry',
+                payload: appVersion.apphub_hrl.target,
+              },
+            });
+
+          console.log('@fetchHappBytes Got WebAppPackageVersionEntry: ', webappPackageVersion);
+        }
+        // validate hash of received entry
+        const webappPackageVersionEntryHash =
+          await this.appstoreZomeClient.hashWebappPackageVersionEntry(webappPackageVersion);
+        if (
+          encodeHashToBase64(webappPackageVersionEntryHash) !==
+          encodeHashToBase64(appVersion.apphub_hrl_hash)
+        ) {
+          throw new Error(
+            `Hash of WebappPackageVersionEntry does not match expected hash. Got ${encodeHashToBase64(webappPackageVersionEntryHash)}, expected ${encodeHashToBase64(appVersion.apphub_hrl_hash)}`,
+          );
+        }
+
+        // 2. Get the WebappEntry to figure out the entry hash of the UI
+        const webappEntryEntity = await this.portalZomeClient.customRemoteCall<Entity<WebAppEntry>>(
+          {
+            host,
+            call: {
+              dna: appVersion.apphub_hrl.dna,
+              zome: 'apphub_csr',
+              function: 'get_webapp_entry',
+              payload: webappPackageVersion.webapp,
+            },
+          },
+        );
+        // validate hash of received entry
+        const webappEntryHash = await this.appstoreZomeClient.hashWebappEntry(
+          webappEntryEntity.content,
+        );
+        if (webappEntryHash.toString() !== webappPackageVersion.webapp.toString()) {
+          throw new Error('Hash of received WebappEntry does not match the expected hash.');
+        }
+
+        console.log('Got WebappEntry: ', webappEntryEntity.content);
+
+        // 3. Get UI asset
+        const uiResourcePath = webappEntryEntity.content.manifest.ui.bundled;
+        const uiAssetEntryHash = webappEntryEntity.content.resources[uiResourcePath];
+        if (!uiAssetEntryHash)
+          throw new Error('UI EntryHash not found in the resources field of the WebAppEntry');
+
+        // happy path
+        statusCallback('Fetching UI Assets');
+        const uiAsset = await this.remoteFetchUiAsset(
+          host,
+          uiAssetEntryHash,
+          appVersion.apphub_hrl.dna,
+        );
+
+        return uiAsset.bytes;
+      },
+      dnaZomeFunction: {
+        dna: appVersion.apphub_hrl.dna,
+        zome: 'apphub_csr',
+        function: 'get_app_asset', // We just pick one of the functions for the sake of simplicity and assume that all other functions are callable as well by the same host
+      },
+      pingTimeout: 4000,
+    });
+  }
+
   async fetchMemoryWithBytes(entryHash: EntryHash, dna: DnaHash) {
     return this.portalZomeClient.tryWithHosts<[MemoryEntry, Uint8Array]>({
       fn: async (host) => this.remoteFetchMemoryWithBytes(host, entryHash, dna),
@@ -666,33 +759,29 @@ export class AppstoreAppClient {
 
     const zomeAssets: Record<string, ZomeAsset> = {};
 
-    await Promise.all(
-      dnaEntry.manifest.integrity.zomes.map(async (zomeManifest) => {
-        const hrl = dnaEntry.resources[zomeManifest.bundled];
-        if (!hrl)
-          throw new Error(
-            `No HRL found in resources of DnaEntry for zome ${zomeManifest.name} specified in the DNA manifest`,
-          );
-        console.log('Fetching zome asset for integrity zome ', zomeManifest.name);
-        const zomeAsset = await this.remoteFetchZomeAsset(host, hrl.target, hrl.dna);
+    for (const zomeManifest of dnaEntry.manifest.integrity.zomes) {
+      const hrl = dnaEntry.resources[zomeManifest.bundled];
+      if (!hrl)
+        throw new Error(
+          `No HRL found in resources of DnaEntry for zome ${zomeManifest.name} specified in the DNA manifest`,
+        );
+      console.log('Fetching zome asset for integrity zome ', zomeManifest.name);
+      const zomeAsset = await this.remoteFetchZomeAsset(host, hrl.target, hrl.dna);
 
-        zomeAssets[zomeManifest.name] = zomeAsset;
-      }),
-    );
+      zomeAssets[zomeManifest.name] = zomeAsset;
+    }
 
-    await Promise.all(
-      dnaEntry.manifest.coordinator.zomes.map(async (zomeManifest) => {
-        const hrl = dnaEntry.resources[zomeManifest.bundled];
-        if (!hrl)
-          throw new Error(
-            `No HRL found in resources of DnaEntry for zome ${zomeManifest.name} specified in the DNA manifest`,
-          );
-        console.log('Fetching zome asset for coordinator zome ', zomeManifest.name);
-        const zomeAsset = await this.remoteFetchZomeAsset(host, hrl.target, hrl.dna);
+    for (const zomeManifest of dnaEntry.manifest.coordinator.zomes) {
+      const hrl = dnaEntry.resources[zomeManifest.bundled];
+      if (!hrl)
+        throw new Error(
+          `No HRL found in resources of DnaEntry for zome ${zomeManifest.name} specified in the DNA manifest`,
+        );
+      console.log('Fetching zome asset for coordinator zome ', zomeManifest.name);
+      const zomeAsset = await this.remoteFetchZomeAsset(host, hrl.target, hrl.dna);
 
-        zomeAssets[zomeManifest.name] = zomeAsset;
-      }),
-    );
+      zomeAssets[zomeManifest.name] = zomeAsset;
+    }
 
     return {
       dna_entry: dnaEntry,
@@ -738,6 +827,48 @@ export class AppstoreAppClient {
     };
   }
 
+  async remoteFetchUiAsset(
+    host: AgentPubKey,
+    entryHash: EntryHash,
+    dna: DnaHash,
+  ): Promise<UiAsset> {
+    const uiEntryEntity = await this.portalZomeClient.customRemoteCall<Entity<UiEntry>>({
+      host,
+      call: {
+        dna: dna,
+        zome: 'apphub_csr',
+        function: 'get_ui_entry',
+        payload: entryHash,
+      },
+    });
+
+    const uiEntry = uiEntryEntity.content;
+
+    console.log('@remoteFetchUiAsset: Got UiEntry: ', uiEntry);
+
+    // Verify the integrity of the received DnaEntry
+    const receivedUiEntryHash = await this.appstoreZomeClient.hashUiEntry(uiEntry);
+    if (encodeHashToBase64(entryHash) !== encodeHashToBase64(receivedUiEntryHash)) {
+      throw new Error(
+        `Hash of received UiEntry does not match expected hash. Got ${encodeHashToBase64(receivedUiEntryHash)}, expected ${encodeHashToBase64(entryHash)}`,
+      );
+    }
+
+    const [memoryEntry, uiBytes] = await this.remoteFetchMemoryWithBytes(
+      host,
+      uiEntry.mere_memory_addr,
+      dna,
+    );
+
+    const decompressedBytes = this.mereMemoryZomeClient.decompressBytes(memoryEntry, uiBytes);
+
+    return {
+      ui_entry: uiEntry,
+      memory_entry: memoryEntry,
+      bytes: decompressedBytes,
+    };
+  }
+
   async remoteFetchMemoryWithBytes(host: AgentPubKey, entryHash: EntryHash, dna: DnaHash) {
     const memoryEntry = await this.portalZomeClient.customRemoteCall<MemoryEntry>({
       host,
@@ -762,35 +893,34 @@ export class AppstoreAppClient {
     const chunks: Array<MemoryBlockEntry> = [];
     // for each block address get the bytes
     try {
-      await Promise.all(
-        blockAddresses.map(async (blockEntryHash) => {
-          const blockEntry = await this.portalZomeClient.customRemoteCall<MemoryBlockEntry>({
-            host,
-            call: {
-              dna: dna,
-              zome: 'mere_memory_api',
-              function: 'get_memory_block_entry',
-              payload: blockEntryHash,
-            },
-          });
+      // Make calls in series to not overload the remote peer which will more easily lead to a zome call timeout
+      for (const blockEntryHash of blockAddresses) {
+        const blockEntry = await this.portalZomeClient.customRemoteCall<MemoryBlockEntry>({
+          host,
+          call: {
+            dna: dna,
+            zome: 'mere_memory_api',
+            function: 'get_memory_block_entry',
+            payload: blockEntryHash,
+          },
+        });
 
-          console.log(
-            'Fetching memory block entry with EntryHash ',
-            encodeHashToBase64(blockEntryHash),
+        console.log(
+          'Fetching memory block entry with EntryHash ',
+          encodeHashToBase64(blockEntryHash),
+        );
+
+        // Verify the integrity of the received MemoryBlockEntry
+        const receivedBlockEntryHash =
+          await this.appstoreZomeClient.hashMereMemoryBlockEntry(blockEntry);
+        if (encodeHashToBase64(blockEntryHash) !== encodeHashToBase64(receivedBlockEntryHash)) {
+          throw new Error(
+            `Hash of received MemoryBlockEntry does not match expected hash. Got ${encodeHashToBase64(receivedBlockEntryHash)}, expected ${encodeHashToBase64(blockEntryHash)}`,
           );
+        }
 
-          // Verify the integrity of the received MemoryBlockEntry
-          const receivedBlockEntryHash =
-            await this.appstoreZomeClient.hashMereMemoryBlockEntry(blockEntry);
-          if (encodeHashToBase64(blockEntryHash) !== encodeHashToBase64(receivedBlockEntryHash)) {
-            throw new Error(
-              `Hash of received MemoryBlockEntry does not match expected hash. Got ${encodeHashToBase64(receivedBlockEntryHash)}, expected ${encodeHashToBase64(blockEntryHash)}`,
-            );
-          }
-
-          chunks.push(blockEntry);
-        }),
-      );
+        chunks.push(blockEntry);
+      }
 
       // sort chunks and plug them together to one array
       chunks.sort((a, b) => a.sequence.position - b.sequence.position);
