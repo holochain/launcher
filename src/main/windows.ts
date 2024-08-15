@@ -15,8 +15,8 @@ import serve from 'electron-serve';
 import path from 'path';
 import url from 'url';
 
-import { MAIN_WINDOW, MIN_HEIGH, SETTINGS_SIZE, SETTINGS_WINDOW, WINDOW_SIZE } from '$shared/const';
-import type { ExtendedAppInfo, Screen } from '$shared/types';
+import { MAIN_WINDOW, MIN_HEIGH, SETTINGS_SIZE, WINDOW_SIZE } from '$shared/const';
+import type { ExtendedAppInfo } from '$shared/types';
 import { LAUNCHER_ERROR } from '$shared/types';
 
 import type { LauncherFileSystem } from './filesystem';
@@ -73,18 +73,7 @@ const createAdminWindow = ({
     },
   });
 
-export const focusVisibleWindow = (launcherWindows: Record<Screen, BrowserWindow>) => {
-  const windows = Object.values(launcherWindows);
-  const anyVisible = windows.some((window) => !window.isMinimized() && window.isVisible());
-
-  if (!anyVisible) {
-    launcherWindows[MAIN_WINDOW].show();
-  } else {
-    windows.find((window) => !window.isMinimized() && window.isVisible())?.focus();
-  }
-};
-
-export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
+export const setupMainWindowAndTray = (launcherEmitter: LauncherEmitter): BrowserWindow => {
   // Create the browser window.
   const mainIcon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '../icon.png'));
   const mainWindow = createAdminWindow({
@@ -93,22 +82,10 @@ export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
     frame: platform.isWindows || platform.isLinux,
   });
 
-  const settingsWindow = createAdminWindow({
-    title: 'Settings - Holochain Launcher',
-    frame: true,
-    optWidth: SETTINGS_SIZE,
-    icon: mainIcon,
-  });
-
   const trayIcon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '16x16.png'));
   const tray = new Tray(trayIcon);
 
   loadOrServe(mainWindow, { screen: MAIN_WINDOW });
-
-  const windows: Record<Screen, BrowserWindow> = {
-    [MAIN_WINDOW]: mainWindow,
-    [SETTINGS_WINDOW]: settingsWindow,
-  };
 
   const trayContextMenu = Menu.buildFromTemplate([
     {
@@ -116,9 +93,9 @@ export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
       type: 'normal',
       click() {
         try {
-          focusVisibleWindow(windows);
+          mainWindow.show();
         } catch (e) {
-          launcherEmitter.emit(LAUNCHER_ERROR, `Failed to focus visible window: ${e}`);
+          launcherEmitter.emit(LAUNCHER_ERROR, `Failed to focus main window: ${e}`);
         }
       },
     },
@@ -152,15 +129,31 @@ export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
   tray.setContextMenu(trayContextMenu);
 
   globalShortcut.register('CommandOrControl+Shift+L', () => {
-    mainWindow.setSize(WINDOW_SIZE, MIN_HEIGH);
-    focusVisibleWindow(windows);
+    if (mainWindow) {
+      mainWindow.setSize(WINDOW_SIZE, MIN_HEIGH);
+      mainWindow.show();
+    }
   });
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
   });
 
-  return windows;
+  return mainWindow;
+};
+
+export const createSettingsWindow = (): BrowserWindow => {
+  // Create the browser window.
+  const mainIcon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '../icon.png'));
+
+  const settingsWindow = createAdminWindow({
+    title: 'Settings - Holochain Launcher',
+    frame: true,
+    optWidth: SETTINGS_SIZE,
+    icon: mainIcon,
+  });
+
+  return settingsWindow;
 };
 
 export const createHappWindow = (

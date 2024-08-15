@@ -12,7 +12,7 @@ import {
   type SETTINGS_WINDOW,
 } from '../const';
 
-export type Screen = typeof MAIN_WINDOW | typeof SETTINGS_WINDOW;
+export type AdminWindow = typeof MAIN_WINDOW | typeof SETTINGS_WINDOW;
 
 export const MainScreenRouteSchema = z.union([z.literal(APP_STORE), z.literal(APPS_VIEW)]);
 

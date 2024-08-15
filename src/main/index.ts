@@ -33,7 +33,6 @@ import type {
   DistributionInfoV1,
   HolochainDataRoot,
   HolochainPartition,
-  Screen,
   WindowInfoRecord,
 } from '$shared/types';
 import {
@@ -86,7 +85,12 @@ import {
   throwTRPCErrorError,
   validateWithZod,
 } from './utils';
-import { createHappWindow, focusVisibleWindow, loadOrServe, setupAppWindows } from './windows';
+import {
+  createHappWindow,
+  createSettingsWindow,
+  loadOrServe,
+  setupMainWindowAndTray,
+} from './windows';
 
 const t = initTRPC.create({ isServer: true });
 
@@ -178,11 +182,15 @@ if (!isFirstInstance && app.isPackaged && !VALIDATED_CLI_ARGS.profile) {
 }
 
 app.on('second-instance', () => {
-  focusVisibleWindow(PRIVILEDGED_LAUNCHER_WINDOWS);
+  if (PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW]) {
+    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].show();
+  }
 });
 
 app.on('activate', () => {
-  focusVisibleWindow(PRIVILEDGED_LAUNCHER_WINDOWS);
+  if (PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW]) {
+    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].show();
+  }
 });
 
 protocol.registerSchemesAsPrivileged([
@@ -212,7 +220,7 @@ let APP_PORT: number | undefined;
 let DEFAULT_HOLOCHAIN_DATA_ROOT: HolochainDataRoot | undefined;
 const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
 let LAIR_HANDLE: ChildProcessWithoutNullStreams | undefined;
-let PRIVILEDGED_LAUNCHER_WINDOWS: Record<Screen, BrowserWindow>; // Admin windows with special zome call signing priviledges
+const PRIVILEDGED_LAUNCHER_WINDOWS: Record<string, BrowserWindow> = {}; // Admin windows with special zome call signing priviledges
 const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
 let IS_LAUNCHED = false;
 let IS_QUITTING = false;
@@ -265,9 +273,10 @@ app.whenReady().then(async () => {
 
   console.log('BEING RUN IN __dirnmane: ', __dirname);
 
-  PRIVILEDGED_LAUNCHER_WINDOWS = setupAppWindows(LAUNCHER_EMITTER);
+  const mainWindow = setupMainWindowAndTray(LAUNCHER_EMITTER);
 
-  const mainWindow = PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW];
+  PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW] = mainWindow;
+
   const settingsWindow = PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW];
   mainWindow.on('close', (e) => {
     if (IS_QUITTING) return;
@@ -278,18 +287,7 @@ app.whenReady().then(async () => {
       return;
     }
     // Close all windows to have the 'window-all-close' event be triggered
-    settingsWindow.close();
-  });
-
-  settingsWindow.on('close', (e) => {
-    if (IS_QUITTING || !IS_LAUNCHED) return;
-
-    e.preventDefault();
-    LAUNCHER_EMITTER.emit(HIDE_SETTINGS_WINDOW, true);
-    settingsWindow.hide();
-    setTimeout(() => {
-      mainWindow.show();
-    }, ANIMATION_DURATION);
+    if (settingsWindow) settingsWindow.close();
   });
 
   // make sure window objects get deleted after closing
@@ -471,7 +469,6 @@ async function handleLaunch(password: string, isDirectLaunch = true) {
   if (isDirectLaunch) {
     PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].setSize(WINDOW_SIZE, MIN_HEIGH, true);
   }
-  loadOrServe(PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW], { screen: SETTINGS_WINDOW });
   return;
 }
 
@@ -534,7 +531,27 @@ const getDevhubAppClient = async () => {
 
 const router = t.router({
   openSettings: t.procedure.mutation(() => {
-    PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW].show();
+    console.log('Requested open settings');
+    let settingsWindow = PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW];
+    if (settingsWindow) {
+      settingsWindow.show();
+    } else {
+      settingsWindow = createSettingsWindow();
+      loadOrServe(settingsWindow, { screen: SETTINGS_WINDOW });
+
+      PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW] = settingsWindow;
+      settingsWindow.show();
+      settingsWindow.on('close', (e) => {
+        if (IS_QUITTING || !IS_LAUNCHED) return;
+        const mainWindow = PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW];
+        e.preventDefault();
+        LAUNCHER_EMITTER.emit(HIDE_SETTINGS_WINDOW, true);
+        settingsWindow.hide();
+        setTimeout(() => {
+          if (mainWindow) mainWindow.show();
+        }, ANIMATION_DURATION);
+      });
+    }
   }),
   hideApp: t.procedure.mutation(() => {
     PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].hide();
