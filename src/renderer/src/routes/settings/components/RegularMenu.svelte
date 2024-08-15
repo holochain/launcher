@@ -23,7 +23,7 @@
 	import { Gear, Key, MenuInfo } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
-	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_SCREEN } from '$shared/const';
+	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_WINDOW } from '$shared/const';
 
 	import MenuEntry from './MenuEntry.svelte';
 
@@ -57,7 +57,7 @@
 		})
 	);
 
-	const selectView = (view: string) => goto(`/${SETTINGS_SCREEN}/${view}`);
+	const selectView = (view: string) => goto(`/${SETTINGS_WINDOW}/${view}`);
 
 	$: view = $page.params.slug || '';
 

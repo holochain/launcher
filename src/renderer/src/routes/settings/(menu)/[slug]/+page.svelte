@@ -22,7 +22,7 @@
 	import { Download } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
-	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_SCREEN } from '$shared/const';
+	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_WINDOW } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
 	import { type UpdateUiFromHash } from '$shared/types';
 
@@ -164,7 +164,7 @@
 				$uninstallApp.mutate(selectedApp, {
 					onSuccess: () => {
 						$installedApps.refetch();
-						goto(`/${SETTINGS_SCREEN}`);
+						goto(`/${SETTINGS_WINDOW}`);
 					}
 				})
 			}

@@ -23,9 +23,9 @@ import {
   APP_STORE_APP_ID,
   DEVHUB_APP_ID,
   DISTRIBUTION_TYPE_DEFAULT_APP,
-  MAIN_SCREEN,
+  MAIN_WINDOW,
   MIN_HEIGH,
-  SETTINGS_SCREEN,
+  SETTINGS_WINDOW,
   WINDOW_SIZE,
 } from '$shared/const';
 import { getErrorMessage } from '$shared/helpers';
@@ -267,8 +267,8 @@ app.whenReady().then(async () => {
 
   PRIVILEDGED_LAUNCHER_WINDOWS = setupAppWindows(LAUNCHER_EMITTER);
 
-  const mainWindow = PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN];
-  const settingsWindow = PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN];
+  const mainWindow = PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW];
+  const settingsWindow = PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW];
   mainWindow.on('close', (e) => {
     if (IS_QUITTING) return;
     // If launcher has already launched, i.e. not "Enter Password" screen anymore, only hide the window
@@ -469,9 +469,9 @@ async function handleLaunch(password: string, isDirectLaunch = true) {
   IS_LAUNCHED = true;
 
   if (isDirectLaunch) {
-    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].setSize(WINDOW_SIZE, MIN_HEIGH, true);
+    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].setSize(WINDOW_SIZE, MIN_HEIGH, true);
   }
-  loadOrServe(PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN], { screen: SETTINGS_SCREEN });
+  loadOrServe(PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW], { screen: SETTINGS_WINDOW });
   return;
 }
 
@@ -534,10 +534,10 @@ const getDevhubAppClient = async () => {
 
 const router = t.router({
   openSettings: t.procedure.mutation(() => {
-    PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_SCREEN].show();
+    PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW].show();
   }),
   hideApp: t.procedure.mutation(() => {
-    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_SCREEN].hide();
+    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].hide();
   }),
   openApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
     const { appInfo, holochainDataRoot } = opts.input;

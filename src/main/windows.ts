@@ -15,7 +15,7 @@ import serve from 'electron-serve';
 import path from 'path';
 import url from 'url';
 
-import { MAIN_SCREEN, MIN_HEIGH, SETTINGS_SCREEN, SETTINGS_SIZE, WINDOW_SIZE } from '$shared/const';
+import { MAIN_WINDOW, MIN_HEIGH, SETTINGS_SIZE, SETTINGS_WINDOW, WINDOW_SIZE } from '$shared/const';
 import type { ExtendedAppInfo, Screen } from '$shared/types';
 import { LAUNCHER_ERROR } from '$shared/types';
 
@@ -78,7 +78,7 @@ export const focusVisibleWindow = (launcherWindows: Record<Screen, BrowserWindow
   const anyVisible = windows.some((window) => !window.isMinimized() && window.isVisible());
 
   if (!anyVisible) {
-    launcherWindows[MAIN_SCREEN].show();
+    launcherWindows[MAIN_WINDOW].show();
   } else {
     windows.find((window) => !window.isMinimized() && window.isVisible())?.focus();
   }
@@ -103,11 +103,11 @@ export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
   const trayIcon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '16x16.png'));
   const tray = new Tray(trayIcon);
 
-  loadOrServe(mainWindow, { screen: MAIN_SCREEN });
+  loadOrServe(mainWindow, { screen: MAIN_WINDOW });
 
   const windows: Record<Screen, BrowserWindow> = {
-    [MAIN_SCREEN]: mainWindow,
-    [SETTINGS_SCREEN]: settingsWindow,
+    [MAIN_WINDOW]: mainWindow,
+    [SETTINGS_WINDOW]: settingsWindow,
   };
 
   const trayContextMenu = Menu.buildFromTemplate([

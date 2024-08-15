@@ -1,4 +1,4 @@
-import { SETTINGS_SCREEN } from '$shared/const';
+import { SETTINGS_WINDOW } from '$shared/const';
 
 export const MAX_IMAGE_WIDTH_AND_HEIGHT = 300;
 
@@ -12,7 +12,7 @@ export const MODAL_UNINSTALL_APP_CONFIRMATION = 'modalUninstallAppConfirmation';
 export const SELECTED_ICON_STYLE = 'fill-light-primary dark:fill-white';
 export const NOT_SELECTED_ICON_STYLE = 'fill-black dark:fill-tertiary-400';
 
-export const DEV_PAGE = `${SETTINGS_SCREEN}/dev`;
+export const DEV_PAGE = `${SETTINGS_WINDOW}/dev`;
 export const DEV_APP_PAGE = `${DEV_PAGE}/app`;
 export const PUBLISHER_SCREEN = `${DEV_PAGE}/publisher`;
 
