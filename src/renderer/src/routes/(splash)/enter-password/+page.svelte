@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
 	import { MODAL_FACTORY_RESET_CONFIRMATION, MODAL_STARTUP_ERROR } from '$const';
@@ -11,6 +11,7 @@
 	import { WRONG_PASSWORD } from '$shared/types';
 
 	const modalStore = getModalStore();
+	const toastStore = getToastStore();
 
 	let passwordInput = '';
 
@@ -27,13 +28,11 @@
 				onSuccess: () => goto(`/${APPS_VIEW}`),
 				onError: (error) => {
 					if (error.message === WRONG_PASSWORD) {
-						console.log('Got wrong password error!');
-						showModalError({
-							modalStore,
-							errorTitle: $i18n.t('setupError'),
-							errorMessage: $i18n.t(error.message || 'unknownError'),
-							response: () => goto('/')
-						});
+						passwordInput = '';
+						toastStore.trigger({
+							message: $i18n.t(WRONG_PASSWORD),
+							background: 'variant-filled-error'
+						})
 					} else {
 						showStartupErrorModal($i18n.t(error.message || 'unknownError'));
 					}

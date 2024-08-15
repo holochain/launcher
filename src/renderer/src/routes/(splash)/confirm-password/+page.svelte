@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
 	import { Button } from '$components';
@@ -14,6 +14,7 @@
 	import { MODAL_STARTUP_ERROR } from '$const';
 
 	const modalStore = getModalStore();
+	const toastStore = getToastStore();
 
 	const client = trpc();
 
@@ -43,7 +44,11 @@
 
 	const signupAndLaunch = async () => {
 		if ($appPassword !== confirmPasswordInput) {
-			return handleError($i18n.t('passwordsDontMatch'));
+			toastStore.trigger({
+				message: $i18n.t('passwordsDontMatch'),
+				background: 'variant-filled-error'
+			});
+			return;
 		}
 
 		try {
