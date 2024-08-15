@@ -26,10 +26,12 @@ export const showModalError = ({
 
 export const createModalParams = (
 	component: Modals,
-	response?: (r: unknown) => void
+	response?: (r: unknown) => void,
+	body?: string,
 ): ModalSettings => ({
 	type: 'component' as const,
 	component,
+	body,
 	response
 });
 

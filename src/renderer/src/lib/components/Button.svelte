@@ -8,6 +8,7 @@
 	$: ({
 		onClick,
 		class: btnClass = 'btn-primary',
+		style,
 		type = 'button',
 		isLoading,
 		disabled,
@@ -15,7 +16,7 @@
 	} = props);
 </script>
 
-<button on:click={onClick} class={btnClass} {type} disabled={isLoading || disabled} {...rest}>
+<button on:click={onClick} class={btnClass} style={style} {type} disabled={isLoading || disabled} {...rest}>
 	{#if isLoading}
 		<ProgressRadial stroke={100} width="w-6" />
 	{:else}
