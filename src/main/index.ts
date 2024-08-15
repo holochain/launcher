@@ -531,7 +531,6 @@ const getDevhubAppClient = async () => {
 
 const router = t.router({
   openSettings: t.procedure.mutation(() => {
-    console.log('Requested open settings');
     let settingsWindow = PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW];
     if (settingsWindow) {
       const mainWindow = PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW];
