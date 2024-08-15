@@ -53,11 +53,17 @@ const createAdminWindow = ({
   optWidth,
   frame = false,
   icon,
+  x,
+  y,
+  show,
 }: {
   title: string;
   optWidth?: number;
   frame?: boolean;
   icon?: Electron.NativeImage;
+  x?: number;
+  y?: number;
+  show?: boolean;
 }) =>
   new BrowserWindow({
     frame: frame,
@@ -67,7 +73,9 @@ const createAdminWindow = ({
     icon,
     minHeight: MIN_HEIGH,
     title: title,
-    show: false,
+    show,
+    x,
+    y,
     webPreferences: {
       preload: path.resolve(__dirname, '../preload/admin.js'),
     },
@@ -130,8 +138,12 @@ export const setupMainWindowAndTray = (launcherEmitter: LauncherEmitter): Browse
 
   globalShortcut.register('CommandOrControl+Shift+L', () => {
     if (mainWindow) {
-      mainWindow.setSize(WINDOW_SIZE, MIN_HEIGH);
-      mainWindow.show();
+      if (mainWindow.isFocused()) {
+        mainWindow.hide();
+      } else {
+        mainWindow.setSize(WINDOW_SIZE, MIN_HEIGH);
+        mainWindow.show();
+      }
     }
   });
 
@@ -142,7 +154,7 @@ export const setupMainWindowAndTray = (launcherEmitter: LauncherEmitter): Browse
   return mainWindow;
 };
 
-export const createSettingsWindow = (): BrowserWindow => {
+export const createSettingsWindow = (x?: number, y?: number): BrowserWindow => {
   // Create the browser window.
   const mainIcon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '../icon.png'));
 
@@ -151,6 +163,9 @@ export const createSettingsWindow = (): BrowserWindow => {
     frame: true,
     optWidth: SETTINGS_SIZE,
     icon: mainIcon,
+    x,
+    y,
+    show: true,
   });
 
   return settingsWindow;

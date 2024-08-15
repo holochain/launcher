@@ -534,10 +534,20 @@ const router = t.router({
     console.log('Requested open settings');
     let settingsWindow = PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW];
     if (settingsWindow) {
+      const mainWindow = PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW];
+      if (mainWindow) {
+        const [xMain, yMain] = mainWindow.getPosition();
+        settingsWindow.setPosition(xMain + 50, yMain + 50);
+      }
       settingsWindow.show();
     } else {
-      settingsWindow = createSettingsWindow();
+      const mainWindow = PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW];
+      const [xMain, yMain] = mainWindow.getPosition();
+
+      settingsWindow = createSettingsWindow(xMain + 50, yMain + 50);
       loadOrServe(settingsWindow, { screen: SETTINGS_WINDOW });
+
+      // https://github.com/electron/electron/issues/1836#issuecomment-677983707
 
       PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW] = settingsWindow;
       settingsWindow.show();
