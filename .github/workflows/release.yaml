@@ -47,13 +47,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Merge latest-mac.yml mac release files
-        if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-12'
-        run: |
-          node ./scripts/merge-mac-yamls.mjs
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Setup for macOS code signing
         if: matrix.platform == 'macos-12' || matrix.platform == 'macos-latest'
         uses: matthme/import-codesign-certs@5565bb656f60c98c8fc515f3444dd8db73545dc2
@@ -65,6 +58,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
+
+      - name: Merge latest-mac.yml mac release files
+        if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-12'
+        run: |
+          yarn
+          node ./scripts/merge-mac-yamls.mjs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Retrieve version
         run: |
