@@ -67,13 +67,6 @@ If you want to develop on the launcher codebase itself, here are the instruction
 yarn fetch:binaries
 ```
 
-*or* Build the binaries locally (requires Rust and Go installed):
-
-```bash
-bash ./scripts/setup-binaries.sh
-```
-
-
 2. Build the Rust Node-add-ons and install dependencies
 
 ```bash

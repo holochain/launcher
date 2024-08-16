@@ -34,7 +34,7 @@ if [ -f "resources/bins/holochain-v${REQUIRED_HOLOCHAIN_VERSION}" ];
         cargo install holochain --version $REQUIRED_HOLOCHAIN_VERSION --locked --features sqlite-encrypted
         echo "Copying holochain binary to resources/bins folder."
         HOLOCHAIN_PATH=$(which holochain)
-        cp $HOLOCHAIN_PATH resources/bins/holochain-v${REQUIRED_HOLOCHAIN_VERSION}
+        cp $HOLOCHAIN_PATH resources/bins/holochain-v${REQUIRED_HOLOCHAIN_VERSION}-launcher-0.4
 fi
 
 # check whether correct lair binary is already in the resources/bins folder
@@ -47,7 +47,7 @@ if [ -f "resources/bins/lair-keystore-v${REQUIRED_LAIR_VERSION}" ];
         cargo install  lair_keystore --version $REQUIRED_LAIR_VERSION --locked
         echo "Copying lair-keystore binary to resources/bins folder."
         LAIR_PATH=$(which lair-keystore)
-        cp $LAIR_PATH resources/bins/lair-keystore-v${REQUIRED_LAIR_VERSION}
+        cp $LAIR_PATH resources/bins/lair-keystore-v${REQUIRED_LAIR_VERSION}-launcher-0.4
 fi
 
 echo "done."
