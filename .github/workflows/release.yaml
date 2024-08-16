@@ -34,7 +34,8 @@ jobs:
       fail-fast: false
       matrix:
         # platform: [macos-12, ubuntu-22.04]
-        platform: [windows-2019, macos-12, macos-latest, ubuntu-22.04]
+        platform: [macos-12, macos-latest]
+        # platform: [windows-2019, macos-12, macos-latest, ubuntu-22.04]
         # platform: [ubuntu-22.04]
         # platform: [windows-2019]
     env:
@@ -45,6 +46,13 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Merge latest-mac.yml mac release files
+        if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-12'
+        run: |
+          node ./scripts/merge-mac-yamls.mjs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup for macOS code signing
         if: matrix.platform == 'macos-12' || matrix.platform == 'macos-latest'

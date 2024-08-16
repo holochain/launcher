@@ -43,10 +43,15 @@ const mergeFiles = (intel, arm) => {
 };
 
 const getPlatformFromLatestMacYml = (content) => {
+  console.log("Getting platform for latest-mac.yaml. Content: ", content);
   const intelRe = `${APP_ID}-${VERSION}-x64.dmg`;
   const armRe = `${APP_ID}-${VERSION}-arm64.dmg`;
   const isIntel = content.includes(intelRe);
   const isArm = content.includes(armRe);
+
+  console.log("armRe: ", armRe);
+  console.log("intelRe", intelRe);
+  console.log("isArm, isIntel: ", isArm, isIntel);
 
   if (isIntel && isArm) return 'both';
   if (isIntel && !isArm) return 'intel';
