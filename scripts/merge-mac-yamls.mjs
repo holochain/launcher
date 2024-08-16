@@ -19,7 +19,7 @@ const OWNER = 'holochain';
 const REPO = 'launcher';
 const URL = `/repos/${OWNER}/${REPO}/releases`;
 const VERSION = pkg.version;
-const APP_ID = pkg.version;
+const APP_ID = pkg.name;
 const FILE_NAME = 'latest-mac.yml';
 const LOCAL_FILE_PATH = `dist/${FILE_NAME}`;
 
