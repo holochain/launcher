@@ -59,14 +59,6 @@ jobs:
         with:
           node-version: 18
 
-      - name: Merge latest-mac.yml mac release files
-        if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-12'
-        run: |
-          yarn
-          node ./scripts/merge-mac-yamls.mjs
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Retrieve version
         run: |
           echo "Retrieved App version: $(node -p -e "require('./package.json').version")"
@@ -95,6 +87,14 @@ jobs:
       - name: Conditionally Setup rust-utils
         if: steps.cache-rust-utils.outputs.cache-hit != 'true'
         run: yarn setupForCI
+
+      - name: Merge latest-mac.yml mac release files
+        if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-12'
+        run: |
+          yarn
+          node ./scripts/merge-mac-yamls.mjs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: build and install libs and dependencies
         run: yarn build:libs
