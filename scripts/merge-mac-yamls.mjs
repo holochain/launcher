@@ -85,7 +85,7 @@ const getPlatformFromLatestMacYml = (content) => {
 
   if (localPlatform === 'none' || localPlatform === 'both') {
     console.log(`[local] ${FILE_NAME} invalid. Platform: ${localPlatform}. Skipping merge`);
-    return;
+    throw new Error(`${FILE_NAME} invalid: Platform: ${localPlatform}`);
   } else {
     console.log(`[local] ${FILE_NAME} valid: Platform: ${localPlatform}`);
   }
