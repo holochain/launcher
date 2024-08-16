@@ -88,14 +88,6 @@ jobs:
         if: steps.cache-rust-utils.outputs.cache-hit != 'true'
         run: yarn setupForCI
 
-      - name: Merge latest-mac.yml mac release files
-        if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-12'
-        run: |
-          yarn
-          node ./scripts/merge-mac-yamls.mjs
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: build and install libs and dependencies
         run: yarn build:libs
 
