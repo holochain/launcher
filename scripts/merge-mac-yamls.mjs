@@ -15,10 +15,11 @@ const client = new Octokit({
   auth: token,
 });
 
-const OWNER = 'lightningrodlabs';
-const REPO = 'we';
+const OWNER = 'holochain';
+const REPO = 'launcher';
 const URL = `/repos/${OWNER}/${REPO}/releases`;
 const VERSION = pkg.version;
+const APP_ID = pkg.version;
 const FILE_NAME = 'latest-mac.yml';
 const LOCAL_FILE_PATH = `dist/${FILE_NAME}`;
 
@@ -42,8 +43,8 @@ const mergeFiles = (intel, arm) => {
 };
 
 const getPlatformFromLatestMacYml = (content) => {
-  const intelRe = `org.lightningrodlabs.we-electron-alpha-${VERSION}-x64.dmg`;
-  const armRe = `org.lightningrodlabs.we-electron-alpha-${VERSION}-arm64.dmg`;
+  const intelRe = `${APP_ID}-${VERSION}-x64.dmg`;
+  const armRe = `${APP_ID}-${VERSION}-arm64.dmg`;
   const isIntel = content.includes(intelRe);
   const isArm = content.includes(armRe);
 
