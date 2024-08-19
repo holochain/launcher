@@ -70,7 +70,7 @@ import { IntegrityChecker } from './integrityChecker';
 import { initializeLairKeystore, launchLairKeystore } from './lairKeystore';
 import { LauncherEmitter } from './launcherEmitter';
 import { setupLogs } from './logs';
-import { launcherMenu } from './menu';
+import { exportLogs, launcherMenu, openLogs } from './menu';
 import { DEFAULT_APPS_DIRECTORY } from './paths';
 import {
   breakingVersion,
@@ -847,6 +847,12 @@ const router = t.router({
       app,
     }),
   ),
+  openLogs: t.procedure.mutation(async () => {
+    await openLogs(LAUNCHER_FILE_SYSTEM);
+  }),
+  exportLogs: t.procedure.mutation(async () => {
+    await exportLogs(LAUNCHER_FILE_SYSTEM);
+  }),
 });
 
 export type AppRouter = typeof router;

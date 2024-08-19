@@ -8,6 +8,7 @@ export const MODAL_ADD_NEW_HAPP_VERSION = 'modalAddNewHappVersion';
 export const MODAL_DEVHUB_INSTALLATION_CONFIRMATION = 'modalDevHubInstallationConfirmation';
 export const MODAL_FACTORY_RESET_CONFIRMATION = 'modalFactoryResetConfirmation';
 export const MODAL_UNINSTALL_APP_CONFIRMATION = 'modalUninstallAppConfirmation';
+export const MODAL_STARTUP_ERROR =  'modalStartupError';
 
 export const SELECTED_ICON_STYLE = 'fill-light-primary dark:fill-white';
 export const NOT_SELECTED_ICON_STYLE = 'fill-black dark:fill-tertiary-400';

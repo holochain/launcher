@@ -1,17 +1,20 @@
 <script lang="ts">
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
 	import { Button } from '$components';
-	import { resizeWindowAndNavigate, showModalError } from '$helpers';
+	import { createModalParams, resizeWindowAndNavigate, showModalError } from '$helpers';
 	import { ArrowLeft, Warning } from '$icons';
 	import { i18n, trpc } from '$services';
 	import { APP_STORE } from '$shared/const';
 	import { appPassword } from '$stores';
 
 	import { PasswordForm, SetupProgressWrapper } from '../components';
+	import { WRONG_PASSWORD } from '$shared/types';
+	import { MODAL_STARTUP_ERROR } from '$const';
 
 	const modalStore = getModalStore();
+	const toastStore = getToastStore();
 
 	const client = trpc();
 
@@ -28,9 +31,24 @@
 		});
 	};
 
+	const showStartupErrorModal = (error: string) => {
+		const modal = createModalParams(
+			MODAL_STARTUP_ERROR,
+			(cancel) => {
+				if (cancel) goto('/');
+			},
+			error
+		);
+		modalStore.trigger(modal);
+	};
+
 	const signupAndLaunch = async () => {
 		if ($appPassword !== confirmPasswordInput) {
-			return handleError($i18n.t('passwordsDontMatch'));
+			toastStore.trigger({
+				message: $i18n.t('passwordsDontMatch'),
+				background: 'variant-filled-error'
+			});
+			return;
 		}
 
 		try {
@@ -39,10 +57,14 @@
 			resizeWindowAndNavigate(APP_STORE);
 		} catch (error) {
 			console.error(error);
-			handleError($i18n.t((error as Error).message || 'unknownError'), () => {
-				$appPassword = '';
-				goto('/');
-			});
+			if ((error as Error).message === WRONG_PASSWORD) {
+				handleError($i18n.t((error as Error).message || 'unknownError'), () => {
+					$appPassword = '';
+					goto('/');
+				});
+			} else {
+				showStartupErrorModal($i18n.t((error as Error).message || 'unknownError'));
+			}
 		}
 	};
 </script>

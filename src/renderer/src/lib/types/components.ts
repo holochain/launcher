@@ -4,6 +4,7 @@ import type {
 	MODAL_FACTORY_RESET_CONFIRMATION,
 	MODAL_INSTALL_FROM_FILE,
 	MODAL_INSTALL_KANDO,
+	MODAL_STARTUP_ERROR,
 	MODAL_UNINSTALL_APP_CONFIRMATION
 } from '$const';
 
@@ -29,7 +30,8 @@ export type Modals =
 	| typeof MODAL_ADD_NEW_HAPP_VERSION
 	| typeof MODAL_FACTORY_RESET_CONFIRMATION
 	| typeof MODAL_DEVHUB_INSTALLATION_CONFIRMATION
-	| typeof MODAL_UNINSTALL_APP_CONFIRMATION;
+	| typeof MODAL_UNINSTALL_APP_CONFIRMATION
+	| typeof MODAL_STARTUP_ERROR;
 
 export type InputProps =
 	| (CommonInputProps & TextProps & { type: 'text' })
@@ -39,6 +41,7 @@ export type InputProps =
 export type ButtonProps = {
 	onClick?: (event: MouseEvent) => void;
 	class?: string;
+	style?: string;
 	disabled?: boolean;
 	isLoading?: boolean;
 	type?: 'submit' | 'button' | 'reset';

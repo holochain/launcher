@@ -4,3 +4,6 @@ export { default as FactoryResetConformation } from './FactoryResetConformation.
 export { default as InstallAppFromHashes } from './InstallAppFromHashes.svelte';
 export { default as InstallFromFile } from './InstallFromFile.svelte';
 export { default as InstallKando } from './InstallKando.svelte';
+export { default as UninstallAppConfirmation } from './UninstallAppConfirmation.svelte';
+export { default as StartupError } from './StartupError.svelte';
+
