@@ -4,7 +4,7 @@ import { AppWebsocket } from '@holochain/client';
 import { autoUpdater } from '@matthme/electron-updater';
 import { decode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
-import { AppstoreAppClient, DevhubAppClient, webhappToHappAndUi } from 'appstore-tools';
+import { AppstoreAppClient, DevhubAppClient } from 'appstore-tools';
 import { type ChildProcessWithoutNullStreams, spawnSync } from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
@@ -638,6 +638,11 @@ const router = t.router({
       }
       throw new Error(errorMessage);
     }
+  }),
+  validateWebhappFormat: t.procedure.input(z.instanceof(Uint8Array)).mutation(async (opts) => {
+    const decodedHappOrWebhapp = await rustUtils.decodeHappOrWebhapp(Array.from(opts.input));
+    if (!decodedHappOrWebhapp.uiBytes) throw new Error('File is not a webhapp (no UI).');
+    return true;
   }),
   isHappAvailableAndValid: t.procedure.input(z.string()).query(async (opts) => {
     const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);

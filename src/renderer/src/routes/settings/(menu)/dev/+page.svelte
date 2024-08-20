@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 	// @ts-expect-error the @spartan-hc/bundles package has no typescript types
 	import { Bundle } from '@spartan-hc/bundles';
 
@@ -8,12 +8,17 @@
 	import { DEV_APP_PAGE, EMPTY_APP_DATA } from '$const';
 	import { convertFileToUint8Array, showModalError } from '$helpers';
 	import { createAppQueries } from '$queries';
-	import { i18n } from '$services';
+	import { i18n, trpc } from '$services';
 	import { isAppDataValid } from '$types';
 
 	const { publishHappMutation } = createAppQueries();
 
 	const modalStore = getModalStore();
+	const toastStore = getToastStore();
+
+	const client = trpc();
+
+	const validateWebhappFormat = client.validateWebhappFormat.createMutation();
 
 	let appData = { ...EMPTY_APP_DATA };
 	let bytesFiles: FileList | null = null;
@@ -22,11 +27,19 @@
 
 	const setAppDataBytes = async (files: FileList | null) => {
 		if (files && files.length > 0) {
-			const bytes = await convertFileToUint8Array(files[0]);
+			try {
+				const bytes = await convertFileToUint8Array(files[0]);
 
-			const bundle = new Bundle(bytes);
-			appData.bytes = bytes;
-			appData.title = appData.title || bundle?.name || '';
+				const bundle = new Bundle(bytes);
+				appData.bytes = bytes;
+				appData.title = appData.title || bundle?.name || '';
+			} catch (e) {
+				bytesFiles = null;
+				toastStore.trigger({
+					message: `The uploaded file is not of a valid .webhapp format: ${e}`,
+					background: 'variant-filled-error'
+				});
+			}
 		}
 	};
 
@@ -38,13 +51,28 @@
 
 	const submitForm = async () => {
 		isLoading = true;
-		setTimeout(() => {
+		setTimeout(async () => {
 			if (isAppDataValid(appData)) {
-				$publishHappMutation.mutate(appData, {
-					onSuccess: (id) => {
-						appData = { ...EMPTY_APP_DATA };
-						bytesFiles = null;
-						goto(`/${DEV_APP_PAGE}/${id}`);
+				$validateWebhappFormat.mutate(appData.bytes, {
+					onSuccess: () => {
+						if (isAppDataValid(appData)) {
+							$publishHappMutation.mutate(appData, {
+								onSuccess: (id) => {
+									appData = { ...EMPTY_APP_DATA };
+									bytesFiles = null;
+									goto(`/${DEV_APP_PAGE}/${id}`);
+								},
+								onError: (error) => {
+									console.error(error);
+									isLoading = false;
+									showModalError({
+										modalStore,
+										errorTitle: $i18n.t('appError'),
+										errorMessage: $i18n.t(error.message)
+									});
+								}
+							});
+						}
 					},
 					onError: (error) => {
 						console.error(error);
@@ -52,7 +80,7 @@
 						showModalError({
 							modalStore,
 							errorTitle: $i18n.t('appError'),
-							errorMessage: $i18n.t(error.message)
+							errorMessage: `The uploaded file is not of a valid .webhapp format: ${error}`
 						});
 					}
 				});
@@ -68,7 +96,7 @@
 	on:submit|preventDefault={submitForm}
 >
 	<IconInput bind:icon={appData.icon} handleFileUpload={handleIconUpload} />
-	<InputWithLabel bind:files={bytesFiles} id="webbhapp" label={`${$i18n.t('uploadYourBundle')}*`} />
+	<InputWithLabel bind:files={bytesFiles} id="webhapp" label={`${$i18n.t('uploadYourBundle')}*`} />
 	<InputWithLabel bind:value={appData.title} id="happName" label={`${$i18n.t('nameYourHapp')}*`} />
 	<InputWithLabel
 		bind:value={appData.subtitle}

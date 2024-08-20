@@ -1,16 +1,21 @@
 <script lang="ts">
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 	import type { AppVersionEntry, Entity } from 'appstore-tools';
 
 	import { AddTypeModalFooter, InputWithLabel } from '$components';
-	import { convertFileToUint8Array } from '$helpers';
+	import { convertFileToUint8Array, showModalError } from '$helpers';
 	import { createAppQueries } from '$queries';
-	import { i18n } from '$services';
+	import { i18n, trpc } from '$services';
 	import { isPublishNewVersionDataValid } from '$types';
 
 	const { publishNewVersionMutation } = createAppQueries();
 
 	const modalStore = getModalStore();
+	const toastStore = getToastStore();
+
+	const client = trpc();
+
+	const validateWebhappFormat = client.validateWebhappFormat.createMutation();
 
 	export let webappPackageId: Uint8Array;
 	export let appEntryId: Uint8Array;
@@ -29,6 +34,8 @@
 			bytes = await convertFileToUint8Array(files[0]);
 		}
 	};
+
+	$: isLoading = false;
 
 	$: setAppDataBytes(files);
 </script>
@@ -51,9 +58,30 @@
 					previousHappHash
 				};
 				if (isPublishNewVersionDataValid(publishNewVersionData)) {
-					$publishNewVersionMutation.mutate(publishNewVersionData, {
+					isLoading = true;
+					$validateWebhappFormat.mutate(publishNewVersionData.bytes, {
 						onSuccess: () => {
-							modalStore.close();
+							$publishNewVersionMutation.mutate(publishNewVersionData, {
+								onSuccess: () => {
+									modalStore.close();
+								},
+								onError: (error) => {
+									console.error(error);
+									isLoading = false;
+									toastStore.trigger({
+										message: `Failed to upload new release: ${error.message}`,
+										background: 'variant-filled-error'
+									});
+								}
+							});
+						},
+						onError: (error) => {
+							console.error(error);
+							isLoading = false;
+							toastStore.trigger({
+								message: `The uploaded file is not of a valid .webhapp format: ${error.message}`,
+								background: 'variant-filled-error'
+							});
 						}
 					});
 				}
@@ -72,7 +100,7 @@
 				</div>
 			{/if}
 			<AddTypeModalFooter
-				isPending={$publishNewVersionMutation.isPending}
+				isPending={$publishNewVersionMutation.isPending || isLoading}
 				isValid={isPublishNewVersionDataValid({
 					webappPackageId,
 					version,
