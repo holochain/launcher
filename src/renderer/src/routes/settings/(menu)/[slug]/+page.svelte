@@ -269,12 +269,6 @@
 			{@const cellIds = Object.entries(selectedApp.appInfo.cell_info).sort(([a], [b]) =>
 				a.localeCompare(b)
 			)}
-			<div class="mb-2 text-sm">
-				<p class="break-all">
-					<span class="font-semibold">network seed:</span>
-					network seed here
-				</p>
-			</div>
 			{#each cellIds as [roleName, cellId], index}
 				{@const cellIdResult = getCellId(cellId[0])}
 				{#if cellIdResult}
