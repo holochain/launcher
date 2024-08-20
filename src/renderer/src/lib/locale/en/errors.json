@@ -15,6 +15,7 @@
 	"noDevhubAuthenticationTokenFound": "No authentication token found for devhub",
 	"noPublishersAvailableError": "No publishers available",
 	"noRunningHolochainManagerError": "No running Holochain manager",
+	"remoteCallTimeoutError": "Remote request to peer timed out.",
 	"remoteOperationFailedError": "Remote operation failed. Please try again later.",
 	"wrongInstalledAppStructure": "Wrong installed app structure",
 	"wrongPassword": "Wrong password"

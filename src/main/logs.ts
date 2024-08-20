@@ -51,24 +51,25 @@ export function setupLogs(
     lairLogger.log('info', logLine);
   });
   launcherEmitter.on(HOLOCHAIN_LOG, (holochainData) => {
-    logHolochain(holochainData as HolochainData, logFileTransport);
+    logHolochain(holochainData as HolochainData, logFileTransport, launcherFileSystem.profile);
   });
   launcherEmitter.on(HOLOCHAIN_ERROR, (holochainData) => {
-    logHolochain(holochainData as HolochainData, logFileTransport);
+    logHolochain(holochainData as HolochainData, logFileTransport, launcherFileSystem.profile);
   });
   launcherEmitter.on(WASM_LOG, (holochainData) => {
-    logHolochain(holochainData as HolochainData, logFileTransport);
+    logHolochain(holochainData as HolochainData, logFileTransport, launcherFileSystem.profile);
   });
 }
 
 function logHolochain(
   holochainData: HolochainData,
   logFileTransport: winston.transports.FileTransportInstance,
+  profile: string,
 ) {
   const holochainPartition = holochainData.holochainDataRoot.name;
   const identifier = identifierFromHolochainData(holochainData);
   const line = (holochainData as HolochainData).data;
-  const logLine = `[${identifier}]: ${line}`;
+  const logLine = `[${identifier}]${profile !== 'default' ? `[profile: ${profile}]` : ''}: ${line}`;
   console.log(logLine);
   let logger = HOLOCHAIN_LOGGERS[holochainPartition];
   if (logger) {

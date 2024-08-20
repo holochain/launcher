@@ -56,6 +56,7 @@ import {
   NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
   REFETCH_DATA_IN_ALL_WINDOWS,
+  REMOTE_CALL_TIMEOUT_ERROR,
   UpdateUiFromHashSchema,
   WRONG_INSTALLED_APP_STRUCTURE,
 } from '$shared/types';
@@ -608,21 +609,30 @@ const router = t.router({
     if (isHappAvailable && isUiAvailable) return;
 
     try {
-      if (isHappAvailable && !isUiAvailable) {
-        const uiBytes = await appstoreAppClient.fetchUiBytes(appVersionEntry);
-        holochainManager.storeUiIfNecessary(Array.from(uiBytes), icon);
-        return;
+      if (!isHappAvailable) {
+        console.log('fetching happ bytes...');
+        const happBytes = await appstoreAppClient.fetchHappBytesInChunks(appVersionEntry);
+        holochainManager.storeHapp(Array.from(happBytes));
+        console.log('happ stored.');
       }
-
-      const webhappBytes = await appstoreAppClient.fetchWebappBytes(appVersionEntry);
-      const { ui, happ } = webhappToHappAndUi(webhappBytes);
-      holochainManager.storeUiIfNecessary(Array.from(ui), icon);
-      holochainManager.storeHapp(Array.from(happ));
+      if (!isUiAvailable) {
+        console.log('fetching UI bytes...');
+        const uiBytes = await appstoreAppClient.fetchUiBytesInChunks(appVersionEntry);
+        holochainManager.storeUiIfNecessary(Array.from(uiBytes), icon);
+        console.log('UI stored.');
+      }
     } catch (error) {
+      console.error(error);
       const errorMessage = getErrorMessage(error);
       if (errorMessage.includes('No available peer host found.')) {
         return throwTRPCErrorError({
           message: NO_AVAILABLE_PEER_HOSTS_ERROR,
+          cause: errorMessage,
+        });
+      }
+      if (errorMessage.includes('Request timed out in 60000 ms: call_zome')) {
+        return throwTRPCErrorError({
+          message: REMOTE_CALL_TIMEOUT_ERROR,
           cause: errorMessage,
         });
       }

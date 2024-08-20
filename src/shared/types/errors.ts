@@ -14,6 +14,7 @@ export const NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND = 'noDevhubAuthenticationToken
 export const NO_PUBLISHERS_AVAILABLE_ERROR = 'noPublishersAvailableError';
 export const NO_RUNNING_HOLOCHAIN_MANAGER_ERROR = 'noRunningHolochainManagerError';
 export const NO_AVAILABLE_PEER_HOSTS_ERROR = 'noAvailablePeerHostsError';
+export const REMOTE_CALL_TIMEOUT_ERROR = 'remoteCallTimeoutError';
 export const WRONG_INSTALLED_APP_STRUCTURE = 'wrongInstalledAppStructure';
 export const WRONG_PASSWORD = 'wrongPassword';
 

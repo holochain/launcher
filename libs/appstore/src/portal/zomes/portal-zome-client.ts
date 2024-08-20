@@ -1,4 +1,4 @@
-import { type AgentPubKey } from '@holochain/client';
+import { type AgentPubKey, encodeHashToBase64 } from '@holochain/client';
 
 import type { CustomRemoteCallInput, HostAvailability, HostEntry } from '../../appstore/types';
 import type { Entity } from '../../devhub/types';
@@ -49,10 +49,10 @@ export class PortalZomeClient extends ZomeClient {
         const availableHost = await Promise.any(
           hosts.map(async (hostEntryEntity) => {
             const hostPubKey = hostEntryEntity.content.author;
-            // console.log(
-            //   '@getAvailableHostForZomeFunction: trying to ping host: ',
-            //   encodeHashToBase64(hostPubKey),
-            // );
+            console.log(
+              '@getAvailableHostForZomeFunction: trying to ping host: ',
+              encodeHashToBase64(hostPubKey),
+            );
 
             try {
               const result: Response<boolean> = await this.callZome('ping', hostPubKey, timeoutMs);
@@ -71,6 +71,7 @@ export class PortalZomeClient extends ZomeClient {
 
         return availableHost;
       } catch (e) {
+        console.error('Failed to find peer host: ', e);
         return Promise.reject('No available peer host found.');
       }
     } catch (e) {
@@ -128,16 +129,16 @@ export class PortalZomeClient extends ZomeClient {
     statusCallback = () => {},
   }: TryWithHostsArgs<T>): Promise<T> {
     // try with first responding host
-    statusCallback('Getting available host...');
+    statusCallback('Searching available peer');
     const quickestHost: AgentPubKey = await this.getAvailableHostForZomeFunction(
       dnaZomeFunction,
       pingTimeout,
     );
 
-    console.log('got quickest host: ', quickestHost);
+    console.log('got quickest host: ', encodeHashToBase64(quickestHost));
     try {
       // console.log("@tryWithHosts: trying with first responding host: ", encodeHashToBase64(host));
-      const result = await fn(quickestHost);
+      const result = await fn(quickestHost, statusCallback);
       return result;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
@@ -149,7 +150,7 @@ export class PortalZomeClient extends ZomeClient {
       const pingResult = await this.getVisibleHostsForZomeFunction(dnaZomeFunction, pingTimeout);
 
       const otherAvailableHosts = pingResult.responded.filter(
-        (host) => host.toString() !== quickestHost.toString(),
+        (host) => encodeHashToBase64(host) !== encodeHashToBase64(quickestHost),
       );
 
       // console.log("@tryWithHosts: other available hosts: ", availableHosts.map((hash) => encodeHashToBase64(hash)));
@@ -159,7 +160,7 @@ export class PortalZomeClient extends ZomeClient {
       for (const host of otherAvailableHosts) {
         try {
           // console.log("@tryWithHosts: retrying with other host: ", encodeHashToBase64(otherHost));
-          const response = await fn(host);
+          const response = await fn(host, statusCallback);
           return response;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
