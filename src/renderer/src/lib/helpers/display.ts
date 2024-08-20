@@ -26,10 +26,12 @@ export const showModalError = ({
 
 export const createModalParams = (
 	component: Modals,
-	response?: (r: unknown) => void
+	response?: (r: unknown) => void,
+	body?: string,
 ): ModalSettings => ({
 	type: 'component' as const,
 	component,
+	body,
 	response
 });
 
@@ -75,6 +77,6 @@ export const filterAppsBySearchAndAllowlist = (
 	return apps.filter(
 		({ title, id }) =>
 			title.toLowerCase().includes(lowerCaseSearchInput) &&
-			allowlistKeys.some((key) => key.toString() === id.toString())
+			allowlistKeys.some((key) => encodeHashToBase64(key) === encodeHashToBase64(id))
 	);
 };

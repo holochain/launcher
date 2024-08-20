@@ -22,7 +22,7 @@ export class DnaHubZomeClient extends ZomeClient {
   }
 
   async createDnaEntry(input: DnaEntryInput): Promise<Entity<DnaEntry>> {
-    return this.callZome('create_dna', input);
+    return this.callZome('create_dna_entry', input);
   }
 
   async deriveDnaToken(input: CreateDnaInput): Promise<DnaToken> {

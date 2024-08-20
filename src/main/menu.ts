@@ -13,33 +13,13 @@ export const launcherMenu = (launcherFileSystem: LauncherFileSystem) => {
       {
         label: 'Open Logs',
         async click() {
-          try {
-            await shell.openPath(launcherFileSystem.profileLogsDir);
-          } catch (e) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            dialog.showErrorBox('Failed to open logs folder', (e as any).toString());
-          }
+          await openLogs(launcherFileSystem);
         },
       },
       {
         label: 'Export Logs',
         async click() {
-          try {
-            const zip = new AdmZip();
-            zip.addLocalFolder(launcherFileSystem.profileLogsDir);
-            const exportToPathResponse = await dialog.showSaveDialog({
-              title: 'Export Logs',
-              buttonLabel: 'Export',
-              defaultPath: `Holochain_Launcher_${app.getVersion()}_logs_${new Date().toISOString()}.zip`,
-            });
-            if (exportToPathResponse.filePath) {
-              zip.writeZip(exportToPathResponse.filePath);
-              shell.showItemInFolder(exportToPathResponse.filePath);
-            }
-          } catch (e) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            dialog.showErrorBox('Failed to export logs', (e as any).toString());
-          }
+          await exportLogs(launcherFileSystem);
         },
       },
     ],
@@ -83,3 +63,31 @@ export const launcherMenu = (launcherFileSystem: LauncherFileSystem) => {
     helpMenu,
   ]);
 };
+
+export async function openLogs(launcherFileSystem: LauncherFileSystem): Promise<void> {
+  try {
+    await shell.openPath(launcherFileSystem.profileLogsDir);
+  } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    dialog.showErrorBox('Failed to open logs folder', (e as any).toString());
+  }
+}
+
+export async function exportLogs(launcherFileSystem: LauncherFileSystem): Promise<void> {
+  try {
+    const zip = new AdmZip();
+    zip.addLocalFolder(launcherFileSystem.profileLogsDir);
+    const exportToPathResponse = await dialog.showSaveDialog({
+      title: 'Export Logs',
+      buttonLabel: 'Export',
+      defaultPath: `Holochain_Launcher_${app.getVersion()}_logs_${new Date().toISOString()}.zip`,
+    });
+    if (exportToPathResponse.filePath) {
+      zip.writeZip(exportToPathResponse.filePath);
+      shell.showItemInFolder(exportToPathResponse.filePath);
+    }
+  } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    dialog.showErrorBox('Failed to export logs', (e as any).toString());
+  }
+}

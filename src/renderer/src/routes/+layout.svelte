@@ -17,6 +17,7 @@
 		MODAL_FACTORY_RESET_CONFIRMATION,
 		MODAL_INSTALL_FROM_FILE,
 		MODAL_INSTALL_KANDO,
+		MODAL_STARTUP_ERROR,
 		MODAL_UNINSTALL_APP_CONFIRMATION
 	} from '$const';
 	import { startViewTransition } from '$helpers';
@@ -24,9 +25,10 @@
 		DevHubInstallationConfirmation,
 		FactoryResetConformation,
 		InstallFromFile,
-		InstallKando
+		InstallKando,
+		UninstallAppConfirmation,
+		StartupError
 	} from '$modal';
-	import UninstallAppConfirmation from '$modal/UninstallAppConfirmation.svelte';
 
 	const queryClient = new QueryClient();
 
@@ -35,7 +37,8 @@
 		[MODAL_INSTALL_KANDO]: { ref: InstallKando },
 		[MODAL_DEVHUB_INSTALLATION_CONFIRMATION]: { ref: DevHubInstallationConfirmation },
 		[MODAL_FACTORY_RESET_CONFIRMATION]: { ref: FactoryResetConformation },
-		[MODAL_UNINSTALL_APP_CONFIRMATION]: { ref: UninstallAppConfirmation }
+		[MODAL_UNINSTALL_APP_CONFIRMATION]: { ref: UninstallAppConfirmation },
+		[MODAL_STARTUP_ERROR]: { ref: StartupError }
 	};
 
 	const setupStorePopup = () => {

@@ -1,15 +1,17 @@
 <script lang="ts">
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
-	import { MODAL_FACTORY_RESET_CONFIRMATION } from '$const';
+	import { MODAL_FACTORY_RESET_CONFIRMATION, MODAL_STARTUP_ERROR } from '$const';
 	import { createModalParams, showModalError } from '$helpers';
 	import { i18n, trpc } from '$services';
 	import { APPS_VIEW } from '$shared/const';
 
 	import { PasswordForm, SetupProgressWrapper } from '../components';
+	import { WRONG_PASSWORD } from '$shared/types';
 
 	const modalStore = getModalStore();
+	const toastStore = getToastStore();
 
 	let passwordInput = '';
 
@@ -24,13 +26,17 @@
 			{ password: passwordInput },
 			{
 				onSuccess: () => goto(`/${APPS_VIEW}`),
-				onError: (error) =>
-					showModalError({
-						modalStore,
-						errorTitle: $i18n.t('setupError'),
-						errorMessage: $i18n.t(error.message || 'unknownError'),
-						response: () => goto('/')
-					})
+				onError: (error) => {
+					if (error.message === WRONG_PASSWORD) {
+						passwordInput = '';
+						toastStore.trigger({
+							message: $i18n.t(WRONG_PASSWORD),
+							background: 'variant-filled-error'
+						})
+					} else {
+						showStartupErrorModal($i18n.t(error.message || 'unknownError'));
+					}
+				}
 			}
 		);
 	};
@@ -49,6 +55,11 @@
 			}
 		});
 
+		modalStore.trigger(modal);
+	};
+
+	const showStartupErrorModal = (error: string) => {
+		const modal = createModalParams(MODAL_STARTUP_ERROR, (cancel) => { if (cancel) goto('/') }, error);
 		modalStore.trigger(modal);
 	};
 </script>
