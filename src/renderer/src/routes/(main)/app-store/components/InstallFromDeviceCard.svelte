@@ -11,7 +11,10 @@
 	const modal = createModalParams(MODAL_INSTALL_FROM_FILE);
 </script>
 
-<button class="card flex items-center p-4 dark:variant-soft-tertiary">
+<button
+	on:click={() => modalStore.trigger(modal)}
+	class="card flex cursor-pointer items-center p-4 text-start dark:variant-soft-tertiary dark:hover:bg-tertiary-900"
+>
 	<Avatar
 		border="border-4 border-white border-opacity-20"
 		fontSize={250}
@@ -26,12 +29,12 @@
 			{$i18n.t('useWebhappFileToAddHapp')}
 		</p>
 	</div>
-	<Button
+	<!-- <Button
 		props={{
 			onClick: () => modalStore.trigger(modal),
 			class: 'btn-app-store variant-filled'
 		}}
 	>
 		{$i18n.t('install')}
-	</Button>
+	</Button> -->
 </button>

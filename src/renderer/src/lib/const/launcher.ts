@@ -8,10 +8,11 @@ export const MODAL_ADD_NEW_HAPP_VERSION = 'modalAddNewHappVersion';
 export const MODAL_DEVHUB_INSTALLATION_CONFIRMATION = 'modalDevHubInstallationConfirmation';
 export const MODAL_FACTORY_RESET_CONFIRMATION = 'modalFactoryResetConfirmation';
 export const MODAL_UNINSTALL_APP_CONFIRMATION = 'modalUninstallAppConfirmation';
-export const MODAL_STARTUP_ERROR =  'modalStartupError';
+export const MODAL_STARTUP_ERROR = 'modalStartupError';
 
 export const SELECTED_ICON_STYLE = 'fill-light-primary dark:fill-white';
-export const NOT_SELECTED_ICON_STYLE = 'fill-black dark:fill-tertiary-400';
+export const NOT_SELECTED_ICON_STYLE =
+	'fill-black dark:fill-tertiary-400 dark:group-hover:fill-tertiary-100';
 
 export const DEV_PAGE = `${SETTINGS_WINDOW}/dev`;
 export const DEV_APP_PAGE = `${DEV_PAGE}/app`;
