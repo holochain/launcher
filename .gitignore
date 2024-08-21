@@ -3,6 +3,8 @@ dist
 out
 *.log*
 .DS_Store
+.cargo
+target
 
 .env
 
