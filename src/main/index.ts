@@ -275,14 +275,6 @@ app.whenReady().then(async () => {
   const mainWindow = PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW];
   const settingsWindow = PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW];
 
-  globalShortcut.register('CommandOrControl+Shift+L', () => {
-    if (mainWindow.isFocused()) {
-      mainWindow.hide();
-    } else {
-      mainWindow.show();
-    }
-  });
-
   mainWindow.on('close', (e) => {
     if (IS_QUITTING) return;
     // If launcher has already launched, i.e. not "Enter Password" screen anymore, only hide the window

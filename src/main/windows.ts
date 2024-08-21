@@ -140,6 +140,14 @@ export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
   tray.setToolTip('Holochain Launcher');
   tray.setContextMenu(trayContextMenu);
 
+  globalShortcut.register('CommandOrControl+Shift+L', () => {
+    if (mainWindow.isFocused()) {
+      mainWindow.hide();
+    } else {
+      mainWindow.show();
+    }
+  });
+
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
   });
