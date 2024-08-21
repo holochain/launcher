@@ -488,7 +488,7 @@ export class HolochainManager {
       );
     }
 
-    let pubKey: AgentPubKey | undefined;
+    let pubKey: AgentPubKey;
     if (agentPubKey) {
       pubKey = decodeHashFromBase64(agentPubKey);
     } else {
