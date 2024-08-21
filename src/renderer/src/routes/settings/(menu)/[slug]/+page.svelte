@@ -207,7 +207,7 @@
 						checked={!isDisabled}
 						active="bg-success-500"
 						name="enabled-disabled-app-slider"
-						size="lg"
+						size="sm"
 					>
 						{isDisabled ? $i18n.t('disabled') : $i18n.t('enabled')}
 					</SlideToggle>
