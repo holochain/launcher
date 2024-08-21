@@ -194,34 +194,3 @@ export const resizeImage = async (file: File): Promise<Uint8Array | null> => {
 		}, 'image/png');
 	});
 };
-
-export const handleInstallError = ({
-	appNameExistsError,
-	title,
-	message,
-	modalStore,
-	toastStore,
-	modalComponent
-}: {
-	appNameExistsError: boolean;
-	title: string;
-	message: string;
-	modalStore: ModalStore;
-	toastStore: ToastStore;
-	modalComponent: Modals;
-}) => {
-	modalStore.close();
-	if (appNameExistsError) {
-		toastStore.trigger({
-			message: message
-		});
-		const modal = createModalParams(modalComponent);
-		return modalStore.trigger(modal);
-	}
-
-	return showModalError({
-		modalStore,
-		errorTitle: title,
-		errorMessage: message
-	});
-};

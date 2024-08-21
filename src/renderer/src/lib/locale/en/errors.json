@@ -3,6 +3,7 @@
 	"appNameExistsError": "An app with the same name is already installed. Please choose a different name",
 	"appStoreClientNotInitializedError": "AppStoreClient not initialized",
 	"checkInitializedKeystoreError": "Error checking initialized keystore",
+	"duplicatePubKeyError": "An app with the same public key is already installed. This is not allowed due to security reasons.",
 	"devHubClientNotInitializedError": "DevHubClient not initialized",
 	"failedToCreateSymlinkedLairDirectoryError": "Failed to create symlinked lair directory",
 	"fileUndefinedError": "File undefined",

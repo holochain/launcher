@@ -36,6 +36,7 @@ import {
 } from '$shared/types';
 
 import { DEFAULT_HOLOCHAIN_VERSION, HOLOCHAIN_BINARIES } from './binaries';
+import { APP_ALREADY_INSTALLED_ERROR, DUPLICATE_PUBKEY_ERROR_MESSAGE } from './const';
 import type { AppMetadata, AppMetadataV1, LauncherFileSystem } from './filesystem';
 import { createDirIfNotExists } from './filesystem';
 import { type IntegrityChecker } from './integrityChecker';
@@ -394,33 +395,13 @@ export class HolochainManager {
       pubKey = await this.adminWebsocket.generateAgentPubKey();
     }
 
-    let appInfo: AppInfo | undefined;
-    try {
-      appInfo = await this.installApp({
-        agent_key: pubKey,
-        installed_app_id: appId,
-        membrane_proofs: membrane_proofs ? membrane_proofs : {},
-        path: happFilePath,
-        network_seed: networkSeed,
-      });
-    } catch (e) {
-      // If this fails, e.g. due to a timeout, the app may actually still be installed in the conductor
-      // and should get removed again to ensure that there is no app installed without associated meta-data
-      try {
-        await this.adminWebsocket.uninstallApp({ installed_app_id: appId });
-        this.launcherEmitter.emit(
-          LAUNCHER_ERROR,
-          `Uninstalled app after failed installation. Installation error: ${e}`,
-        );
-      } catch (err) {
-        this.launcherEmitter.emit(
-          LAUNCHER_ERROR,
-          `Failed to uninstall app after failed installation: ${err}`,
-        );
-        console.warn('Failed to uninstall app after failed installation: ', err);
-      }
-      return Promise.reject(`Failed to install app: ${e}`);
-    }
+    const appInfo = await this.installApp({
+      agent_key: pubKey,
+      installed_app_id: appId,
+      membrane_proofs: membrane_proofs ? membrane_proofs : {},
+      path: happFilePath,
+      network_seed: networkSeed,
+    });
 
     // store app metadata to installed app directory
     const metaData: AppMetadata<AppMetadataV1> = {
@@ -495,33 +476,20 @@ export class HolochainManager {
       pubKey = await this.adminWebsocket.generateAgentPubKey();
     }
 
-    let appInfo: AppInfo | undefined;
-    try {
-      appInfo = await this.installApp({
-        agent_key: pubKey,
-        installed_app_id: appId,
-        membrane_proofs: membrane_proofs ? membrane_proofs : {},
-        path: this.happFilePath(happSha256),
-        network_seed: networkSeed,
-      });
-    } catch (e) {
-      // If this fails, e.g. due to a timeout, the app may actually still be installed in the conductor
-      // and should get removed again to ensure that there is no app installed without associated meta-data
-      try {
-        await this.adminWebsocket.uninstallApp({ installed_app_id: appId });
-        this.launcherEmitter.emit(
-          LAUNCHER_ERROR,
-          `Uninstalled app after failed installation. Installation error: ${e}`,
-        );
-      } catch (err) {
-        this.launcherEmitter.emit(
-          LAUNCHER_ERROR,
-          `Failed to uninstall app after failed installation: ${err}`,
-        );
-        console.warn('Failed to uninstall app after failed installation: ', err);
-      }
-      return Promise.reject(`Failed to install app: ${e}`);
-    }
+    const installedAppsPriorToInstallation = await this.adminWebsocket.listApps({});
+    const duplicateAppId = installedAppsPriorToInstallation.find(
+      (app) => app.installed_app_id === appId,
+    );
+
+    if (duplicateAppId) throw new Error(APP_ALREADY_INSTALLED_ERROR);
+
+    const appInfo = await this.installApp({
+      agent_key: pubKey,
+      installed_app_id: appId,
+      membrane_proofs: membrane_proofs ? membrane_proofs : {},
+      path: this.happFilePath(happSha256),
+      network_seed: networkSeed,
+    });
 
     // store app metadata to installed app directory
     const metaData: AppMetadata<AppMetadataV1> = {
@@ -575,11 +543,39 @@ export class HolochainManager {
       (appInfo) =>
         encodeHashToBase64(appInfo.agent_pub_key) === encodeHashToBase64(payload.agent_key),
     );
-    if (duplicatePubkey)
-      throw new Error(
-        'An app with the same public key is already installed. This is not allowed due to security reasons.',
-      );
-    return this.adminWebsocket.installApp(payload);
+    if (duplicatePubkey) throw new Error(DUPLICATE_PUBKEY_ERROR_MESSAGE);
+
+    const duplicateAppId = installedApps.find(
+      (app) => app.installed_app_id === payload.installed_app_id,
+    );
+
+    if (duplicateAppId) throw new Error('An app with the same name is already installed.');
+
+    try {
+      const appInfo = await this.adminWebsocket.installApp(payload);
+      return appInfo;
+    } catch (e) {
+      if (!duplicateAppId) {
+        // DANGER It's crucial that the app is only uninstalled again in case the error is not that another app
+        // of the same InstalledAppId is already installed
+        // If this fails, e.g. due to a timeout, the app may actually still be installed in the conductor
+        // and should get removed again to ensure that there is no app installed without associated meta-data
+        try {
+          await this.adminWebsocket.uninstallApp({ installed_app_id: payload.installed_app_id! });
+          this.launcherEmitter.emit(
+            LAUNCHER_ERROR,
+            `Uninstalled app after failed installation. Installation error: ${e}`,
+          );
+        } catch (err) {
+          this.launcherEmitter.emit(
+            LAUNCHER_ERROR,
+            `Failed to uninstall app after failed installation: ${err}`,
+          );
+          console.warn('Failed to uninstall app after failed installation: ', err);
+        }
+      }
+      throw e;
+    }
   }
 
   async updateUiFromHash(

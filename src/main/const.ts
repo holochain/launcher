@@ -15,6 +15,11 @@ export const DEVHUB_INSTALL: AppToInstall = {
 
 export const DEFAULT_APPS_TO_INSTALL: AppToInstall[] = [APP_STORE_INSTALL];
 
+export const APP_ALREADY_INSTALLED_ERROR =
+  'An app with the same name is already installed. Please choose a different name.';
+export const DUPLICATE_PUBKEY_ERROR_MESSAGE =
+  'An app with the same public key is already installed. This is not allowed due to security reasons.';
+
 /**
  * Filesystem related constants
  */

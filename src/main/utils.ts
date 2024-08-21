@@ -29,6 +29,7 @@ import type { AppToInstall, DistributionInfoV1 } from '$shared/types';
 import {
   type AdminWindow,
   APP_NAME_EXISTS_ERROR,
+  DUPLICATE_PUBKEY_ERROR,
   type EventKeys,
   type EventMap,
   LOADING_PROGRESS_UPDATE,
@@ -36,6 +37,7 @@ import {
 } from '$shared/types';
 
 import { BREAKING_DEFAULT_HOLOCHAIN_VERSION } from './binaries';
+import { APP_ALREADY_INSTALLED_ERROR, DUPLICATE_PUBKEY_ERROR_MESSAGE } from './const';
 import type { LauncherFileSystem } from './filesystem';
 import type { HolochainManager } from './holochainManager';
 import type { LauncherEmitter } from './launcherEmitter';
@@ -275,9 +277,18 @@ export const installApp = async ({
 
 export const handleInstallError = (error: unknown) => {
   const errorMessage = getErrorMessage(error);
-  if (errorMessage.includes('AppAlreadyInstalled')) {
+  if (
+    errorMessage.includes('AppAlreadyInstalled') ||
+    errorMessage === APP_ALREADY_INSTALLED_ERROR
+  ) {
     return throwTRPCErrorError({
       message: APP_NAME_EXISTS_ERROR,
+      cause: errorMessage,
+    });
+  }
+  if (errorMessage === DUPLICATE_PUBKEY_ERROR_MESSAGE) {
+    return throwTRPCErrorError({
+      message: DUPLICATE_PUBKEY_ERROR,
       cause: errorMessage,
     });
   }

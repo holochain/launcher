@@ -2,12 +2,10 @@
 	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
-	import { MODAL_INSTALL_FROM_FILE, PRESEARCH_URL_QUERY } from '$const';
-	import { handleInstallError } from '$helpers';
+	import { PRESEARCH_URL_QUERY } from '$const';
 	import { i18n, trpc } from '$services';
 	import { APPS_VIEW } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
-	import { APP_NAME_EXISTS_ERROR } from '$shared/types';
 	import type { AppInstallFormData } from '$types';
 
 	import ModalInstallForm from './ModalInstallForm.svelte';
@@ -46,13 +44,9 @@
 				onError: (error) => {
 					console.error(error);
 					const errorMessage = getErrorMessage(error);
-					handleInstallError({
-						appNameExistsError: errorMessage === APP_NAME_EXISTS_ERROR,
-						title: $i18n.t('appError'),
+					toastStore.trigger({
 						message: $i18n.t(errorMessage),
-						modalStore,
-						toastStore,
-						modalComponent: MODAL_INSTALL_FROM_FILE
+						background: 'variant-filled-error'
 					});
 				}
 			}
