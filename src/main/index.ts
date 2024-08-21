@@ -81,7 +81,6 @@ import {
   handleInstallError,
   installApp,
   isDevhubInstalled,
-  isHappAlreadyOpened,
   processHeadlessAppInstallation,
   signZomeCall,
   throwTRPCErrorError,
@@ -544,7 +543,14 @@ const router = t.router({
     const { appInfo, holochainDataRoot } = opts.input;
     const holochainManager = getHolochainManager(holochainDataRoot.name);
 
-    if (isHappAlreadyOpened({ installed_app_id: appInfo.installed_app_id, WINDOW_INFO_MAP })) {
+    const windowInfo = Object.values(WINDOW_INFO_MAP).find(
+      (info) =>
+        info.installedAppId === appInfo.installed_app_id &&
+        JSON.stringify(info.holochainDataRoot) === JSON.stringify(holochainDataRoot),
+    );
+
+    if (windowInfo) {
+      windowInfo.windowObject.show();
       return;
     }
 
@@ -557,8 +563,12 @@ const router = t.router({
       holochainManager.appPort,
       appAuthenticationToken,
     );
-    WINDOW_INFO_MAP[happWindow.webContents.id] = {
+
+    const windowId = happWindow.webContents.id;
+
+    WINDOW_INFO_MAP[windowId] = {
       installedAppId: appInfo.installed_app_id,
+      holochainDataRoot,
       agentPubKey: appInfo.agent_pub_key,
       windowObject: happWindow,
       adminPort:
@@ -566,12 +576,11 @@ const router = t.router({
           ? VALIDATED_CLI_ARGS.holochainVersion.adminPort
           : undefined,
     };
-    console.log(
-      'WINDOW_INFO_MAP[happWindow.webContents.id]: ',
-      WINDOW_INFO_MAP[happWindow.webContents.id],
-    );
-    happWindow.on('close', () => {
-      delete WINDOW_INFO_MAP[happWindow.webContents.id];
+
+    happWindow.on('closed', () => {
+      if (happWindow) {
+        delete WINDOW_INFO_MAP[windowId];
+      }
     });
   }),
   uninstallApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {

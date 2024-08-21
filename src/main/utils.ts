@@ -146,25 +146,6 @@ export const processHeadlessAppInstallation =
     }
   };
 
-export function isHappAlreadyOpened({
-  installed_app_id,
-  WINDOW_INFO_MAP,
-}: {
-  installed_app_id: string;
-  WINDOW_INFO_MAP: WindowInfoRecord;
-}) {
-  const windowEntry = Object.values(WINDOW_INFO_MAP).find(
-    (value) => value.installedAppId === installed_app_id,
-  );
-  if (!windowEntry) return false;
-
-  const { windowObject } = windowEntry;
-  if (windowObject.isMinimized()) windowObject.restore();
-  windowObject.focus();
-
-  return true;
-}
-
 export function happSessionName(holochainDataRootName: string, appId: string) {
   return `persist:${holochainDataRootName}#${appId}`;
 }
