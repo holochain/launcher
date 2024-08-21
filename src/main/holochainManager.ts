@@ -5,10 +5,11 @@ import type {
   AgentPubKeyB64,
   AppAuthenticationToken,
   AppInfo,
+  InstallAppRequest,
   InstalledAppId,
   MembraneProof,
 } from '@holochain/client';
-import { AdminWebsocket, decodeHashFromBase64 } from '@holochain/client';
+import { AdminWebsocket, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import AdmZip from 'adm-zip';
 import * as childProcess from 'child_process';
 import crypto from 'crypto';
@@ -395,7 +396,7 @@ export class HolochainManager {
 
     let appInfo: AppInfo | undefined;
     try {
-      appInfo = await this.adminWebsocket.installApp({
+      appInfo = await this.installApp({
         agent_key: pubKey,
         installed_app_id: appId,
         membrane_proofs: membrane_proofs ? membrane_proofs : {},
@@ -487,8 +488,7 @@ export class HolochainManager {
       );
     }
 
-    let pubKey: AgentPubKey;
-
+    let pubKey: AgentPubKey | undefined;
     if (agentPubKey) {
       pubKey = decodeHashFromBase64(agentPubKey);
     } else {
@@ -497,7 +497,7 @@ export class HolochainManager {
 
     let appInfo: AppInfo | undefined;
     try {
-      appInfo = await this.adminWebsocket.installApp({
+      appInfo = await this.installApp({
         agent_key: pubKey,
         installed_app_id: appId,
         membrane_proofs: membrane_proofs ? membrane_proofs : {},
@@ -567,6 +567,19 @@ export class HolochainManager {
       data: appInfo,
     });
     this.launcherEmitter.emit(REFETCH_DATA_IN_ALL_WINDOWS, `install-${appId}`);
+  }
+
+  async installApp(payload: InstallAppRequest): Promise<AppInfo> {
+    const installedApps = await this.adminWebsocket.listApps({});
+    const duplicatePubkey = installedApps.find(
+      (appInfo) =>
+        encodeHashToBase64(appInfo.agent_pub_key) === encodeHashToBase64(payload.agent_key),
+    );
+    if (duplicatePubkey)
+      throw new Error(
+        'An app with the same public key is already installed. This is not allowed due to security reasons.',
+      );
+    return this.adminWebsocket.installApp(payload);
   }
 
   async updateUiFromHash(
