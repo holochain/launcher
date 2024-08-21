@@ -133,19 +133,34 @@ impl LauncherLairClient {
     pub async fn derive_and_import_seed_from_json_file(&self, path: String) -> Result<String> {
         let json_string = std::fs::read_to_string(path)?;
         let parsed_string: serde_json::Value = serde_json::from_str(&json_string)?;
-        let device_bundle = parsed_string["device_bundle"]
+        let v3_config = parsed_string
+            .get("v3")
+            .ok_or(napi::Error::from_reason(
+                "No top-level v3 key found in the json file",
+            ))?
+            .as_object()
+            .ok_or(napi::Error::from_reason(
+                "The v3 key is not of type string",
+            ))?;
+
+        let device_bundle = v3_config
+            .get("device_bundle")
+            .ok_or(napi::Error::from_reason("device_bundle field not found"))?
             .as_str()
             .ok_or(napi::Error::from_reason(
-                "device_bundle value does not seem to be a string",
+                "device_bundle value is not of type string",
             ))?
             .to_string();
 
-        let initial_host_pub_key_b64 =
-            parsed_string["initial_host_pub_key"]
-                .as_str()
-                .ok_or(napi::Error::from_reason(
-                    "initial_host_pub_key value does not seem to be a string",
-                ))?;
+        let initial_host_pub_key_b64 = v3_config
+            .get("initial_host_pub_key")
+            .ok_or(napi::Error::from_reason(
+                "initial_host_pub_key field not found",
+            ))?
+            .as_str()
+            .ok_or(napi::Error::from_reason(
+                "initial_host_pub_key value is not of type string",
+            ))?;
 
         let passphrase = if let Some(mut input) = PassphraseInput::with_default_binary() {
             // pinentry binary is available!
@@ -382,5 +397,3 @@ pub async fn unlock_device_bundle(
         )),
     }
 }
-
-

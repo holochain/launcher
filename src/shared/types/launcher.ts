@@ -11,8 +11,9 @@ import {
   type MAIN_WINDOW,
   type SETTINGS_WINDOW,
 } from '../const';
+import type { HolochainDataRoot } from './holochain';
 
-export type Screen = typeof MAIN_WINDOW | typeof SETTINGS_WINDOW;
+export type AdminWindow = typeof MAIN_WINDOW | typeof SETTINGS_WINDOW;
 
 export const MainScreenRouteSchema = z.union([z.literal(APP_STORE), z.literal(APPS_VIEW)]);
 
@@ -21,6 +22,7 @@ export type MainScreenRoute = z.infer<typeof MainScreenRouteSchema>;
 export type WindowInfo = {
   agentPubKey: AgentPubKey;
   installedAppId: string;
+  holochainDataRoot: HolochainDataRoot;
   adminPort?: number;
   windowObject: BrowserWindow;
 };

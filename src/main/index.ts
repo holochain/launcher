@@ -4,7 +4,7 @@ import { AppWebsocket } from '@holochain/client';
 import { autoUpdater } from '@matthme/electron-updater';
 import { decode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
-import { AppstoreAppClient, DevhubAppClient, webhappToHappAndUi } from 'appstore-tools';
+import { AppstoreAppClient, DevhubAppClient } from 'appstore-tools';
 import { type ChildProcessWithoutNullStreams, spawnSync } from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
@@ -30,10 +30,10 @@ import {
 } from '$shared/const';
 import { getErrorMessage } from '$shared/helpers';
 import type {
+  AdminWindow,
   DistributionInfoV1,
   HolochainDataRoot,
   HolochainPartition,
-  Screen,
   WindowInfoRecord,
 } from '$shared/types';
 import {
@@ -81,13 +81,12 @@ import {
   handleInstallError,
   installApp,
   isDevhubInstalled,
-  isHappAlreadyOpened,
   processHeadlessAppInstallation,
   signZomeCall,
   throwTRPCErrorError,
   validateWithZod,
 } from './utils';
-import { createHappWindow, focusVisibleWindow, loadOrServe, setupAppWindows } from './windows';
+import { createHappWindow, loadOrServe, setupAppWindows } from './windows';
 
 const t = initTRPC.create({ isServer: true });
 
@@ -179,11 +178,15 @@ if (!isFirstInstance && app.isPackaged && !VALIDATED_CLI_ARGS.profile) {
 }
 
 app.on('second-instance', () => {
-  focusVisibleWindow(PRIVILEDGED_LAUNCHER_WINDOWS);
+  if (PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW]) {
+    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].show();
+  }
 });
 
 app.on('activate', () => {
-  focusVisibleWindow(PRIVILEDGED_LAUNCHER_WINDOWS);
+  if (PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW]) {
+    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].show();
+  }
 });
 
 protocol.registerSchemesAsPrivileged([
@@ -213,7 +216,7 @@ let APP_PORT: number | undefined;
 let DEFAULT_HOLOCHAIN_DATA_ROOT: HolochainDataRoot | undefined;
 const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
 let LAIR_HANDLE: ChildProcessWithoutNullStreams | undefined;
-let PRIVILEDGED_LAUNCHER_WINDOWS: Record<Screen, BrowserWindow>; // Admin windows with special zome call signing priviledges
+let PRIVILEDGED_LAUNCHER_WINDOWS: Record<AdminWindow, BrowserWindow>; // Admin windows with special zome call signing priviledges
 const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
 let IS_LAUNCHED = false;
 let IS_QUITTING = false;
@@ -270,6 +273,7 @@ app.whenReady().then(async () => {
 
   const mainWindow = PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW];
   const settingsWindow = PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW];
+
   mainWindow.on('close', (e) => {
     if (IS_QUITTING) return;
     // If launcher has already launched, i.e. not "Enter Password" screen anymore, only hide the window
@@ -535,7 +539,12 @@ const getDevhubAppClient = async () => {
 
 const router = t.router({
   openSettings: t.procedure.mutation(() => {
-    PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW].show();
+    const mainWindow = PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW];
+    const [xMain, yMain] = mainWindow.getPosition();
+    const settingsWindow = PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW];
+    if (!settingsWindow) throw new Error('Settings window is undefined.');
+    settingsWindow.setPosition(xMain + 50, yMain - 50);
+    settingsWindow.show();
   }),
   hideApp: t.procedure.mutation(() => {
     PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].hide();
@@ -544,7 +553,14 @@ const router = t.router({
     const { appInfo, holochainDataRoot } = opts.input;
     const holochainManager = getHolochainManager(holochainDataRoot.name);
 
-    if (isHappAlreadyOpened({ installed_app_id: appInfo.installed_app_id, WINDOW_INFO_MAP })) {
+    const windowInfo = Object.values(WINDOW_INFO_MAP).find(
+      (info) =>
+        info.installedAppId === appInfo.installed_app_id &&
+        JSON.stringify(info.holochainDataRoot) === JSON.stringify(holochainDataRoot),
+    );
+
+    if (windowInfo) {
+      windowInfo.windowObject.show();
       return;
     }
 
@@ -557,8 +573,12 @@ const router = t.router({
       holochainManager.appPort,
       appAuthenticationToken,
     );
-    WINDOW_INFO_MAP[happWindow.webContents.id] = {
+
+    const windowId = happWindow.webContents.id;
+
+    WINDOW_INFO_MAP[windowId] = {
       installedAppId: appInfo.installed_app_id,
+      holochainDataRoot,
       agentPubKey: appInfo.agent_pub_key,
       windowObject: happWindow,
       adminPort:
@@ -566,12 +586,11 @@ const router = t.router({
           ? VALIDATED_CLI_ARGS.holochainVersion.adminPort
           : undefined,
     };
-    console.log(
-      'WINDOW_INFO_MAP[happWindow.webContents.id]: ',
-      WINDOW_INFO_MAP[happWindow.webContents.id],
-    );
-    happWindow.on('close', () => {
-      delete WINDOW_INFO_MAP[happWindow.webContents.id];
+
+    happWindow.on('closed', () => {
+      if (happWindow) {
+        delete WINDOW_INFO_MAP[windowId];
+      }
     });
   }),
   uninstallApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
@@ -638,6 +657,11 @@ const router = t.router({
       }
       throw new Error(errorMessage);
     }
+  }),
+  validateWebhappFormat: t.procedure.input(z.instanceof(Uint8Array)).mutation(async (opts) => {
+    const decodedHappOrWebhapp = await rustUtils.decodeHappOrWebhapp(Array.from(opts.input));
+    if (!decodedHappOrWebhapp.uiBytes) throw new Error('File is not a webhapp (no UI).');
+    return true;
   }),
   isHappAvailableAndValid: t.procedure.input(z.string()).query(async (opts) => {
     const holochainManager = getHolochainManager(DEFAULT_HOLOCHAIN_DATA_ROOT!.name);

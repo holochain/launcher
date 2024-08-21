@@ -27,15 +27,17 @@ import { APP_STORE_APP_ID, DEVHUB_APP_ID, DISTRIBUTION_TYPE_DEFAULT_APP } from '
 import { getErrorMessage } from '$shared/helpers';
 import type { AppToInstall, DistributionInfoV1 } from '$shared/types';
 import {
+  type AdminWindow,
   APP_NAME_EXISTS_ERROR,
+  DUPLICATE_PUBKEY_ERROR,
   type EventKeys,
   type EventMap,
   LOADING_PROGRESS_UPDATE,
-  type Screen,
   type WindowInfoRecord,
 } from '$shared/types';
 
 import { BREAKING_DEFAULT_HOLOCHAIN_VERSION } from './binaries';
+import { APP_ALREADY_INSTALLED_ERROR, DUPLICATE_PUBKEY_ERROR_MESSAGE } from './const';
 import type { LauncherFileSystem } from './filesystem';
 import type { HolochainManager } from './holochainManager';
 import type { LauncherEmitter } from './launcherEmitter';
@@ -145,25 +147,6 @@ export const processHeadlessAppInstallation =
       });
     }
   };
-
-export function isHappAlreadyOpened({
-  installed_app_id,
-  WINDOW_INFO_MAP,
-}: {
-  installed_app_id: string;
-  WINDOW_INFO_MAP: WindowInfoRecord;
-}) {
-  const windowEntry = Object.values(WINDOW_INFO_MAP).find(
-    (value) => value.installedAppId === installed_app_id,
-  );
-  if (!windowEntry) return false;
-
-  const { windowObject } = windowEntry;
-  if (windowObject.isMinimized()) windowObject.restore();
-  windowObject.focus();
-
-  return true;
-}
 
 export function happSessionName(holochainDataRootName: string, appId: string) {
   return `persist:${holochainDataRootName}#${appId}`;
@@ -294,9 +277,18 @@ export const installApp = async ({
 
 export const handleInstallError = (error: unknown) => {
   const errorMessage = getErrorMessage(error);
-  if (errorMessage.includes('AppAlreadyInstalled')) {
+  if (
+    errorMessage.includes('AppAlreadyInstalled') ||
+    errorMessage === APP_ALREADY_INSTALLED_ERROR
+  ) {
     return throwTRPCErrorError({
       message: APP_NAME_EXISTS_ERROR,
+      cause: errorMessage,
+    });
+  }
+  if (errorMessage === DUPLICATE_PUBKEY_ERROR_MESSAGE) {
+    return throwTRPCErrorError({
+      message: DUPLICATE_PUBKEY_ERROR,
       cause: errorMessage,
     });
   }
@@ -313,7 +305,7 @@ export async function factoryResetUtility({
 }: {
   launcherFileSystem: LauncherFileSystem;
   windowInfoMap: WindowInfoRecord;
-  privilegedLauncherWindows?: Record<Screen, BrowserWindow>;
+  privilegedLauncherWindows?: Record<AdminWindow, BrowserWindow>;
   holochainManagers: Record<string, HolochainManager>;
   lairHandle?: ChildProcessWithoutNullStreams;
   app: Electron.App;
