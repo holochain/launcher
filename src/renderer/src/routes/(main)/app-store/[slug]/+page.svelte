@@ -68,8 +68,11 @@
 					appName: app?.title
 				}
 			},
-			response: ({ appId, networkSeed }: { appId: string; networkSeed: string }) => {
-				modalStore.close();
+			response: (r) => {
+				if (!r || r === true) {
+					return;
+				}
+				const { appId, networkSeed } = r;
 				if (appId.length === 0) {
 					return;
 				}
@@ -90,13 +93,21 @@
 					},
 					{
 						onSuccess: () => {
+							modalStore.close();
 							$installedApps.refetch();
 							toastStore.trigger({
 								message: `${appId} ${$i18n.t('installedSuccessfully')}`
 							});
 							goto(`/${APPS_VIEW}?${PRESEARCH_URL_QUERY}=${appId}`);
 						},
-						onError: (error) => handleError(error, versionEntity)
+						onError: (error) => {
+							console.error(error);
+							const errorMessage = getErrorMessage(error);
+							toastStore.trigger({
+								message: $i18n.t(errorMessage),
+								background: 'variant-filled-error'
+							});
+						}
 					}
 				);
 			}
