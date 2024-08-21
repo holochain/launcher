@@ -27,11 +27,11 @@ import { APP_STORE_APP_ID, DEVHUB_APP_ID, DISTRIBUTION_TYPE_DEFAULT_APP } from '
 import { getErrorMessage } from '$shared/helpers';
 import type { AppToInstall, DistributionInfoV1 } from '$shared/types';
 import {
+  type AdminWindow,
   APP_NAME_EXISTS_ERROR,
   type EventKeys,
   type EventMap,
   LOADING_PROGRESS_UPDATE,
-  type Screen,
   type WindowInfoRecord,
 } from '$shared/types';
 
@@ -294,7 +294,7 @@ export async function factoryResetUtility({
 }: {
   launcherFileSystem: LauncherFileSystem;
   windowInfoMap: WindowInfoRecord;
-  privilegedLauncherWindows?: Record<Screen, BrowserWindow>;
+  privilegedLauncherWindows?: Record<AdminWindow, BrowserWindow>;
   holochainManagers: Record<string, HolochainManager>;
   lairHandle?: ChildProcessWithoutNullStreams;
   app: Electron.App;
