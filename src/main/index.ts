@@ -277,7 +277,6 @@ app.whenReady().then(async () => {
 
   PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW] = mainWindow;
 
-  const settingsWindow = PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW];
   mainWindow.on('close', (e) => {
     if (IS_QUITTING) return;
     // If launcher has already launched, i.e. not "Enter Password" screen anymore, only hide the window
@@ -286,6 +285,7 @@ app.whenReady().then(async () => {
       mainWindow.hide();
       return;
     }
+    const settingsWindow = PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW];
     // Close all windows to have the 'window-all-close' event be triggered
     if (settingsWindow) settingsWindow.close();
   });
