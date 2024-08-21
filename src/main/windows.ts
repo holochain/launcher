@@ -16,7 +16,7 @@ import path from 'path';
 import url from 'url';
 
 import { MAIN_WINDOW, MIN_HEIGH, SETTINGS_SIZE, SETTINGS_WINDOW, WINDOW_SIZE } from '$shared/const';
-import type { ExtendedAppInfo, Screen } from '$shared/types';
+import type { AdminWindow, ExtendedAppInfo } from '$shared/types';
 import { LAUNCHER_ERROR } from '$shared/types';
 
 import type { LauncherFileSystem } from './filesystem';
@@ -73,17 +73,6 @@ const createAdminWindow = ({
     },
   });
 
-export const focusVisibleWindow = (launcherWindows: Record<Screen, BrowserWindow>) => {
-  const windows = Object.values(launcherWindows);
-  const anyVisible = windows.some((window) => !window.isMinimized() && window.isVisible());
-
-  if (!anyVisible) {
-    launcherWindows[MAIN_WINDOW].show();
-  } else {
-    windows.find((window) => !window.isMinimized() && window.isVisible())?.focus();
-  }
-};
-
 export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
   // Create the browser window.
   const mainIcon = nativeImage.createFromPath(path.join(ICONS_DIRECTORY, '../icon.png'));
@@ -105,7 +94,7 @@ export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
 
   loadOrServe(mainWindow, { screen: MAIN_WINDOW });
 
-  const windows: Record<Screen, BrowserWindow> = {
+  const windows: Record<AdminWindow, BrowserWindow> = {
     [MAIN_WINDOW]: mainWindow,
     [SETTINGS_WINDOW]: settingsWindow,
   };
@@ -116,9 +105,9 @@ export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
       type: 'normal',
       click() {
         try {
-          focusVisibleWindow(windows);
+          mainWindow.show();
         } catch (e) {
-          launcherEmitter.emit(LAUNCHER_ERROR, `Failed to focus visible window: ${e}`);
+          launcherEmitter.emit(LAUNCHER_ERROR, `Failed to focus main window: ${e}`);
         }
       },
     },
@@ -150,11 +139,6 @@ export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
 
   tray.setToolTip('Holochain Launcher');
   tray.setContextMenu(trayContextMenu);
-
-  globalShortcut.register('CommandOrControl+Shift+L', () => {
-    mainWindow.setSize(WINDOW_SIZE, MIN_HEIGH);
-    focusVisibleWindow(windows);
-  });
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
