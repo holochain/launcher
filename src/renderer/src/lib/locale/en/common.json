@@ -6,6 +6,7 @@
 	"addhApp": "Add a hApp",
 	"advanced": "Advanced",
 	"allowListLoading": "Loading verified apps",
+	"appIdAlreadyExists": "An App with this name already exists.",
 	"appDetailsUpdatedSuccessfully": "App details updated successfully",
 	"appError": "App Error",
 	"appSettings": "App Settings",

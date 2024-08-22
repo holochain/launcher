@@ -7,12 +7,16 @@
 	import { Button, Input } from '$components';
 	import { convertFileToUint8Array } from '$helpers';
 	import { Gear, Info } from '$icons';
-	import { i18n } from '$services';
+	import { i18n, trpc } from '$services';
 	import type { AppInstallFormData } from '$types';
 
 	import InputModal from './InputModal.svelte';
 
+	const client = trpc();
 	const modalStore = getModalStore();
+
+	const installedApps = client.getInstalledApps.createQuery();
+
 
 	export let formData: AppInstallFormData;
 	export let files: FileList | null = null;
@@ -41,6 +45,10 @@
 		}
 	};
 
+	$: duplicateAppId = $installedApps.data?.some((extendedAppInfo) => extendedAppInfo.appInfo.installed_app_id === formData.appId);
+
+	$: invalidityMsg = duplicateAppId ? $i18n.t('appIdAlreadyExists') : undefined;
+
 	$: setNameByBytes(files);
 </script>
 
@@ -54,7 +62,7 @@
 		<header class="pt-4 text-2xl font-bold">
 			{name ? name : acceptFileType ? $i18n.t('installFromYourDevice') : $i18n.t('kando')}
 		</header>
-		<form class="modal-form flex flex-col space-y-4 p-4" on:submit|preventDefault={onSubmit}>
+		<form class="modal-form flex flex-col space-y-1 p-4" on:submit|preventDefault={onSubmit}>
 			{#if acceptFileType}
 				<Input
 					bind:files
@@ -66,7 +74,7 @@
 					}}
 				/>
 			{/if}
-			<InputModal bind:value={formData.appId} id="appName" label={$i18n.t('name')} />
+			<InputModal bind:value={formData.appId} id="appName" label={$i18n.t('name')} bind:invalidityMsg={invalidityMsg}/>
 			<InputModal
 				bind:value={formData.networkSeed}
 				id="networkSeed"
@@ -110,7 +118,7 @@
 				</Button>
 				<Button
 					props={{
-						disabled: formData.appId.length === 0 || isPending,
+						disabled: formData.appId.length === 0 || isPending || !!invalidityMsg,
 						type: 'submit',
 						isLoading: isPending,
 						class: 'btn-app-store-modal w-1/2 !mb-0'
