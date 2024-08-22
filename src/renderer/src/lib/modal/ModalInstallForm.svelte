@@ -45,7 +45,7 @@
 		}
 	};
 
-	$: duplicateAppId = $installedApps.data?.some((extendedAppInfo) => extendedAppInfo.appInfo.installed_app_id === formData.appId);
+	$: duplicateAppId = $installedApps.data?.some(({appInfo}) => appInfo.installed_app_id === formData.appId);
 
 	$: invalidityMsg = duplicateAppId ? $i18n.t('appIdAlreadyExists') : undefined;
 
