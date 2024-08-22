@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$components';
 	export let onClick: (() => void) | undefined = undefined;
-	export let buttonClass: string = 'p-2';
+	export let buttonClass: string = 'p-2 group';
 </script>
 
 <Button

@@ -25,12 +25,12 @@
 	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_WINDOW } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
 	import { type UpdateUiFromHash } from '$shared/types';
+	import type { Modals } from '$types';
 
 	import { DashedSection } from '../../components';
 	import AppSettings from './components/AppSettings.svelte';
 	import KeyManagement from './components/KeyManagement.svelte';
 	import SystemSettings from './components/SystemSettings.svelte';
-	import type { Modals } from '$types';
 
 	const client = trpc();
 
@@ -161,12 +161,12 @@
 		showModal(MODAL_UNINSTALL_APP_CONFIRMATION, (confirm) => {
 			if (confirm) {
 				validateApp(selectedApp) &&
-				$uninstallApp.mutate(selectedApp, {
-					onSuccess: () => {
-						$installedApps.refetch();
-						goto(`/${SETTINGS_WINDOW}`);
-					}
-				})
+					$uninstallApp.mutate(selectedApp, {
+						onSuccess: () => {
+							$installedApps.refetch();
+							goto(`/${SETTINGS_WINDOW}`);
+						}
+					});
 			}
 		});
 	};
@@ -207,7 +207,7 @@
 						checked={!isDisabled}
 						active="bg-success-500"
 						name="enabled-disabled-app-slider"
-						size="lg"
+						size="sm"
 					>
 						{isDisabled ? $i18n.t('disabled') : $i18n.t('enabled')}
 					</SlideToggle>

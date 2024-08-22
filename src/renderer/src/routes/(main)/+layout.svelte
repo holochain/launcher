@@ -159,7 +159,7 @@
 		</div>
 	</div>
 	{#if type !== APP_STORE}
-		<IconButton onClick={handleNavigation(APP_STORE)} buttonClass="ml-auto">
+		<IconButton onClick={handleNavigation(APP_STORE)} buttonClass="ml-auto group">
 			<Home />
 		</IconButton>
 	{/if}
