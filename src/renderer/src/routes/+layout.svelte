@@ -14,6 +14,7 @@
 	import { onNavigate } from '$app/navigation';
 	import {
 		MODAL_DEVHUB_INSTALLATION_CONFIRMATION,
+		MODAL_ENTER_PASSPHRASE,
 		MODAL_FACTORY_RESET_CONFIRMATION,
 		MODAL_INSTALL_FROM_FILE,
 		MODAL_INSTALL_KANDO,
@@ -29,6 +30,7 @@
 		UninstallAppConfirmation,
 		StartupError
 	} from '$modal';
+	import EnterPassphrase from '$modal/EnterPassphrase.svelte';
 
 	const queryClient = new QueryClient();
 
@@ -36,6 +38,7 @@
 		[MODAL_INSTALL_FROM_FILE]: { ref: InstallFromFile },
 		[MODAL_INSTALL_KANDO]: { ref: InstallKando },
 		[MODAL_DEVHUB_INSTALLATION_CONFIRMATION]: { ref: DevHubInstallationConfirmation },
+		[MODAL_ENTER_PASSPHRASE]: { ref: EnterPassphrase },
 		[MODAL_FACTORY_RESET_CONFIRMATION]: { ref: FactoryResetConformation },
 		[MODAL_UNINSTALL_APP_CONFIRMATION]: { ref: UninstallAppConfirmation },
 		[MODAL_STARTUP_ERROR]: { ref: StartupError }

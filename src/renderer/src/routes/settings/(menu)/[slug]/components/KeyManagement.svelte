@@ -1,14 +1,16 @@
 <script lang="ts">
-	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
+	import { getModalStore, getToastStore, SlideToggle } from '@skeletonlabs/skeleton';
 
 	import { Button } from '$components';
-	import { showModalError } from '$helpers';
+	import { createModalParams, showModalError } from '$helpers';
 	import { Copy, Download } from '$icons';
 	import { i18n, trpc } from '$services';
 	import { getErrorMessage } from '$shared/helpers';
 	import { importedKeys } from '$stores';
 
 	import { DashedSection } from '../../../components';
+	import { MODAL_ENTER_PASSPHRASE } from '$const';
+	import type { Modals } from '$types';
 
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
@@ -17,8 +19,10 @@
 
 	const deriveAndImportSeedFromJsonFile = client.deriveAndImportSeedFromJsonFile.createMutation();
 
+	let insecurePassphraseCollection = true;
+
 	const clearFileInput = () => {
-		const fileInput = document.getElementById('file-input') as HTMLInputElement;
+		const fileInput = document.getElementById('file-input-device-bundle') as HTMLInputElement;
 		if (fileInput) {
 			fileInput.value = '';
 		}
@@ -36,10 +40,14 @@
 	};
 
 	const handleFileChange = async (event: Event) => {
+		if (insecurePassphraseCollection) {
+			showEnterPassphraseModal();
+			return;
+		}
 		const target = event.target as HTMLInputElement;
 		const file = target.files?.[0];
 		if (file && file.type === 'application/json') {
-			$deriveAndImportSeedFromJsonFile.mutate(file.path, {
+			$deriveAndImportSeedFromJsonFile.mutate({ filePath: file.path }, {
 				onError: handleError,
 				onSuccess: (result) => {
 					$importedKeys = [result, ...$importedKeys];
@@ -47,6 +55,45 @@
 				}
 			});
 		}
+	};
+
+	const showModal = (modalType: Modals, response?: (r: unknown) => void) => {
+		const modal = createModalParams(modalType, response);
+		modalStore.trigger(modal);
+	};
+
+	const showEnterPassphraseModal = () => {
+		showModal(MODAL_ENTER_PASSPHRASE, (passphrase) => {
+			console.log('showing modal?');
+			if (passphrase === undefined || !passphrase) {
+				clearFileInput();
+				return;
+			}
+			const fileInputEl = document.getElementById('file-input-device-bundle') as HTMLInputElement;
+			// const target = event.target as HTMLInputElement;
+			const file = fileInputEl?.files?.[0];
+			if (!file) {
+				handleError('No file selected.');
+				return;
+			}
+			$deriveAndImportSeedFromJsonFile.mutate(
+				{ filePath: file.path, passphrase: passphrase as string },
+				{
+					onError: (e) => {
+						// Required for some reason to not have the error modal be closed.
+						setTimeout(() => {
+							passphrase = undefined;
+							handleError(e);
+						}, 200);
+					},
+					onSuccess: (result) => {
+						$importedKeys = [result, ...$importedKeys];
+						clearFileInput();
+						passphrase = undefined;
+					}
+				}
+			);
+		});
 	};
 </script>
 
@@ -76,21 +123,33 @@
 		{/each}
 		<input
 			type="file"
-			id="file-input"
+			id="file-input-device-bundle"
 			class="!hidden"
 			accept=".json"
 			on:change={handleFileChange}
 		/>
-		<div class="flex">
+		<div class="flex items-center">
 			<Button
 				props={{
 					class: 'btn-install flex',
-					onClick: () => document.getElementById('file-input')?.click()
+					onClick: () => document.getElementById('file-input-device-bundle')?.click()
 				}}
 			>
 				<div class="mr-2"><Download /></div>
 				{$i18n.t($importedKeys.length ? 'importAdditionalSeed' : 'import')}
 			</Button>
+			<!-- <SlideToggle
+				on:click={() => {
+					insecurePassphraseCollection = !insecurePassphraseCollection;
+				}}
+				checked={insecurePassphraseCollection}
+				active="bg-warning-500"
+				name="enable-insecure-passphrase-collection-slider"
+				size="sm"
+				class="bg-yellow"
+			>
+				{insecurePassphraseCollection ? 'disable' : 'enable'} less secure passphrase collection
+			</SlideToggle> -->
 		</div>
 	</div>
 </DashedSection>

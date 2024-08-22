@@ -53,5 +53,5 @@ export class LauncherLairClient {
   static connect(connectionUrl: string, passphrase: string): Promise<LauncherLairClient>
   signZomeCall(zomeCallUnsignedJs: ZomeCallUnsignedNapi): Promise<ZomeCallNapi>
   importLockedSeedBundle(importLockedSeedBundle: string, passphrase: string, tag: string): Promise<string>
-  deriveAndImportSeedFromJsonFile(path: string): Promise<string>
+  deriveAndImportSeedFromJsonFile(path: string, passphrase?: string | undefined | null): Promise<string>
 }

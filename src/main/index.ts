@@ -860,11 +860,15 @@ const router = t.router({
   onSetupProgressUpdate: t.procedure.subscription(() => {
     return createObservableGeneric(LAUNCHER_EMITTER, LOADING_PROGRESS_UPDATE);
   }),
-  deriveAndImportSeedFromJsonFile: t.procedure.input(z.string()).mutation(async (opts) => {
-    const jsonFilePath = opts.input;
-    if (!DEFAULT_LAIR_CLIENT) throw new Error('Lair client is not ready.');
-    return DEFAULT_LAIR_CLIENT.deriveAndImportSeedFromJsonFile(jsonFilePath);
-  }),
+  deriveAndImportSeedFromJsonFile: t.procedure
+    .input(z.object({ filePath: z.string(), passphrase: z.string().optional() }))
+    .mutation(async (opts) => {
+      if (!DEFAULT_LAIR_CLIENT) throw new Error('Lair client is not ready.');
+      return DEFAULT_LAIR_CLIENT.deriveAndImportSeedFromJsonFile(
+        opts.input.filePath,
+        opts.input.passphrase,
+      );
+    }),
   hideSettingsWindow: t.procedure.subscription(() => {
     return createObservableGeneric(LAUNCHER_EMITTER, HIDE_SETTINGS_WINDOW, false);
   }),
