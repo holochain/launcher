@@ -64,7 +64,6 @@
 
 	const showEnterPassphraseModal = () => {
 		showModal(MODAL_ENTER_PASSPHRASE, (passphrase) => {
-			console.log('showing modal?');
 			if (passphrase === undefined || !passphrase) {
 				clearFileInput();
 				return;
