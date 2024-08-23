@@ -14,6 +14,7 @@ export type CliArgs = {
   appsDataDir?: string;
   bootstrapUrl?: string;
   signalingUrl?: string;
+  iceUrls?: string;
   rustLog?: string;
   wasmLog?: string;
 };
@@ -25,6 +26,7 @@ export type ValidatedCliArgs = {
   useDefaultPartition: boolean;
   bootstrapUrl: string | undefined;
   signalingUrl: string | undefined;
+  iceUrls: Array<string> | undefined;
   rustLog: string | undefined;
   wasmLog: string | undefined;
 };
@@ -115,11 +117,17 @@ export function validateArgs(args: CliArgs): ValidatedCliArgs {
       'WARN: The --signaling-url argument is ignored when running an external binary (--admin-port).',
     );
   }
+  if (args.iceUrls && args.adminPort) {
+    console.warn(
+      'WARN: The --ice-urls argument is ignored when running an external binary (--admin-port).',
+    );
+  }
 
   const profile = args.profile ? args.profile : undefined;
 
   const bootstrapUrl = args.bootstrapUrl && !args.adminPort ? args.bootstrapUrl : undefined;
   const signalingUrl = args.signalingUrl && !args.adminPort ? args.signalingUrl : undefined;
+  const iceUrls = args.iceUrls && !args.adminPort ? args.iceUrls.split(',') : undefined;
 
   return {
     profile,
@@ -128,6 +136,7 @@ export function validateArgs(args: CliArgs): ValidatedCliArgs {
     useDefaultPartition: args.useDefaultPartition ? true : false,
     bootstrapUrl,
     signalingUrl,
+    iceUrls,
     rustLog: args.rustLog ? args.rustLog : undefined,
     wasmLog: args.wasmLog ? args.wasmLog : undefined,
   };
