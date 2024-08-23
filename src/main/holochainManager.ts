@@ -48,7 +48,7 @@ export type AppPort = number;
 
 export type UiHashes = Record<string, string>;
 
-const DEFAULT_BOOTSTRAP_SERVER = 'https://bootstrap.holo.host';
+const DEFAULT_BOOTSTRAP_SERVER = 'https://bootstrap-0.infra.holochain.org';
 const DEFAULT_SIGNALING_SERVER = 'wss://sbd-0.main.infra.holo.host';
 const DEFAULT_RUST_LOG =
   'warn,' +
@@ -205,6 +205,7 @@ export class HolochainManager {
         undefined,
         configPath,
         'holochain-launcher',
+        ['stun:stun-0.main.infra.holo.host:443', 'stun:stun-1.main.infra.holo.host:443'],
       );
 
     const defaultConductorConfig = () =>
@@ -215,9 +216,12 @@ export class HolochainManager {
         signalingUrl || DEFAULT_SIGNALING_SERVER,
         conductorEnvironmentPath,
         'holochain-launcher',
+        ['stun:stun-0.main.infra.holo.host:443', 'stun:stun-1.main.infra.holo.host:443'],
       );
 
     const conductorConfig = configExists ? overwriteConfig() : defaultConductorConfig();
+
+    console.log('Generated conductor config: ', conductorConfig);
     const action = configExists ? 'Partially overwriting' : 'Writing new';
     console.log(`${action} conductor-config.yaml...`);
 
