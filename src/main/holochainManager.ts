@@ -50,6 +50,10 @@ export type UiHashes = Record<string, string>;
 
 const DEFAULT_BOOTSTRAP_SERVER = 'https://bootstrap-0.infra.holochain.org';
 const DEFAULT_SIGNALING_SERVER = 'wss://sbd-0.main.infra.holo.host';
+const DEFAULT_ICE_SERVERS = [
+  'stun:stun-0.main.infra.holo.host:443',
+  'stun:stun-1.main.infra.holo.host:443',
+];
 const DEFAULT_RUST_LOG =
   'warn,' +
   // this thrashes on startup
@@ -106,6 +110,7 @@ export class HolochainManager {
     lairUrl: string,
     bootstrapUrl?: string,
     signalingUrl?: string,
+    iceUrls?: Array<string>,
     rustLog?: string,
     wasmLog?: string,
     nonDefaultPartition?: HolochainPartition, // launch with data from a non-default partition
@@ -201,11 +206,11 @@ export class HolochainManager {
       rustUtils.overwriteConfig(
         adminPort,
         lairUrl,
-        undefined,
-        undefined,
+        bootstrapUrl || DEFAULT_BOOTSTRAP_SERVER,
+        signalingUrl || DEFAULT_SIGNALING_SERVER,
         configPath,
         'holochain-launcher',
-        ['stun:stun-0.main.infra.holo.host:443', 'stun:stun-1.main.infra.holo.host:443'],
+        iceUrls || DEFAULT_ICE_SERVERS,
       );
 
     const defaultConductorConfig = () =>
@@ -216,7 +221,7 @@ export class HolochainManager {
         signalingUrl || DEFAULT_SIGNALING_SERVER,
         conductorEnvironmentPath,
         'holochain-launcher',
-        ['stun:stun-0.main.infra.holo.host:443', 'stun:stun-1.main.infra.holo.host:443'],
+        iceUrls || DEFAULT_ICE_SERVERS,
       );
 
     const conductorConfig = configExists ? overwriteConfig() : defaultConductorConfig();

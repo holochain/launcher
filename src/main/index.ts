@@ -134,6 +134,10 @@ cli
     '-s, --signaling-url <url>',
     'URL of the signaling server to use. Is ignored if an external holochain binary is being used.',
   )
+  .option(
+    '--ice-urls <string>',
+    'Comma separated string of ICE server URLs to use. Is ignored if an external holochain binary is being used.',
+  )
   .option('--rust-log <string>', 'Set the RUST_LOG to be used.')
   .option('--wasm-log <string>', 'Set the WASM_LOG to be used.');
 
@@ -450,6 +454,7 @@ async function handleLaunch(password: string, isDirectLaunch = true) {
     lairUrl,
     VALIDATED_CLI_ARGS.bootstrapUrl,
     VALIDATED_CLI_ARGS.signalingUrl,
+    VALIDATED_CLI_ARGS.iceUrls,
     VALIDATED_CLI_ARGS.rustLog,
     VALIDATED_CLI_ARGS.wasmLog,
     nonDefaultPartition,
