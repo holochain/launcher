@@ -198,6 +198,10 @@ protocol.registerSchemesAsPrivileged([
     scheme: 'webhapp',
     privileges: { standard: true, secure: true, stream: true },
   },
+  {
+    scheme: 'app',
+    privileges: { standard: true, secure: true, stream: true },
+  },
 ]);
 
 const LAUNCHER_FILE_SYSTEM = LauncherFileSystem.connect(app, VALIDATED_CLI_ARGS.profile);
