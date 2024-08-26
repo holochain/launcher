@@ -51,8 +51,8 @@ fn webrtc_config_from_ice_urls(ice_server_urls: Vec<String>) -> serde_json::Valu
 pub fn overwrite_config(
     admin_port: u16,
     keystore_connection_url: String,
-    bootstrap_server_url: Option<String>,
-    signaling_server_url: Option<String>,
+    bootstrap_server_url: String,
+    signaling_server_url: String,
     config_path: String,
     allowed_origin: String,
     ice_server_urls: Option<Vec<String>>,
@@ -98,12 +98,10 @@ pub fn overwrite_config(
         .and_then(|v| v.as_mapping_mut())
         .ok_or_else(|| create_error("Expected 'network' entry in the config"))?;
 
-    bootstrap_server_url.map(|url| {
-        network.insert(
-            Value::String(String::from("bootstrap_service")),
-            Value::String(url),
-        );
-    });
+    network.insert(
+        Value::String(String::from("bootstrap_service")),
+        Value::String(bootstrap_server_url),
+    );
 
     let mut webrtc_config = Mapping::new();
     if let Some(ice_urls) = ice_server_urls.clone() {
@@ -122,39 +120,24 @@ pub fn overwrite_config(
         );
     }
 
-    match (signaling_server_url.clone(), ice_server_urls.clone()) {
-        (None, None) => (),
-        _ => {
-            let transport_pool = network
-                .entry(Value::String(String::from("transport_pool")))
-                .or_insert_with(|| Value::Sequence(Vec::new()));
+    let transport_pool = network
+        .entry(Value::String(String::from("transport_pool")))
+        .or_insert_with(|| Value::Sequence(Vec::new()));
 
-            if let Value::Sequence(transport_pool_seq) = transport_pool {
-                let signaling_url = match signaling_server_url {
-                    Some(url) => Value::String(url),
-                    None => {
-                        let tpool_element = transport_pool_seq.first();
-                        match tpool_element {
-                        Some(el) => el.get("signal_url").ok_or(napi::Error::from_reason("Conductor config did not contain a signaling server url."))?.to_owned(),
-                        None => return Err(napi::Error::from_reason("Conductor config did not contain any element in the transport_pool section"))
-                    }
-                    }
-                };
-                transport_pool_seq.clear(); // Clear existing transport pool entries
-                let mut transport_pool_mapping = create_mapping_with_entries(vec![
-                    ("type", Value::String(String::from("webrtc"))),
-                    ("signal_url", signaling_url),
-                ]);
-                if let Some(_) = ice_server_urls {
-                    insert_mapping(
-                        &mut transport_pool_mapping,
-                        "webrtc_config",
-                        Value::Mapping(webrtc_config),
-                    );
-                }
-                transport_pool_seq.push(Value::Mapping(transport_pool_mapping));
-            }
+    if let Value::Sequence(transport_pool_seq) = transport_pool {
+        transport_pool_seq.clear(); // Clear existing transport pool entries
+        let mut transport_pool_mapping = create_mapping_with_entries(vec![
+            ("type", Value::String(String::from("webrtc"))),
+            ("signal_url", Value::String(signaling_server_url)),
+        ]);
+        if let Some(_) = ice_server_urls {
+            insert_mapping(
+                &mut transport_pool_mapping,
+                "webrtc_config",
+                Value::Mapping(webrtc_config),
+            );
         }
+        transport_pool_seq.push(Value::Mapping(transport_pool_mapping));
     }
 
     serde_yaml::to_string(&config)
