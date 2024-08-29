@@ -19,7 +19,6 @@
 	const launch = client.launch.createMutation();
 
 	let confirmPasswordInput = '';
-	let loading = false;
 
 	let launching = false;
 
@@ -65,7 +64,7 @@
 	};
 </script>
 
-{#if !loading}
+{#if !launching}
 	<div
 		class="app-region-drag fixed left-0 right-0 top-0 flex items-center justify-between bg-[#DADADA12] p-3"
 	>

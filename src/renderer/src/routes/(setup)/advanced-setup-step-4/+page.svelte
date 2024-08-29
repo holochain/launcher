@@ -25,7 +25,7 @@
 	placeholderText={$i18n.t('chooseAPassphrase')}
 	buttonAction={() => goto('advanced-setup-step-5')}
 	isDisabled={$recoveryKeysPassphrase.length < 1}
-	widthRem="32"
+	wide
 />
 <p class="text-xs font-semibold leading-[0.5] opacity-50">
 	{$i18n.t('passphrase').toUpperCase()}

@@ -48,5 +48,5 @@
 		goto('advanced-setup-step-6')
 	}}
 	isDisabled={confirmPassphraseInput.length < 1}
-	widthRem="32"
+	wide
 />

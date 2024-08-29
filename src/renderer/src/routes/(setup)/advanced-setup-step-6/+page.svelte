@@ -28,6 +28,10 @@
 			onSuccess: (keyFile) => {
 				$generatedKeyRecoveryFile = keyFile;
 				generating = false;
+				toastStore.trigger({
+					message: "Key Recovery File exported.",
+					background: 'variant-filled-success'
+				});
 			},
 			onError: (error) => {
 				console.error(error);
@@ -111,13 +115,16 @@
 	<div class="pb-2">
 		<Warning />
 	</div>
-	<p class="mb-4 max-w-72 font-[450] leading-tight text-warning-500">
-		{$i18n.t('Export this recovery file to a secure location - for example an external USB drive. You CANNOT export this file later if you lose it.')}
+	<p class="mb-2 max-w-72 font-[450] leading-tight text-warning-500">
+		{$i18n.t('Export this recovery file to a secure location - for example an external USB drive.')}
+	</p>
+	<p class="mb-8 max-w-72 font-[450] leading-tight text-warning-500">
+		{$i18n.t('You CANNOT export this file later if you lose it.')}
 	</p>
 
 	<Button
 		props={{
-			class: 'btn-install flex mb-20',
+			class: 'btn-black flex mb-20',
 			onClick: () => generateAndExportKeys(),
 			disabled: generating || !!$generatedKeyRecoveryFile,
 			isLoading: $generateAndExportKeysMutation.isPending
