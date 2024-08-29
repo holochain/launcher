@@ -124,11 +124,13 @@ export type HolochainData = {
 };
 
 export type LoadingProgressUpdate =
+  | 'generatingKeyRecoveryFile'
+  | 'importingDeviceSeed'
   | 'initializingLairKeystore'
-  | 'startingLairKeystore'
-  | 'startingHolochain'
   | 'installingAppStore'
   | 'installingDevHub'
+  | 'startingLairKeystore'
+  | 'startingHolochain'
   | '';
 
 export type AppToInstall = {

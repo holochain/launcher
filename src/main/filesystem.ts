@@ -14,6 +14,7 @@ import {
   CONFIG_DIRNAME,
   HAPPS_DIRNAME,
   HOLOCHAIN_DIRNAME,
+  KEY_RECOVERY_FILENAME,
   KEYSTORE_DIRNAME,
   UIS_DIRNAME,
 } from './const';
@@ -144,6 +145,10 @@ export class LauncherFileSystem {
 
   get keystoreConfigPath() {
     return path.join(this.keystoreDir, 'lair-keystore-config.yaml');
+  }
+
+  get keyRecoveryFilePath() {
+    return path.join(this.keystoreDir, KEY_RECOVERY_FILENAME);
   }
 
   conductorConfigPath(partitionName: string) {

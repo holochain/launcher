@@ -7,6 +7,7 @@
 	export let buttonAction: () => void;
 	export let value: string | null = null;
 	export let isDisabled = false;
+	export let widthRem: string | undefined = undefined;
 
 	let showPassword = false;
 	const toggleInputType = () => (showPassword = !showPassword);
@@ -18,10 +19,10 @@
 			bind:value
 			props={{
 				autofocus: true,
-				class: 'input relative pr-8 max-w-56 text-sm placeholder-white',
+				class: `input relative pr-8 ${widthRem ? `w-[${widthRem}rem]` : 'max-w-56'} text-sm placeholder-white`,
 				type: showPassword ? 'text' : 'password',
 				placeholder: placeholderText,
-				required: true
+				required: true,
 			}}
 		/>
 		<Button

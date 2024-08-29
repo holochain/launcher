@@ -9,6 +9,7 @@ import {
   LAIR_ERROR,
   LAIR_LOG,
   LAUNCHER_ERROR,
+  LAUNCHER_LOG,
   WASM_LOG,
 } from '$shared/types';
 
@@ -37,6 +38,11 @@ export function setupLogs(
 
   launcherEmitter.on(LAUNCHER_ERROR, (log) => {
     const logLine = `[LAUNCHER] ERROR: ${log}`;
+    console.log(logLine);
+    launcherLogger.log('error', logLine);
+  });
+  launcherEmitter.on(LAUNCHER_LOG, (log) => {
+    const logLine = `[LAUNCHER]: ${log}`;
     console.log(logLine);
     launcherLogger.log('error', logLine);
   });

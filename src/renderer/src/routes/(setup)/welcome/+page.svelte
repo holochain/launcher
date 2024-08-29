@@ -9,9 +9,19 @@
 <h4 class="h4">{$i18n.t('discoverInstallAndManageYourApps')}</h4>
 <Button
 	props={{
-		onClick: () => goto('setup-password')
+		onClick: () => goto('quick-setup-step-1'),
+		style: 'min-width: 190px;'
 	}}
 >
-	{$i18n.t('getStarted')}
+	{$i18n.t('quickSetup')}
+	<ArrowRight />
+</Button>
+<Button
+	props={{
+		onClick: () => goto('advanced-setup-step-1'),
+		style: 'min-width: 190px;'
+	}}
+>
+	{$i18n.t('advancedSetup')}
 	<ArrowRight />
 </Button>

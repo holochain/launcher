@@ -33,3 +33,6 @@ export const APPS_DIRNAME = 'apps';
 
 export const BACKUP_INFO_FILENAME = 'backup.info.json';
 export const BACKUP_LOG_FILENAME = 'backups.log';
+export const KEY_RECOVERY_FILENAME = 'key_recovery_file.json';
+
+export const DEVICE_SEED_LAIR_TAG = 'DPKI_DEVICE_SEED';

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { i18n } from '$services';
-	import PasswordForm from '../../routes/(splash)/components/PasswordForm.svelte';
+	import PasswordForm from '../../routes/(setup)/components/PasswordForm.svelte';
 
 	const modalStore = getModalStore();
 
