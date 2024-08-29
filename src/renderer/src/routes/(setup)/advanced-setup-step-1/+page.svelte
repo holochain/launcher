@@ -3,6 +3,7 @@
 	import { IconButton } from '$components';
 	import { BackArrow } from '$icons';
 	import { i18n } from '$services';
+	import { WINDOW_SIZE, WINDOW_SIZE_LARGE } from '$shared/const';
 	import { appPassword } from '$stores';
 
 	import { PasswordForm } from '../components';
@@ -10,7 +11,11 @@
 
 <div class="fixed top-0 left-0 right-0 app-region-drag flex items-center justify-between p-3 bg-[#DADADA12]">
 	<div class="relative flex w-full items-center justify-center py-[11px]">
-		<IconButton buttonClass="absolute left-2" onClick={() => goto('welcome')}><BackArrow /></IconButton>
+		<IconButton buttonClass="absolute left-2" onClick={() => {
+			window.resizeTo(WINDOW_SIZE, WINDOW_SIZE);
+			window.moveBy(100, 0);
+			goto('welcome')
+		}}><BackArrow /></IconButton>
 		<span class="text-center text-semibold text-lg text-white">Advanced Setup (1 / 6)</span>
 	</div>
 </div>

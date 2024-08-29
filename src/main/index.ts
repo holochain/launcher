@@ -916,36 +916,9 @@ const router = t.router({
       shell.showItemInFolder(exportToPathResponse.filePath);
       return keyFile;
     }),
-  // // Automatically generate key recovery file and store it on disk (Quick Setup)
-  // readOrGenerateAndStoreKeyRecoveryFile: t.procedure
-  //   .input(z.object({ passphrase: z.string() }))
-  //   .mutation(async (opts) => {
-  //     LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'initializingLairKeystore');
-  //     if (fs.existsSync(LAUNCHER_FILE_SYSTEM.keyRecoveryFilePath)) {
-  //       const keyFileJson = fs.readFileSync(LAUNCHER_FILE_SYSTEM.keyRecoveryFilePath, 'utf-8');
-  //       try {
-  //         const keyFile = JSON.parse(keyFileJson);
-  //         return keyFile;
-  //       } catch (e) {
-  //         throw new Error(`Failed to parse existing key recovery file: ${e}`);
-  //       }
-  //     }
-  //     // 1. Generate KeyFile
-  //     const keyFile = await rustUtils.generateInitialSeeds(opts.input.passphrase);
-  //     // 2. Store to disk
-  //     fs.writeFileSync(
-  //       LAUNCHER_FILE_SYSTEM.keyRecoveryFilePath,
-  //       JSON.stringify(keyFile, undefined, 2),
-  //       'utf-8',
-  //     );
-  //     return keyFile;
-  //   }),
-
-  //
   quickSetup: t.procedure.input(z.object({ password: z.string() })).mutation((opts) => {
     return handleQuickSetup(opts.input.password);
   }),
-
   // Set up lair with a provided device seed that has been previously generated and exported
   // (kwy recovery file not stored by launcher)
   advancedSetup: t.procedure

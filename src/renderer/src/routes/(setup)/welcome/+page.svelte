@@ -18,7 +18,11 @@
 </Button>
 <Button
 	props={{
-		onClick: () => goto('advanced-setup-step-1'),
+		onClick: () => {
+			window.resizeTo(800,700);
+			window.moveBy(-100, -70);
+			goto('advanced-setup-step-1')
+		},
 		class: 'btn-black',
 		style: 'min-width: 190px;'
 	}}

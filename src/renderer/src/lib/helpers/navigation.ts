@@ -25,7 +25,6 @@ const getWindowSize = (destination: MainScreenRoute) =>
 
 const resizeWindow = ({ width, height }: { width: number; height: number }) =>
 	window.resizeTo(width, height);
-
 const navigateTo = (destination: MainScreenRoute) => goto(`/${destination}`);
 
 export const resizeWindowAndNavigate = (destination: MainScreenRoute) => {
