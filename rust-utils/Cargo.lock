@@ -2154,7 +2154,7 @@ dependencies = [
 
 [[package]]
 name = "hc-launcher-rust-utils"
-version = "0.203.2"
+version = "0.203.3"
 dependencies = [
  "base36",
  "base64 0.13.1",
