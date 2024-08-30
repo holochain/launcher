@@ -1,7 +1,7 @@
 #![deny(clippy::all)]
 
 use holochain_conductor_api::{
-    conductor::{paths::DataRootPath, ConductorConfig, KeystoreConfig},
+    conductor::{paths::DataRootPath, ConductorConfig, DpkiConfig, KeystoreConfig},
     AdminInterfaceConfig, InterfaceDriver,
 };
 use holochain_p2p::kitsune_p2p::dependencies::kitsune_p2p_types::config::{
@@ -152,6 +152,7 @@ pub fn default_conductor_config(
     signaling_server_url: String,
     conductor_environment_path: String,
     allowed_origin: String,
+    use_dpki: bool,
     ice_server_urls: Option<Vec<String>>,
 ) -> Result<String> {
     let mut network_config = KitsuneP2pConfig::default();
@@ -173,11 +174,16 @@ pub fn default_conductor_config(
     let mut allowed_origins_map = HashSet::new();
     allowed_origins_map.insert(allowed_origin);
 
+    let dpki_config = match use_dpki {
+        true => DpkiConfig::default(),
+        false => DpkiConfig::disabled(),
+    };
+
     let config = ConductorConfig {
         data_root_path: Some(DataRootPath::from(PathBuf::from(
             conductor_environment_path,
         ))),
-        dpki: None,
+        dpki: dpki_config,
         keystore: KeystoreConfig::LairServer {
             connection_url: url2::url2!("{}", keystore_connection_url),
         },

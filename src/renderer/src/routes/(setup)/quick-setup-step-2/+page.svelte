@@ -29,6 +29,7 @@
 				message: $i18n.t('passwordsDontMatch'),
 				background: 'variant-filled-error'
 			});
+			launching = false;
 			return;
 		}
 

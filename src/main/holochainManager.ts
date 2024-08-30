@@ -221,6 +221,7 @@ export class HolochainManager {
         signalingUrl || DEFAULT_SIGNALING_SERVER,
         conductorEnvironmentPath,
         'holochain-launcher',
+        false,
         iceUrls || DEFAULT_ICE_SERVERS,
       );
 

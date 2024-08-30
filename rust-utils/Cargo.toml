@@ -7,15 +7,15 @@ version = "0.203.2"
 crate-type = ["cdylib"]
 
 [dependencies]
-holochain_conductor_api = "=0.4.0-dev.12"
-holochain_integrity_types = "=0.4.0-dev.9"
-holochain_p2p = "=0.4.0-dev.12"
-holochain_types = "=0.4.0-dev.12"
-holochain_zome_types = "=0.4.0-dev.10"
-holo_hash = "=0.4.0-dev.8"
-kitsune_p2p_timestamp = "=0.4.0-dev.2"
+holochain_conductor_api = "=0.4.0-dev.20"
+holochain_integrity_types = "=0.4.0-dev.12"
+holochain_p2p = "=0.4.0-dev.20"
+holochain_types = "=0.4.0-dev.20"
+holochain_zome_types = "=0.4.0-dev.15"
+holo_hash = "=0.4.0-dev.11"
+kitsune_p2p_timestamp = "=0.4.0-dev.4"
 hc_seed_bundle = "0.2.4"
-lair_keystore_api = "0.4.5"
+lair_keystore_api = "0.5.0"
 
 
 base64 = "0.13.0"
