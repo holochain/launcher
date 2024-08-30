@@ -12,6 +12,7 @@ export const MISSING_BINARIES = 'missingBinaries';
 export const NO_APP_PORT_ERROR = 'noAppPortError';
 export const NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND = 'noAppstoreAuthenticationTokenFound';
 export const NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND = 'noDevhubAuthenticationTokenFound';
+export const NO_DPKI_DEVICE_SEED_FOUND = 'noDpkiDeviceSeedFound';
 export const NO_PUBLISHERS_AVAILABLE_ERROR = 'noPublishersAvailableError';
 export const NO_RUNNING_HOLOCHAIN_MANAGER_ERROR = 'noRunningHolochainManagerError';
 export const NO_AVAILABLE_PEER_HOSTS_ERROR = 'noAvailablePeerHostsError';

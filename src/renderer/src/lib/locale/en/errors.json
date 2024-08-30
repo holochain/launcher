@@ -14,6 +14,7 @@
 	"noAppstoreAuthenticationTokenFound": "No authentication token found for appstore",
 	"noAvailablePeerHostsError": "No available peer hosts found.",
 	"noDevhubAuthenticationTokenFound": "No authentication token found for devhub",
+	"noDpkiDeviceSeedFound": "No DPKI device seed found in keystore",
 	"noPublishersAvailableError": "No publishers available",
 	"noRunningHolochainManagerError": "No running Holochain manager",
 	"remoteCallTimeoutError": "Remote request to peer timed out.",

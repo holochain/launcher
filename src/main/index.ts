@@ -8,7 +8,7 @@ import { AppstoreAppClient, DevhubAppClient } from 'appstore-tools';
 import { type ChildProcessWithoutNullStreams, spawnSync } from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
-import { app, dialog, globalShortcut, ipcMain, Menu, protocol } from 'electron';
+import { app, dialog, globalShortcut, ipcMain, Menu, protocol, shell } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { createIPCHandler } from 'electron-trpc/main';
 import fs from 'fs';
@@ -48,12 +48,14 @@ import {
   InstallHappFromPathSchema,
   InstallHappOrWebhappFromBytesSchema,
   InstallWebhappFromHashesSchema,
+  LAUNCHER_LOG,
   LOADING_PROGRESS_UPDATE,
   MISSING_BINARIES,
   NO_APP_PORT_ERROR,
   NO_APPSTORE_AUTHENTICATION_TOKEN_FOUND,
   NO_AVAILABLE_PEER_HOSTS_ERROR,
   NO_DEVHUB_AUTHENTICATION_TOKEN_FOUND,
+  NO_DPKI_DEVICE_SEED_FOUND,
   NO_RUNNING_HOLOCHAIN_MANAGER_ERROR,
   REFETCH_DATA_IN_ALL_WINDOWS,
   REMOTE_CALL_TIMEOUT_ERROR,
@@ -63,7 +65,7 @@ import {
 
 import { BREAKING_DEFAULT_HOLOCHAIN_VERSION, checkHolochainLairBinariesExist } from './binaries';
 import { validateArgs } from './cli';
-import { DEFAULT_APPS_TO_INSTALL, DEVHUB_INSTALL } from './const';
+import { DEFAULT_APPS_TO_INSTALL, DEVHUB_INSTALL, DEVICE_SEED_LAIR_TAG } from './const';
 import { LauncherFileSystem } from './filesystem';
 import { HolochainManager } from './holochainManager';
 import { IntegrityChecker } from './integrityChecker';
@@ -224,6 +226,7 @@ let APP_PORT: number | undefined;
 let DEFAULT_HOLOCHAIN_DATA_ROOT: HolochainDataRoot | undefined;
 const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
 let LAIR_HANDLE: ChildProcessWithoutNullStreams | undefined;
+let LAIR_URL: string | undefined;
 let PRIVILEDGED_LAUNCHER_WINDOWS: Record<AdminWindow, BrowserWindow>; // Admin windows with special zome call signing priviledges
 const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
 let IS_LAUNCHED = false;
@@ -232,37 +235,6 @@ let IS_QUITTING = false;
 const APP_CLIENTS: Record<InstalledAppId, AppClient> = {};
 let APPSTORE_APP_CLIENT: AppstoreAppClient | undefined;
 let DEVHUB_APP_CLIENT: DevhubAppClient | undefined;
-
-const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeRequest) => {
-  // TODO check here that cellId belongs to the installedAppId that the window belongs to
-  const windowInfo = WINDOW_INFO_MAP[e.sender.id];
-  let authorized = false;
-  if (
-    windowInfo &&
-    request.provenance.toString() === Array.from(windowInfo.agentPubKey).toString()
-  ) {
-    authorized = true;
-  } else {
-    // Launcher admin windows get a wildcard to have any zome calls signed
-    if (
-      Object.values(PRIVILEDGED_LAUNCHER_WINDOWS)
-        .map((window) => window.webContents.id)
-        .includes(e.sender.id)
-    ) {
-      authorized = true;
-    }
-  }
-
-  if (!authorized) return Promise.reject('Agent public key unauthorized.');
-
-  if (windowInfo && windowInfo.adminPort) {
-    // In case of externally running binaries we need to use a custom zome call signer
-    const lairClient = CUSTOM_LAIR_CLIENTS[windowInfo.adminPort];
-    return signZomeCall(lairClient, request);
-  }
-  if (!DEFAULT_LAIR_CLIENT) throw Error('Lair signer is not ready');
-  return signZomeCall(DEFAULT_LAIR_CLIENT, request);
-};
 
 Menu.setApplicationMenu(launcherMenu(LAUNCHER_FILE_SYSTEM));
 
@@ -380,58 +352,180 @@ app.on('quit', () => {
   });
 });
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
+/**
+ *  ====================================================================================================================
+ *  Utility Functions
+ *  ====================================================================================================================
+ */
 
-async function handleSetupAndLaunch(password: string) {
-  if (!PRIVILEDGED_LAUNCHER_WINDOWS)
-    throw new Error('Main window needs to exist before launching.');
-
-  if (VALIDATED_CLI_ARGS.holochainVersion.type !== 'running-external') {
-    const lairHandleTemp = spawnSync(VALIDATED_CLI_ARGS.lairBinaryPath, ['--version']);
-    if (!lairHandleTemp.stdout) {
-      console.error(`Failed to run lair-keystore binary:\n${lairHandleTemp}`);
-    }
-    console.log(`Got lair version ${lairHandleTemp.stdout.toString()}`);
-    if (!LAUNCHER_FILE_SYSTEM.keystoreInitialized()) {
-      LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'initializingLairKeystore');
-      await initializeLairKeystore(
-        VALIDATED_CLI_ARGS.lairBinaryPath,
-        LAUNCHER_FILE_SYSTEM.keystoreDir,
-        LAUNCHER_EMITTER,
-        password,
-      );
+const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeRequest) => {
+  // TODO check here that cellId belongs to the installedAppId that the window belongs to
+  const windowInfo = WINDOW_INFO_MAP[e.sender.id];
+  let authorized = false;
+  if (
+    windowInfo &&
+    request.provenance.toString() === Array.from(windowInfo.agentPubKey).toString()
+  ) {
+    authorized = true;
+  } else {
+    // Launcher admin windows get a wildcard to have any zome calls signed
+    if (
+      Object.values(PRIVILEDGED_LAUNCHER_WINDOWS)
+        .map((window) => window.webContents.id)
+        .includes(e.sender.id)
+    ) {
+      authorized = true;
     }
   }
 
-  await handleLaunch(password, false);
-}
+  if (!authorized) return Promise.reject('Agent public key unauthorized.');
 
-async function handleLaunch(password: string, isDirectLaunch = true) {
+  if (windowInfo && windowInfo.adminPort) {
+    // In case of externally running binaries we need to use a custom zome call signer
+    const lairClient = CUSTOM_LAIR_CLIENTS[windowInfo.adminPort];
+    return signZomeCall(lairClient, request);
+  }
+  if (!DEFAULT_LAIR_CLIENT) throw Error('Lair signer is not ready');
+  return signZomeCall(DEFAULT_LAIR_CLIENT, request);
+};
+
+// Kills any pre-existing lair processes and start up lair and assigns associated global variables
+async function killIfExistsAndLaunchLair(password: string): Promise<void> {
   INTEGRITY_CHECKER = new IntegrityChecker(password);
   LAUNCHER_FILE_SYSTEM.setIntegrityChecker(INTEGRITY_CHECKER);
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingLairKeystore');
-  let lairUrl: string;
+
+  if (LAIR_HANDLE) {
+    LAIR_HANDLE.kill();
+    LAIR_HANDLE = undefined;
+  }
 
   if (VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external') {
-    lairUrl = VALIDATED_CLI_ARGS.holochainVersion.lairUrl;
-    const externalLairClient = await rustUtils.LauncherLairClient.connect(lairUrl, password);
-    CUSTOM_LAIR_CLIENTS[VALIDATED_CLI_ARGS.holochainVersion.adminPort] = externalLairClient;
+    LAIR_URL = VALIDATED_CLI_ARGS.holochainVersion.lairUrl;
+    DEFAULT_LAIR_CLIENT = await rustUtils.LauncherLairClient.connect(LAIR_URL, password);
   } else {
-    if (LAIR_HANDLE) {
-      LAIR_HANDLE.kill();
-      LAIR_HANDLE = undefined;
-    }
     const [lairHandle, lairUrl2] = await launchLairKeystore(
       VALIDATED_CLI_ARGS.lairBinaryPath,
       LAUNCHER_FILE_SYSTEM.keystoreDir,
       LAUNCHER_EMITTER,
       password,
     );
-
-    lairUrl = lairUrl2;
+    LAIR_URL = lairUrl2;
+    DEFAULT_LAIR_CLIENT = await rustUtils.LauncherLairClient.connect(LAIR_URL, password);
     LAIR_HANDLE = lairHandle;
-    DEFAULT_LAIR_CLIENT = await rustUtils.LauncherLairClient.connect(lairUrl, password);
+  }
+}
+
+/**
+ *
+ *
+ * @param password  Password to encrypt conductor, lair and the automatically generated
+ *                  root/device seeds and revocation keys
+ */
+async function handleQuickSetup(password: string): Promise<void> {
+  if (!PRIVILEDGED_LAUNCHER_WINDOWS)
+    throw new Error('Main window needs to exist before launching.');
+  const lairHandleTemp = spawnSync(VALIDATED_CLI_ARGS.lairBinaryPath, ['--version']);
+  if (!lairHandleTemp.stdout) {
+    console.error(`Failed to run lair-keystore binary:\n${lairHandleTemp}`);
+  }
+  console.log(`Got lair version ${lairHandleTemp.stdout.toString()}`);
+
+  // 1. Check whether lair keystore is initialized, if not initialize
+  if (!LAUNCHER_FILE_SYSTEM.keystoreInitialized()) {
+    LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'initializingLairKeystore');
+    await initializeLairKeystore(
+      VALIDATED_CLI_ARGS.lairBinaryPath,
+      LAUNCHER_FILE_SYSTEM.keystoreDir,
+      LAUNCHER_EMITTER,
+      password,
+    );
+  }
+
+  // 2. Start up lair keystore process and connect to it
+  await killIfExistsAndLaunchLair(password);
+
+  // 3. Generate key recovery file and import device seed if necessary
+  const dpkiDeviceSeedExists = await DEFAULT_LAIR_CLIENT!.seedExists(DEVICE_SEED_LAIR_TAG);
+  if (!dpkiDeviceSeedExists) {
+    LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'generatingKeyRecoveryFile');
+    // 3.1. Generate KeyFile
+    const keyFile = await rustUtils.generateInitialSeeds(password);
+    // 3.2. Import device seed into lair
+    LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'importingDeviceSeed');
+    const importedSeedPubkey64 = await DEFAULT_LAIR_CLIENT!.importLockedSeedBundle(
+      keyFile.deviceSeed0,
+      password,
+      DEVICE_SEED_LAIR_TAG,
+    );
+    // 3.3. Store to key recovery file on disk
+    fs.writeFileSync(
+      LAUNCHER_FILE_SYSTEM.keyRecoveryFilePath,
+      JSON.stringify(keyFile, undefined, 2),
+      'utf-8',
+    );
+    console.log('Imported device seed with pubkey: ', importedSeedPubkey64);
+    LAUNCHER_EMITTER.emit(
+      LAUNCHER_LOG,
+      `Imported device seed with public key ${importedSeedPubkey64}`,
+    );
+  }
+}
+
+async function handleAdvancedSetup(
+  password: string,
+  lockedDeviceSeed: string,
+  lockedSeedPassphrase: string,
+) {
+  const lairHandleTemp = spawnSync(VALIDATED_CLI_ARGS.lairBinaryPath, ['--version']);
+  if (!lairHandleTemp.stdout) {
+    console.error(`Failed to run lair-keystore binary:\n${lairHandleTemp}`);
+  }
+  console.log(`Got lair version ${lairHandleTemp.stdout.toString()}`);
+
+  if (!LAUNCHER_FILE_SYSTEM.keystoreInitialized()) {
+    LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'initializingLairKeystore');
+    await initializeLairKeystore(
+      VALIDATED_CLI_ARGS.lairBinaryPath,
+      LAUNCHER_FILE_SYSTEM.keystoreDir,
+      LAUNCHER_EMITTER,
+      password,
+    );
+  }
+
+  // 2. Start up lair keystore process and connect to it
+  await killIfExistsAndLaunchLair(password);
+
+  // 3. Make sure that there is no DPKI_DEVICE_SEED in lair yet
+  const dpkiDeviceSeedExists = await DEFAULT_LAIR_CLIENT!.seedExists(DEVICE_SEED_LAIR_TAG);
+  if (dpkiDeviceSeedExists)
+    throw new Error('DPKI_DEVICE_SEED already exists in lair. Cannot import new device seed.');
+
+  LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'importingDeviceSeed');
+  const importedSeedPubkey64 = await DEFAULT_LAIR_CLIENT!.importLockedSeedBundle(
+    lockedDeviceSeed,
+    lockedSeedPassphrase,
+    DEVICE_SEED_LAIR_TAG,
+  );
+
+  console.log('Imported device seed with pubkey: ', importedSeedPubkey64);
+  LAUNCHER_EMITTER.emit(
+    LAUNCHER_LOG,
+    `Imported device seed with public key ${importedSeedPubkey64}`,
+  );
+}
+
+async function launchHolochain(password: string, lairUrl: string): Promise<void> {
+  // Verify that the DPKI_DEVICE_SEED exists in lair at this point, otherwise throw an error
+  // since otherwise the recovery key file will not actually be able to act as a recovery key file
+  // as app keys won't be derived from the device seed
+  if (VALIDATED_CLI_ARGS.holochainVersion.type !== 'running-external') {
+    const dpkiDeviceSeedExists = await DEFAULT_LAIR_CLIENT!.seedExists(DEVICE_SEED_LAIR_TAG);
+    if (!dpkiDeviceSeedExists)
+      return throwTRPCErrorError({
+        message: NO_DPKI_DEVICE_SEED_FOUND,
+        cause: `No DPKI_DEVICE_SEED found in lair keystore. Cannot launch holochain without first importing a device seed into lair.'`,
+      });
   }
 
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingHolochain');
@@ -452,7 +546,7 @@ async function handleLaunch(password: string, isDirectLaunch = true) {
   const [holochainManager, holochainDataRoot] = await HolochainManager.launch(
     LAUNCHER_EMITTER,
     LAUNCHER_FILE_SYSTEM,
-    INTEGRITY_CHECKER,
+    INTEGRITY_CHECKER!,
     password,
     VALIDATED_CLI_ARGS.holochainVersion,
     lairUrl,
@@ -468,7 +562,6 @@ async function handleLaunch(password: string, isDirectLaunch = true) {
   APP_PORT = holochainManager.appPort;
   // Install default apps if necessary
   // TODO check sha256 hashes
-  // TODO Do not install devhub on startup
 
   await Promise.all(
     DEFAULT_APPS_TO_INSTALL.map(
@@ -479,23 +572,7 @@ async function handleLaunch(password: string, isDirectLaunch = true) {
       }),
     ),
   );
-
-  IS_LAUNCHED = true;
-
-  if (isDirectLaunch) {
-    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].setSize(WINDOW_SIZE, MIN_HEIGH, true);
-  }
-  loadOrServe(PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW], { screen: SETTINGS_WINDOW });
-  return;
 }
-
-const handlePasswordInput = (handler: (password: string) => Promise<void>) =>
-  t.procedure.input(z.object({ password: z.string() })).mutation((req) => {
-    const {
-      input: { password },
-    } = req;
-    return handler(password);
-  });
 
 const getHolochainManager = (dataRootName: string) => {
   const holochainManager = HOLOCHAIN_MANAGERS[dataRootName];
@@ -545,6 +622,12 @@ const getDevhubAppClient = async () => {
   DEVHUB_APP_CLIENT = devhubAppClient;
   return DEVHUB_APP_CLIENT;
 };
+
+/**
+ *  ====================================================================================================================
+ *  IPC CALLS DEFINITIONS
+ *  ====================================================================================================================
+ */
 
 const router = t.router({
   openSettings: t.procedure.mutation(() => {
@@ -812,8 +895,56 @@ const router = t.router({
       errorType: WRONG_INSTALLED_APP_STRUCTURE,
     });
   }),
-  handleSetupAndLaunch: handlePasswordInput(handleSetupAndLaunch),
-  launch: handlePasswordInput(handleLaunch),
+  // Generate key recovery file and ask for export location (Advanced Setup)
+  generateAndExportKeyRecoveryFile: t.procedure
+    .input(z.string())
+    .mutation(async (opts): Promise<rustUtils.KeyFile> => {
+      // 1. Generate keys
+      const keyFile = await rustUtils.generateInitialSeeds(opts.input);
+      // 2. Export them to a file
+      const exportToPathResponse = await dialog.showSaveDialog({
+        title: 'Export Key Recovery File',
+        buttonLabel: 'Export',
+        defaultPath: `Holochain_Launcher_${app.getVersion()}_Key_Recovery_File_${new Date().toISOString()}.json`,
+      });
+      if (!exportToPathResponse.filePath) throw new Error('File path undefined.');
+      fs.writeFileSync(
+        exportToPathResponse.filePath,
+        JSON.stringify(keyFile, undefined, 2),
+        'utf-8',
+      );
+      shell.showItemInFolder(exportToPathResponse.filePath);
+      return keyFile;
+    }),
+  quickSetup: t.procedure.input(z.object({ password: z.string() })).mutation((opts) => {
+    return handleQuickSetup(opts.input.password);
+  }),
+  // Set up lair with a provided device seed that has been previously generated and exported
+  // (kwy recovery file not stored by launcher)
+  advancedSetup: t.procedure
+    .input(
+      z.object({
+        password: z.string(),
+        lockedDeviceSeed: z.string(),
+        lockedSeedPassphrase: z.string(),
+      }),
+    )
+    .mutation((opts) => {
+      const { password, lockedDeviceSeed, lockedSeedPassphrase } = opts.input;
+      return handleAdvancedSetup(password, lockedDeviceSeed, lockedSeedPassphrase);
+    }),
+  launch: t.procedure.input(z.object({ password: z.string() })).mutation(async (opts) => {
+    const password = opts.input.password;
+    if (!PRIVILEDGED_LAUNCHER_WINDOWS)
+      throw new Error('Main window needs to exist before launching.');
+    if (!DEFAULT_LAIR_CLIENT || !LAIR_URL || !LAIR_HANDLE) {
+      await killIfExistsAndLaunchLair(password);
+    }
+    await launchHolochain(password, LAIR_URL!);
+    IS_LAUNCHED = true;
+    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].setSize(WINDOW_SIZE, MIN_HEIGH, true);
+    loadOrServe(PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW], { screen: SETTINGS_WINDOW });
+  }),
   initializeDefaultAppPorts: t.procedure.query(async () => {
     const defaultHolochainManager = HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_DATA_ROOT!.name];
 

@@ -76,6 +76,13 @@ impl LauncherLairClient {
         Ok(signed_zome_call)
     }
 
+    pub async fn seed_exists(&self, tag: String) -> bool {
+        match self.lair_client.get_entry(tag.into()).await {
+            Ok(_) => true,
+            Err(_) => false,
+        }
+    }
+
     pub async fn import_locked_seed_bundle(
         &self,
         import_locked_seed_bundle: String,
@@ -162,7 +169,6 @@ impl LauncherLairClient {
         println!("Got device_bundle: {}", device_bundle);
         println!("Got passphrase: {:?}", passphrase);
 
-
         // let initial_host_pub_key_b64 = v3_config
         //     .get("initial_host_pub_key")
         //     .ok_or(napi::Error::from_reason(
@@ -176,7 +182,9 @@ impl LauncherLairClient {
         let passphrase_enum = match passphrase {
             Some(p) => Passphrase::PlainString(p),
             None => {
-                let secret_passphrase = if let Some(mut input) = PassphraseInput::with_default_binary() {
+                let secret_passphrase = if let Some(mut input) =
+                    PassphraseInput::with_default_binary()
+                {
                     // pinentry binary is available!
                     input
                         .with_description("Enter Seed Bundle Passphrase")
@@ -249,7 +257,10 @@ impl LauncherLairClient {
             imported_seed.ed25519_pub_key.as_ref().to_vec(),
         ));
 
-        println!("\n\n\n#### Imported pubkey: {}\n\n\n", imported_pubkey_b64.to_string());
+        println!(
+            "\n\n\n#### Imported pubkey: {}\n\n\n",
+            imported_pubkey_b64.to_string()
+        );
 
         // if initial_host_pub_key_b64 != imported_pubkey_b64.to_string() {
         //     return Err(napi::Error::from_reason(format!("Imported public key does not match the expected public key. Expected {initial_host_pub_key_b64} but imported {imported_pubkey_b64}")));
@@ -321,6 +332,15 @@ impl JsLauncherLairClient {
     }
 
     #[napi]
+    pub async fn seed_exists(&self, tag: String) -> bool {
+        self.launcher_lair_client
+            .as_ref()
+            .unwrap()
+            .seed_exists(tag)
+            .await
+    }
+
+    #[napi]
     pub async fn import_locked_seed_bundle(
         &self,
         import_locked_seed_bundle: String,
@@ -335,7 +355,11 @@ impl JsLauncherLairClient {
     }
 
     #[napi]
-    pub async fn derive_and_import_seed_from_json_file(&self, path: String, passphrase: Option<String>) -> Result<String> {
+    pub async fn derive_and_import_seed_from_json_file(
+        &self,
+        path: String,
+        passphrase: Option<String>,
+    ) -> Result<String> {
         self.launcher_lair_client
             .as_ref()
             .unwrap()
@@ -351,9 +375,10 @@ pub async fn derive_seed_from_device_bundle(
     passphrase: Passphrase,
     index: u32,
 ) -> napi::Result<Keypair> {
-    let locked_bundle = base64::decode_config(device_bundle, base64::URL_SAFE_NO_PAD).map_err(|e| {
-        napi::Error::from_reason(format!("Failed to decode device bundle: {:?}", e))
-    })?;
+    let locked_bundle =
+        base64::decode_config(device_bundle, base64::URL_SAFE_NO_PAD).map_err(|e| {
+            napi::Error::from_reason(format!("Failed to decode device bundle: {:?}", e))
+        })?;
     match UnlockedSeedBundle::from_locked(&locked_bundle)
         .await
         .map_err(|e| {
@@ -394,9 +419,10 @@ pub async fn unlock_device_bundle(
     device_bundle: &String,
     passphrase: String,
 ) -> napi::Result<UnlockedSeedBundle> {
-    let locked_bundle = base64::decode_config(device_bundle, base64::URL_SAFE_NO_PAD).map_err(|e| {
-        napi::Error::from_reason(format!("Failed to decode device bundle: {:?}", e))
-    })?;
+    let locked_bundle =
+        base64::decode_config(device_bundle, base64::URL_SAFE_NO_PAD).map_err(|e| {
+            napi::Error::from_reason(format!("Failed to decode device bundle: {:?}", e))
+        })?;
     match UnlockedSeedBundle::from_locked(&locked_bundle)
         .await
         .map_err(|e| {

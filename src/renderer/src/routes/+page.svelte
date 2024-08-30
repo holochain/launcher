@@ -31,7 +31,7 @@
 			}
 
 			if (setupData.isSuccess) {
-				return goto(setupData.data ? '/welcome' : '/enter-password');
+				return goto(setupData.data ? '/welcome' : '/unlock');
 			}
 		});
 	});
