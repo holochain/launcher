@@ -408,7 +408,8 @@ export class HolochainManager {
     const appInfo = await this.installApp({
       agent_key: pubKey,
       installed_app_id: appId,
-      membrane_proofs: membrane_proofs ? membrane_proofs : {},
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      membrane_proofs: membrane_proofs ? membrane_proofs : (null as any),
       path: happFilePath,
       network_seed: networkSeed,
     });
@@ -496,7 +497,8 @@ export class HolochainManager {
     const appInfo = await this.installApp({
       agent_key: pubKey,
       installed_app_id: appId,
-      membrane_proofs: membrane_proofs ? membrane_proofs : {},
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      membrane_proofs: membrane_proofs ? membrane_proofs : (null as any),
       path: this.happFilePath(happSha256),
       network_seed: networkSeed,
     });
