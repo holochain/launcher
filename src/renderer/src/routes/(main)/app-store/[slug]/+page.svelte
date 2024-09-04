@@ -30,6 +30,11 @@
 	const fetchWebapp = client.fetchWebhapp.createMutation();
 	const installedApps = client.getInstalledApps.createQuery();
 	const installWebhappFromHashes = client.installWebhappFromHashes.createMutation();
+	client.onDownloadProgressUpdate.createSubscription(undefined, {
+		onData: (data) => {
+			loadingString = data;
+		}
+	});
 
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
@@ -76,7 +81,6 @@
 				if (appId.length === 0) {
 					return;
 				}
-				loadingString = 'installingApp';
 				$installWebhappFromHashes.mutate(
 					{
 						uiZipSha256: versionEntity.content.bundle_hashes.ui_hash,
@@ -113,30 +117,21 @@
 			}
 		});
 	};
-	const clearTimeoutAndHandle = (
-		timeout: ReturnType<typeof setTimeout> | null,
-		callback: () => void
-	) => {
-		if (timeout) {
-			clearTimeout(timeout);
-			loadingString = '';
-		}
-		callback();
-	};
 
 	const installLogic = async (versionEntity: Entity<AppVersionEntry>) => {
 		loadingString = 'connectingToPeers';
-		const gettingAppBytesTimeout = setTimeout(() => (loadingString = 'gettingAppBytes'), 2000);
 
 		$fetchWebapp.mutate(
 			{ app_version: versionEntity.content, icon: app?.icon },
 			{
-				onSuccess: () =>
-					clearTimeoutAndHandle(gettingAppBytesTimeout, () =>
-						createModalInstallAppFromHashes(versionEntity)
-					),
-				onError: (error) =>
-					clearTimeoutAndHandle(gettingAppBytesTimeout, () => handleError(error, versionEntity))
+				onSuccess: () => {
+					loadingString = '';
+					createModalInstallAppFromHashes(versionEntity)
+				},
+				onError: (error) => {
+					loadingString = '';
+					handleError(error, versionEntity)
+				}
 			}
 		);
 	};
