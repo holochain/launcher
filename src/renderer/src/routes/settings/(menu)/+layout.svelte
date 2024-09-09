@@ -21,7 +21,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="min-h-[calc(100vh-70px)] flex flex-1 overflow-y-auto">
+	<div class="min-h-[calc(100vh-70px)] flex flex-col flex-1 overflow-y-auto">
 		<slot />
 	</div>
 </div>
