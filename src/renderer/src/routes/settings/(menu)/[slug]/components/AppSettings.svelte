@@ -14,8 +14,8 @@
 <div class={clsx(update && 'pt-0')}>
 	{#if !isHeadless}
 		<DashedSection title={$i18n.t('uninstallApp')}>
-			<div class="flex-end flex flex-1 flex-row">
-				<span class="flex-1"></span>
+			<div class="flex-end flex flex-1 flex-row items-center">
+				<span class="flex-1">{$i18n.t('uninstallAppAndRemoveAllData')}</span>
 				<Button
 					props={{
 						class: 'btn-secondary flex-1 text-al max-w-28',
@@ -29,6 +29,10 @@
 				</Button>
 			</div>
 		</DashedSection>
+	{:else}
+		<div class="p-4">
+			No Settings available for this app.
+		</div>
 	{/if}
 	<slot />
 </div>
