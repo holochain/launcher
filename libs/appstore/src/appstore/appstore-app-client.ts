@@ -113,6 +113,7 @@ export class AppstoreAppClient {
     allowlist: AppStoreAllowList,
     denyList?: AppStoreDenyList,
   ): Promise<Entity<AppVersionEntry> | undefined> {
+    if (!allowlist) throw new Error('allowList undefined.');
     // logic
     // we need to check that there is a new version available and that the happ bundle hash is the same but the ui hash is different
     const appVersionEntity = await this.appstoreZomeClient.getAppVersion(appVersionId);
@@ -125,14 +126,14 @@ export class AppstoreAppClient {
       appVersionEntity.content.for_app,
     );
 
+    const appEntryList = allowlist[encodeHashToBase64(appVersionEntity.content.for_app)];
+
     const isUpdateCandidate = (entity: Entity<AppVersionEntry>) =>
       entity.content.published_at > appVersionEntity.content.published_at &&
       entity.content.bundle_hashes.happ_hash === appVersionEntity.content.bundle_hashes.happ_hash &&
       entity.content.bundle_hashes.ui_hash !== appVersionEntity.content.bundle_hashes.ui_hash;
 
-    const appEntryList = allowlist[encodeHashToBase64(appVersionEntity.content.for_app)];
     const isAllowedVersion = (entity: Entity<AppVersionEntry>) =>
-      !appEntryList ||
       appEntryList.appVersions === 'all' ||
       appEntryList.appVersions.includes(encodeHashToBase64(entity.action));
 

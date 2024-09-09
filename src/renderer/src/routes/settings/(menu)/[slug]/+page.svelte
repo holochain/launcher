@@ -94,7 +94,7 @@
 		modalStore.close();
 
 		toastStore.trigger({
-			message: `${selectedApp?.appInfo.installed_app_id} ${$i18n.t('isUpdatedSuccessfully')}`
+			message: `${selectedApp?.appInfo.installed_app_id} ${$i18n.t('updatedSuccessfully')}`
 		});
 	};
 

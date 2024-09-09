@@ -110,7 +110,7 @@
 		<span class="flex flex-1"></span>
 		<span class="text-red-600 opacity-80 font-semibold">DANGER ZONE</span>
 	</div>
-	<div class="pb-3 pt-4" style="background-color: #ff000029">
+	<div class="pb-3 pt-4" style="background-color: #ff000014">
 		<DashedSection title={$i18n.t('factoryReset')}>
 			<div class="flex flex-col justify-center">
 				<div class="mb-2">{$i18n.t('factoryResetHolochainLauncher')}</div>
