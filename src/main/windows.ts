@@ -183,9 +183,20 @@ export const createHappWindow = (
     const uriWithoutProtocol = request.url.slice('webhapp://'.length);
     const filePathComponents = uriWithoutProtocol.split('/').slice(1);
     const filePath = path.join(...filePathComponents);
-    const response = await net.fetch(
-      url.pathToFileURL(path.join(appUiDir, 'assets', filePath)).toString(),
-    );
+
+    let response: Response;
+    try {
+      response = await net.fetch(
+        url.pathToFileURL(path.join(appUiDir, 'assets', filePath)).toString(),
+      );
+    } catch (e) {
+      if (filePath === 'index.html') {
+        return new Response(
+          'No index.html found. If you are the developer of this app, make sure that the index.html is located at the root level of your UI assets.',
+        );
+      }
+      throw new Error(`Asset ${filePath} not found: ${e}`);
+    }
 
     const expectedHash = uiHashes[filePath];
     if (!expectedHash) {
