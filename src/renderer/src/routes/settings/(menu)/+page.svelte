@@ -5,7 +5,7 @@
 	const defaultHolochainVersion = client.defaultHolochainVersion.createQuery();
 </script>
 
-<div class="p-4">
+<div class="p-5">
 	<div>
 		<h3 class="h3">{$i18n.t('holochainVersion')}</h3>
 		{#if $defaultHolochainVersion.data}

@@ -13,9 +13,6 @@
 		createModalParams,
 		filterHash,
 		getAppStoreDistributionHash,
-		getCellId,
-		getCellName,
-		getCellNetworkSeed,
 		getVersionByActionHash,
 		isDev,
 		showModalError,
@@ -26,7 +23,7 @@
 	import { i18n, trpc } from '$services';
 	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_WINDOW } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
-	import { CellInfoSchema, type UpdateUiFromHash } from '$shared/types';
+	import { type UpdateUiFromHash } from '$shared/types';
 	import type { Modals } from '$types';
 
 	import { DashedSection } from '../../components';
@@ -44,7 +41,6 @@
 		checkForAppUiUpdatesQuery,
 		fetchUiBytesMutation,
 		appVersionsAppstoreQueryFunction,
-		getAppDetailsQuery
 	} = createAppQueries();
 
 	const utils = client.createUtils();
@@ -57,6 +53,16 @@
 	const storeUiBytes = client.storeUiBytes.createMutation();
 
 	let selectedIndex = 0;
+
+	let prevousSelectedApp: any;
+
+	$: {
+		if (selectedApp !== prevousSelectedApp) {
+			// Reset to Details view
+			selectedIndex = 0;
+			prevousSelectedApp = selectedApp;
+		}
+	}
 
 	$: selectedApp = $installedApps.data?.find(
 		(app) => app.appInfo.installed_app_id === $page.params.slug

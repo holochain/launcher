@@ -6,7 +6,7 @@ import { SEARCH_URL_QUERY } from '$const';
 import {
 	ANIMATION_DURATION,
 	APPS_VIEW,
-	MIN_HEIGH,
+	MIN_HEIGHT,
 	WINDOW_SIZE,
 	WINDOW_SIZE_LARGE
 } from '$shared/const';
@@ -20,7 +20,7 @@ export const setSearchInput = (event: CustomEvent) => {
 
 const getWindowSize = (destination: MainScreenRoute) =>
 	destination === APPS_VIEW
-		? { width: WINDOW_SIZE, height: MIN_HEIGH }
+		? { width: WINDOW_SIZE, height: MIN_HEIGHT }
 		: { width: WINDOW_SIZE_LARGE, height: WINDOW_SIZE };
 
 const resizeWindow = ({ width, height }: { width: number; height: number }) =>
