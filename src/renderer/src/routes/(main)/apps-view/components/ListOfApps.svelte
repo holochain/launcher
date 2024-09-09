@@ -49,7 +49,7 @@
 				initials="+"
 				onClick={handleNavigationWithAnimationDelay()(APP_STORE)}
 			>
-				<span class="pt-2 text-xs opacity-50">{$i18n.t('addApps')}</span>
+				<span class="pt-2 text-xs opacity-50">{$i18n.t('addApp')}</span>
 			</BaseButton>
 		</div>
 	</div>

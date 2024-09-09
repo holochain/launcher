@@ -3,7 +3,7 @@
 	export let onClick = () => {};
 	export let initials: string = '';
 	export let src: string | undefined = undefined;
-	export let border: string = 'border-4 border-white border-opacity-20';
+	export let border: string = 'border-4 border-white border-opacity-20 hover:border-opacity-30';
 	export let fontSize: number | undefined = undefined;
 	export let fill: string = 'fill-white';
 	export let background: string = 'bg-transparent';
