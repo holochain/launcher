@@ -4,6 +4,7 @@
 	import { Button } from '$components';
 	import { i18n } from '$services';
 	import DashedSection from '../../../components/DashedSection.svelte';
+	import TrashCan from '$icons/TrashCan.svelte';
 
 	export let uninstallLogic: () => void;
 	export let update: boolean;
@@ -13,7 +14,7 @@
 <div class={clsx(update && 'pt-0')}>
 	{#if !isHeadless}
 		<DashedSection title={$i18n.t('uninstallApp')}>
-			<div class="flex flex-row flex-end flex-1">
+			<div class="flex-end flex flex-1 flex-row">
 				<span class="flex-1"></span>
 				<Button
 					props={{
@@ -21,10 +22,12 @@
 						onClick: uninstallLogic
 					}}
 				>
-					{$i18n.t('uninstall')}
+					<div class="flex flex-row items-center">
+						<TrashCan color={'white'} />
+						<span class="ml-1">{$i18n.t('uninstall')}</span>
+					</div>
 				</Button>
 			</div>
-
 		</DashedSection>
 	{/if}
 	<slot />
