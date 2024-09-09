@@ -84,35 +84,39 @@
 {#if $installDevhub.isPending}
 	<NoClickOverlay />
 {/if}
-
-<DashedSection title={$i18n.t('developerTools')}>
-	{#if $isDevhubInstalled.data}
-		<p>{$i18n.t('devhubInstalled')}</p>
-	{:else}
-		<Button
+<div class="py-3">
+	<DashedSection title={$i18n.t('developerTools')}>
+		{#if $isDevhubInstalled.data}
+			<p>{$i18n.t('devhubInstalled')}</p>
+		{:else}
+			<Button
+				props={{
+					isLoading: $installDevhub.isPending,
+					onClick: showDevhubInstallModal,
+					class: 'btn-install'
+				}}
+			>
+				<div class="mr-2"><Download /></div>
+				{$i18n.t('install')}
+			</Button>
+			<div class="text-sm">
+				<span class="font-normal">{$i18n.t('developerToolsAllow')}</span>
+				<span class="font-semibold">{$i18n.t('uploadAndPublish')}</span>
+			</div>
+		{/if}
+	</DashedSection>
+	<DashedSection title={$i18n.t('factoryReset')}>
+		<div class="flex flex-col justify-center">
+			<Button
 			props={{
-				isLoading: $installDevhub.isPending,
-				onClick: showDevhubInstallModal,
-				class: 'btn-install'
+				disabled: $installDevhub.isPending,
+				onClick: showFactoryResetModal,
+				class: 'btn-install !bg-error-500'
 			}}
 		>
-			<div class="mr-2"><Download /></div>
-			{$i18n.t('install')}
+			{$i18n.t('factoryResetClick')}
 		</Button>
-		<div class="text-sm">
-			<span class="font-normal">{$i18n.t('developerToolsAllow')}</span>
-			<span class="font-semibold">{$i18n.t('uploadAndPublish')}</span>
 		</div>
-	{/if}
-</DashedSection>
-<DashedSection title={$i18n.t('factoryReset')}>
-	<Button
-		props={{
-			disabled: $installDevhub.isPending,
-			onClick: showFactoryResetModal,
-			class: 'btn-install'
-		}}
-	>
-		{$i18n.t('factoryResetClick')}
-	</Button>
-</DashedSection>
+	</DashedSection>
+</div>
+

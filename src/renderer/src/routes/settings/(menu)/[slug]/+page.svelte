@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
+	import { CellType, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 	import { getModalStore, getToastStore, SlideToggle } from '@skeletonlabs/skeleton';
 	import type { AppVersionEntry } from 'appstore-tools';
 
@@ -14,6 +14,8 @@
 		filterHash,
 		getAppStoreDistributionHash,
 		getCellId,
+		getCellName,
+		getCellNetworkSeed,
 		getVersionByActionHash,
 		isDev,
 		showModalError,
@@ -24,13 +26,14 @@
 	import { i18n, trpc } from '$services';
 	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_WINDOW } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
-	import { type UpdateUiFromHash } from '$shared/types';
+	import { CellInfoSchema, type UpdateUiFromHash } from '$shared/types';
 	import type { Modals } from '$types';
 
 	import { DashedSection } from '../../components';
 	import AppSettings from './components/AppSettings.svelte';
 	import KeyManagement from './components/KeyManagement.svelte';
 	import SystemSettings from './components/SystemSettings.svelte';
+	import CellDetails from './components/CellDetails.svelte';
 
 	const client = trpc();
 
@@ -77,10 +80,6 @@
 		? appVersionsAppstoreQueryFunction(
 				decodeHashFromBase64(selectedAppDistributionInfoData.appEntryActionHash)
 			)
-		: undefined;
-
-	$: appDetailsQuery = selectedAppDistributionInfoData?.appEntryActionHash
-		? getAppDetailsQuery(decodeHashFromBase64(selectedAppDistributionInfoData.appEntryActionHash))
 		: undefined;
 
 	const onSuccess = () => {
@@ -183,9 +182,7 @@
 		imageUrl={createImageUrl(icon)}
 		{appVersion}
 		title={selectedApp.appInfo.installed_app_id}
-		buttons={$appDetailsQuery
-			? [$i18n.t('details'), capitalizeFirstLetter($i18n.t('settings'))]
-			: [capitalizeFirstLetter($i18n.t('settings'))]}
+		buttons={[$i18n.t('details'), capitalizeFirstLetter($i18n.t('settings'))]}
 		bind:selectedIndex
 	>
 		<div slot="topRight">
@@ -255,39 +252,42 @@
 			</div>
 		</DashedSection>
 	{/if}
-	{#if selectedIndex === 0 && $appDetailsQuery && $appDetailsQuery.data}
-		<div class="px-8 py-4">
-			<p class="font-semibold">{$appDetailsQuery.data.content.subtitle}</p>
-			<p>{$appDetailsQuery.data.content.description}</p>
-		</div>
+	{#if selectedIndex === 0}
+		{@const flattenedCells = Object.values(selectedApp.appInfo.cell_info).flat()}
+		{@const provisionedCells = flattenedCells.filter(
+			(cellInfo) =>
+				CellType.Provisioned in cellInfo || CellType.Stem in cellInfo
+		)}
+		{@const clonedCells = flattenedCells.filter(
+			(cellInfo) => CellType.Cloned in cellInfo
+		)}
+		<DashedSection title={$i18n.t('publicKey')}>
+			{encodeHashToBase64(selectedApp.appInfo.agent_pub_key)}
+		</DashedSection>
+		<DashedSection title="Provisioned Cells">
+			<div class="flex flex-col flex-1">
+				{#each provisionedCells as cellInfo, _index}
+					<CellDetails cellInfo={cellInfo}></CellDetails>
+				{/each}
+			</div>
+		</DashedSection>
+		<DashedSection title="Cloned Cells">
+			{#if clonedCells.length === 0}
+				{$i18n.t('noClonedCells')}
+			{:else}
+			<div class="flex flex-col flex-1">
+				{#each provisionedCells as cellInfo, _index}
+					<CellDetails cellInfo={cellInfo}></CellDetails>
+				{/each}
+			</div>
+			{/if}
+		</DashedSection>
 	{:else}
 		<AppSettings
 			isHeadless={selectedApp.isHeadless}
 			uninstallLogic={() => showUninstallModal()}
 			update={Boolean(update)}
-		>
-			{@const cellIds = Object.entries(selectedApp.appInfo.cell_info).sort(([a], [b]) =>
-				a.localeCompare(b)
-			)}
-			{#each cellIds as [roleName, cellId], index}
-				{@const cellIdResult = getCellId(cellId[0])}
-				{#if cellIdResult}
-					<div class="mb-2 text-sm">
-						<p class="break-all">
-							<span class="font-semibold">{roleName}:</span>
-							{encodeHashToBase64(cellIdResult[0])}
-						</p>
-						<p class="break-all">
-							<span class="font-semibold">pubkey:</span>
-							{encodeHashToBase64(cellIdResult[1])}
-						</p>
-					</div>
-					{#if index !== cellIds.length - 1}
-						<div class="!my-2 h-px w-full bg-tertiary-800"></div>
-					{/if}
-				{/if}
-			{/each}
-		</AppSettings>
+		></AppSettings>
 	{/if}
 {:else if $page.params.slug === KEY_MANAGEMENT}
 	<KeyManagement />

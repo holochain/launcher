@@ -14,7 +14,7 @@
 		<div class="flex items-center justify-between">
 			<Button
 				props={{
-					class: 'btn-app-store variant-filled',
+					class: 'btn-secondary !bg-error-500 flex-1 text-al max-w-28',
 					onClick: uninstallLogic
 				}}
 			>
