@@ -12,7 +12,8 @@
 	import { i18n } from '$services';
 
 	import MenuEntry from './MenuEntry.svelte';
-	const { appStoreMyHappsQuery } = createAppQueries();
+	import Gear from '$icons/Gear.svelte';
+	const { appStoreMyHappsQuery, publishersQuery } = createAppQueries();
 	const modalStore = getModalStore();
 
 	const selectView = (view: string) => goto(`/${DEV_APP_PAGE}/${view}`);
@@ -25,7 +26,7 @@
 		});
 	};
 
-	$: view = $page.params.slug;
+	$: view = $page.url.pathname;
 
 	onMount(() =>
 		appStoreMyHappsQuery.subscribe((value) => {
@@ -37,10 +38,21 @@
 </script>
 
 <MenuEntry
-	background={view ? 'transparent' : 'bg-white/30'}
+	background={view === `/${DEV_PAGE}/publisher` ? 'bg-white/30' : 'transparent'}
+	name={$i18n.t('publisherSettings')}
+	onClick={() => goto(`/${DEV_PAGE}/publisher`)}
+	isSelected={view === `/${DEV_PAGE}/publisher`}
+>
+	<div slot="leading" class="pr-2">
+		<Gear fillColor="white" />
+	</div>
+</MenuEntry>
+<MenuEntry
+	background={view === `/${DEV_PAGE}` ? 'bg-white/30' : 'transparent'}
 	name={$i18n.t('addhApp')}
 	onClick={() => goto(`/${DEV_PAGE}`)}
-	isSelected
+	isSelected={view === `/${DEV_PAGE}`}
+	disabled={!$publishersQuery.data}
 >
 	<div slot="leading" class="pr-2">
 		<Plus />
@@ -55,7 +67,7 @@
 		{@const appIdString = uint8ArrayToURIComponent(app.id)}
 		<MenuEntry
 			icon={app.icon}
-			isSelected={view === appIdString}
+			isSelected={view.split('/')[view.split('/').length - 1] === appIdString}
 			name={app.title}
 			onClick={() => selectView(appIdString)}
 		/>

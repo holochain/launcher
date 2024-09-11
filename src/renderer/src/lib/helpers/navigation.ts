@@ -12,10 +12,10 @@ import {
 } from '$shared/const';
 import type { MainScreenRoute } from '$shared/types';
 
-export const setSearchInput = (event: CustomEvent) => {
-	const target = event.detail.target;
+export const setSearchInput = (event: Event) => {
+	const target = event.target;
 
-	goto(`?${SEARCH_URL_QUERY}=${target.value}`);
+	goto(`?${SEARCH_URL_QUERY}=${(target as HTMLInputElement).value}`);
 };
 
 const getWindowSize = (destination: MainScreenRoute) =>

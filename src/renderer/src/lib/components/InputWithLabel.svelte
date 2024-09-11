@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Input } from '$components';
+	import { createEventDispatcher } from 'svelte';
 
 	export let value: string | null = null;
 	export let maxLength: number | undefined = undefined;
@@ -7,6 +8,10 @@
 	export let label: string;
 	export let files: FileList | null = null;
 	export let largeTextField: boolean = false;
+
+	const dispatch = createEventDispatcher();
+
+	const handleEvent = (type: string) => (event: Event) => dispatch(type, event);
 
 	let isFocused = false;
 
@@ -37,6 +42,7 @@
 				bind:value
 				on:focus={handleFocus}
 				on:blur={handleBlur}
+				on:input
 				class="input flex-grow"
 				{id}
 				maxlength={maxLength}
@@ -53,6 +59,7 @@
 					bind:files
 					on:focus={handleFocus}
 					on:blur={handleBlur}
+					on:input
 					props={{
 						class: `input`,
 						id,
@@ -65,6 +72,7 @@
 					bind:value
 					on:focus={handleFocus}
 					on:blur={handleBlur}
+					on:input
 					props={{
 						class: `input`,
 						id,

@@ -11,7 +11,8 @@ import {
 	bundleToDeterministicBytes,
 	type CreatePublisherFrontendInput,
 	type DevhubAppClient,
-	type Entity
+	type Entity,
+	type UpdatePublisherFrontendInput
 } from 'appstore-tools';
 import { sha256 } from 'js-sha256';
 import { get, type Writable } from 'svelte/store';
@@ -35,6 +36,7 @@ import {
 } from '$shared/types';
 import { type AppData, type AppWithAction, type PublishNewVersionData } from '$types';
 import { HolochainFoundationList } from '$types/happs';
+import type { UpdateEntityInput } from 'appstore-tools/dist/types.js';
 
 type ClientType = DevhubAppClient | AppstoreAppClient;
 
@@ -145,6 +147,14 @@ export const createPublisherMutation = (queryClient: QueryClient) => {
 	return createMutation({
 		mutationFn: (createPublisherInput: CreatePublisherFrontendInput) =>
 			getAppStoreClientOrThrow().createPublisher(createPublisherInput),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: [PUBLISHERS_QUERY_KEY] })
+	});
+};
+
+export const createUpdatePublisherMutation = (queryClient: QueryClient) => {
+	return createMutation({
+		mutationFn: (updatePublisherInput: UpdateEntityInput<UpdatePublisherFrontendInput>) =>
+			getAppStoreClientOrThrow().updatePublisher(updatePublisherInput),
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: [PUBLISHERS_QUERY_KEY] })
 	});
 };

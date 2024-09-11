@@ -34,6 +34,8 @@
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
 
+	console.log("RENDERING APP DETAIL CARD IN APPSTORE");
+
 	const slug: string = $page.params.slug;
 	let selectedIndex = 0;
 	let loadingString = '';

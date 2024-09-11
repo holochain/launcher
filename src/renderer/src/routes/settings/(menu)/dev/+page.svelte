@@ -4,14 +4,14 @@
 	import { Bundle } from '@spartan-hc/bundles';
 
 	import { goto } from '$app/navigation';
-	import { Button, IconInput, InputWithLabel } from '$components';
+	import { Button, CenterProgressRadial, IconInput, InputWithLabel } from '$components';
 	import { DEV_APP_PAGE, EMPTY_APP_DATA } from '$const';
 	import { convertFileToUint8Array, showModalError } from '$helpers';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
 	import { isAppDataValid } from '$types';
 
-	const { publishHappMutation } = createAppQueries();
+	const { publishHappMutation, publishersQuery } = createAppQueries();
 
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
@@ -91,41 +91,61 @@
 	};
 </script>
 
-<form
-	class="modal-form mx-auto my-4 flex w-full max-w-xs flex-col space-y-4"
-	on:submit|preventDefault={submitForm}
->
-	<IconInput bind:icon={appData.icon} handleFileUpload={handleIconUpload} />
-	<InputWithLabel bind:files={bytesFiles} id="webhapp" label={`${$i18n.t('uploadYourBundle')}*`} />
-	<InputWithLabel bind:value={appData.title} id="happName" label={`${$i18n.t('nameYourHapp')}*`} />
-	<InputWithLabel
-		bind:value={appData.subtitle}
-		id="happDescription"
-		label={`${$i18n.t('oneLineDescription')}*`}
-	/>
-	<InputWithLabel
-		bind:value={appData.description}
-		id="description"
-		largeTextField
-		label={$i18n.t('description')}
-		maxLength={500}
-	/>
-	<InputWithLabel
-		bind:value={appData.version}
-		id="version"
-		label={`${$i18n.t('version')}*`}
-		maxLength={50}
-	/>
-	<footer class="flex justify-between gap-2">
-		<Button
-			props={{
-				disabled: $publishHappMutation.isPending || !isAppDataValid(appData),
-				isLoading: isLoading || $publishHappMutation.isPending,
-				type: 'submit',
-				class: 'btn-happ-button flex-1'
-			}}
+{#if $publishersQuery.isPending}
+	<div class="flex flex-1 flex-col items-center justify-center">
+		<CenterProgressRadial width="w-12" />
+	</div>
+{:else if $publishersQuery.isError}
+	<div class="flex flex-1 flex-col items-center justify-center">
+		Failed to fetch publisher profile.
+	</div>
+{:else}
+	<div class="flex flex-1 flex-col items-center justify-center">
+		<form
+			class="modal-form mx-auto my-4 flex w-full max-w-xs flex-col space-y-4"
+			on:submit|preventDefault={submitForm}
 		>
-			<span>{$i18n.t('publishYourApp')}</span>
-		</Button>
-	</footer>
-</form>
+			<IconInput bind:icon={appData.icon} handleFileUpload={handleIconUpload} />
+			<InputWithLabel
+				bind:files={bytesFiles}
+				id="webhapp"
+				label={`${$i18n.t('uploadYourBundle')}*`}
+			/>
+			<InputWithLabel
+				bind:value={appData.title}
+				id="happName"
+				label={`${$i18n.t('nameYourHapp')}*`}
+			/>
+			<InputWithLabel
+				bind:value={appData.subtitle}
+				id="happDescription"
+				label={`${$i18n.t('oneLineDescription')}*`}
+			/>
+			<InputWithLabel
+				bind:value={appData.description}
+				id="description"
+				largeTextField
+				label={$i18n.t('description')}
+				maxLength={500}
+			/>
+			<InputWithLabel
+				bind:value={appData.version}
+				id="version"
+				label={`${$i18n.t('version')}*`}
+				maxLength={50}
+			/>
+			<footer class="flex justify-between gap-2">
+				<Button
+					props={{
+						disabled: $publishHappMutation.isPending || !isAppDataValid(appData),
+						isLoading: isLoading || $publishHappMutation.isPending,
+						type: 'submit',
+						class: 'btn-happ-button flex-1'
+					}}
+				>
+					<span>{$i18n.t('publishYourApp')}</span>
+				</Button>
+			</footer>
+		</form>
+	</div>
+{/if}

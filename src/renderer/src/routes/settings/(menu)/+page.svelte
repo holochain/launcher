@@ -6,18 +6,6 @@
 	const client = trpc();
 	const defaultHolochainVersion = client.defaultHolochainVersion.createQuery();
 	const storageInfoQuery = client.getHolochainStorageInfo.createQuery();
-	let fractions;
-	const labels = [
-		'UIs',
-		'happs',
-		'wasm-cache',
-		'conductor',
-		'authored',
-		'p2p',
-		'cache',
-		'dht',
-		'wasm'
-	];
 </script>
 
 <div class="relative flex flex-1 p-5">
