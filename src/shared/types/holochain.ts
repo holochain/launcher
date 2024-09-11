@@ -26,15 +26,24 @@ export const CellInfoSchema = z.union([
   z.object({
     provisioned: z.object({
       cell_id: CellIdSchema,
+      dna_modifiers: z.any(),
+      name: z.string(),
     }),
   }),
   z.object({
     cloned: z.object({
       cell_id: CellIdSchema,
+      clone_id: z.string(),
+      original_dna_hash: z.instanceof(Uint8Array),
+      dna_modifiers: z.any(),
+      name: z.string(),
+      enabled: z.boolean(),
     }),
   }),
   z.object({
     stem: z.object({}),
+    name: z.string().optional(),
+    dna_modifiers: z.any(),
   }),
 ]);
 
@@ -56,7 +65,7 @@ export const InstalledAppInfoStatusSchema = z.union([
 export type InstalledAppInfoStatus = z.infer<typeof InstalledAppInfoStatusSchema>;
 
 export const AppInfoSchema = z.object({
-  agent_pub_key: z.instanceof(Uint8Array),
+  agent_pub_key: z.any(),
   installed_app_id: z.string(),
   cell_info: z.record(z.string(), z.array(CellInfoSchema)),
   status: InstalledAppInfoStatusSchema,

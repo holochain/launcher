@@ -15,7 +15,14 @@ import serve from 'electron-serve';
 import path from 'path';
 import url from 'url';
 
-import { MAIN_WINDOW, MIN_HEIGH, SETTINGS_SIZE, SETTINGS_WINDOW, WINDOW_SIZE } from '$shared/const';
+import {
+  MAIN_WINDOW,
+  MIN_HEIGHT,
+  SETTINGS_HEIGHT,
+  SETTINGS_WIDTH,
+  SETTINGS_WINDOW,
+  WINDOW_SIZE,
+} from '$shared/const';
 import type { AdminWindow, ExtendedAppInfo } from '$shared/types';
 import { LAUNCHER_ERROR } from '$shared/types';
 
@@ -53,19 +60,21 @@ const createAdminWindow = ({
   optWidth,
   frame = false,
   icon,
+  height,
 }: {
   title: string;
   optWidth?: number;
   frame?: boolean;
   icon?: Electron.NativeImage;
+  height?: number;
 }) =>
   new BrowserWindow({
     frame: frame,
     width: optWidth || WINDOW_SIZE,
     minWidth: optWidth || WINDOW_SIZE,
-    height: WINDOW_SIZE,
+    height: height ? height : WINDOW_SIZE,
     icon,
-    minHeight: MIN_HEIGH,
+    minHeight: MIN_HEIGHT,
     title: title,
     show: false,
     webPreferences: {
@@ -85,7 +94,8 @@ export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
   const settingsWindow = createAdminWindow({
     title: 'Settings - Holochain Launcher',
     frame: true,
-    optWidth: SETTINGS_SIZE,
+    optWidth: SETTINGS_WIDTH,
+    height: SETTINGS_HEIGHT,
     icon: mainIcon,
   });
 

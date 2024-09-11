@@ -3,23 +3,35 @@
 
 	import { Button } from '$components';
 	import { i18n } from '$services';
+	import DashedSection from '../../../components/DashedSection.svelte';
+	import TrashCan from '$icons/TrashCan.svelte';
 
 	export let uninstallLogic: () => void;
 	export let update: boolean;
 	export let isHeadless = false;
 </script>
 
-<div class={clsx('p-8', update && 'pt-0')}>
+<div class={clsx(update && 'pt-0')}>
 	{#if !isHeadless}
-		<div class="flex items-center justify-between">
-			<Button
-				props={{
-					class: 'btn-app-store variant-filled',
-					onClick: uninstallLogic
-				}}
-			>
-				{$i18n.t('uninstall')}
-			</Button>
+		<DashedSection title={$i18n.t('uninstallApp')}>
+			<div class="flex-end flex flex-1 flex-row items-center">
+				<span class="flex-1">{$i18n.t('uninstallAppAndRemoveAllData')}</span>
+				<Button
+					props={{
+						class: 'btn-secondary flex-1 text-al max-w-28',
+						onClick: uninstallLogic
+					}}
+				>
+					<div class="flex flex-row items-center">
+						<TrashCan color={'white'} />
+						<span class="ml-1">{$i18n.t('uninstall')}</span>
+					</div>
+				</Button>
+			</div>
+		</DashedSection>
+	{:else}
+		<div class="p-4">
+			No Settings available for this app.
 		</div>
 	{/if}
 	<slot />

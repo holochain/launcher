@@ -84,35 +84,51 @@
 {#if $installDevhub.isPending}
 	<NoClickOverlay />
 {/if}
+<div class="pt-3 flex flex-1 flex-col">
+	<DashedSection title={$i18n.t('developerTools')}>
+		{#if $isDevhubInstalled.data}
+			<p>{$i18n.t('devhubInstalled')}</p>
+		{:else}
+			<Button
+				props={{
+					isLoading: $installDevhub.isPending,
+					onClick: showDevhubInstallModal,
+					class: 'btn-install'
+				}}
+			>
+				<div class="mr-2"><Download /></div>
+				{$i18n.t('install')}
+			</Button>
+			<div class="text-sm">
+				<span class="font-normal">{$i18n.t('developerToolsAllow')}</span>
+				<span class="font-semibold">{$i18n.t('uploadAndPublish')}</span>
+			</div>
+		{/if}
+	</DashedSection>
+	<span class="flex flex-1"></span>
+	<div class="flex flex-row pr-2">
+		<span class="flex flex-1"></span>
+		<span class="text-red-600 opacity-80 font-semibold">DANGER ZONE</span>
+	</div>
+	<div class="pb-3 pt-4" style="background-color: #ff000014">
+		<DashedSection title={$i18n.t('factoryReset')}>
+			<div class="flex flex-col justify-center">
+				<div class="mb-2">{$i18n.t('factoryResetHolochainLauncher')}</div>
+				<div class="flex flex-row">
+					<Button
+					props={{
+						disabled: $installDevhub.isPending,
+						onClick: showFactoryResetModal,
+						class: 'btn-install !bg-error-500'
+					}}
+				>
+					{$i18n.t('factoryReset')}
+				</Button>
+				<span class="flex flex-1"></span>
 
-<DashedSection title={$i18n.t('developerTools')}>
-	{#if $isDevhubInstalled.data}
-		<p>{$i18n.t('devhubInstalled')}</p>
-	{:else}
-		<Button
-			props={{
-				isLoading: $installDevhub.isPending,
-				onClick: showDevhubInstallModal,
-				class: 'btn-install'
-			}}
-		>
-			<div class="mr-2"><Download /></div>
-			{$i18n.t('install')}
-		</Button>
-		<div class="text-sm">
-			<span class="font-normal">{$i18n.t('developerToolsAllow')}</span>
-			<span class="font-semibold">{$i18n.t('uploadAndPublish')}</span>
-		</div>
-	{/if}
-</DashedSection>
-<DashedSection title={$i18n.t('factoryReset')}>
-	<Button
-		props={{
-			disabled: $installDevhub.isPending,
-			onClick: showFactoryResetModal,
-			class: 'btn-install'
-		}}
-	>
-		{$i18n.t('factoryResetClick')}
-	</Button>
-</DashedSection>
+				</div>
+			</div>
+		</DashedSection>
+	</div>
+</div>
+

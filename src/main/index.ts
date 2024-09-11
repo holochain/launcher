@@ -24,7 +24,7 @@ import {
   DEVHUB_APP_ID,
   DISTRIBUTION_TYPE_DEFAULT_APP,
   MAIN_WINDOW,
-  MIN_HEIGH,
+  MIN_HEIGHT,
   SETTINGS_WINDOW,
   WINDOW_SIZE,
 } from '$shared/const';
@@ -942,7 +942,7 @@ const router = t.router({
     }
     await launchHolochain(password, LAIR_URL!);
     IS_LAUNCHED = true;
-    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].setSize(WINDOW_SIZE, MIN_HEIGH, true);
+    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].setSize(WINDOW_SIZE, MIN_HEIGHT, true);
     loadOrServe(PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW], { screen: SETTINGS_WINDOW });
   }),
   initializeDefaultAppPorts: t.procedure.query(async () => {

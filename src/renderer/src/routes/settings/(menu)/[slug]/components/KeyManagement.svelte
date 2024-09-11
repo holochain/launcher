@@ -95,6 +95,7 @@
 		});
 	};
 </script>
+<div class="py-3">
 
 <DashedSection title={$i18n.t('importSeedFile')}>
 	<div class="flex flex-col gap-2 overflow-hidden">
@@ -152,3 +153,4 @@
 		</div>
 	</div>
 </DashedSection>
+</div>

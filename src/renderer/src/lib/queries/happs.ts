@@ -34,6 +34,7 @@ import {
 	NO_PUBLISHERS_AVAILABLE_ERROR
 } from '$shared/types';
 import { type AppData, type AppWithAction, type PublishNewVersionData } from '$types';
+import { HolochainFoundationList } from '$types/happs';
 
 type ClientType = DevhubAppClient | AppstoreAppClient;
 
@@ -300,7 +301,7 @@ export const createPublishNewVersionMutation = (queryClient: QueryClient) => {
 
 			if (happHash !== previousHappHash)
 				throw new Error(
-					'happ sha256 does not match the happ sha256 of previous versions. Since coordinator zome updates are currently not supported, only app versions with the same happ file are allowed to be published under the same app entry'
+					'happ sha256 does not match the happ sha256 of previous versions. Since coordinator zome updates are currently not supported, only app versions with the same .happ file are allowed to be published in subsequent releases for the same app.'
 				);
 
 			const hashes: BundleHashes = {
@@ -358,20 +359,26 @@ export const createCheckForAppUiUpdatesQuery =
 		return createQuery({
 			queryKey: [CHECK_FOR_APP_UI_UPDATES_QUERY_KEY, appVersionActionHashes],
 			queryFn: async () => {
+				console.log("Checking for UI updates...")
 				const appStoreClient = getAppStoreClientOrThrow();
 				const distinctVersionHashes = appVersionActionHashes;
 				const filterLists = await fetchFilterLists(appStoreClient, isDev);
 				const updates = await Promise.all(
 					distinctVersionHashes.map(async (hash) => {
-						const maybeUpdate = await appStoreClient.checkForUiUpdate(
-							decodeHashFromBase64(hash!),
-							filterLists.allowlists[hash!],
-							filterLists.denylist
-						);
+						let maybeUpdate;
+						try {
+							maybeUpdate = await appStoreClient.checkForUiUpdate(
+								decodeHashFromBase64(hash!),
+								filterLists.allowlists[HolochainFoundationList.value],
+								filterLists.denylist
+							);
+						} catch (e) {
+							console.error("Failed to check for UI update: ", e);
+						}
 						return maybeUpdate ? { [hash]: maybeUpdate } : null;
 					})
 				);
-
+				console.log("Got updates: ", updates);
 				return updates.reduce((acc, update) => (update ? { ...acc, ...update } : acc), {});
 			}
 		});

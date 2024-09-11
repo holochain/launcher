@@ -1,5 +1,4 @@
-import { encodeHashToBase64 } from '@holochain/client';
-import type { ModalStore, ToastStore } from '@skeletonlabs/skeleton';
+import { CellType, encodeHashToBase64, type CellInfo } from '@holochain/client';
 import type { AppstoreAppClient, AppVersionEntry, Entity } from 'appstore-tools';
 import localforage from 'localforage';
 
@@ -14,22 +13,41 @@ import {
 	ExtendedAppInfoSchema,
 	type InitializeAppPorts
 } from '$shared/types';
-import type { Modals } from '$types';
 import { AppstoreFilterListsSchema } from '$types/happs';
-
-import { createModalParams, showModalError } from './display';
 
 export const getCellId = (cellInfo: unknown): CellId | undefined => {
 	const parsedCellInfo = CellInfoSchema.safeParse(cellInfo);
 
-	if (!parsedCellInfo.success || 'stem' in parsedCellInfo.data) {
+	if (!parsedCellInfo.success || CellType.Stem in parsedCellInfo.data) {
 		return undefined;
 	}
 
-	return 'provisioned' in parsedCellInfo.data
+	return CellType.Provisioned in parsedCellInfo.data
 		? parsedCellInfo.data.provisioned.cell_id
 		: parsedCellInfo.data.cloned.cell_id;
 };
+
+export function getCellNetworkSeed(cellInfo: any): string | undefined {
+  if (CellType.Provisioned in cellInfo) {
+    return cellInfo.provisioned.dna_modifiers.network_seed;
+  }
+  if (CellType.Cloned in cellInfo) {
+    return cellInfo.cloned.dna_modifiers.network_seed;
+  }
+  return undefined;
+}
+
+export function getCellName(cellInfo: any): string | undefined {
+  if (CellType.Provisioned in cellInfo) {
+    return cellInfo.provisioned.name;
+  }
+  if (CellType.Cloned in cellInfo) {
+    return cellInfo.cloned.name;
+  }
+  if (CellType.Stem in cellInfo) {
+    return cellInfo.stem.name;
+  }
+}
 
 export const isNonEmptyString = (value: unknown): value is string =>
 	typeof value === 'string' && value.trim() !== '';
