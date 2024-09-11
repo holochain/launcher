@@ -70,6 +70,7 @@
     "electron-serve": "^1.2.0",
     "electron-trpc": "^0.6.1",
     "elliptic": "6.5.5",
+    "get-folder-size": "5.0.0",
     "hc-launcher-rust-utils": "file:./rust-utils/dist",
     "js-sha256": "^0.11.0",
     "nanoid": "5.0.7",

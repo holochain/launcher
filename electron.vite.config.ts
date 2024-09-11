@@ -10,7 +10,13 @@ export default defineConfig({
     },
     plugins: [
       externalizeDepsPlugin({
-        exclude: ['@holochain/client', 'nanoid', 'appstore-tools', '@spartan-hc/bundles'],
+        exclude: [
+          '@holochain/client',
+          'nanoid',
+          'appstore-tools',
+          '@spartan-hc/bundles',
+          'get-folder-size',
+        ],
       }),
     ],
   },
