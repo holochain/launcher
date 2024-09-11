@@ -1,6 +1,7 @@
 import { platform } from '@electron-toolkit/utils';
 import { type App, app, session } from 'electron';
 import fs from 'fs';
+import getFolderSize from 'get-folder-size';
 import { nanoid } from 'nanoid';
 import path from 'path';
 
@@ -74,26 +75,24 @@ type BackupInfo = {
   lastPartialbackup?: string;
 };
 
-type StorageInfo = {
-  chromium: number;
-  logs: number;
-  holochain: Record<string, HolochainStorageInfo>;
-  lair: number;
-};
+// type StorageInfo = {
+//   chromium: number;
+//   logs: number;
+//   holochain: Record<string, HolochainStorageInfo>;
+//   lair: number;
+// };
 
 type HolochainStorageInfo = {
   apps: number;
   happs: number;
   uis: number;
-  dbs: {
-    wasmCache: number;
-    conductor: number;
-    authored: number;
-    cache: number;
-    dht: number;
-    p2p: number;
-    wasm: number;
-  };
+  wasmCache: number;
+  conductor: number;
+  authored: number;
+  cache: number;
+  dht: number;
+  p2p: number;
+  wasm: number;
 };
 
 export class LauncherFileSystem {
@@ -225,6 +224,16 @@ export class LauncherFileSystem {
   }
 
   /**
+   * This is the directory in which holochain databases (conductor, authored, cache, ...) are being stored
+   *
+   * @param holochainDataRoot
+   * @returns
+   */
+  dbsDir(holochainDataRoot: HolochainDataRoot) {
+    return path.join(this.holochainDataBase(holochainDataRoot), CONDUCTOR_ENV_DIRNAME);
+  }
+
+  /**
    * Directory where metadata of an app instance is stored. For example which UI
    * it currently uses.
    *
@@ -264,6 +273,39 @@ export class LauncherFileSystem {
   keystoreInitialized = () => {
     return fs.existsSync(path.join(this.keystoreDir, 'lair-keystore-config.yaml'));
   };
+
+  async getHolochainStorageInfo(
+    holochainDataRoot: HolochainDataRoot,
+  ): Promise<HolochainStorageInfo> {
+    if (holochainDataRoot.type !== 'partition')
+      throw new Error('Cannot get storage info for external holochain.');
+    const appsStorage = await getFolderSize.loose(this.appsDir(holochainDataRoot));
+    const happsStorage = await getFolderSize.loose(this.happsDir(holochainDataRoot));
+    const uisStorage = await getFolderSize.loose(this.uisDir(holochainDataRoot));
+    const dbsDir = this.dbsDir(holochainDataRoot);
+    const databasesDir = path.join(dbsDir, 'databases');
+
+    const wasmCache = await getFolderSize.loose(path.join(dbsDir, 'wasm-cache'));
+    const conductor = await getFolderSize.loose(path.join(databasesDir, 'conductor'));
+    const authored = await getFolderSize.loose(path.join(databasesDir, 'authored'));
+    const cache = await getFolderSize.loose(path.join(databasesDir, 'cache'));
+    const dht = await getFolderSize.loose(path.join(databasesDir, 'dht'));
+    const p2p = await getFolderSize.loose(path.join(databasesDir, 'p2p'));
+    const wasm = await getFolderSize.loose(path.join(databasesDir, 'wasm'));
+
+    return {
+      apps: appsStorage,
+      happs: happsStorage,
+      uis: uisStorage,
+      wasmCache: wasmCache,
+      conductor: conductor,
+      authored: authored,
+      cache: cache,
+      dht: dht,
+      p2p: p2p,
+      wasm: wasm,
+    };
+  }
 
   async factoryReset(keepLogs = false) {
     if (keepLogs) throw new Error('Keeping logs across factory reset is currently not supported.');

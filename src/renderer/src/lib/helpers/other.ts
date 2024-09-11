@@ -15,6 +15,27 @@ import {
 } from '$shared/types';
 import { AppstoreFilterListsSchema } from '$types/happs';
 
+export function recursiveSum(obj: any): number {
+	let sum = 0;
+
+	for (let key in obj) {
+		if (typeof obj[key] === 'object') {
+			sum += recursiveSum(obj[key]);
+		} else {
+			sum += obj[key];
+		}
+	}
+
+	return sum;
+}
+
+export function divideObject(obj: any, divider: number) {
+	for (let key in obj) {
+		obj[key] /= divider;
+	}
+	return obj;
+}
+
 export const getCellId = (cellInfo: unknown): CellId | undefined => {
 	const parsedCellInfo = CellInfoSchema.safeParse(cellInfo);
 
@@ -28,25 +49,25 @@ export const getCellId = (cellInfo: unknown): CellId | undefined => {
 };
 
 export function getCellNetworkSeed(cellInfo: any): string | undefined {
-  if (CellType.Provisioned in cellInfo) {
-    return cellInfo.provisioned.dna_modifiers.network_seed;
-  }
-  if (CellType.Cloned in cellInfo) {
-    return cellInfo.cloned.dna_modifiers.network_seed;
-  }
-  return undefined;
+	if (CellType.Provisioned in cellInfo) {
+		return cellInfo.provisioned.dna_modifiers.network_seed;
+	}
+	if (CellType.Cloned in cellInfo) {
+		return cellInfo.cloned.dna_modifiers.network_seed;
+	}
+	return undefined;
 }
 
 export function getCellName(cellInfo: any): string | undefined {
-  if (CellType.Provisioned in cellInfo) {
-    return cellInfo.provisioned.name;
-  }
-  if (CellType.Cloned in cellInfo) {
-    return cellInfo.cloned.name;
-  }
-  if (CellType.Stem in cellInfo) {
-    return cellInfo.stem.name;
-  }
+	if (CellType.Provisioned in cellInfo) {
+		return cellInfo.provisioned.name;
+	}
+	if (CellType.Cloned in cellInfo) {
+		return cellInfo.cloned.name;
+	}
+	if (CellType.Stem in cellInfo) {
+		return cellInfo.stem.name;
+	}
 }
 
 export const isNonEmptyString = (value: unknown): value is string =>

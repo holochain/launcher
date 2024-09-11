@@ -873,6 +873,12 @@ const router = t.router({
 
     return !isInitializedValidated;
   }),
+  getHolochainStorageInfo: t.procedure.query(() => {
+    const defaultHolochainManager = HOLOCHAIN_MANAGERS[BREAKING_DEFAULT_HOLOCHAIN_VERSION];
+    const holochainDataRoot = defaultHolochainManager.holochainDataRoot;
+    // TODO if required, return storage info for all Holochain versions if there ever are multiple
+    return LAUNCHER_FILE_SYSTEM.getHolochainStorageInfo(holochainDataRoot);
+  }),
   defaultHolochainVersion: t.procedure.query(
     () => HOLOCHAIN_MANAGERS[BREAKING_DEFAULT_HOLOCHAIN_VERSION].version,
   ),

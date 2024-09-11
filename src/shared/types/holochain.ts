@@ -71,7 +71,7 @@ export const AppInfoSchema = z.object({
   status: InstalledAppInfoStatusSchema,
 });
 
-const HolochainDataRootSchema = z.union([
+export const HolochainDataRootSchema = z.union([
   z.object({
     type: z.literal('partition'),
     name: z.string(),
