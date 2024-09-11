@@ -13,6 +13,7 @@
 	},
 	"dependencies": {
 		"@floating-ui/dom": "^1.6.5",
+    "@shoelace-style/shoelace": "2.15.1",
 		"@skeletonlabs/skeleton": "2.10.1",
 		"@skeletonlabs/tw-plugin": "0.4.0",
 		"@tanstack/svelte-query": "^5.46.1",

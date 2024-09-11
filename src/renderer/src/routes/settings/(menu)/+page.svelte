@@ -8,7 +8,7 @@
 
 <div class="relative flex flex-1 p-5">
 	<div class="relative flex flex-1 flex-col items-center justify-center overflow-clip">
-		<img src="/images/login-background.png" class="absolute" style="min-width: 600px; top: 0;" />
+		<img src="/images/login-background.png" alt="Holochain Logo" class="absolute" style="min-width: 600px; top: 0;" />
 		<div class="absolute flex flex-col items-center" style="top: 275px;">
 			<span class="text-5xl font-bold">Holochain</span>
 			<div class="text-xl text-slate-400">
