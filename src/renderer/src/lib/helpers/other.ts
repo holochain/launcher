@@ -30,10 +30,11 @@ export function recursiveSum(obj: any): number {
 }
 
 export function divideObject(obj: any, divider: number) {
+	const newObj: any = {};
 	for (let key in obj) {
-		obj[key] /= divider;
+		newObj[key] = obj[key]/divider;
 	}
-	return obj;
+	return newObj;
 }
 
 export const getCellId = (cellInfo: unknown): CellId | undefined => {
