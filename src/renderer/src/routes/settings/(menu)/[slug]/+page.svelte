@@ -189,6 +189,7 @@
 		{appVersion}
 		title={selectedApp.appInfo.installed_app_id}
 		buttons={[$i18n.t('details'), capitalizeFirstLetter($i18n.t('settings'))]}
+		publisher={undefined}
 		bind:selectedIndex
 	>
 		<div slot="topRight">

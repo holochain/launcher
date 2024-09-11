@@ -37,10 +37,10 @@
 							<h3 class="text-2xl font-semibold">{title}</h3>
 						</button>
 					{:else}
-						<h3 class="h3">{title}</h3>
+						<h3 class="text-2xl font-semibold">{title}</h3>
 					{/if}
 					{#if appVersion}
-						<p class="ml-2 text-sm font-semibold opacity-50">{appVersion}</p>
+						<p class="ml-2 text-sm font-semibold opacity-50 mb-0.5">{appVersion}</p>
 					{/if}
 				</div>
 				{#if subtitle}
