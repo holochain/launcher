@@ -8,7 +8,7 @@
 	import { AppDetailsPanel, CenterProgressRadial } from '$components';
 	import { PRESEARCH_URL_QUERY } from '$const';
 	import {
-	capitalizeFirstLetter,
+		capitalizeFirstLetter,
 		createImageUrl,
 		getLatestVersion,
 		showModalError,
@@ -158,7 +158,11 @@
 		id={app.id}
 		appVersion={latestVersion?.content.version}
 		subtitle={app.subtitle}
-		buttons={[$i18n.t('description'), $i18n.t('versionHistory'), capitalizeFirstLetter($i18n.t('publisher'))]}
+		buttons={[
+			$i18n.t('description'),
+			$i18n.t('versionHistory'),
+			capitalizeFirstLetter($i18n.t('publisher'))
+		]}
 		publisher={$getPublisherQuery?.data?.content.name}
 		bind:selectedIndex
 	>
@@ -173,7 +177,6 @@
 				>
 					<span class="min-w-28 text-base">{$i18n.t('install')}</span>
 				</InstallButton>
-
 			</div>
 		</div>
 	</AppDetailsPanel>
@@ -181,31 +184,39 @@
 
 {#if $appVersionsDetailsQuery?.data}
 	{#if app && selectedIndex === 0}
-		<div class="px-8 p-6">
+		<div class="p-6 px-8">
 			{app.description}
 		</div>
 	{:else if selectedIndex === 1}
-		{#each $appVersionsDetailsQuery.data as versionEntry}
-			<VersionEntry
-				version={versionEntry.content.version}
-				installLogic={() => installLogic(versionEntry)}
-				{isLoading}
-			/>
-		{/each}
+		<div class="pt-2">
+			{#each $appVersionsDetailsQuery.data as versionEntry}
+				<VersionEntry
+					version={versionEntry.content.version}
+					installLogic={() => installLogic(versionEntry)}
+					{isLoading}
+				/>
+			{/each}
+		</div>
 	{:else if selectedIndex === 2}
 		{#if app && getPublisherQuery && $getPublisherQuery?.isSuccess}
-			<div class="p-6 flex flex-col">
+			<div class="flex flex-col p-6">
 				<div class="flex flex-row items-center">
 					<Avatar src={createImageUrl($getPublisherQuery.data.content.icon)} width="w-20"></Avatar>
-					<span class="text-xl ml-5 font-semibold text-white/80">{$getPublisherQuery.data.content.name}</span>
+					<span class="ml-5 text-xl font-semibold text-white/80"
+						>{$getPublisherQuery.data.content.name}</span
+					>
 				</div>
-				<div class="flex-row mt-5 text-lg">
+				<div class="mt-5 flex-row text-lg">
 					<span class="font-semibold">{$i18n.t('location')}:</span>
-					<span class="text-white/60 ml-3">{$getPublisherQuery.data.content.location}</span>
+					<span class="ml-3 text-white/60">{$getPublisherQuery.data.content.location}</span>
 				</div>
 				<div class="flex-row text-lg">
 					<span class="font-semibold">{$i18n.t('website')}:</span>
-					<span class="text-white/60 underline hover:text-white ml-3"><a href={$getPublisherQuery.data.content.website.url}>{$getPublisherQuery.data.content.website.url}</a></span>
+					<span class="ml-3 text-white/60 underline hover:text-white"
+						><a href={$getPublisherQuery.data.content.website.url}
+							>{$getPublisherQuery.data.content.website.url}</a
+						></span
+					>
 				</div>
 			</div>
 		{:else if $getPublisherQuery?.error}
