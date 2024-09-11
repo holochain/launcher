@@ -110,7 +110,7 @@
 			<InputWithLabel
 				value={currentPublisherData.content.website.url}
 				id="publisherWebsite"
-				label={$i18n.t('website')}
+				label={capitalizeFirstLetter($i18n.t('website'))}
 				on:input={handlepublisherWebsiteChange}
 			/>
 

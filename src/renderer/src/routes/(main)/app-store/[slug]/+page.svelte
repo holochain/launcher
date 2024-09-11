@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { encodeHashToBase64 } from '@holochain/client';
-	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
+	import { Avatar, getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 	import type { AppVersionEntry, Entity } from 'appstore-tools';
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { AppDetailsPanel } from '$components';
+	import { AppDetailsPanel, CenterProgressRadial } from '$components';
 	import { PRESEARCH_URL_QUERY } from '$const';
 	import {
+	capitalizeFirstLetter,
 		createImageUrl,
 		getLatestVersion,
 		showModalError,
@@ -25,7 +26,8 @@
 
 	const client = trpc();
 
-	const { appStoreHappsQuery, appVersionsAppstoreQueryFunction } = createAppQueries();
+	const { appStoreHappsQuery, appVersionsAppstoreQueryFunction, getPublisherQueryFunction } =
+		createAppQueries();
 
 	const fetchWebapp = client.fetchWebhapp.createMutation();
 	const installedApps = client.getInstalledApps.createQuery();
@@ -34,7 +36,7 @@
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
 
-	console.log("RENDERING APP DETAIL CARD IN APPSTORE");
+	console.log('RENDERING APP DETAIL CARD IN APPSTORE');
 
 	const slug: string = $page.params.slug;
 	let selectedIndex = 0;
@@ -42,6 +44,8 @@
 	const app = $appStoreHappsQuery.data?.find(({ id }) => uint8ArrayToURIComponent(id) === slug);
 
 	$: appVersionsDetailsQuery = appVersionsAppstoreQueryFunction(app?.id);
+
+	$: getPublisherQuery = getPublisherQueryFunction(app?.publisher);
 
 	const handleError = (error: unknown, versionEntity?: Entity<AppVersionEntry>) => {
 		console.error(error);
@@ -154,25 +158,30 @@
 		id={app.id}
 		appVersion={latestVersion?.content.version}
 		subtitle={app.subtitle}
-		buttons={[$i18n.t('description'), $i18n.t('versionHistory')]}
+		buttons={[$i18n.t('description'), $i18n.t('versionHistory'), capitalizeFirstLetter($i18n.t('publisher'))]}
+		publisher={$getPublisherQuery?.data?.content.name}
 		bind:selectedIndex
 	>
-		<div slot="topRight">
-			<InstallButton
-				disabled={isLoading}
-				{loadingString}
-				onClick={async () =>
-					latestVersion ? installLogic(latestVersion) : handleError($i18n.t('appError'))}
-			>
-				{$i18n.t('install')}
-			</InstallButton>
+		<div slot="topRight" class="flex flex-1">
+			<span class="flex-1"></span>
+			<div class="flex flex-col justify-center">
+				<InstallButton
+					disabled={isLoading}
+					{loadingString}
+					onClick={async () =>
+						latestVersion ? installLogic(latestVersion) : handleError($i18n.t('appError'))}
+				>
+					<span class="min-w-28 text-base">{$i18n.t('install')}</span>
+				</InstallButton>
+
+			</div>
 		</div>
 	</AppDetailsPanel>
 {/if}
 
 {#if $appVersionsDetailsQuery?.data}
 	{#if app && selectedIndex === 0}
-		<div class="px-8 py-2">
+		<div class="px-8 p-6">
 			{app.description}
 		</div>
 	{:else if selectedIndex === 1}
@@ -183,5 +192,26 @@
 				{isLoading}
 			/>
 		{/each}
+	{:else if selectedIndex === 2}
+		{#if app && getPublisherQuery && $getPublisherQuery?.isSuccess}
+			<div class="p-6 flex flex-col">
+				<div class="flex flex-row items-center">
+					<Avatar src={createImageUrl($getPublisherQuery.data.content.icon)} width="w-20"></Avatar>
+					<span class="text-xl ml-5 font-semibold text-white/80">{$getPublisherQuery.data.content.name}</span>
+				</div>
+				<div class="flex-row mt-5 text-lg">
+					<span class="font-semibold">{$i18n.t('location')}:</span>
+					<span class="text-white/60 ml-3">{$getPublisherQuery.data.content.location}</span>
+				</div>
+				<div class="flex-row text-lg">
+					<span class="font-semibold">{$i18n.t('website')}:</span>
+					<span class="text-white/60 underline hover:text-white ml-3"><a href={$getPublisherQuery.data.content.website.url}>{$getPublisherQuery.data.content.website.url}</a></span>
+				</div>
+			</div>
+		{:else if $getPublisherQuery?.error}
+			{$getPublisherQuery?.error}
+		{:else if $getPublisherQuery?.isPending}
+			<CenterProgressRadial width="w-12" />
+		{/if}
 	{/if}
 {/if}

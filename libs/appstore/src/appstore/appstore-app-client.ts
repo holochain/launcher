@@ -46,27 +46,54 @@ export class AppstoreAppClient {
   }
 
   async createPublisher(input: CreatePublisherFrontendInput): Promise<Entity<PublisherEntry>> {
-    const iconBytes = await this.mereMemoryZomeClient.saveBytes(input.icon);
+    const iconEntryHash = await this.mereMemoryZomeClient.saveBytes(input.icon);
     return this.appstoreZomeClient.createPublisher({
       ...input,
-      icon: iconBytes,
+      icon: iconEntryHash,
     });
   }
 
   async updatePublisher(
     input: UpdateEntityInput<UpdatePublisherFrontendInput>,
   ): Promise<Entity<PublisherEntry>> {
-    const iconBytes = input.properties.icon
+    const iconEntryHash = input.properties.icon
       ? await this.mereMemoryZomeClient.saveBytes(input.properties.icon)
       : null;
     const updatedInput = {
       ...input,
       properties: {
         ...input.properties,
-        ...(iconBytes && { icon: iconBytes }),
+        ...(iconEntryHash && { icon: iconEntryHash }),
       },
     };
     return this.appstoreZomeClient.updatePublisher(updatedInput);
+  }
+
+  /**
+   * Gets the PublisherEntry for the given action hash and resolves the icon
+   * from mere memory.
+   *
+   * @param id
+   * @returns
+   */
+  async getPublisher(id: ActionHash): Promise<Entity<PublisherEntry>> {
+    const publisherEntry = await this.appstoreZomeClient.getPublisher(id);
+    const iconBytes = await this.mereMemoryZomeClient.getMemoryBytes(publisherEntry.content.icon);
+    publisherEntry.content.icon = iconBytes;
+    return publisherEntry;
+  }
+
+  async getMyPublishers(): Promise<Array<Entity<PublisherEntry>>> {
+    const publishersWithIcon: Entity<PublisherEntry>[] = [];
+    const publishers = await this.appstoreZomeClient.getMyPublishers();
+    await Promise.all(
+      publishers.map(async (entity) => {
+        const iconBytes = await this.mereMemoryZomeClient.getMemoryBytes(entity.content.icon);
+        entity.content.icon = iconBytes;
+        publishersWithIcon.push(entity);
+      }),
+    );
+    return publishersWithIcon;
   }
 
   async createApp(input: CreateAppFrontendInput): Promise<Entity<AppEntry>> {

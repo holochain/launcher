@@ -47,7 +47,6 @@
 			<UploadImage />
 		</div>
 	{:else}
-	<span>{imageUrl}</span>
 		<Avatar src={imageUrl} width="w-36" />
 	{/if}
 </button>

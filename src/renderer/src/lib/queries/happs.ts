@@ -1,4 +1,4 @@
-import { type ActionHash, decodeHashFromBase64 } from '@holochain/client';
+import { type ActionHash, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 // @ts-expect-error the @spartan-hc/bundles package has no typescript types
 import { Bundle } from '@spartan-hc/bundles';
 import type { QueryClient } from '@tanstack/svelte-query';
@@ -59,7 +59,17 @@ const getDevHubClientOrThrow = () =>
 export const createPublishersQuery = () => {
 	return createQuery({
 		queryKey: [PUBLISHERS_QUERY_KEY],
-		queryFn: () => getAppStoreClientOrThrow().appstoreZomeClient.getMyPublishers()
+		queryFn: () => getAppStoreClientOrThrow().getMyPublishers()
+	});
+};
+
+export const createGetPublisherQuery = () => (publisherEntityId?: ActionHash) => {
+	if (!publisherEntityId) {
+		return undefined;
+	}
+	return createQuery({
+		queryKey: [encodeHashToBase64(publisherEntityId)],
+		queryFn: () => getAppStoreClientOrThrow().getPublisher(publisherEntityId)
 	});
 };
 
@@ -133,6 +143,7 @@ export const createAppStoreHappsQuery = () => {
 						title: app.content.title,
 						subtitle: app.content.subtitle,
 						description: app.content.description,
+						publisher: app.content.publisher,
 						icon,
 						id: app.id
 					};

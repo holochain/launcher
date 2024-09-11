@@ -5,7 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { Button, IconInput, InputWithLabel } from '$components';
 	import { DEV_PAGE } from '$const';
-	import { base64ToArrayBuffer, showModalError } from '$helpers';
+	import { base64ToArrayBuffer, capitalizeFirstLetter, showModalError } from '$helpers';
 	import { defaultIcon } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
@@ -59,7 +59,7 @@
 		<InputWithLabel
 			bind:value={publisherData.website.url}
 			id="publisherWebsite"
-			label={$i18n.t('website')}
+			label={capitalizeFirstLetter($i18n.t('website'))}
 		/>
 
 		<footer class="flex justify-between gap-2">

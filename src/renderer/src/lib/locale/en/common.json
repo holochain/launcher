@@ -100,6 +100,8 @@
 	"publicKey": "Public Key",
 	"public": "Public",
 	"publish": "Publish",
+	"publisher": "publisher",
+	"publishedBy": "published by",
 	"publisherSettings": "Publisher Settings",
 	"publishYourApp": "Publish your App",
 	"publishingDashboard": "Publishing Dashboard",
@@ -135,7 +137,7 @@
 	"versionHistory": "Version History",
 	"viewUnverifiedApp": "View {{amount}} unverified app",
 	"viewUnverifiedApps": "View {{amount}} unverified apps",
-	"website": "Website",
+	"website": "website",
 	"welcomeToTheHolochainLauncherDeveloperDashboard": "Welcome to the Holochain Launcher Developer Dashboard! Sharing your app with the world begins with creating a publisher account.",
 	"whatDoYouWantToInstall": "What do you want to install?",
 	"yourHapps": "Your hApps"

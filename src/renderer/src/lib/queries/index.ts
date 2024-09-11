@@ -8,6 +8,7 @@ import {
 	createFetchAllowlistQuery,
 	createFetchUiBytesMutation,
 	createGetAppDetailsQuery,
+	createGetPublisherQuery,
 	createPublisherMutation,
 	createPublishersQuery,
 	createPublishHappMutation,
@@ -19,6 +20,7 @@ import {
 export function createAppQueries() {
 	const queryClient = useQueryClient();
 	const publishersQuery = createPublishersQuery();
+	const getPublisherQueryFunction = createGetPublisherQuery();
 	const appStoreMyHappsQuery = createAppStoreMyHappsQuery();
 	const appStoreHappsQuery = createAppStoreHappsQuery();
 	const appVersionsAppstoreQueryFunction = createAppVersionsAppstoreQuery();
@@ -34,6 +36,7 @@ export function createAppQueries() {
 
 	return {
 		publishersQuery,
+		getPublisherQueryFunction,
 		publisherMutation,
 		updatePublisherMutation,
 		publishHappMutation,

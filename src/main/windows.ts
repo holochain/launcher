@@ -67,8 +67,8 @@ const createAdminWindow = ({
   frame?: boolean;
   icon?: Electron.NativeImage;
   height?: number;
-}) =>
-  new BrowserWindow({
+}) => {
+  const browserWindow = new BrowserWindow({
     frame: frame,
     width: optWidth || WINDOW_SIZE,
     minWidth: optWidth || WINDOW_SIZE,
@@ -81,6 +81,9 @@ const createAdminWindow = ({
       preload: path.resolve(__dirname, '../preload/admin.js'),
     },
   });
+  setLinkOpenHandlers(browserWindow);
+  return browserWindow;
+};
 
 export const setupAppWindows = (launcherEmitter: LauncherEmitter) => {
   // Create the browser window.
