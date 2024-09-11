@@ -74,6 +74,28 @@ type BackupInfo = {
   lastPartialbackup?: string;
 };
 
+type StorageInfo = {
+  chromium: number;
+  logs: number;
+  holochain: Record<string, HolochainStorageInfo>;
+  lair: number;
+};
+
+type HolochainStorageInfo = {
+  apps: number;
+  happs: number;
+  uis: number;
+  dbs: {
+    wasmCache: number;
+    conductor: number;
+    authored: number;
+    cache: number;
+    dht: number;
+    p2p: number;
+    wasm: number;
+  };
+};
+
 export class LauncherFileSystem {
   public profileDataDir: string;
   public profileLogsDir: string;
