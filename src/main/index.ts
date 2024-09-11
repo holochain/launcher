@@ -40,6 +40,7 @@ import {
   AppVersionEntrySchemaWithIcon,
   BytesSchema,
   CHECK_INITIALIZED_KEYSTORE_ERROR,
+  DOWNLOAD_PROGRESS_UPDATE,
   ExtendedAppInfoSchema,
   HIDE_SETTINGS_WINDOW,
   IncludeHeadlessSchema,
@@ -722,13 +723,21 @@ const router = t.router({
     try {
       if (!isHappAvailable) {
         console.log('fetching happ bytes...');
-        const happBytes = await appstoreAppClient.fetchHappBytesInChunks(appVersionEntry);
+        const happBytes = await appstoreAppClient.fetchHappBytesInChunks(
+          appVersionEntry,
+          undefined,
+          (status) => LAUNCHER_EMITTER.emit(DOWNLOAD_PROGRESS_UPDATE, status),
+        );
         holochainManager.storeHapp(Array.from(happBytes));
         console.log('happ stored.');
       }
       if (!isUiAvailable) {
         console.log('fetching UI bytes...');
-        const uiBytes = await appstoreAppClient.fetchUiBytesInChunks(appVersionEntry);
+        const uiBytes = await appstoreAppClient.fetchUiBytesInChunks(
+          appVersionEntry,
+          undefined,
+          (status) => LAUNCHER_EMITTER.emit(DOWNLOAD_PROGRESS_UPDATE, status),
+        );
         holochainManager.storeUiIfNecessary(Array.from(uiBytes), icon);
         console.log('UI stored.');
       }
@@ -1005,6 +1014,9 @@ const router = t.router({
   }),
   onSetupProgressUpdate: t.procedure.subscription(() => {
     return createObservableGeneric(LAUNCHER_EMITTER, LOADING_PROGRESS_UPDATE);
+  }),
+  onDownloadProgressUpdate: t.procedure.subscription(() => {
+    return createObservableGeneric(LAUNCHER_EMITTER, DOWNLOAD_PROGRESS_UPDATE);
   }),
   deriveAndImportSeedFromJsonFile: t.procedure
     .input(z.object({ filePath: z.string(), passphrase: z.string().optional() }))

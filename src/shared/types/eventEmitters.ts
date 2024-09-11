@@ -1,6 +1,7 @@
 import type { HolochainData, LoadingProgressUpdate } from './holochain';
 
 export const LOADING_PROGRESS_UPDATE = 'loading-progress-update';
+export const DOWNLOAD_PROGRESS_UPDATE = 'download-progress-update';
 export const REFETCH_DATA_IN_ALL_WINDOWS = 'refetch-data-in-all-windows';
 export const APP_INSTALLED = 'app-installed';
 export const HIDE_SETTINGS_WINDOW = 'hide-settings-window';
@@ -17,6 +18,7 @@ export const WASM_LOG = 'wasm-log';
 
 export type EventMap = {
   [LOADING_PROGRESS_UPDATE]: LoadingProgressUpdate;
+  [DOWNLOAD_PROGRESS_UPDATE]: string;
   [APP_INSTALLED]: HolochainData;
   [LAUNCHER_ERROR]: string;
   [LAUNCHER_LOG]: string;

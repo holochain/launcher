@@ -491,6 +491,7 @@ export class AppstoreAppClient {
   async fetchHappBytesInChunks(
     appVersion: AppVersionEntry,
     webappPackageVersion?: WebAppPackageVersionEntry,
+    statusCallback?: (status: string) => void,
   ): Promise<Uint8Array> {
     // For simplicity make all calls with one host. If that proves to not work well, split into
     // separate calls to different hosts
@@ -584,6 +585,7 @@ export class AppstoreAppClient {
         function: 'get_app_asset', // We just pick one of the functions for the sake of simplicity and assume that all other functions are callable as well by the same host
       },
       pingTimeout: 4000,
+      statusCallback,
     });
   }
 
@@ -597,6 +599,7 @@ export class AppstoreAppClient {
   async fetchUiBytesInChunks(
     appVersion: AppVersionEntry,
     webappPackageVersion?: WebAppPackageVersionEntry,
+    statusCallback?: (status: string) => void,
   ): Promise<Uint8Array> {
     console.log('%%% Fetching UI bytes in chunks');
     // For simplicity make all calls with one host. If that proves to not work well, split into
@@ -678,6 +681,7 @@ export class AppstoreAppClient {
         function: 'get_app_asset', // We just pick one of the functions for the sake of simplicity and assume that all other functions are callable as well by the same host
       },
       pingTimeout: 4000,
+      statusCallback,
     });
   }
 
