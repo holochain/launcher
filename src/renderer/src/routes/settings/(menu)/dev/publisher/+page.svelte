@@ -2,12 +2,13 @@
 	import { goto } from '$app/navigation';
 	import { Button, CenterProgressRadial, IconInput, InputWithLabel } from '$components';
 	import { DEV_PAGE, PUBLISHER_SCREEN } from '$const';
-	import { base64ToArrayBuffer, capitalizeFirstLetter, showModalError } from '$helpers';
-	import { defaultIcon, Publisher } from '$icons';
+	import { capitalizeFirstLetter, showModalError } from '$helpers';
+	import { Publisher } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import type { UpdatePublisherInput } from 'appstore-tools';
+	import { onDestroy } from 'svelte';
 
 	const { publishersQuery, updatePublisherMutation } = createAppQueries();
 
@@ -41,6 +42,8 @@
 			icon = (value.data[0].content.icon);
 		}
 	})
+
+	onDestroy(unsubscribe);
 </script>
 
 {#if !$publishersQuery.data}
