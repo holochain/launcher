@@ -35,6 +35,7 @@
 			buttons={[$i18n.t('releases'), $i18n.t('appearance'), $i18n.t('settings')]}
 			publisher={undefined}
 			bind:selectedIndex
+			deprecated={!!app.content.deprecation}
 		/>
 	{/if}
 {/if}
@@ -45,7 +46,7 @@
 		{:else if selectedIndex === 1}
 			<Appearance {app} />
 		{:else if selectedIndex === 2}
-			<Settings />
+			<Settings {app} />
 		{/if}
 	{/if}
 </div>

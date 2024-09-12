@@ -9,6 +9,7 @@ import {
 	type BundleHashes,
 	bundleToDeterministicBytes,
 	type CreatePublisherFrontendInput,
+	type DeprecateInput,
 	type DevhubAppClient,
 	type UpdateAppFrontendInput,
 	type UpdatePublisherFrontendInput
@@ -236,6 +237,22 @@ export const createUpdateAppDetailsMutation = (queryClient: QueryClient) => {
 	return createMutation({
 		mutationFn: async (input: UpdateEntityInput<UpdateAppFrontendInput>) => {
 			return getAppStoreClientOrThrow().updateApp(input);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: [APP_STORE_MY_HAPPS_QUERY_KEY]
+			});
+			queryClient.invalidateQueries({
+				queryKey: [APP_STORE_HAPPS_QUERY_KEY]
+			});
+		}
+	});
+};
+
+export const createDeprecateAppMutation = (queryClient: QueryClient) => {
+	return createMutation({
+		mutationFn: async (input: DeprecateInput) => {
+			return getAppStoreClientOrThrow().appstoreZomeClient.deprecateApp(input);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({

@@ -9,6 +9,7 @@
 	"appIdAlreadyExists": "An App with this name already exists.",
 	"appDetailsUpdatedSuccessfully": "App details updated successfully",
 	"appearance": "Appearance",
+	"appDeprecated": "App deprecated",
 	"appError": "App Error",
 	"appPublished": "App published",
 	"appSettings": "App Settings",
@@ -149,6 +150,6 @@
 	"website": "website",
 	"welcomeToTheHolochainLauncherDeveloperDashboard": "Welcome to the Holochain Launcher Developer Dashboard! Sharing your app with the world begins with creating a publisher account.",
 	"whatDoYouWantToInstall": "What do you want to install?",
-	"yourHapps": "Your hApps",
+	"yourHapps": "Your Apps",
 	"yourPublisherProfile": "Your Publisher Profile"
 }

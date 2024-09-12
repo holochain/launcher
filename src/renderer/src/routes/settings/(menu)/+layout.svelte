@@ -1,12 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { DEV_PAGE } from '$const';
-	import { createAppQueries } from '$queries';
 
 	import { DevMenu, RegularMenu } from '../components';
 
 	$: isDevPage = $page.url.pathname.includes(DEV_PAGE);
-
 </script>
 
 <div class="flex flex-1 overflow-hidden bg-light-background bg-fixed dark:bg-app-dark-gradient">
@@ -23,7 +21,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="min-h-[calc(100vh-70px)] flex flex-col flex-1 overflow-y-auto">
+	<div class="flex min-h-[calc(100vh-70px)] flex-1 flex-col overflow-y-auto">
 		<slot />
 	</div>
 </div>
