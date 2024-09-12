@@ -103,14 +103,14 @@
 	</div>
 {:else}
 	<div class="flex flex-1 flex-col items-center justify-center">
-		<header class="mb-2 pt-4 text-2xl font-bold">
+		<header class="mb-2 mt-6 pt-4 text-2xl font-bold">
 			{$i18n.t('publishNewApp')}
 		</header>
 		<div class="mb-5 text-base font-semibold text-white/70 max-w-[420px] text-center">
 			{$i18n.t('When your app is published, it will become available to all users of the launcher in the list of unverified apps.')}
 		</div>
 		<form
-			class="modal-form mx-auto my-4 flex w-full max-w-xs flex-col space-y-4"
+			class="modal-form mx-auto my-4 flex w-full max-w-xs flex-col space-y-4 mb-16"
 			on:submit|preventDefault={submitForm}
 		>
 			<IconInput bind:icon={appData.icon} handleFileUpload={handleIconUpload} />

@@ -70,8 +70,8 @@
 {:else}
 	{@const currentPublisherData = $publishersQuery.data[0]}
 	<div class="flex flex-1 flex-col items-center justify-center">
-		<header class="mb-10 pt-4 text-2xl font-bold">
-			{$i18n.t('Your Publisher Profile')}
+		<header class="mb-4 pt-4 text-2xl font-bold">
+			{$i18n.t('yourPublisherProfile')}
 		</header>
 		<form
 			class="modal-form flex min-w-80 flex-col space-y-4 p-4"
