@@ -14,9 +14,9 @@
 			src="/images/login-background.png"
 			alt="Holochain Logo"
 			class="absolute"
-			style="min-width: 600px; top: 0;"
+			style="min-width: 580px; top: 0;"
 		/>
-		<div class="absolute flex flex-col items-center" style="top: 275px;">
+		<div class="absolute flex flex-col items-center" style="top: 270px;">
 			<span class="text-5xl font-bold">Holochain</span>
 			<div class="text-xl text-slate-400">
 				{#if $defaultHolochainVersion.data && $defaultHolochainVersion.data.type === 'built-in'}
@@ -34,7 +34,7 @@
 		>
 			<div class="mb-1 text-lg">{Math.round(totalStorage)} MB Used</div>
 			<div class="w-full">
-				<PercentageBar values={storageInfoMB} height={20} unit="MB"></PercentageBar>
+				<PercentageBar values={storageInfoMB} height={17} unit="MB"></PercentageBar>
 			</div>
 		</div>
 	{/if}

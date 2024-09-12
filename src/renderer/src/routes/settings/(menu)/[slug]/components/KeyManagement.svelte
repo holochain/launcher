@@ -97,7 +97,7 @@
 </script>
 <div class="py-3">
 
-<DashedSection title={$i18n.t('importSeedFile')}>
+<DashedSection containerClasses="m-2 p-2.5" title={$i18n.t('importSeedFile')}>
 	<div class="flex flex-col gap-2 overflow-hidden">
 		{#each $importedKeys as key}
 			<div class="flex items-center justify-between">

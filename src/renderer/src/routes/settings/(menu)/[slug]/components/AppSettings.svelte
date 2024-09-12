@@ -13,7 +13,7 @@
 
 <div class={clsx(update && 'pt-0')}>
 	{#if !isHeadless}
-		<DashedSection title={$i18n.t('uninstallApp')}>
+		<DashedSection containerClasses="m-2 p-2.5" title={$i18n.t('uninstallApp')}>
 			<div class="flex-end flex flex-1 flex-row items-center">
 				<span class="flex-1">{$i18n.t('uninstallAppAndRemoveAllData')}</span>
 				<Button

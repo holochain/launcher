@@ -85,7 +85,7 @@
 	<NoClickOverlay />
 {/if}
 <div class="pt-3 flex flex-1 flex-col">
-	<DashedSection title={$i18n.t('developerTools')}>
+	<DashedSection containerClasses="m-2 p-2.5" title={$i18n.t('developerTools')}>
 		{#if $isDevhubInstalled.data}
 			<p>{$i18n.t('devhubInstalled')}</p>
 		{:else}
@@ -111,7 +111,7 @@
 		<span class="text-red-600 opacity-80 font-semibold">DANGER ZONE</span>
 	</div>
 	<div class="pb-3 pt-4" style="background-color: #ff000014">
-		<DashedSection title={$i18n.t('factoryReset')}>
+		<DashedSection containerClasses="m-2 p-2.5" title={$i18n.t('factoryReset')}>
 			<div class="flex flex-col justify-center">
 				<div class="mb-2">{$i18n.t('factoryResetHolochainLauncher')}</div>
 				<div class="flex flex-row">

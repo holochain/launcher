@@ -49,7 +49,7 @@
 </MenuEntry>
 <MenuEntry
 	background={view === `/${DEV_PAGE}` ? 'bg-white/30' : 'transparent'}
-	name={$i18n.t('addhApp')}
+	name={$i18n.t('publishNewApp')}
 	onClick={() => goto(`/${DEV_PAGE}`)}
 	isSelected={view === `/${DEV_PAGE}`}
 	disabled={!$publishersQuery.data}
