@@ -4,16 +4,16 @@ import { Bundle } from '@spartan-hc/bundles';
 import type { QueryClient } from '@tanstack/svelte-query';
 import { createMutation, createQuery } from '@tanstack/svelte-query';
 import {
-	type AppEntry,
 	type AppstoreAppClient,
 	type AppVersionEntry,
 	type BundleHashes,
 	bundleToDeterministicBytes,
 	type CreatePublisherFrontendInput,
 	type DevhubAppClient,
-	type Entity,
+	type UpdateAppFrontendInput,
 	type UpdatePublisherFrontendInput
 } from 'appstore-tools';
+import type { UpdateEntityInput } from 'appstore-tools/dist/types.js';
 import { sha256 } from 'js-sha256';
 import { get, type Writable } from 'svelte/store';
 
@@ -34,9 +34,8 @@ import {
 	DEV_HUB_CLIENT_NOT_INITIALIZED_ERROR,
 	NO_PUBLISHERS_AVAILABLE_ERROR
 } from '$shared/types';
-import { type AppData, type AppWithAction, type PublishNewVersionData } from '$types';
+import { type AppData, type PublishNewVersionData } from '$types';
 import { HolochainFoundationList } from '$types/happs';
-import type { UpdateEntityInput } from 'appstore-tools/dist/types.js';
 
 type ClientType = DevhubAppClient | AppstoreAppClient;
 
@@ -98,58 +97,22 @@ export const createAppVersionsDevhubQuery = () => (webappPackageEntryId: ActionH
 	});
 };
 
-export const createAppStoreMyHappsQuery = () => {
+export const createAppStoreMyAppsQuery = () => {
 	return createQuery({
 		queryKey: [APP_STORE_MY_HAPPS_QUERY_KEY],
 		queryFn: async () => {
-			const myApps = await getAppStoreClientOrThrow().appstoreZomeClient.getMyApps();
-			const fetchIcon = async (iconAddress: Uint8Array) => {
-				try {
-					return await getAppStoreClientOrThrow().mereMemoryZomeClient.getMemoryBytes(iconAddress);
-				} catch {
-					return undefined;
-				}
-			};
-
-			const mapAppToAppWithIcon = async (app: Entity<AppEntry>) => ({
-				id: app.id,
-				action: app.action,
-				title: app.content.title,
-				subtitle: app.content.subtitle,
-				description: app.content.description,
-				icon: await fetchIcon(app.content.icon),
-				apphubHrlTarget: app.content.apphub_hrl.target
-			});
-
-			const appsWithIcons = await Promise.all(myApps.map(mapAppToAppWithIcon));
-			return appsWithIcons;
+			return getAppStoreClientOrThrow().getMyApps();
 		}
 	});
 };
 
-export const createAppStoreHappsQuery = () => {
+export const createGetAllAppsQuery = () => {
 	return createQuery({
 		refetchInterval: 10000,
 		queryKey: [APP_STORE_HAPPS_QUERY_KEY],
 		queryFn: async () => {
 			const appStoreClient = getAppStoreClientOrThrow();
-			const myApps = await appStoreClient.appstoreZomeClient.getAllApps();
-
-			const appsWithIcons = await Promise.all(
-				myApps.map(async (app) => {
-					const icon = await appStoreClient.mereMemoryZomeClient.getMemoryBytes(app.content.icon);
-
-					return {
-						title: app.content.title,
-						subtitle: app.content.subtitle,
-						description: app.content.description,
-						publisher: app.content.publisher,
-						icon,
-						id: app.id
-					};
-				})
-			);
-			return appsWithIcons;
+			return appStoreClient.getAllApps();
 		}
 	});
 };
@@ -271,18 +234,8 @@ export const createPublishHappMutation = (queryClient: QueryClient) => {
 
 export const createUpdateAppDetailsMutation = (queryClient: QueryClient) => {
 	return createMutation({
-		mutationFn: async ({ title, subtitle, description, icon, action }: AppWithAction) => {
-			const appStoreClient = getAppStoreClientOrThrow();
-
-			await appStoreClient.updateApp({
-				base: action,
-				properties: {
-					title,
-					subtitle,
-					description,
-					icon
-				}
-			});
+		mutationFn: async (input: UpdateEntityInput<UpdateAppFrontendInput>) => {
+			return getAppStoreClientOrThrow().updateApp(input);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({
@@ -380,7 +333,7 @@ export const createCheckForAppUiUpdatesQuery =
 		return createQuery({
 			queryKey: [CHECK_FOR_APP_UI_UPDATES_QUERY_KEY, appVersionActionHashes],
 			queryFn: async () => {
-				console.log("Checking for UI updates...")
+				console.log('Checking for UI updates...');
 				const appStoreClient = getAppStoreClientOrThrow();
 				const distinctVersionHashes = appVersionActionHashes;
 				const filterLists = await fetchFilterLists(appStoreClient, isDev);
@@ -394,12 +347,12 @@ export const createCheckForAppUiUpdatesQuery =
 								filterLists.denylist
 							);
 						} catch (e) {
-							console.error("Failed to check for UI update: ", e);
+							console.error('Failed to check for UI update: ', e);
 						}
 						return maybeUpdate ? { [hash]: maybeUpdate } : null;
 					})
 				);
-				console.log("Got updates: ", updates);
+				console.log('Got updates: ', updates);
 				return updates.reduce((acc, update) => (update ? { ...acc, ...update } : acc), {});
 			}
 		});

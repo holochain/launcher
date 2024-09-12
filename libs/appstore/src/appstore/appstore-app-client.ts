@@ -45,6 +45,32 @@ export class AppstoreAppClient {
     this.portalZomeClient = new PortalZomeClient(client, 'portal', 'portal_csr');
   }
 
+  async getAllApps(): Promise<Array<Entity<AppEntry>>> {
+    const appsWithIcon: Entity<AppEntry>[] = [];
+    const allAppEntities = await this.appstoreZomeClient.getAllApps();
+    await Promise.all(
+      allAppEntities.map(async (entity) => {
+        const iconBytes = await this.mereMemoryZomeClient.getMemoryBytes(entity.content.icon);
+        entity.content.icon = iconBytes;
+        appsWithIcon.push(entity);
+      }),
+    );
+    return appsWithIcon;
+  }
+
+  async getMyApps(): Promise<Array<Entity<AppEntry>>> {
+    const appsWithIcon: Entity<AppEntry>[] = [];
+    const myAppEntities = await this.appstoreZomeClient.getMyApps();
+    await Promise.all(
+      myAppEntities.map(async (entity) => {
+        const iconBytes = await this.mereMemoryZomeClient.getMemoryBytes(entity.content.icon);
+        entity.content.icon = iconBytes;
+        appsWithIcon.push(entity);
+      }),
+    );
+    return appsWithIcon;
+  }
+
   async createPublisher(input: CreatePublisherFrontendInput): Promise<Entity<PublisherEntry>> {
     const iconEntryHash = await this.mereMemoryZomeClient.saveBytes(input.icon);
     return this.appstoreZomeClient.createPublisher({

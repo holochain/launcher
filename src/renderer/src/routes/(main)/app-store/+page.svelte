@@ -16,7 +16,7 @@
 	import { hideUnverifiedApps } from '$stores';
 
 	import { AppCard, InstallFromDeviceCard } from './components';
-	const { appStoreHappsQuery, fetchAllowlistQuery } = createAppQueries();
+	const { appStoreAllAppsQuery, fetchAllowlistQuery } = createAppQueries();
 
 	const allowlist = fetchAllowlistQuery(isDev());
 
@@ -26,7 +26,7 @@
 	$: isKandoInSearch = 'kando'.includes(searchInputLower);
 
 	$: allowlistKeys = getAllowlistKeys($allowlist?.data);
-	$: filteredApps = filterOutDenylisted($appStoreHappsQuery?.data ?? [], $allowlist?.data);
+	$: filteredApps = filterOutDenylisted($appStoreAllAppsQuery?.data ?? [], $allowlist?.data);
 	$: verifiedApps = filterAppsBySearchAndAllowlist(filteredApps, searchInput, allowlistKeys);
 	$: unverifiedApps = (filteredApps ?? []).filter((app) => !verifiedApps.includes(app));
 </script>
@@ -35,9 +35,9 @@
 	{#each verifiedApps as app}
 		<AppCard
 			verified
-			icon={app.icon}
-			title={app.title}
-			subtitle={app.subtitle}
+			icon={app.content.icon}
+			title={app.content.title}
+			subtitle={app.content.subtitle}
 			id={uint8ArrayToURIComponent(app.id)}
 		/>
 	{/each}
@@ -72,9 +72,9 @@
 			{#each unverifiedApps as app}
 				<AppCard
 					verified={false}
-					icon={app.icon}
-					title={app.title}
-					subtitle={app.subtitle}
+					icon={app.content.icon}
+					title={app.content.title}
+					subtitle={app.content.subtitle}
 					id={uint8ArrayToURIComponent(app.id)}
 				/>
 			{/each}
@@ -82,14 +82,14 @@
 	{/if}
 {/if}
 
-{#if $allowlist.isLoading || $allowlist.isError || $appStoreHappsQuery.isFetching}
+{#if $allowlist.isLoading || $allowlist.isError || $appStoreAllAppsQuery.isFetching}
 	<div class="absolute bottom-0 right-6 flex items-center p-1 text-xs opacity-50">
-		{#if $appStoreHappsQuery.isFetching || $allowlist.isLoading}
+		{#if $appStoreAllAppsQuery.isFetching || $allowlist.isLoading}
 			<ProgressRadial width="w-3" stroke={100} />
 		{/if}
 		<p class="ml-2">
 			{$i18n.t(
-				$appStoreHappsQuery.isFetching
+				$appStoreAllAppsQuery.isFetching
 					? 'pollingForNewApps'
 					: $allowlist.isLoading
 						? 'allowListLoading'
