@@ -128,7 +128,7 @@ export type PublisherEntry = {
   name: string;
   location: string;
   website: WebAddress;
-  icon: EntryHash;
+  icon: EntryHash | Uint8Array; // If it's a Uint8Array the icon is already the raw icon, otherwise it's the EntryHash pointing to the icon in the mere memory zome
   editors: Array<AgentPubKey>;
 
   author: AgentPubKey;

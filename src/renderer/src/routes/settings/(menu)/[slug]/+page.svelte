@@ -189,6 +189,7 @@
 		{appVersion}
 		title={selectedApp.appInfo.installed_app_id}
 		buttons={[$i18n.t('details'), capitalizeFirstLetter($i18n.t('settings'))]}
+		publisher={undefined}
 		bind:selectedIndex
 	>
 		<div slot="topRight">
@@ -219,7 +220,7 @@
 		</div>
 	</AppDetailsPanel>
 	{#if update && selectedApp.distributionInfo.type === DISTRIBUTION_TYPE_APPSTORE}
-		<DashedSection borderColor="border-warning-500/30">
+		<DashedSection containerClasses="m-2 p-2.5" borderColor="border-warning-500/30">
 			<div class="flex w-full items-center justify-between">
 				<h3 class="h3 text-warning-500">{$i18n.t('updateAvailable')}</h3>
 				<div class="flex items-center">
@@ -267,17 +268,17 @@
 		{@const clonedCells = flattenedCells.filter(
 			(cellInfo) => CellType.Cloned in cellInfo
 		)}
-		<DashedSection title={$i18n.t('publicKey')}>
+		<DashedSection containerClasses="m-2 p-2.5" title={$i18n.t('publicKey')}>
 			{encodeHashToBase64(selectedApp.appInfo.agent_pub_key)}
 		</DashedSection>
-		<DashedSection title="Provisioned Cells">
+		<DashedSection containerClasses="m-2 p-2.5" title="Provisioned Cells">
 			<div class="flex flex-col flex-1">
 				{#each provisionedCells as cellInfo, _index}
 					<CellDetails cellInfo={cellInfo}></CellDetails>
 				{/each}
 			</div>
 		</DashedSection>
-		<DashedSection title="Cloned Cells">
+		<DashedSection containerClasses="m-2 p-2.5" title="Cloned Cells">
 			{#if clonedCells.length === 0}
 				{$i18n.t('noClonedCells')}
 			{:else}

@@ -8,20 +8,24 @@ import {
 	createFetchAllowlistQuery,
 	createFetchUiBytesMutation,
 	createGetAppDetailsQuery,
+	createGetPublisherQuery,
 	createPublisherMutation,
 	createPublishersQuery,
 	createPublishHappMutation,
 	createPublishNewVersionMutation,
-	createUpdateAppDetailsMutation
+	createUpdateAppDetailsMutation,
+	createUpdatePublisherMutation
 } from './happs';
 
 export function createAppQueries() {
 	const queryClient = useQueryClient();
 	const publishersQuery = createPublishersQuery();
+	const getPublisherQueryFunction = createGetPublisherQuery();
 	const appStoreMyHappsQuery = createAppStoreMyHappsQuery();
 	const appStoreHappsQuery = createAppStoreHappsQuery();
 	const appVersionsAppstoreQueryFunction = createAppVersionsAppstoreQuery();
 	const publisherMutation = createPublisherMutation(queryClient);
+	const updatePublisherMutation = createUpdatePublisherMutation(queryClient);
 	const publishHappMutation = createPublishHappMutation(queryClient);
 	const updateAppDetailsMutation = createUpdateAppDetailsMutation(queryClient);
 	const publishNewVersionMutation = createPublishNewVersionMutation(queryClient);
@@ -32,7 +36,9 @@ export function createAppQueries() {
 
 	return {
 		publishersQuery,
+		getPublisherQueryFunction,
 		publisherMutation,
+		updatePublisherMutation,
 		publishHappMutation,
 		appStoreMyHappsQuery,
 		updateAppDetailsMutation,

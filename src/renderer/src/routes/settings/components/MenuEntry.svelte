@@ -10,15 +10,18 @@
 	export let isUpdateAvailable = false;
 	export let background = 'bg-white/25';
 	export let icon: Uint8Array | undefined = undefined;
+	export let disabled = false;
 </script>
 
 <button
 	class={clsx(
 		'flex cursor-pointer items-center px-4 py-2',
-		isSelected && `rounded-md ${background}`
+		isSelected && `rounded-md ${background}`,
+		disabled && 'opacity-50 cursor-auto',
 	)}
 	on:click={onClick}
 	aria-label={`Select ${name}`}
+	disabled={disabled}
 >
 	<slot name="leading">
 		<Avatar

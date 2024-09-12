@@ -37,6 +37,7 @@
 				bind:value
 				on:focus={handleFocus}
 				on:blur={handleBlur}
+				on:input
 				class="input flex-grow"
 				{id}
 				maxlength={maxLength}
@@ -53,6 +54,7 @@
 					bind:files
 					on:focus={handleFocus}
 					on:blur={handleBlur}
+					on:input
 					props={{
 						class: `input`,
 						id,
@@ -65,6 +67,7 @@
 					bind:value
 					on:focus={handleFocus}
 					on:blur={handleBlur}
+					on:input
 					props={{
 						class: `input`,
 						id,
