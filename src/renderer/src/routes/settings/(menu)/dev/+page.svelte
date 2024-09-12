@@ -119,6 +119,7 @@
 			on:submit|preventDefault={submitForm}
 		>
 			<IconInput bind:icon={appData.icon} handleFileUpload={handleIconUpload} />
+			<span class="h-3"></span>
 			<InputWithLabel
 				bind:files={bytesFiles}
 				id="webhapp"

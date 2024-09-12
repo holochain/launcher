@@ -31,6 +31,7 @@
 	"country": "Country",
 	"deprecateApp": "Deprecate App",
 	"deprecateAppExplanation": "If you want to remove your app from showing up in app store, you can mark it as deprecated. People can still discover your app if they choose to display deprecated apps in app store.",
+	"deprecateAppModalBody": "Are you sure you want to deprecate the app?",
 	"description": "Description",
 	"details": "Details",
 	"developerTools": "Developer Tools",
