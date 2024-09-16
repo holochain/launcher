@@ -1,14 +1,15 @@
 <script lang="ts">
+	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
+	import type { UpdatePublisherInput } from 'appstore-tools';
+	import { onDestroy } from 'svelte';
+
 	import { goto } from '$app/navigation';
 	import { Button, CenterProgressRadial, IconInput, InputWithLabel } from '$components';
-	import { DEV_PAGE, PUBLISHER_SCREEN } from '$const';
+	import { PUBLISHER_SCREEN } from '$const';
 	import { capitalizeFirstLetter, showModalError } from '$helpers';
 	import { Publisher } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
-	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
-	import type { UpdatePublisherInput } from 'appstore-tools';
-	import { onDestroy } from 'svelte';
 
 	const { publishersQuery, updatePublisherMutation } = createAppQueries();
 
@@ -82,7 +83,7 @@
 					properties: updatePublisherInput
 				};
 				$updatePublisherMutation.mutate(payload, {
-					onSuccess: (result) => {
+					onSuccess: () => {
 						toastStore.trigger({
 							message: $i18n.t('profileUpdated'),
 							background: 'variant-filled-success'
