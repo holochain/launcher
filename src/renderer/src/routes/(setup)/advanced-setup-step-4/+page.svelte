@@ -1,20 +1,23 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { IconButton } from '$components';
+	import { BackArrow } from '$icons';
 	import { i18n } from '$services';
 	import { recoveryKeysPassphrase } from '$stores';
-	import { BackArrow } from '$icons';
-	import { IconButton } from '$components';
 
 	import { PasswordForm } from '../components';
 </script>
 
-<div class="fixed top-0 left-0 right-0 app-region-drag flex items-center justify-between p-3 bg-[#DADADA12]">
+<div
+	class="app-region-drag fixed left-0 right-0 top-0 flex items-center justify-between bg-[#DADADA12] p-3"
+>
 	<div class="relative flex w-full items-center justify-center py-[11px]">
-		<IconButton buttonClass="absolute left-2" onClick={() => goto('advanced-setup-step-3')}><BackArrow /></IconButton>
-		<span class="text-center text-semibold text-lg text-white">Advanced Setup (4 / 6)</span>
+		<IconButton buttonClass="absolute left-2" onClick={() => goto('advanced-setup-step-3')}
+			><BackArrow /></IconButton
+		>
+		<span class="text-semibold text-center text-lg text-white">Advanced Setup (4 / 6)</span>
 	</div>
 </div>
-
 
 <h1 class="h1 mb-10">2. Generate Recovery Keys</h1>
 

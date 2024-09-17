@@ -169,7 +169,7 @@ contextMenu({
       click: () => (browserWindow as BrowserWindow).reload(),
     },
     {
-      label: 'Quit',
+      label: 'Quit Launcher',
       click: () => app.quit(),
     },
   ],
@@ -391,20 +391,15 @@ const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeReques
 };
 
 // Kills any pre-existing lair processes and start up lair and assigns associated global variables
-async function killIfExistsAndLaunchLair(password: string): Promise<void> {
+async function launchLairIfNecessary(password: string): Promise<void> {
   INTEGRITY_CHECKER = new IntegrityChecker(password);
   LAUNCHER_FILE_SYSTEM.setIntegrityChecker(INTEGRITY_CHECKER);
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingLairKeystore');
 
-  if (LAIR_HANDLE) {
-    LAIR_HANDLE.kill();
-    LAIR_HANDLE = undefined;
-  }
-
   if (VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external') {
     LAIR_URL = VALIDATED_CLI_ARGS.holochainVersion.lairUrl;
     DEFAULT_LAIR_CLIENT = await rustUtils.LauncherLairClient.connect(LAIR_URL, password);
-  } else {
+  } else if (!LAIR_HANDLE) {
     const [lairHandle, lairUrl2] = await launchLairKeystore(
       VALIDATED_CLI_ARGS.lairBinaryPath,
       LAUNCHER_FILE_SYSTEM.keystoreDir,
@@ -444,7 +439,7 @@ async function handleQuickSetup(password: string): Promise<void> {
   }
 
   // 2. Start up lair keystore process and connect to it
-  await killIfExistsAndLaunchLair(password);
+  await launchLairIfNecessary(password);
 
   // 3. Generate key recovery file and import device seed if necessary
   const dpkiDeviceSeedExists = await DEFAULT_LAIR_CLIENT!.seedExists(DEVICE_SEED_LAIR_TAG);
@@ -495,7 +490,7 @@ async function handleAdvancedSetup(
   }
 
   // 2. Start up lair keystore process and connect to it
-  await killIfExistsAndLaunchLair(password);
+  await launchLairIfNecessary(password);
 
   // 3. Make sure that there is no DPKI_DEVICE_SEED in lair yet
   const dpkiDeviceSeedExists = await DEFAULT_LAIR_CLIENT!.seedExists(DEVICE_SEED_LAIR_TAG);
@@ -882,6 +877,15 @@ const router = t.router({
 
     return !isInitializedValidated;
   }),
+  dpkiDeviceSeedPresent: t.procedure
+    .input(z.object({ password: z.string() }))
+    .mutation(async (opts) => {
+      const password = opts.input.password;
+      if (!DEFAULT_LAIR_CLIENT || !LAIR_URL || !LAIR_HANDLE) {
+        await launchLairIfNecessary(password);
+      }
+      return DEFAULT_LAIR_CLIENT!.seedExists(DEVICE_SEED_LAIR_TAG);
+    }),
   getHolochainStorageInfo: t.procedure.query(() => {
     const defaultHolochainManager = HOLOCHAIN_MANAGERS[BREAKING_DEFAULT_HOLOCHAIN_VERSION];
     const holochainDataRoot = defaultHolochainManager.holochainDataRoot;
@@ -953,7 +957,7 @@ const router = t.router({
     if (!PRIVILEDGED_LAUNCHER_WINDOWS)
       throw new Error('Main window needs to exist before launching.');
     if (!DEFAULT_LAIR_CLIENT || !LAIR_URL || !LAIR_HANDLE) {
-      await killIfExistsAndLaunchLair(password);
+      await launchLairIfNecessary(password);
     }
     await launchHolochain(password, LAIR_URL!);
     IS_LAUNCHED = true;
