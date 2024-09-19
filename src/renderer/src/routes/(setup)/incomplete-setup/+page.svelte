@@ -20,6 +20,15 @@
 
 	let launching = false;
 
+	const handleSetupError = (error: unknown) => {
+		toastStore.trigger({
+			message: $i18n.t((error as Error).message || 'unknownError'),
+			background: 'variant-filled-error'
+		});
+		launching = false;
+		setupProgress.set('');
+	};
+
 	const signupAndLaunch = async () => {
 		launching = true;
 
@@ -28,12 +37,7 @@
 				password: $appPassword
 			});
 		} catch (error) {
-			toastStore.trigger({
-				message: $i18n.t((error as Error).message || 'unknownError'),
-				background: 'variant-filled-error'
-			});
-			launching = false;
-			setupProgress.set('');
+			handleSetupError(error);
 			return;
 		}
 		try {
@@ -47,12 +51,7 @@
 			await new LauncherPersistedStore().quickSetupChosen.set(true);
 			resizeWindowAndNavigate(APP_STORE);
 		} catch (error) {
-			toastStore.trigger({
-				message: $i18n.t((error as Error).message || 'unknownError'),
-				background: 'variant-filled-error'
-			});
-			launching = false;
-			setupProgress.set('');
+			handleSetupError(error);
 			goto('unlock');
 		}
 	};
