@@ -82,7 +82,7 @@
 
 {#if !launching && !cannotGoBack}
 	<div
-		class="app-region-drag fixed left-0 right-0 top-0 flex items-center justify-between bg-[#DADADA12] p-3"
+		class="app-region-drag bg-transparent-gray fixed left-0 right-0 top-0 flex items-center justify-between p-3"
 	>
 		<div class="relative flex w-full items-center justify-center py-[11px]">
 			<IconButton
