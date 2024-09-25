@@ -3,14 +3,14 @@ const path = require('path');
 const yaml = require('js-yaml');
 
 // Paths to the files
-const packageJsonPath = path.join(__dirname, '..', 'package.json');
+const launcherConfigJsonPath = path.join(__dirname, '..', 'launcher.config.json');
 const electronBuilderYmlPath = path.join(__dirname, '..', 'electron-builder.yml');
 
 // Read package.json
-const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+const launcherConfig = JSON.parse(fs.readFileSync(launcherConfigJsonPath, 'utf8'));
 
 // Extract the non-breaking holochain version
-const holochainVersion = packageJson.binaries.holochain.split('.').slice(0, 2).join('.');
+const holochainVersion = launcherConfig.binaries.holochain.version.split('.').slice(0, 2).join('.');
 
 // Read electron-builder.yml
 const electronBuilderYml = yaml.load(fs.readFileSync(electronBuilderYmlPath, 'utf8'));

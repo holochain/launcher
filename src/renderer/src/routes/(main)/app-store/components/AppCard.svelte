@@ -1,29 +1,23 @@
 <script lang="ts">
-	import { Avatar, getModalStore, popup } from '@skeletonlabs/skeleton';
+	import { Avatar, popup } from '@skeletonlabs/skeleton';
 
 	import { goto } from '$app/navigation';
-	import { MODAL_INSTALL_KANDO } from '$const';
-	import { createImageUrl, createModalParams } from '$helpers';
+	import { createImageUrl } from '$helpers';
 	import { AppWarning, Verified } from '$icons';
 	import { i18n } from '$services';
 	import { APP_STORE } from '$shared/const';
 
 	export let icon: Uint8Array | undefined = undefined;
-	export let id: string | undefined = undefined;
+	export let id: string;
 	export let verified: boolean | undefined = undefined;
 	export let title: string = $i18n.t('kando');
-	export let subtitle: string =
-		'Holochain hApp for collaborative KanBan boards. Real-time collaboration delivered by syn';
-
-	const modalStore = getModalStore();
-
-	const modal = createModalParams(MODAL_INSTALL_KANDO);
+	export let subtitle: string = '';
 
 	$: imageUrl = createImageUrl(icon);
 </script>
 
 <button
-	on:click={() => (id === undefined ? modalStore.trigger(modal) : goto(`/${APP_STORE}/${id}`))}
+	on:click={() => goto(`/${APP_STORE}/${id}`)}
 	class="card flex cursor-pointer items-center p-4 dark:variant-soft-tertiary dark:hover:bg-tertiary-900"
 >
 	<div class="min-w-16">

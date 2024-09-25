@@ -1,12 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 
-const packageJSON = fs.readFileSync('package.json');
-const packageJson = JSON.parse(packageJSON);
+const launcherConfigJSON = fs.readFileSync('launcher.config.json');
+const launcherConfig = JSON.parse(launcherConfigJSON);
 
 // Check whether holochain binary is in resources/bins folder
 const binariesDirectory = path.join('resources', 'bins');
-const expectedHolochainBinary = `holochain-v${packageJson.binaries.holochain}${packageJson.name.replace('holochain', '')}${
+const expectedHolochainBinary = `holochain-v${launcherConfig.binaries.holochain.version}-${launcherConfig.binariesAppendix}${
   process.platform === 'win32' ? '.exe' : ''
 }`;
 if (!fs.existsSync(path.join(binariesDirectory, expectedHolochainBinary))) {
@@ -17,7 +17,7 @@ if (!fs.existsSync(path.join(binariesDirectory, expectedHolochainBinary))) {
 }
 
 // Check whether lair binary is in resources/bins folder
-const expectedLairBinary = `lair-keystore-v${packageJson.binaries.lair_keystore}${packageJson.name.replace('holochain', '')}${
+const expectedLairBinary = `lair-keystore-v${launcherConfig.binaries.lair.version}-${launcherConfig.binariesAppendix}${
   process.platform === 'win32' ? '.exe' : ''
 }`;
 if (!fs.existsSync(path.join(binariesDirectory, expectedLairBinary))) {

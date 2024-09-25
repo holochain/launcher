@@ -17,7 +17,6 @@
 		MODAL_ENTER_PASSPHRASE,
 		MODAL_FACTORY_RESET_CONFIRMATION,
 		MODAL_INSTALL_FROM_FILE,
-		MODAL_INSTALL_KANDO,
 		MODAL_STARTUP_ERROR,
 		MODAL_UNINSTALL_APP_CONFIRMATION
 	} from '$const';
@@ -26,9 +25,8 @@
 		DevHubInstallationConfirmation,
 		FactoryResetConformation,
 		InstallFromFile,
-		InstallKando,
-		UninstallAppConfirmation,
-		StartupError
+		StartupError,
+		UninstallAppConfirmation
 	} from '$modal';
 	import EnterPassphrase from '$modal/EnterPassphrase.svelte';
 
@@ -36,7 +34,6 @@
 
 	const modalRegistry: Record<string, ModalComponent> = {
 		[MODAL_INSTALL_FROM_FILE]: { ref: InstallFromFile },
-		[MODAL_INSTALL_KANDO]: { ref: InstallKando },
 		[MODAL_DEVHUB_INSTALLATION_CONFIRMATION]: { ref: DevHubInstallationConfirmation },
 		[MODAL_ENTER_PASSPHRASE]: { ref: EnterPassphrase },
 		[MODAL_FACTORY_RESET_CONFIRMATION]: { ref: FactoryResetConformation },

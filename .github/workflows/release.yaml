@@ -89,11 +89,10 @@ jobs:
       - name: build and install libs and dependencies
         run: yarn build:libs
 
-      - name: install default apps
+      - name: Download default apps and binaries
         run: |
           mkdir resources/default-apps
-          yarn fetch:default-apps
-          yarn fetch:binaries
+          yarn fetch:apps-and-binaries
 
       - name: build and upload the app (macOS arm64)
         if: matrix.platform == 'macos-latest'
