@@ -24,14 +24,14 @@ jobs:
         with:
           node-version: '18'
       - name: Extract version information
-        id: packagejson
+        id: versionInfo
         run: |
           echo "rust_utils_version=$(node -p "require('./rust-utils/package.json').version")" >> $GITHUB_OUTPUT
           echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-          echo "holochain_version=$(node -p "require('./package.json').binaries.holochain")" >> $GITHUB_OUTPUT
-          echo "lair_keystore_version=$(node -p "require('./package.json').binaries.lair_keystore")" >> $GITHUB_OUTPUT
+          echo "holochain_version=$(node -p "require('./launcher.config.json').binaries.holochain.version")" >> $GITHUB_OUTPUT
+          echo "lair_keystore_version=$(node -p "require('./launcher.config.json').binaries.lair.version")" >> $GITHUB_OUTPUT
     outputs:
-      version: ${{ steps.packagejson.outputs.version }}
-      rust_utils_version: ${{ steps.packagejson.outputs.rust_utils_version }}
-      holochain_version: ${{ steps.packagejson.outputs.holochain_version }}
-      lair_keystore_version: ${{ steps.packagejson.outputs.lair_keystore_version }}
+      version: ${{ steps.versionInfo.outputs.version }}
+      rust_utils_version: ${{ steps.versionInfo.outputs.rust_utils_version }}
+      holochain_version: ${{ steps.versionInfo.outputs.holochain_version }}
+      lair_keystore_version: ${{ steps.versionInfo.outputs.lair_keystore_version }}

@@ -21,10 +21,6 @@
 	const allowlist = fetchAllowlistQuery(isDev());
 
 	$: searchInput = $page.url.searchParams.get(SEARCH_URL_QUERY) || '';
-	$: searchInputLower = searchInput.toLowerCase();
-
-	$: isKandoInSearch = 'kando'.includes(searchInputLower);
-
 	$: allowlistKeys = getAllowlistKeys($allowlist?.data);
 	$: filteredApps = filterOutDenylisted($appStoreHappsQuery?.data ?? [], $allowlist?.data);
 	$: verifiedApps = filterAppsBySearchAndAllowlist(filteredApps, searchInput, allowlistKeys);
@@ -41,9 +37,6 @@
 			id={uint8ArrayToURIComponent(app.id)}
 		/>
 	{/each}
-	{#if isKandoInSearch}
-		<AppCard />
-	{/if}
 	<InstallFromDeviceCard />
 </div>
 
