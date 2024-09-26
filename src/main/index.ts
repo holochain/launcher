@@ -910,6 +910,16 @@ const router = t.router({
       errorType: WRONG_INSTALLED_APP_STRUCTURE,
     });
   }),
+  issueAuthenticationToken: t.procedure.input(ExtendedAppInfoSchema).mutation((opts) => {
+    const app = opts.input;
+    const holochainManager = getHolochainManager(app.holochainDataRoot.name);
+
+    return holochainManager.adminWebsocket.issueAppAuthenticationToken({
+      installed_app_id: app.appInfo.installed_app_id,
+      expiry_seconds: 300,
+      single_use: true,
+    });
+  }),
   // Generate key recovery file and ask for export location (Advanced Setup)
   generateAndExportKeyRecoveryFile: t.procedure
     .input(z.string())

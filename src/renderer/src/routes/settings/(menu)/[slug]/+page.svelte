@@ -28,20 +28,17 @@
 
 	import { DashedSection } from '../../components';
 	import AppSettings from './components/AppSettings.svelte';
+	import CellDetails from './components/CellDetails.svelte';
 	import KeyManagement from './components/KeyManagement.svelte';
 	import SystemSettings from './components/SystemSettings.svelte';
-	import CellDetails from './components/CellDetails.svelte';
 
 	const client = trpc();
 
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
 
-	const {
-		checkForAppUiUpdatesQuery,
-		fetchUiBytesMutation,
-		appVersionsAppstoreQueryFunction,
-	} = createAppQueries();
+	const { checkForAppUiUpdatesQuery, fetchUiBytesMutation, appVersionsAppstoreQueryFunction } =
+		createAppQueries();
 
 	const utils = client.createUtils();
 
@@ -262,19 +259,16 @@
 	{#if selectedIndex === 0}
 		{@const flattenedCells = Object.values(selectedApp.appInfo.cell_info).flat()}
 		{@const provisionedCells = flattenedCells.filter(
-			(cellInfo) =>
-				CellType.Provisioned in cellInfo || CellType.Stem in cellInfo
+			(cellInfo) => CellType.Provisioned in cellInfo || CellType.Stem in cellInfo
 		)}
-		{@const clonedCells = flattenedCells.filter(
-			(cellInfo) => CellType.Cloned in cellInfo
-		)}
+		{@const clonedCells = flattenedCells.filter((cellInfo) => CellType.Cloned in cellInfo)}
 		<DashedSection containerClasses="m-2 p-2.5" title={$i18n.t('publicKey')}>
 			{encodeHashToBase64(selectedApp.appInfo.agent_pub_key)}
 		</DashedSection>
 		<DashedSection containerClasses="m-2 p-2.5" title="Provisioned Cells">
-			<div class="flex flex-col flex-1">
+			<div class="flex flex-1 flex-col">
 				{#each provisionedCells as cellInfo, _index}
-					<CellDetails cellInfo={cellInfo}></CellDetails>
+					<CellDetails {cellInfo}></CellDetails>
 				{/each}
 			</div>
 		</DashedSection>
@@ -282,16 +276,16 @@
 			{#if clonedCells.length === 0}
 				{$i18n.t('noClonedCells')}
 			{:else}
-			<div class="flex flex-col flex-1">
-				{#each provisionedCells as cellInfo, _index}
-					<CellDetails cellInfo={cellInfo}></CellDetails>
-				{/each}
-			</div>
+				<div class="flex flex-1 flex-col">
+					{#each provisionedCells as cellInfo, _index}
+						<CellDetails {cellInfo}></CellDetails>
+					{/each}
+				</div>
 			{/if}
 		</DashedSection>
 	{:else}
 		<AppSettings
-			isHeadless={selectedApp.isHeadless}
+			app={selectedApp}
 			uninstallLogic={() => showUninstallModal()}
 			update={Boolean(update)}
 		></AppSettings>
