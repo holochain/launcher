@@ -13,6 +13,30 @@ import {
 } from '../const';
 import type { HolochainDataRoot } from './holochain';
 
+type UrlAndSha256 = {
+  version: string;
+  sha256: Sha256;
+};
+
+type TargetTriple =
+  | 'x86_64-unknown-linux-gnu'
+  | 'x86_64-pc-windows-msvc.exe'
+  | 'x86_64-apple-darwin'
+  | 'aarch64-apple-darwin';
+
+type Sha256 = string;
+
+type VersionAndSha256 = {
+  version: string;
+  sha256: Record<TargetTriple, Sha256>;
+};
+
+export type LauncherConfig = {
+  binaries: Record<string, VersionAndSha256>;
+  defaultApps: Record<string, UrlAndSha256>;
+  binariesAppendix: string;
+};
+
 export type AdminWindow = typeof MAIN_WINDOW | typeof SETTINGS_WINDOW;
 
 export const MainScreenRouteSchema = z.union([z.literal(APP_STORE), z.literal(APPS_VIEW)]);
@@ -28,13 +52,6 @@ export type WindowInfo = {
 };
 
 export type WindowInfoRecord = Record<number, WindowInfo>;
-
-export const HolochainLairVersionSchema = z.object({
-  binaries: z.object({
-    holochain: z.string(),
-    lair_keystore: z.string(),
-  }),
-});
 
 export const CommonAppSchema = z.object({
   appId: z.string().min(1),

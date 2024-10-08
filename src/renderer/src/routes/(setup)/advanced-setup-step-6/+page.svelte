@@ -1,14 +1,20 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { i18n, trpc } from '$services';
-	import { recoveryKeysPassphrase, generatedKeyRecoveryFile, appPassword } from '$stores';
-	import { BackArrow, Download } from '$icons';
-	import { Button, IconButton } from '$components';
-
-	import Warning from '$icons/Warning.svelte';
 	import { getToastStore } from '@skeletonlabs/skeleton';
+
+	import { goto } from '$app/navigation';
+	import { Button, IconButton } from '$components';
 	import { resizeWindowAndNavigate } from '$helpers';
+	import { BackArrow, Download } from '$icons';
+	import Warning from '$icons/Warning.svelte';
+	import { i18n, trpc } from '$services';
 	import { APP_STORE } from '$shared/const';
+	import {
+		appPassword,
+		generatedKeyRecoveryFile,
+		recoveryKeysPassphrase,
+		setupProgress
+	} from '$stores';
+
 	import { SetupProgressWrapper } from '../components';
 
 	const client = trpc();
@@ -29,11 +35,12 @@
 				$generatedKeyRecoveryFile = keyFile;
 				generating = false;
 				toastStore.trigger({
-					message: "Key Recovery File exported.",
+					message: 'Key Recovery File exported.',
 					background: 'variant-filled-success'
 				});
 			},
-			onError: (error) => {
+			onError: async (error) => {
+				setupProgress.set('');
 				console.error(error);
 				generating = false;
 				toastStore.trigger({
@@ -64,6 +71,7 @@
 				lockedSeedPassphrase: $recoveryKeysPassphrase
 			});
 		} catch (error) {
+			setupProgress.set('');
 			launching = false;
 			console.error(error);
 			toastStore.trigger({
@@ -81,6 +89,7 @@
 		} catch (error) {
 			launching = false;
 			console.error(error);
+			setupProgress.set('');
 			toastStore.trigger({
 				message: $i18n.t((error as Error).message || 'unknownError'),
 				background: 'variant-filled-error'
@@ -93,23 +102,22 @@
 <SetupProgressWrapper>
 	{#if !launching}
 		<div
-			class="app-region-drag fixed left-0 right-0 top-0 flex items-center justify-between bg-[#DADADA12] p-3"
+			class="app-region-drag bg-transparent-gray fixed left-0 right-0 top-0 flex items-center justify-between p-3"
 		>
 			<div class="relative flex w-full items-center justify-center py-[11px]">
 				{#if !$generatedKeyRecoveryFile}
-
-				<IconButton
-					buttonClass="absolute left-2"
-					onClick={() => {
-						$recoveryKeysPassphrase = '';
-						goto('advanced-setup-step-4');
-					}}><BackArrow /></IconButton
-				>
+					<IconButton
+						buttonClass="absolute left-2"
+						onClick={() => {
+							$recoveryKeysPassphrase = '';
+							goto('advanced-setup-step-4');
+						}}><BackArrow /></IconButton
+					>
 				{/if}
 				<span class="text-semibold text-center text-lg text-white">Advanced Setup (6 / 6)</span>
 			</div>
 		</div>
-{/if}
+	{/if}
 	<h1 class="h1 mb-10">{$i18n.t('Final Step: Export your Key Recovery File')}</h1>
 
 	<div class="pb-2">
@@ -130,7 +138,7 @@
 			isLoading: $generateAndExportKeysMutation.isPending
 		}}
 	>
-	<div class="mr-2"><Download /></div>
+		<div class="mr-2"><Download /></div>
 		{$i18n.t('Export Key Recovery File')}
 	</Button>
 

@@ -61,22 +61,16 @@ If you want to develop on the launcher codebase itself, here are the instruction
 
 ### Install
 
-1. Fetch the necessary binaries:
+1. Download necessary binaries and default apps:
 
 ```bash
-yarn fetch:binaries
+yarn fetch:apps-and-binaries
 ```
 
 2. Build the Rust Node-add-ons and install dependencies
 
 ```bash
 yarn setup
-```
-
-Download default apps used in launcher
-
-```bash
-yarn fetch:default-apps
 ```
 
 ### Development

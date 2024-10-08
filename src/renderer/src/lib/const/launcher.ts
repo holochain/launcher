@@ -3,7 +3,6 @@ import { SETTINGS_WINDOW } from '$shared/const';
 export const MAX_IMAGE_WIDTH_AND_HEIGHT = 300;
 
 export const MODAL_INSTALL_FROM_FILE = 'modalInstallFromFile';
-export const MODAL_INSTALL_KANDO = 'modalInstallKando';
 export const MODAL_ADD_NEW_HAPP_VERSION = 'modalAddNewHappVersion';
 export const MODAL_DEVHUB_INSTALLATION_CONFIRMATION = 'modalDevHubInstallationConfirmation';
 export const MODAL_ENTER_PASSPHRASE = 'modalEnterPassphrase';

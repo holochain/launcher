@@ -4,9 +4,9 @@ directories:
 files:
   - resources
   - out
+  - launcher.config.json
 asarUnpack:
   - resources/**
-  - package.json
 afterSign: scripts/notarize.js
 win:
   executableName: holochain-launcher-0.4
