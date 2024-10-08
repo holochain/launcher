@@ -1,5 +1,8 @@
 <script lang="ts">
-	import type { IssueAppAuthenticationTokenResponse } from '@holochain/client';
+	import {
+		decodeHashFromBase64,
+		type IssueAppAuthenticationTokenResponse
+	} from '@holochain/client';
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import clsx from 'clsx';
 	import { Base64 } from 'js-base64';
@@ -17,6 +20,7 @@
 	const toastStore = getToastStore();
 
 	const issueAuthTokenMutation = client.issueAuthenticationToken.createMutation();
+	const grantSigningKeyMutation = client.grantSigningKey.createMutation();
 
 	export let uninstallLogic: () => void;
 	export let update: boolean;
@@ -28,24 +32,79 @@
 	let authTokenResponses: IssueAppAuthenticationTokenResponse[] = [];
 
 	let agentToGrantSigningCredentials: string = '';
+	let capSecret: string = 'no-custom-cap-secret-used-at-the-moment';
 
-	const issueAuthToken = () => {
-		console.log('Issuing token');
-		$issueAuthTokenMutation.mutate(app, {
-			onSuccess: (tokenResponse) => {
-				authTokenResponses = [...authTokenResponses, tokenResponse];
-				toastStore.trigger({
-					message: `Authentication token created.`,
-					background: 'variant-filled-success'
-				});
-			},
-			onError: (error) => {
-				toastStore.trigger({
-					message: `Failed to generate authentication token: ${error.message}`,
-					background: 'variant-filled-error'
-				});
+	const issueAuthToken = (expirySeconds: number, singleUse: boolean) => {
+		$issueAuthTokenMutation.mutate(
+			{ app, expirySeconds, singleUse },
+			{
+				onSuccess: (tokenResponse) => {
+					authTokenResponses = [...authTokenResponses, tokenResponse];
+					toastStore.trigger({
+						message: `Authentication token created.`,
+						background: 'variant-filled-success'
+					});
+				},
+				onError: (error) => {
+					console.error(error);
+					toastStore.trigger({
+						message: `Failed to generate authentication token: ${error.message}`,
+						background: 'variant-filled-error'
+					});
+				}
 			}
-		});
+		);
+	};
+
+	const grantSigningCredentials = () => {
+		if (!agentToGrantSigningCredentials) {
+			toastStore.trigger({
+				message: `Public Key field empty.`,
+				background: 'variant-filled-error'
+			});
+			return;
+		}
+		if (!capSecret) {
+			toastStore.trigger({
+				message: `Secret field empty.`,
+				background: 'variant-filled-error'
+			});
+			return;
+		}
+		if (!agentToGrantSigningCredentials.startsWith('uhCAk')) {
+			toastStore.trigger({
+				message: `Invalid Public Key.`,
+				background: 'variant-filled-error'
+			});
+			return;
+		}
+		const pubKey = decodeHashFromBase64(agentToGrantSigningCredentials);
+		if (!agentToGrantSigningCredentials.startsWith('uhCAk') || pubKey.length !== 39) {
+			toastStore.trigger({
+				message: `Invalid Public Key.`,
+				background: 'variant-filled-error'
+			});
+			return;
+		}
+		$grantSigningKeyMutation.mutate(
+			{ app, pubKey },
+			{
+				onSuccess: () => {
+					agentToGrantSigningCredentials = '';
+					toastStore.trigger({
+						message: `Permission Granted.`,
+						background: 'variant-filled-success'
+					});
+				},
+				onError: (error) => {
+					console.error(error);
+					toastStore.trigger({
+						message: `Failed to generate authentication token: ${error.message}`,
+						background: 'variant-filled-error'
+					});
+				}
+			}
+		);
 	};
 </script>
 
@@ -91,7 +150,26 @@
 					<Button
 						props={{
 							class: 'btn-secondary flex-1 text-al max-w-28',
-							onClick: issueAuthToken,
+							onClick: () => issueAuthToken(300, true),
+							disabled: $issueAuthTokenMutation.isPending
+						}}
+					>
+						<div class="flex flex-row items-center">
+							<span class="font-extrabold">+</span>
+							<span class="ml-1">{$i18n.t('Generate')}</span>
+						</div>
+					</Button>
+				</div>
+				<div class="flex-end flex flex-1 flex-row items-center">
+					<span class="flex-1"
+						>{$i18n.t(
+							"Generate an unlimited use authentication token that's valid until Launcher is quit."
+						)}</span
+					>
+					<Button
+						props={{
+							class: 'btn-secondary flex-1 text-al max-w-28',
+							onClick: () => issueAuthToken(0, false),
 							disabled: $issueAuthTokenMutation.isPending
 						}}
 					>
@@ -133,18 +211,26 @@
 				{/each}
 				<hr class="divider mb-4 mt-4 opacity-60" />
 				<div class="flex flex-1 flex-col">
-					<div class="flex-1 font-bold">
+					<div class="mb-4 flex-1 font-bold">
 						{$i18n.t('Grant permission to someone to take actions on your behalf:')}
 					</div>
-					<InputWithLabel
-						bind:value={agentToGrantSigningCredentials}
-						id="pubkeyInput"
-						label={$i18n.t('publicKey')}
-					/>
+					<div class="mb-4">
+						<InputWithLabel
+							bind:value={agentToGrantSigningCredentials}
+							id="pubkeyInput"
+							label={$i18n.t('publicKey')}
+						/>
+					</div>
+					<!-- <div class="mb-4">
+						<InputWithLabel bind:value={capSecret} id="capSecret" label={$i18n.t('secret')} />
+					</div> -->
 					<span class="h-2"></span>
 					<Button
 						props={{
-							class: 'btn-secondary flex-1 text-al'
+							class: 'btn-secondary flex-1 text-al',
+							onClick: grantSigningCredentials,
+							disabled:
+								!capSecret || !agentToGrantSigningCredentials || $grantSigningKeyMutation.isPending
 						}}
 					>
 						<div class="flex flex-row items-center">

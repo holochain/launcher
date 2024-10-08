@@ -1,6 +1,7 @@
 <script>
 	import { divideObject, recursiveSum } from '$helpers';
 	import { trpc } from '$services';
+
 	import PercentageBar from '../components/PercentageBar.svelte';
 
 	const client = trpc();
