@@ -169,7 +169,7 @@ contextMenu({
       click: () => (browserWindow as BrowserWindow).reload(),
     },
     {
-      label: 'Quit',
+      label: 'Quit Launcher',
       click: () => app.quit(),
     },
   ],
@@ -185,14 +185,14 @@ if (!isFirstInstance && app.isPackaged && !VALIDATED_CLI_ARGS.profile) {
 }
 
 app.on('second-instance', () => {
-  if (PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW]) {
-    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].show();
+  if (PRIVILEGED_LAUNCHER_WINDOWS[MAIN_WINDOW]) {
+    PRIVILEGED_LAUNCHER_WINDOWS[MAIN_WINDOW].show();
   }
 });
 
 app.on('activate', () => {
-  if (PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW]) {
-    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].show();
+  if (PRIVILEGED_LAUNCHER_WINDOWS[MAIN_WINDOW]) {
+    PRIVILEGED_LAUNCHER_WINDOWS[MAIN_WINDOW].show();
   }
 });
 
@@ -228,7 +228,7 @@ let DEFAULT_HOLOCHAIN_DATA_ROOT: HolochainDataRoot | undefined;
 const HOLOCHAIN_MANAGERS: Record<string, HolochainManager> = {}; // holochain managers sorted by HolochainDataRoot.name
 let LAIR_HANDLE: ChildProcessWithoutNullStreams | undefined;
 let LAIR_URL: string | undefined;
-let PRIVILEDGED_LAUNCHER_WINDOWS: Record<AdminWindow, BrowserWindow>; // Admin windows with special zome call signing priviledges
+let PRIVILEGED_LAUNCHER_WINDOWS: Record<AdminWindow, BrowserWindow>; // Admin windows with special zome call signing priviledges
 const WINDOW_INFO_MAP: WindowInfoRecord = {}; // WindowInfo by webContents.id - used to verify origin of zome call requests
 let IS_LAUNCHED = false;
 let IS_QUITTING = false;
@@ -250,10 +250,10 @@ app.whenReady().then(async () => {
 
   console.log('BEING RUN IN __dirnmane: ', __dirname);
 
-  PRIVILEDGED_LAUNCHER_WINDOWS = setupAppWindows(LAUNCHER_EMITTER);
+  PRIVILEGED_LAUNCHER_WINDOWS = setupAppWindows(LAUNCHER_EMITTER);
 
-  const mainWindow = PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW];
-  const settingsWindow = PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW];
+  const mainWindow = PRIVILEGED_LAUNCHER_WINDOWS[MAIN_WINDOW];
+  const settingsWindow = PRIVILEGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW];
 
   mainWindow.on('close', (e) => {
     if (IS_QUITTING) return;
@@ -279,13 +279,13 @@ app.whenReady().then(async () => {
   });
 
   // make sure window objects get deleted after closing
-  Object.entries(PRIVILEDGED_LAUNCHER_WINDOWS).forEach(([key, window]) => {
+  Object.entries(PRIVILEGED_LAUNCHER_WINDOWS).forEach(([key, window]) => {
     window.on('closed', () => {
-      delete PRIVILEDGED_LAUNCHER_WINDOWS[key];
+      delete PRIVILEGED_LAUNCHER_WINDOWS[key];
     });
   });
 
-  createIPCHandler({ router, windows: Object.values(PRIVILEDGED_LAUNCHER_WINDOWS) });
+  createIPCHandler({ router, windows: Object.values(PRIVILEGED_LAUNCHER_WINDOWS) });
 
   ipcMain.handle('sign-zome-call', handleSignZomeCall);
 
@@ -371,7 +371,7 @@ const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeReques
   } else {
     // Launcher admin windows get a wildcard to have any zome calls signed
     if (
-      Object.values(PRIVILEDGED_LAUNCHER_WINDOWS)
+      Object.values(PRIVILEGED_LAUNCHER_WINDOWS)
         .map((window) => window.webContents.id)
         .includes(e.sender.id)
     ) {
@@ -391,20 +391,15 @@ const handleSignZomeCall = async (e: IpcMainInvokeEvent, request: CallZomeReques
 };
 
 // Kills any pre-existing lair processes and start up lair and assigns associated global variables
-async function killIfExistsAndLaunchLair(password: string): Promise<void> {
+async function launchLairIfNecessary(password: string): Promise<void> {
   INTEGRITY_CHECKER = new IntegrityChecker(password);
   LAUNCHER_FILE_SYSTEM.setIntegrityChecker(INTEGRITY_CHECKER);
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingLairKeystore');
 
-  if (LAIR_HANDLE) {
-    LAIR_HANDLE.kill();
-    LAIR_HANDLE = undefined;
-  }
-
   if (VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external') {
     LAIR_URL = VALIDATED_CLI_ARGS.holochainVersion.lairUrl;
     DEFAULT_LAIR_CLIENT = await rustUtils.LauncherLairClient.connect(LAIR_URL, password);
-  } else {
+  } else if (!LAIR_HANDLE) {
     const [lairHandle, lairUrl2] = await launchLairKeystore(
       VALIDATED_CLI_ARGS.lairBinaryPath,
       LAUNCHER_FILE_SYSTEM.keystoreDir,
@@ -424,8 +419,7 @@ async function killIfExistsAndLaunchLair(password: string): Promise<void> {
  *                  root/device seeds and revocation keys
  */
 async function handleQuickSetup(password: string): Promise<void> {
-  if (!PRIVILEDGED_LAUNCHER_WINDOWS)
-    throw new Error('Main window needs to exist before launching.');
+  if (!PRIVILEGED_LAUNCHER_WINDOWS) throw new Error('Main window needs to exist before launching.');
   const lairHandleTemp = spawnSync(VALIDATED_CLI_ARGS.lairBinaryPath, ['--version']);
   if (!lairHandleTemp.stdout) {
     console.error(`Failed to run lair-keystore binary:\n${lairHandleTemp}`);
@@ -444,7 +438,7 @@ async function handleQuickSetup(password: string): Promise<void> {
   }
 
   // 2. Start up lair keystore process and connect to it
-  await killIfExistsAndLaunchLair(password);
+  await launchLairIfNecessary(password);
 
   // 3. Generate key recovery file and import device seed if necessary
   const dpkiDeviceSeedExists = await DEFAULT_LAIR_CLIENT!.seedExists(DEVICE_SEED_LAIR_TAG);
@@ -495,7 +489,7 @@ async function handleAdvancedSetup(
   }
 
   // 2. Start up lair keystore process and connect to it
-  await killIfExistsAndLaunchLair(password);
+  await launchLairIfNecessary(password);
 
   // 3. Make sure that there is no DPKI_DEVICE_SEED in lair yet
   const dpkiDeviceSeedExists = await DEFAULT_LAIR_CLIENT!.seedExists(DEVICE_SEED_LAIR_TAG);
@@ -531,8 +525,7 @@ async function launchHolochain(password: string, lairUrl: string): Promise<void>
 
   LAUNCHER_EMITTER.emit(LOADING_PROGRESS_UPDATE, 'startingHolochain');
 
-  if (!PRIVILEDGED_LAUNCHER_WINDOWS)
-    throw new Error('Main window needs to exist before launching.');
+  if (!PRIVILEGED_LAUNCHER_WINDOWS) throw new Error('Main window needs to exist before launching.');
 
   const nonDefaultPartition: HolochainPartition =
     VALIDATED_CLI_ARGS.holochainVersion.type === 'running-external'
@@ -632,15 +625,15 @@ const getDevhubAppClient = async () => {
 
 const router = t.router({
   openSettings: t.procedure.mutation(() => {
-    const mainWindow = PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW];
+    const mainWindow = PRIVILEGED_LAUNCHER_WINDOWS[MAIN_WINDOW];
     const [xMain, yMain] = mainWindow.getPosition();
-    const settingsWindow = PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW];
+    const settingsWindow = PRIVILEGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW];
     if (!settingsWindow) throw new Error('Settings window is undefined.');
     settingsWindow.setPosition(xMain + 50, yMain - 50);
     settingsWindow.show();
   }),
   hideApp: t.procedure.mutation(() => {
-    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].hide();
+    PRIVILEGED_LAUNCHER_WINDOWS[MAIN_WINDOW].hide();
   }),
   openApp: t.procedure.input(ExtendedAppInfoSchema).mutation(async (opts) => {
     const { appInfo, holochainDataRoot } = opts.input;
@@ -882,6 +875,15 @@ const router = t.router({
 
     return !isInitializedValidated;
   }),
+  dpkiDeviceSeedPresent: t.procedure
+    .input(z.object({ password: z.string() }))
+    .mutation(async (opts) => {
+      const password = opts.input.password;
+      if (!DEFAULT_LAIR_CLIENT || !LAIR_URL || !LAIR_HANDLE) {
+        await launchLairIfNecessary(password);
+      }
+      return DEFAULT_LAIR_CLIENT!.seedExists(DEVICE_SEED_LAIR_TAG);
+    }),
   getHolochainStorageInfo: t.procedure.query(() => {
     const defaultHolochainManager = HOLOCHAIN_MANAGERS[BREAKING_DEFAULT_HOLOCHAIN_VERSION];
     const holochainDataRoot = defaultHolochainManager.holochainDataRoot;
@@ -950,15 +952,15 @@ const router = t.router({
     }),
   launch: t.procedure.input(z.object({ password: z.string() })).mutation(async (opts) => {
     const password = opts.input.password;
-    if (!PRIVILEDGED_LAUNCHER_WINDOWS)
+    if (!PRIVILEGED_LAUNCHER_WINDOWS)
       throw new Error('Main window needs to exist before launching.');
     if (!DEFAULT_LAIR_CLIENT || !LAIR_URL || !LAIR_HANDLE) {
-      await killIfExistsAndLaunchLair(password);
+      await launchLairIfNecessary(password);
     }
     await launchHolochain(password, LAIR_URL!);
     IS_LAUNCHED = true;
-    PRIVILEDGED_LAUNCHER_WINDOWS[MAIN_WINDOW].setSize(WINDOW_SIZE, MIN_HEIGHT, true);
-    loadOrServe(PRIVILEDGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW], { screen: SETTINGS_WINDOW });
+    PRIVILEGED_LAUNCHER_WINDOWS[MAIN_WINDOW].setSize(WINDOW_SIZE, MIN_HEIGHT, true);
+    loadOrServe(PRIVILEGED_LAUNCHER_WINDOWS[SETTINGS_WINDOW], { screen: SETTINGS_WINDOW });
   }),
   initializeDefaultAppPorts: t.procedure.query(async () => {
     const defaultHolochainManager = HOLOCHAIN_MANAGERS[DEFAULT_HOLOCHAIN_DATA_ROOT!.name];
@@ -1037,7 +1039,7 @@ const router = t.router({
     factoryResetUtility({
       launcherFileSystem: LAUNCHER_FILE_SYSTEM,
       windowInfoMap: WINDOW_INFO_MAP,
-      privilegedLauncherWindows: PRIVILEDGED_LAUNCHER_WINDOWS,
+      privilegedLauncherWindows: PRIVILEGED_LAUNCHER_WINDOWS,
       holochainManagers: HOLOCHAIN_MANAGERS,
       lairHandle: LAIR_HANDLE,
       app,

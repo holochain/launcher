@@ -1,4 +1,5 @@
-import { CellType, encodeHashToBase64, type CellInfo } from '@holochain/client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { CellType, encodeHashToBase64 } from '@holochain/client';
 import type { AppstoreAppClient, AppVersionEntry, Entity } from 'appstore-tools';
 import localforage from 'localforage';
 
@@ -18,7 +19,7 @@ import { AppstoreFilterListsSchema } from '$types/happs';
 export function recursiveSum(obj: any): number {
 	let sum = 0;
 
-	for (let key in obj) {
+	for (const key in obj) {
 		if (typeof obj[key] === 'object') {
 			sum += recursiveSum(obj[key]);
 		} else {
@@ -31,8 +32,8 @@ export function recursiveSum(obj: any): number {
 
 export function divideObject(obj: any, divider: number) {
 	const newObj: any = {};
-	for (let key in obj) {
-		newObj[key] = obj[key]/divider;
+	for (const key in obj) {
+		newObj[key] = obj[key] / divider;
 	}
 	return newObj;
 }
@@ -105,7 +106,7 @@ export const base64ToArrayBuffer = (base64: string) => {
 
 export const createImageUrl = (icon?: Uint8Array) => {
 	return icon ? URL.createObjectURL(new File([icon], 'icon')) : undefined;
-}
+};
 
 export const initializeDefaultAppPorts = async (data: InitializeAppPorts) => {
 	const { appPort, appstoreAuthenticationToken, devhubAuthenticationToken } = data;

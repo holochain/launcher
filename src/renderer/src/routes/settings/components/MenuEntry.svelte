@@ -17,11 +17,11 @@
 	class={clsx(
 		'flex cursor-pointer items-center px-4 py-2',
 		isSelected && `rounded-md ${background}`,
-		disabled && 'opacity-50 cursor-auto',
+		disabled && 'cursor-auto opacity-50'
 	)}
 	on:click={onClick}
 	aria-label={`Select ${name}`}
-	disabled={disabled}
+	{disabled}
 >
 	<slot name="leading">
 		<Avatar
