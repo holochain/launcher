@@ -4,16 +4,16 @@
 	import { goBack, uint8ArrayToURIComponent } from '$helpers';
 	import { BackArrow } from '$icons';
 	import { createAppQueries } from '$queries';
-	const { appStoreHappsQuery } = createAppQueries();
+	const { appStoreAllAppsQuery } = createAppQueries();
 
 	const slug: string = $page.params.slug;
-	const app = $appStoreHappsQuery.data?.find(({ id }) => uint8ArrayToURIComponent(id) === slug);
+	const app = $appStoreAllAppsQuery.data?.find(({ id }) => uint8ArrayToURIComponent(id) === slug);
 </script>
 
 <TopBar>
 	<div class="relative flex w-full items-center justify-center py-[11px]">
 		<IconButton buttonClass="absolute left-0" onClick={goBack}><BackArrow /></IconButton>
-		<span class="text-center opacity-50">{app?.title}</span>
+		<span class="text-center opacity-50">{app?.content.title}</span>
 	</div>
 </TopBar>
 

@@ -7,11 +7,12 @@
 	import { Button, CenterProgressRadial, IconInput, InputWithLabel } from '$components';
 	import { DEV_APP_PAGE, EMPTY_APP_DATA } from '$const';
 	import { convertFileToUint8Array, showModalError } from '$helpers';
+	import { Info } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
 	import { isAppDataValid } from '$types';
+
 	import DashedSection from '../../components/DashedSection.svelte';
-	import { Info } from '$icons';
 
 	const { publishHappMutation, publishersQuery } = createAppQueries();
 
@@ -62,6 +63,10 @@
 								onSuccess: (id) => {
 									appData = { ...EMPTY_APP_DATA };
 									bytesFiles = null;
+									toastStore.trigger({
+										message: $i18n.t('appPublished'),
+										background: 'variant-filled-success'
+									});
 									goto(`/${DEV_APP_PAGE}/${id}`);
 								},
 								onError: (error) => {
@@ -106,14 +111,15 @@
 		<header class="mb-2 mt-6 pt-4 text-2xl font-bold">
 			{$i18n.t('publishNewApp')}
 		</header>
-		<div class="mb-5 text-base font-semibold text-white/70 max-w-[420px] text-center">
-			{$i18n.t('When your app is published, it will become available to all users of the launcher in the list of unverified apps.')}
+		<div class="mb-5 max-w-[420px] text-center text-base font-semibold text-white/70">
+			{$i18n.t('publishExplanation')}
 		</div>
 		<form
-			class="modal-form mx-auto my-4 flex w-full max-w-xs flex-col space-y-4 mb-16"
+			class="modal-form mx-auto my-4 mb-16 flex w-full max-w-xs flex-col space-y-4"
 			on:submit|preventDefault={submitForm}
 		>
 			<IconInput bind:icon={appData.icon} handleFileUpload={handleIconUpload} />
+			<span class="h-3"></span>
 			<InputWithLabel
 				bind:files={bytesFiles}
 				id="webhapp"
@@ -144,7 +150,7 @@
 			/>
 			<DashedSection borderColor="text-amber-300 border-amber-300">
 				<div class="flex flex-row">
-					<span class="text-amber-300 py-1 mr-2"><Info size={26} fillColor="#fcd34d" /></span>
+					<span class="mr-2 py-1 text-amber-300"><Info size={26} fillColor="#fcd34d" /></span>
 					<span>{$i18n.t('keepLauncherRunningAfterPublish')}</span>
 				</div>
 			</DashedSection>

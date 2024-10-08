@@ -13,11 +13,12 @@
 	export let selectedIndex = 0;
 	export let buttons: Array<string>;
 	export let publisher: string | undefined;
+	export let deprecated: boolean = false;
 </script>
 
 <div class="bg-app-details-gradient p-8 pb-4">
 	<div class="flex justify-between">
-		<div class="flex items-center space-x-4 pb-4 mb-3">
+		<div class="mb-3 flex items-center space-x-4 pb-4">
 			<Avatar
 				width="w-24"
 				src={imageUrl}
@@ -34,13 +35,13 @@
 							class="h3"
 							on:click={() => navigator.clipboard.writeText(encodeHashToBase64(id))}
 						>
-							<h3 class="text-2xl font-semibold">{title}</h3>
+							<h3 class="text-2xl font-semibold">{title}{deprecated ? ' (DEPRECATED)' : ''}</h3>
 						</button>
 					{:else}
 						<h3 class="text-2xl font-semibold">{title}</h3>
 					{/if}
 					{#if appVersion}
-						<p class="ml-2 text-sm font-semibold opacity-50 mb-0.5">{appVersion}</p>
+						<p class="mb-0.5 ml-2 text-sm font-semibold opacity-50">{appVersion}</p>
 					{/if}
 				</div>
 				{#if subtitle}

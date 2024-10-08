@@ -7,6 +7,7 @@ export const MODAL_ADD_NEW_HAPP_VERSION = 'modalAddNewHappVersion';
 export const MODAL_DEVHUB_INSTALLATION_CONFIRMATION = 'modalDevHubInstallationConfirmation';
 export const MODAL_ENTER_PASSPHRASE = 'modalEnterPassphrase';
 export const MODAL_FACTORY_RESET_CONFIRMATION = 'modalFactoryResetConfirmation';
+export const MODAL_DEPRECATE_APP_CONFIRMATION = 'modalDeprecateAppConfirmation';
 export const MODAL_UNINSTALL_APP_CONFIRMATION = 'modalUninstallAppConfirmation';
 export const MODAL_STARTUP_ERROR = 'modalStartupError';
 

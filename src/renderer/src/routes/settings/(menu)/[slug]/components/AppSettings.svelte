@@ -2,9 +2,10 @@
 	import clsx from 'clsx';
 
 	import { Button } from '$components';
-	import { i18n } from '$services';
-	import DashedSection from '../../../components/DashedSection.svelte';
 	import TrashCan from '$icons/TrashCan.svelte';
+	import { i18n } from '$services';
+
+	import DashedSection from '../../../components/DashedSection.svelte';
 
 	export let uninstallLogic: () => void;
 	export let update: boolean;
@@ -18,7 +19,7 @@
 				<span class="flex-1">{$i18n.t('uninstallAppAndRemoveAllData')}</span>
 				<Button
 					props={{
-						class: 'btn-secondary flex-1 text-al max-w-28',
+						class: 'btn-secondary flex-1 text-al max-w-28 !bg-error-500',
 						onClick: uninstallLogic
 					}}
 				>
@@ -30,9 +31,7 @@
 			</div>
 		</DashedSection>
 	{:else}
-		<div class="p-4">
-			No Settings available for this app.
-		</div>
+		<div class="p-4">No Settings available for this app.</div>
 	{/if}
 	<slot />
 </div>

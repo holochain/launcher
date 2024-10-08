@@ -1,18 +1,20 @@
 <script lang="ts">
+	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
+	import type { UpdatePublisherInput } from 'appstore-tools';
+	import { onDestroy } from 'svelte';
+
 	import { goto } from '$app/navigation';
 	import { Button, CenterProgressRadial, IconInput, InputWithLabel } from '$components';
-	import { DEV_PAGE, PUBLISHER_SCREEN } from '$const';
+	import { PUBLISHER_SCREEN } from '$const';
 	import { capitalizeFirstLetter, showModalError } from '$helpers';
 	import { Publisher } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n } from '$services';
-	import { getModalStore } from '@skeletonlabs/skeleton';
-	import type { UpdatePublisherInput } from 'appstore-tools';
-	import { onDestroy } from 'svelte';
 
 	const { publishersQuery, updatePublisherMutation } = createAppQueries();
 
 	const modalStore = getModalStore();
+	const toastStore = getToastStore();
 
 	let updatePublisherInput: UpdatePublisherInput = {};
 
@@ -39,9 +41,9 @@
 
 	const unsubscribe = publishersQuery.subscribe((value) => {
 		if (value.data && value.data.length > 0) {
-			icon = (value.data[0].content.icon);
+			icon = value.data[0].content.icon;
 		}
-	})
+	});
 
 	onDestroy(unsubscribe);
 </script>
@@ -81,9 +83,11 @@
 					properties: updatePublisherInput
 				};
 				$updatePublisherMutation.mutate(payload, {
-					onSuccess: (result) => {
-						console.log('Published successfully: ', result);
-						goto(`/${DEV_PAGE}`);
+					onSuccess: () => {
+						toastStore.trigger({
+							message: $i18n.t('profileUpdated'),
+							background: 'variant-filled-success'
+						});
 					},
 					onError: (error) => {
 						modalStore.close();
@@ -97,7 +101,7 @@
 				});
 			}}
 		>
-			<IconInput bind:icon={icon} {handleFileUpload} />
+			<IconInput bind:icon {handleFileUpload} />
 			<InputWithLabel
 				value={currentPublisherData.content.name}
 				id="publisherName"

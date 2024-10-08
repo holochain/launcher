@@ -15,9 +15,9 @@
 
 <button
 	class={clsx(
-		'flex cursor-pointer items-center px-4 py-2',
+		`flex cursor-pointer items-center px-4 py-2 hover:${background} hover:rounded-md`,
 		isSelected && `rounded-md ${background}`,
-		disabled && 'cursor-auto opacity-50'
+		disabled && 'cursor-default opacity-50'
 	)}
 	on:click={onClick}
 	aria-label={`Select ${name}`}

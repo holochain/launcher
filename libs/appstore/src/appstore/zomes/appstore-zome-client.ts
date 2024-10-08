@@ -81,6 +81,10 @@ export class AppstoreZomeClient extends ZomeClient {
     return this.callZome('update_app', input);
   }
 
+  async deprecateApp(input: DeprecateInput): Promise<Entity<AppEntry>> {
+    return this.callZome('deprecate_app', input);
+  }
+
   async getApp(actionHash: ActionHash): Promise<Entity<AppEntry>> {
     return this.callZome('get_app', { id: actionHash });
   }
