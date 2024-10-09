@@ -184,6 +184,8 @@ pub fn default_conductor_config(
             conductor_environment_path,
         ))),
         dpki: dpki_config,
+        device_seed_lair_tag: None,
+        danger_generate_throwaway_device_seed: false,
         keystore: KeystoreConfig::LairServer {
             connection_url: url2::url2!("{}", keystore_connection_url),
         },
