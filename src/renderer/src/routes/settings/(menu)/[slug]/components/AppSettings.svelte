@@ -115,7 +115,7 @@
 				<span class="flex-1">{$i18n.t('uninstallAppAndRemoveAllData')}</span>
 				<Button
 					props={{
-						class: 'btn-secondary flex-1 text-al max-w-28',
+						class: 'btn-secondary flex-1 text-al max-w-28 !bg-error-500',
 						onClick: uninstallLogic
 					}}
 				>

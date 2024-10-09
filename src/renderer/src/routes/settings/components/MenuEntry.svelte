@@ -15,13 +15,13 @@
 
 <button
 	class={clsx(
-		'flex cursor-pointer items-center px-4 py-2',
+		`flex cursor-pointer items-center px-4 py-2 hover:${background} hover:rounded-md`,
 		isSelected && `rounded-md ${background}`,
-		disabled && 'opacity-50 cursor-auto',
+		disabled && 'cursor-default opacity-50'
 	)}
 	on:click={onClick}
 	aria-label={`Select ${name}`}
-	disabled={disabled}
+	{disabled}
 >
 	<slot name="leading">
 		<Avatar

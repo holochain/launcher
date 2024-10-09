@@ -26,7 +26,7 @@
 
 	const client = trpc();
 
-	const { appStoreHappsQuery, appVersionsAppstoreQueryFunction, getPublisherQueryFunction } =
+	const { appStoreAllAppsQuery, appVersionsAppstoreQueryFunction, getPublisherQueryFunction } =
 		createAppQueries();
 
 	const fetchWebapp = client.fetchWebhapp.createMutation();
@@ -46,11 +46,11 @@
 	const slug: string = $page.params.slug;
 	let selectedIndex = 0;
 	let loadingString = '';
-	const app = $appStoreHappsQuery.data?.find(({ id }) => uint8ArrayToURIComponent(id) === slug);
+	const app = $appStoreAllAppsQuery.data?.find(({ id }) => uint8ArrayToURIComponent(id) === slug);
 
 	$: appVersionsDetailsQuery = appVersionsAppstoreQueryFunction(app?.id);
 
-	$: getPublisherQuery = getPublisherQueryFunction(app?.publisher);
+	$: getPublisherQuery = getPublisherQueryFunction(app?.content.publisher);
 
 	const handleError = (error: unknown, versionEntity?: Entity<AppVersionEntry>) => {
 		console.error(error);
@@ -75,8 +75,8 @@
 			component: {
 				ref: InstallAppFromHashes,
 				props: {
-					icon: app?.icon,
-					appName: app?.title
+					icon: app?.content.icon,
+					appName: app?.content.title
 				}
 			},
 			response: (r) => {
@@ -93,7 +93,7 @@
 						happSha256: versionEntity.content.bundle_hashes.happ_hash,
 						distributionInfo: {
 							type: DISTRIBUTION_TYPE_APPSTORE,
-							appName: app?.title ?? '',
+							appName: app?.content.title ?? '',
 							appstoreDnaHash: encodeHashToBase64(versionEntity.content.apphub_hrl.dna),
 							appEntryActionHash: encodeHashToBase64(versionEntity.content.for_app),
 							appVersionActionHash: encodeHashToBase64(versionEntity.id)
@@ -128,15 +128,15 @@
 		loadingString = 'connectingToPeers';
 
 		$fetchWebapp.mutate(
-			{ app_version: versionEntity.content, icon: app?.icon },
+			{ app_version: versionEntity.content, icon: app?.content.icon },
 			{
 				onSuccess: () => {
 					loadingString = '';
-					createModalInstallAppFromHashes(versionEntity)
+					createModalInstallAppFromHashes(versionEntity);
 				},
 				onError: (error) => {
 					loadingString = '';
-					handleError(error, versionEntity)
+					handleError(error, versionEntity);
 				}
 			}
 		);
@@ -148,11 +148,11 @@
 {#if app && appVersionsDetailsQuery && $appVersionsDetailsQuery?.isSuccess}
 	{@const latestVersion = getLatestVersion($appVersionsDetailsQuery.data)}
 	<AppDetailsPanel
-		imageUrl={createImageUrl(app.icon)}
-		title={app.title}
+		imageUrl={createImageUrl(app.content.icon)}
+		title={app.content.title}
 		id={app.id}
 		appVersion={latestVersion?.content.version}
-		subtitle={app.subtitle}
+		subtitle={app.content.subtitle}
 		buttons={[
 			$i18n.t('description'),
 			$i18n.t('versionHistory'),
@@ -180,7 +180,7 @@
 {#if $appVersionsDetailsQuery?.data}
 	{#if app && selectedIndex === 0}
 		<div class="p-6 px-8">
-			{app.description}
+			{app.content.description}
 		</div>
 	{:else if selectedIndex === 1}
 		<div class="pt-2">

@@ -13,6 +13,7 @@
 
 	import { onNavigate } from '$app/navigation';
 	import {
+		MODAL_DEPRECATE_APP_CONFIRMATION,
 		MODAL_DEVHUB_INSTALLATION_CONFIRMATION,
 		MODAL_ENTER_PASSPHRASE,
 		MODAL_FACTORY_RESET_CONFIRMATION,
@@ -22,8 +23,9 @@
 	} from '$const';
 	import { startViewTransition } from '$helpers';
 	import {
+		DeprecateAppConfirmation,
 		DevHubInstallationConfirmation,
-		FactoryResetConformation,
+		FactoryResetConfirmation,
 		InstallFromFile,
 		StartupError,
 		UninstallAppConfirmation
@@ -36,7 +38,8 @@
 		[MODAL_INSTALL_FROM_FILE]: { ref: InstallFromFile },
 		[MODAL_DEVHUB_INSTALLATION_CONFIRMATION]: { ref: DevHubInstallationConfirmation },
 		[MODAL_ENTER_PASSPHRASE]: { ref: EnterPassphrase },
-		[MODAL_FACTORY_RESET_CONFIRMATION]: { ref: FactoryResetConformation },
+		[MODAL_FACTORY_RESET_CONFIRMATION]: { ref: FactoryResetConfirmation },
+		[MODAL_DEPRECATE_APP_CONFIRMATION]: { ref: DeprecateAppConfirmation },
 		[MODAL_UNINSTALL_APP_CONFIRMATION]: { ref: UninstallAppConfirmation },
 		[MODAL_STARTUP_ERROR]: { ref: StartupError }
 	};

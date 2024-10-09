@@ -1,12 +1,13 @@
 import { useQueryClient } from '@tanstack/svelte-query';
 
 import {
-	createAppStoreHappsQuery,
-	createAppStoreMyHappsQuery,
+	createAppStoreMyAppsQuery,
 	createAppVersionsAppstoreQuery,
 	createCheckForAppUiUpdatesQuery,
+	createDeprecateAppMutation,
 	createFetchAllowlistQuery,
 	createFetchUiBytesMutation,
+	createGetAllAppsQuery,
 	createGetAppDetailsQuery,
 	createGetPublisherQuery,
 	createPublisherMutation,
@@ -21,13 +22,14 @@ export function createAppQueries() {
 	const queryClient = useQueryClient();
 	const publishersQuery = createPublishersQuery();
 	const getPublisherQueryFunction = createGetPublisherQuery();
-	const appStoreMyHappsQuery = createAppStoreMyHappsQuery();
-	const appStoreHappsQuery = createAppStoreHappsQuery();
+	const appStoreMyAppsQuery = createAppStoreMyAppsQuery();
+	const appStoreAllAppsQuery = createGetAllAppsQuery();
 	const appVersionsAppstoreQueryFunction = createAppVersionsAppstoreQuery();
 	const publisherMutation = createPublisherMutation(queryClient);
 	const updatePublisherMutation = createUpdatePublisherMutation(queryClient);
 	const publishHappMutation = createPublishHappMutation(queryClient);
 	const updateAppDetailsMutation = createUpdateAppDetailsMutation(queryClient);
+	const deprecateAppMutation = createDeprecateAppMutation(queryClient);
 	const publishNewVersionMutation = createPublishNewVersionMutation(queryClient);
 	const checkForAppUiUpdatesQuery = createCheckForAppUiUpdatesQuery();
 	const getAppDetailsQuery = createGetAppDetailsQuery();
@@ -40,11 +42,12 @@ export function createAppQueries() {
 		publisherMutation,
 		updatePublisherMutation,
 		publishHappMutation,
-		appStoreMyHappsQuery,
+		appStoreMyAppsQuery,
 		updateAppDetailsMutation,
+		deprecateAppMutation,
 		appVersionsAppstoreQueryFunction,
 		publishNewVersionMutation,
-		appStoreHappsQuery,
+		appStoreAllAppsQuery,
 		fetchUiBytesMutation,
 		getAppDetailsQuery,
 		fetchAllowlistQuery,

@@ -84,7 +84,7 @@
 {#if $installDevhub.isPending}
 	<NoClickOverlay />
 {/if}
-<div class="pt-3 flex flex-1 flex-col">
+<div class="flex flex-1 flex-col pt-3">
 	<DashedSection containerClasses="m-2 p-2.5" title={$i18n.t('developerTools')}>
 		{#if $isDevhubInstalled.data}
 			<p>{$i18n.t('devhubInstalled')}</p>
@@ -108,7 +108,7 @@
 	<span class="flex flex-1"></span>
 	<div class="flex flex-row pr-2">
 		<span class="flex flex-1"></span>
-		<span class="text-red-600 opacity-80 font-semibold">DANGER ZONE</span>
+		<span class="font-semibold text-red-600 opacity-80">DANGER ZONE</span>
 	</div>
 	<div class="pb-3 pt-4" style="background-color: #ff000014">
 		<DashedSection containerClasses="m-2 p-2.5" title={$i18n.t('factoryReset')}>
@@ -116,19 +116,17 @@
 				<div class="mb-2">{$i18n.t('factoryResetHolochainLauncher')}</div>
 				<div class="flex flex-row">
 					<Button
-					props={{
-						disabled: $installDevhub.isPending,
-						onClick: showFactoryResetModal,
-						class: 'btn-install !bg-error-500'
-					}}
-				>
-					{$i18n.t('factoryReset')}
-				</Button>
-				<span class="flex flex-1"></span>
-
+						props={{
+							disabled: $installDevhub.isPending,
+							onClick: showFactoryResetModal,
+							class: 'btn-install !bg-error-500'
+						}}
+					>
+						{$i18n.t('factoryReset')}
+					</Button>
+					<span class="flex flex-1"></span>
 				</div>
 			</div>
 		</DashedSection>
 	</div>
 </div>
-

@@ -1,7 +1,8 @@
 import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import type { ModalSettings, ModalStore } from '@skeletonlabs/skeleton';
+import type { AppEntry, Entity } from 'appstore-tools';
 
-import type { AppWithIcon, Modals } from '$types';
+import type { Modals } from '$types';
 import { All, type AppstoreFilterLists, HolochainFoundationList } from '$types/happs';
 
 export const showModalError = ({
@@ -27,7 +28,7 @@ export const showModalError = ({
 export const createModalParams = (
 	component: Modals,
 	response?: (r: unknown) => void,
-	body?: string,
+	body?: string
 ): ModalSettings => ({
 	type: 'component' as const,
 	component,
@@ -59,7 +60,7 @@ export const getAllowlistKeys = (allowlist: AppstoreFilterLists | undefined) => 
 };
 
 export const filterOutDenylisted = (
-	apps: AppWithIcon[],
+	apps: Entity<AppEntry>[],
 	allowlist: AppstoreFilterLists | undefined
 ) => {
 	const denylist = allowlist?.denylist;
@@ -69,14 +70,14 @@ export const filterOutDenylisted = (
 };
 
 export const filterAppsBySearchAndAllowlist = (
-	apps: AppWithIcon[],
+	apps: Entity<AppEntry>[],
 	searchInput: string,
 	allowlistKeys: Uint8Array[]
 ) => {
 	const lowerCaseSearchInput = searchInput.toLowerCase();
 	return apps.filter(
-		({ title, id }) =>
-			title.toLowerCase().includes(lowerCaseSearchInput) &&
-			allowlistKeys.some((key) => encodeHashToBase64(key) === encodeHashToBase64(id))
+		(entity) =>
+			entity.content.title.toLowerCase().includes(lowerCaseSearchInput) &&
+			allowlistKeys.some((key) => encodeHashToBase64(key) === encodeHashToBase64(entity.id))
 	);
 };

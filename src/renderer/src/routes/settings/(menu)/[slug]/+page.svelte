@@ -51,13 +51,14 @@
 
 	let selectedIndex = 0;
 
-	let prevousSelectedApp: any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	let previousSelectedApp: any;
 
 	$: {
-		if (selectedApp !== prevousSelectedApp) {
+		if (selectedApp !== previousSelectedApp) {
 			// Reset to Details view
 			selectedIndex = 0;
-			prevousSelectedApp = selectedApp;
+			previousSelectedApp = selectedApp;
 		}
 	}
 
@@ -267,7 +268,7 @@
 		</DashedSection>
 		<DashedSection containerClasses="m-2 p-2.5" title="Provisioned Cells">
 			<div class="flex flex-1 flex-col">
-				{#each provisionedCells as cellInfo, _index}
+				{#each provisionedCells as cellInfo}
 					<CellDetails {cellInfo}></CellDetails>
 				{/each}
 			</div>
@@ -277,7 +278,7 @@
 				{$i18n.t('noClonedCells')}
 			{:else}
 				<div class="flex flex-1 flex-col">
-					{#each provisionedCells as cellInfo, _index}
+					{#each provisionedCells as cellInfo}
 						<CellDetails {cellInfo}></CellDetails>
 					{/each}
 				</div>

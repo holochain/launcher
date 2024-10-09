@@ -3,7 +3,7 @@
 	import type { AppVersionEntry, Entity } from 'appstore-tools';
 
 	import { AddTypeModalFooter, InputWithLabel } from '$components';
-	import { convertFileToUint8Array, showModalError } from '$helpers';
+	import { convertFileToUint8Array } from '$helpers';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
 	import { isPublishNewVersionDataValid } from '$types';

@@ -31,6 +31,7 @@
 			}
 
 			if (setupData.isSuccess) {
+				window.sessionStorage.setItem('keystoreInitialized', 'true');
 				return goto(setupData.data ? '/welcome' : '/unlock');
 			}
 		});
