@@ -286,7 +286,7 @@
 		</DashedSection>
 	{:else}
 		<AppSettings
-			isHeadless={selectedApp.isHeadless}
+			app={selectedApp}
 			uninstallLogic={() => showUninstallModal()}
 			update={Boolean(update)}
 		></AppSettings>

@@ -18,7 +18,7 @@
 
 <div class="flex flex-col">
 	<div
-		class="flex items-center justify-between pb-2"
+		class="flex items-center justify-between pb-1"
 		class:opacity-100={isFocused}
 		class:opacity-60={!isFocused}
 	>
