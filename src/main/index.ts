@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { optimizer } from '@electron-toolkit/utils';
 import type { AppClient, CallZomeRequest, InstalledAppId } from '@holochain/client';
 import { AppWebsocket, GrantedFunctionsType } from '@holochain/client';
@@ -949,21 +950,44 @@ const router = t.router({
         .filter((cellId) => !!cellId);
 
       await Promise.all(
-        cellIds.map((cellId) =>
-          holochainManager.adminWebsocket.grantZomeCallCapability({
-            cell_id: cellId,
-            cap_grant: {
-              tag: 'zome-call-signing-key',
-              functions: GrantedFunctionsType.All,
-              access: {
-                Assigned: {
-                  secret: new Uint8Array(64),
-                  assignees: [pubKey],
+        cellIds.map(async (cellId) => {
+          // Try granting the zome call twice as the first call may trigger init and cause a
+          // source chain moved error
+          try {
+            await holochainManager.adminWebsocket.grantZomeCallCapability({
+              cell_id: cellId,
+              cap_grant: {
+                tag: 'zome-call-signing-key',
+                functions: GrantedFunctionsType.All,
+                access: {
+                  Assigned: {
+                    secret: new Uint8Array(64),
+                    assignees: [pubKey],
+                  },
                 },
               },
-            },
-          }),
-        ),
+            });
+          } catch (e: any) {
+            if (e.toString && e.toString().includes('source chain head has moved')) {
+              console.log(
+                'Source chain head has moved error during cap grant creation. Retrying one more time...',
+              );
+              await holochainManager.adminWebsocket.grantZomeCallCapability({
+                cell_id: cellId,
+                cap_grant: {
+                  tag: 'zome-call-signing-key',
+                  functions: GrantedFunctionsType.All,
+                  access: {
+                    Assigned: {
+                      secret: new Uint8Array(64),
+                      assignees: [pubKey],
+                    },
+                  },
+                },
+              });
+            }
+          }
+        }),
       );
     }),
   // Generate key recovery file and ask for export location (Advanced Setup)
