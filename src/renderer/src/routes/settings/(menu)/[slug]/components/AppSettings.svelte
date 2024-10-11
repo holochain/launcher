@@ -22,6 +22,10 @@
 	const issueAuthTokenMutation = client.issueAuthenticationToken.createMutation();
 	const grantSigningKeyMutation = client.grantSigningKey.createMutation();
 
+	const appPortQuery = client.getAppPort.createQuery();
+
+	const appPort = $appPortQuery;
+
 	export let uninstallLogic: () => void;
 	export let update: boolean;
 
@@ -143,6 +147,12 @@
 						)}
 					</div>
 				</div>
+				<div class="mb-2 flex flex-1 flex-row">
+					<div class="flex flex-1"></div>
+					<div>App Port: {appPort.isSuccess && appPort.data ? appPort.data : 'unknown'}</div>
+				</div>
+				<hr class="divider mb-4 mt-4 opacity-60" />
+
 				<div class="flex-end flex flex-1 flex-row items-center">
 					<span class="flex-1"
 						>{$i18n.t('Generate a one-time, expiring authentication token.')}</span

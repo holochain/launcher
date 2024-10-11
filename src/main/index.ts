@@ -894,6 +894,7 @@ const router = t.router({
     () => HOLOCHAIN_MANAGERS[BREAKING_DEFAULT_HOLOCHAIN_VERSION].version,
   ),
   getLauncherVersion: t.procedure.query(() => app.getVersion()),
+  getAppPort: t.procedure.query(() => APP_PORT),
   isDevhubInstalled: t.procedure.query(() => isDevhubInstalled(HOLOCHAIN_MANAGERS)),
   getInstalledApps: t.procedure.input(IncludeHeadlessSchema).query((opts) => {
     const { input: includeHeadless } = opts;

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Avatar, getModalStore } from '@skeletonlabs/skeleton';
 
-	import { Button } from '$components';
 	import { MODAL_INSTALL_FROM_FILE } from '$const';
 	import { createModalParams } from '$helpers';
 	import { i18n } from '$services';

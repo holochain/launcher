@@ -38,7 +38,14 @@
 			{
 				onSuccess: () => {
 					$installedApps.refetch();
-					goto(`${APPS_VIEW}?${PRESEARCH_URL_QUERY}=${formData.appId}`);
+					const filePath = files ? files[0].path : '';
+					toastStore.trigger({
+						message: $i18n.t('appInstalled'),
+						background: 'variant-filled-success'
+					});
+					if (filePath.endsWith('.webhapp')) {
+						goto(`${APPS_VIEW}?${PRESEARCH_URL_QUERY}=${formData.appId}`);
+					}
 					modalStore.close();
 				},
 				onError: (error) => {
