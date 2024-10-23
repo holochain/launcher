@@ -11,6 +11,7 @@
 	import InputWithLabel from '$components/InputWithLabel.svelte';
 	import TrashCan from '$icons/TrashCan.svelte';
 	import { i18n, trpc } from '$services';
+	import { APP_STORE_APP_ID, DEVHUB_APP_ID } from '$shared/const';
 	import type { ExtendedAppInfo } from '$shared/types';
 
 	import DashedSection from '../../../components/DashedSection.svelte';
@@ -23,8 +24,6 @@
 	const grantSigningKeyMutation = client.grantSigningKey.createMutation();
 
 	const appPortQuery = client.getAppPort.createQuery();
-
-	const appPort = $appPortQuery;
 
 	export let uninstallLogic: () => void;
 	export let update: boolean;
@@ -113,7 +112,7 @@
 </script>
 
 <div class={clsx(update && 'pt-0')}>
-	{#if !app.isHeadless}
+	{#if ![APP_STORE_APP_ID, DEVHUB_APP_ID].includes(app.appInfo.installed_app_id)}
 		<DashedSection containerClasses="m-2 p-2.5" title={$i18n.t('uninstallApp')}>
 			<div class="flex-end flex flex-1 flex-row items-center">
 				<span class="flex-1">{$i18n.t('uninstallAppAndRemoveAllData')}</span>
@@ -149,7 +148,13 @@
 				</div>
 				<div class="mb-2 flex flex-1 flex-row">
 					<div class="flex flex-1"></div>
-					<div>App Port: {appPort.isSuccess && appPort.data ? appPort.data : 'unknown'}</div>
+					<div>
+						App Port: {$appPortQuery.isSuccess && $appPortQuery.data
+							? $appPortQuery.data
+							: $appPortQuery.isLoading
+								? 'loading...'
+								: 'unknown'}
+					</div>
 				</div>
 				<hr class="divider mb-4 mt-4 opacity-60" />
 
