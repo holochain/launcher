@@ -142,7 +142,7 @@
 					<div class="mb-2 font-bold">⚠️ {$i18n.t('WARNING')}:</div>
 					<div class="ml-2">
 						{$i18n.t(
-							'The settings below can allow others to take actions for this app on your behalf.'
+							'The settings below can allow others to take actions in this app on your behalf.'
 						)}
 					</div>
 				</div>
