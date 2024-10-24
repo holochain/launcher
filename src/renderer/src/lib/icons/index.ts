@@ -19,6 +19,7 @@ export { default as Plus } from './Plus.svelte';
 export { default as Publisher } from './Publisher.svelte';
 export { default as ResizeIcon } from './ResizeIcon.svelte';
 export { default as Rocket } from './Rocket.svelte';
+export { default as UpdatesIcon } from './Updates.svelte';
 export { default as Upload } from './Upload.svelte';
 export { default as UploadImage } from './UploadImage.svelte';
 export { default as Verified } from './Verified.svelte';

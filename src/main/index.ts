@@ -35,6 +35,7 @@ import type {
   DistributionInfoV1,
   HolochainDataRoot,
   HolochainPartition,
+  LauncherUpdate,
   WindowInfoRecord,
 } from '$shared/types';
 import {
@@ -51,6 +52,7 @@ import {
   InstallHappOrWebhappFromBytesSchema,
   InstallWebhappFromHashesSchema,
   LAUNCHER_LOG,
+  LAUNCHER_UPDATE_DOWNLOAD_PROGRESS,
   LOADING_PROGRESS_UPDATE,
   MISSING_BINARIES,
   NO_APP_PORT_ERROR,
@@ -237,6 +239,7 @@ let IS_QUITTING = false;
 const APP_CLIENTS: Record<InstalledAppId, AppClient> = {};
 let APPSTORE_APP_CLIENT: AppstoreAppClient | undefined;
 let DEVHUB_APP_CLIENT: DevhubAppClient | undefined;
+let UPDATE_AVAILABLE: LauncherUpdate | undefined;
 
 Menu.setApplicationMenu(launcherMenu(LAUNCHER_FILE_SYSTEM));
 
@@ -306,19 +309,11 @@ app.whenReady().then(async () => {
       breakingVersion(updateCheckResult.updateInfo.version) === breakingVersion(appVersion) &&
       semver.gt(updateCheckResult.updateInfo.version, appVersion)
     ) {
-      const userDecision = await dialog.showMessageBox({
-        title: 'Update Available',
-        type: 'question',
-        buttons: ['Deny', 'Install and Restart'],
-        defaultId: 0,
-        cancelId: 0,
-        message: `A new compatible version of Launcher is available (${updateCheckResult.updateInfo.version}). Do you want to install it?`,
-      });
-      if (userDecision.response === 1) {
-        // downloading means that with the next start of the application it's automatically going to be installed
-        autoUpdater.on('update-downloaded', () => autoUpdater.quitAndInstall());
-        await autoUpdater.downloadUpdate();
-      }
+      UPDATE_AVAILABLE = {
+        version: updateCheckResult.updateInfo.version,
+        releaseDate: updateCheckResult.updateInfo.releaseDate,
+        releaseNotes: updateCheckResult.updateInfo.releaseNotes as string | undefined,
+      };
     }
   }
 });
@@ -625,6 +620,16 @@ const getDevhubAppClient = async () => {
  */
 
 const router = t.router({
+  launcherUpdateAvailable: t.procedure.query(() => UPDATE_AVAILABLE),
+  installLauncherUpdate: t.procedure.mutation(async () => {
+    if (!UPDATE_AVAILABLE) throw new Error('No update available.');
+    // downloading means that with the next start of the application it's automatically going to be installed
+    autoUpdater.on('update-downloaded', () => autoUpdater.quitAndInstall());
+    autoUpdater.on('download-progress', (progressInfo) => {
+      LAUNCHER_EMITTER.emit(LAUNCHER_UPDATE_DOWNLOAD_PROGRESS, progressInfo);
+    });
+    await autoUpdater.downloadUpdate();
+  }),
   openSettings: t.procedure.mutation(() => {
     const mainWindow = PRIVILEGED_LAUNCHER_WINDOWS[MAIN_WINDOW];
     const [xMain, yMain] = mainWindow.getPosition();
@@ -1097,6 +1102,9 @@ const router = t.router({
   }),
   onDownloadProgressUpdate: t.procedure.subscription(() => {
     return createObservableGeneric(LAUNCHER_EMITTER, DOWNLOAD_PROGRESS_UPDATE);
+  }),
+  onLauncherUpdateDownloadProgress: t.procedure.subscription(() => {
+    return createObservableGeneric(LAUNCHER_EMITTER, LAUNCHER_UPDATE_DOWNLOAD_PROGRESS);
   }),
   deriveAndImportSeedFromJsonFile: t.procedure
     .input(z.object({ filePath: z.string(), passphrase: z.string().optional() }))

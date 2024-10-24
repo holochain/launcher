@@ -8,6 +8,7 @@
 	import { CenterProgressRadial } from '$components';
 	import {
 		KEY_MANAGEMENT,
+		LAUNCHER_UPDATES,
 		NOT_SELECTED_ICON_STYLE,
 		SELECTED_ICON_STYLE,
 		SYSTEM_INFORMATION,
@@ -20,7 +21,7 @@
 		showModalError,
 		validateApp
 	} from '$helpers';
-	import { Gear, Key, MenuInfo } from '$icons';
+	import { Gear, Key, MenuInfo, UpdatesIcon } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
 	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_WINDOW } from '$shared/const';
@@ -31,6 +32,8 @@
 	const modalStore = getModalStore();
 
 	const installedApps = client.getInstalledApps.createQuery(true);
+
+	const launcherUpdateAvailable = client.launcherUpdateAvailable.createQuery();
 
 	const { checkForAppUiUpdatesQuery } = createAppQueries();
 
@@ -81,6 +84,17 @@
 			iconStyle: 'mr-3'
 		}
 	];
+
+	launcherUpdateAvailable.subscribe((val) => {
+		if ((val.isSuccess && val.data) || true) {
+			menuEntries.unshift({
+				name: $i18n.t(LAUNCHER_UPDATES),
+				view: LAUNCHER_UPDATES,
+				icon: UpdatesIcon,
+				iconStyle: 'ml-[1.5px] mr-[14px]'
+			});
+		}
+	});
 </script>
 
 <span class="pb-2 text-sm">{$i18n.t('launcherSettings')}</span>

@@ -144,6 +144,7 @@
 	"uninstallAppAndRemoveAllData": "Uninstall this app and remove all associated data.",
 	"uninstallAppModalBody": "Are you sure you want to uninstall the app? This will delete all associated data.",
 	"update": "update",
+	"updates": "Updates",
 	"updateAppDetails": "Update App Details",
 	"updateAppDetailsExplanation": "Changing app details here will update the appearance of your app in app store.",
 	"updateAvailable": "Update available",
