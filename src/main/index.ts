@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { optimizer } from '@electron-toolkit/utils';
 import type { AppClient, CallZomeRequest, InstalledAppId } from '@holochain/client';
-import { AppWebsocket } from '@holochain/client';
+import { AppWebsocket, GrantedFunctionsType } from '@holochain/client';
 import { autoUpdater } from '@matthme/electron-updater';
 import { decode } from '@msgpack/msgpack';
 import { initTRPC } from '@trpc/server';
-import { AppstoreAppClient, DevhubAppClient } from 'appstore-tools';
+import { AppstoreAppClient, DevhubAppClient, getCellId } from 'appstore-tools';
 import { type ChildProcessWithoutNullStreams, spawnSync } from 'child_process';
 import { Command, Option } from 'commander';
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
@@ -894,6 +895,7 @@ const router = t.router({
     () => HOLOCHAIN_MANAGERS[BREAKING_DEFAULT_HOLOCHAIN_VERSION].version,
   ),
   getLauncherVersion: t.procedure.query(() => app.getVersion()),
+  getAppPort: t.procedure.query(() => APP_PORT),
   isDevhubInstalled: t.procedure.query(() => isDevhubInstalled(HOLOCHAIN_MANAGERS)),
   getInstalledApps: t.procedure.input(IncludeHeadlessSchema).query((opts) => {
     const { input: includeHeadless } = opts;
@@ -912,6 +914,82 @@ const router = t.router({
       errorType: WRONG_INSTALLED_APP_STRUCTURE,
     });
   }),
+  issueAuthenticationToken: t.procedure
+    .input(
+      z.object({ app: ExtendedAppInfoSchema, expirySeconds: z.number(), singleUse: z.boolean() }),
+    )
+    .mutation((opts) => {
+      const { app, expirySeconds, singleUse } = opts.input;
+      const holochainManager = getHolochainManager(app.holochainDataRoot.name);
+
+      return holochainManager.adminWebsocket.issueAppAuthenticationToken({
+        installed_app_id: app.appInfo.installed_app_id,
+        expiry_seconds: expirySeconds,
+        single_use: singleUse,
+      });
+    }),
+  grantSigningKey: t.procedure
+    .input(
+      z.object({
+        app: ExtendedAppInfoSchema,
+        pubKey: z.instanceof(Uint8Array),
+      }),
+    )
+    .mutation(async (opts) => {
+      const { app, pubKey } = opts.input;
+      const holochainManager = getHolochainManager(app.holochainDataRoot.name);
+
+      const appInfo = holochainManager.installedApps.find(
+        (appInfo) => appInfo.installed_app_id === app.appInfo.installed_app_id,
+      );
+
+      if (!appInfo) throw new Error('App not found in installed apps.');
+      const cellIds = Object.values(appInfo.cell_info)
+        .flat()
+        .map((cellInfo) => getCellId(cellInfo))
+        .filter((cellId) => !!cellId);
+
+      await Promise.all(
+        cellIds.map(async (cellId) => {
+          // Try granting the zome call twice as the first call may trigger init and cause a
+          // source chain moved error
+          try {
+            await holochainManager.adminWebsocket.grantZomeCallCapability({
+              cell_id: cellId,
+              cap_grant: {
+                tag: 'zome-call-signing-key',
+                functions: GrantedFunctionsType.All,
+                access: {
+                  Assigned: {
+                    secret: new Uint8Array(64),
+                    assignees: [pubKey],
+                  },
+                },
+              },
+            });
+          } catch (e: any) {
+            if (e.toString && e.toString().includes('source chain head has moved')) {
+              console.log(
+                'Source chain head has moved error during cap grant creation. Retrying one more time...',
+              );
+              await holochainManager.adminWebsocket.grantZomeCallCapability({
+                cell_id: cellId,
+                cap_grant: {
+                  tag: 'zome-call-signing-key',
+                  functions: GrantedFunctionsType.All,
+                  access: {
+                    Assigned: {
+                      secret: new Uint8Array(64),
+                      assignees: [pubKey],
+                    },
+                  },
+                },
+              });
+            }
+          }
+        }),
+      );
+    }),
   // Generate key recovery file and ask for export location (Advanced Setup)
   generateAndExportKeyRecoveryFile: t.procedure
     .input(z.string())

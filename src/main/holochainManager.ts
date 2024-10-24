@@ -850,6 +850,12 @@ export class HolochainManager {
     return fs.existsSync(iconPath) ? fs.readFileSync(iconPath) : undefined;
   }
 
+  appMetaData(appId: string): AppMetadata<AppMetadataV1> {
+    return this.integrityChecker.readSignedJSON(
+      path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json'),
+    );
+  }
+
   appDistributionInfo(appId: string): DistributionInfoV1 {
     const metadata: AppMetadata<AppMetadataV1> = this.integrityChecker.readSignedJSON(
       path.join(this.fs.appMetadataDir(appId, this.holochainDataRoot), 'info.json'),
