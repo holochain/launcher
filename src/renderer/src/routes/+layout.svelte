@@ -10,6 +10,8 @@
 		Toast
 	} from '@skeletonlabs/skeleton';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+	import TimeAgo from 'javascript-time-ago';
+	import en from 'javascript-time-ago/locale/en';
 
 	import { onNavigate } from '$app/navigation';
 	import {
@@ -52,6 +54,8 @@
 
 	initializeStores();
 	setupStorePopup();
+
+	TimeAgo.addDefaultLocale(en);
 </script>
 
 <QueryClientProvider client={queryClient}>

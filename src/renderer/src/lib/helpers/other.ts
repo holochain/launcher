@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CellType, encodeHashToBase64 } from '@holochain/client';
 import type { AppstoreAppClient, AppVersionEntry, Entity } from 'appstore-tools';
+import DOMPurify from 'dompurify';
 import localforage from 'localforage';
+import { marked } from 'marked';
 
 import { MAX_IMAGE_WIDTH_AND_HEIGHT } from '$const';
 import { createAppStoreClient, createDevHubClient } from '$services';
@@ -236,3 +238,21 @@ export const resizeImage = async (file: File): Promise<Uint8Array | null> => {
 		}, 'image/png');
 	});
 };
+
+export function markdownParseSafe(input: string): string {
+	const markedData = marked.parse(input) as string;
+	return DOMPurify.sanitize(markedData);
+}
+
+export function markdownParseSafeTailwind(input: string): string {
+	const markedData = marked.parse(input) as string;
+	const htmlString = DOMPurify.sanitize(markedData);
+	return htmlString
+		.replaceAll('<ul>', '<ul class="list-disc ml-6">')
+		.replaceAll('<ol>', '<ol class="list-decimal ml-6">')
+		.replaceAll('<h1>', '<h1 class="h1">')
+		.replaceAll('<h2>', '<h1 class="h2">')
+		.replaceAll('<h3>', '<h1 class="h3">')
+		.replaceAll('<h4>', '<h1 class="h4">')
+		.replaceAll('<h5>', '<h1 class="h5">')
+}

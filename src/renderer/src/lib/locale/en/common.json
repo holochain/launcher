@@ -71,6 +71,8 @@
 	"importedKey": "Imported key",
 	"initializingLairKeystore": "Initializing Lair Keystore...",
 	"install": "Install",
+	"installing": "installing",
+	"installAndRestart": "Install & Restart",
 	"installFromYourDevice": "Install from your device",
 	"installHapp": "Install Happ",
 	"installedSuccessfully": " installed successfully",

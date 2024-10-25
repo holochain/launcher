@@ -620,7 +620,7 @@ const getDevhubAppClient = async () => {
  */
 
 const router = t.router({
-  launcherUpdateAvailable: t.procedure.query(() => UPDATE_AVAILABLE),
+  launcherUpdateAvailable: t.procedure.query(() => UPDATE_AVAILABLE || null),
   installLauncherUpdate: t.procedure.mutation(async () => {
     if (!UPDATE_AVAILABLE) throw new Error('No update available.');
     // downloading means that with the next start of the application it's automatically going to be installed
