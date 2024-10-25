@@ -13,6 +13,7 @@
 	const modalStore = getModalStore();
 
 	const lairSetupRequired = client.lairSetupRequired.createQuery();
+
 	onMount(() => {
 		const url = $page.url;
 

@@ -33,6 +33,7 @@
 	const openApp = client.openApp.createMutation();
 	const hideApp = client.hideApp.createMutation();
 	const openSettings = client.openSettings.createMutation();
+	const launcherUpdateAvailableQuery = client.launcherUpdateAvailable.createQuery();
 
 	const utils = client.createUtils();
 
@@ -166,7 +167,7 @@
 	<IconButton onClick={() => $openSettings.mutate(undefined)}>
 		<div class="relative">
 			<Gear />
-			{#if Object.values($uiUpdates.data ?? {}).some(Boolean)}
+			{#if Object.values($uiUpdates.data ?? {}).some(Boolean) || $launcherUpdateAvailableQuery.data}
 				<div class="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-warning-500"></div>
 			{/if}
 		</div>

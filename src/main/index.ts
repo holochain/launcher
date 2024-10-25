@@ -239,7 +239,7 @@ let IS_QUITTING = false;
 const APP_CLIENTS: Record<InstalledAppId, AppClient> = {};
 let APPSTORE_APP_CLIENT: AppstoreAppClient | undefined;
 let DEVHUB_APP_CLIENT: DevhubAppClient | undefined;
-let UPDATE_AVAILABLE: LauncherUpdate | undefined;
+let UPDATE_AVAILABLE: LauncherUpdate | null = null;
 
 Menu.setApplicationMenu(launcherMenu(LAUNCHER_FILE_SYSTEM));
 

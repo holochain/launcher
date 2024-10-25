@@ -16,7 +16,7 @@ import type { HolochainDataRoot } from './holochain';
 export type LauncherUpdate = {
   version: string;
   releaseDate: string;
-  releaseNotes: string | undefined;
+  releaseNotes?: string;
 };
 
 type UrlAndSha256 = {

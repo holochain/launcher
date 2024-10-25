@@ -32,8 +32,7 @@
 	const modalStore = getModalStore();
 
 	const installedApps = client.getInstalledApps.createQuery(true);
-
-	const launcherUpdateAvailable = client.launcherUpdateAvailable.createQuery();
+	const launcherUpdateAvailableQuery = client.launcherUpdateAvailable.createQuery();
 
 	const { checkForAppUiUpdatesQuery } = createAppQueries();
 
@@ -64,7 +63,16 @@
 
 	$: view = $page.params.slug || '';
 
-	const menuEntries = [
+	type MenuEntryInfo = {
+		name: string;
+		view: string;
+		icon: any;
+		iconStyle: string;
+		extra?: string;
+		isUpdateAvailable?: boolean;
+	};
+
+	let menuEntries: MenuEntryInfo[] = [
 		{
 			name: $i18n.t(SYSTEM_INFORMATION),
 			view: '',
@@ -85,21 +93,37 @@
 		}
 	];
 
-	launcherUpdateAvailable.subscribe((val) => {
-		if ((val.isSuccess && val.data) || true) {
-			menuEntries.unshift({
-				name: $i18n.t(LAUNCHER_UPDATES),
-				view: LAUNCHER_UPDATES,
-				icon: UpdatesIcon,
-				iconStyle: 'ml-[1.5px] mr-[14px]'
-			});
+	const launcherUpdateMenuEntry = {
+		name: $i18n.t(LAUNCHER_UPDATES),
+		view: LAUNCHER_UPDATES,
+		icon: UpdatesIcon,
+		iconStyle: 'ml-[1.5px] mr-[14px]',
+		extra: 'NEW'
+	};
+
+
+	launcherUpdateAvailableQuery.subscribe((val) => {
+		console.log(Date.now(), 'LAUNCHER UPDATE AVAILABLE CHANGED: ', val);
+		if (val.isSuccess && val.data) {
+			if (!menuEntries.map((entry) => entry.name).includes($i18n.t(LAUNCHER_UPDATES))) {
+				console.log('pushing menu entry.');
+				const newMenuEntries = menuEntries;
+				newMenuEntries.unshift(launcherUpdateMenuEntry);
+				menuEntries = newMenuEntries;
+			}
 		}
 	});
 </script>
 
 <span class="pb-2 text-sm">{$i18n.t('launcherSettings')}</span>
-{#each menuEntries as { name, view: entryView, icon: Icon, iconStyle }}
-	<MenuEntry {name} onClick={() => selectView(entryView)} isSelected={view === entryView}>
+{#each menuEntries as { name, view: entryView, icon: Icon, iconStyle, extra, isUpdateAvailable }}
+	<MenuEntry
+		{name}
+		{extra}
+		{isUpdateAvailable}
+		onClick={() => selectView(entryView)}
+		isSelected={view === entryView}
+	>
 		<div slot="leading" class={clsx(iconStyle, view !== entryView)}>
 			<Icon fillColor={view === entryView ? SELECTED_ICON_STYLE : NOT_SELECTED_ICON_STYLE} />
 		</div>

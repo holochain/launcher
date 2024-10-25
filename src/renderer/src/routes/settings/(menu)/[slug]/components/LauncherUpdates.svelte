@@ -5,8 +5,6 @@
 	import { markdownParseSafeTailwind } from '$helpers';
 	import { i18n, trpc } from '$services';
 	import { ProgressBar, getToastStore } from '@skeletonlabs/skeleton';
-	import { launcherUpdateAvailable } from '$stores/varia';
-	import { isLoading } from 'svelte-i18next';
 
 	// import { getModalStore } from '@skeletonlabs/skeleton';
 
@@ -21,21 +19,15 @@
 	//     bytesPerSecond: number;
 	// }
 	const launcherUpdateMutation = client.installLauncherUpdate.createMutation();
+	const launcherUpdateAvailableQuery = client.launcherUpdateAvailable.createQuery();
 
 	client.onLauncherUpdateDownloadProgress.createSubscription(undefined, {
 		onData: (progressInfo) => {
 			progressPercent = progressInfo.percent;
 		}
 	});
-	// const isDevhubInstalled = client.isDevhubInstalled.createQuery();
-	// const installDevhub = client.installDevhub.createMutation();
-	// const factoryReset = client.factoryReset.createMutation();
 
 	const timeAgo = new TimeAgo('en-US');
-	const releaseDate = Date.now() - 172800000;
-	const releaseNotes = `
-* fixes bugs that were introduced with 0.13.0-gamma.2 when switching the custom scheme to allow protecting the admin websocket
-* adds support for the \`onBeforeUnload\` event	`;
 
 	let progressPercent = 1;
 	let installing = false;
@@ -56,7 +48,7 @@
 </script>
 
 <div class="flex flex-1 flex-col p-4">
-	{#if $launcherUpdateAvailable}
+	{#if $launcherUpdateAvailableQuery.isSuccess && $launcherUpdateAvailableQuery.data}
 		<div
 			class="drop-shadow-dark-xl m-5 rounded-md"
 			style="padding: 2px; background: linear-gradient(#f9d402, #8b7600);"
@@ -66,13 +58,13 @@
 					<div class="text-gray-400">New verison available</div>
 					<span class="flex flex-1"></span>
 					<div class="text-gray-400">
-						{timeAgo.format(new Date($launcherUpdateAvailable.releaseDate))}
+						{timeAgo.format(new Date($launcherUpdateAvailableQuery.data.releaseDate))}
 					</div>
 				</div>
-				<h1 class="h1">Holochain Launcher v{$launcherUpdateAvailable.version}</h1>
-				{#if $launcherUpdateAvailable.releaseNotes}
+				<h1 class="h1">Holochain Launcher v{$launcherUpdateAvailableQuery.data.version}</h1>
+				{#if $launcherUpdateAvailableQuery.data.releaseNotes}
 					<div class="mt-2 text-lg text-gray-200">
-						{@html markdownParseSafeTailwind($launcherUpdateAvailable.releaseNotes)}
+						{@html markdownParseSafeTailwind($launcherUpdateAvailableQuery.data.releaseNotes)}
 					</div>
 				{/if}
 				<div class="mt-4 flex flex-row">
