@@ -23,7 +23,7 @@ import path from 'path';
 import semver from 'semver';
 import type { ZodSchema } from 'zod';
 
-import { APP_STORE_APP_ID, DEVHUB_APP_ID, DISTRIBUTION_TYPE_DEFAULT_APP } from '$shared/const';
+import { DEVHUB_APP_ID, DISTRIBUTION_TYPE_DEFAULT_APP } from '$shared/const';
 import { getErrorMessage } from '$shared/helpers';
 import type { AppToInstall, DistributionInfoV1 } from '$shared/types';
 import {
@@ -223,12 +223,13 @@ export function createObservableGeneric<K extends EventKeys>(
 }
 
 export const createAppInfo = (manager: HolochainManager) => (app: AppInfo) => {
+  const appMetaData = manager.appMetaData(app.installed_app_id);
   return {
-    isHeadless: [DEVHUB_APP_ID, APP_STORE_APP_ID].includes(app.installed_app_id),
+    isHeadless: appMetaData.data.type === 'headless',
     appInfo: app,
     holochainDataRoot: manager.holochainDataRoot,
     icon: manager.appIcon(app.installed_app_id),
-    distributionInfo: manager.appDistributionInfo(app.installed_app_id),
+    distributionInfo: appMetaData.data.distributionInfo,
   };
 };
 

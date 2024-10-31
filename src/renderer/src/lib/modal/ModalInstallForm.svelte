@@ -15,8 +15,7 @@
 	const client = trpc();
 	const modalStore = getModalStore();
 
-	const installedApps = client.getInstalledApps.createQuery();
-
+	const installedApps = client.getInstalledApps.createQuery(true);
 
 	export let formData: AppInstallFormData;
 	export let files: FileList | null = null;
@@ -45,7 +44,9 @@
 		}
 	};
 
-	$: duplicateAppId = $installedApps.data?.some(({appInfo}) => appInfo.installed_app_id === formData.appId);
+	$: duplicateAppId = $installedApps.data?.some(
+		({ appInfo }) => appInfo.installed_app_id === formData.appId
+	);
 
 	$: invalidityMsg = duplicateAppId ? $i18n.t('appIdAlreadyExists') : undefined;
 
@@ -69,12 +70,17 @@
 					props={{
 						type: 'file',
 						id: 'appFile',
-						accept: '.webhapp',
+						accept: '.webhapp, .happ',
 						class: `input-modal pl-2`
 					}}
 				/>
 			{/if}
-			<InputModal bind:value={formData.appId} id="appName" label={$i18n.t('name')} bind:invalidityMsg={invalidityMsg}/>
+			<InputModal
+				bind:value={formData.appId}
+				id="appName"
+				label={$i18n.t('name')}
+				bind:invalidityMsg
+			/>
 			<InputModal
 				bind:value={formData.networkSeed}
 				id="networkSeed"

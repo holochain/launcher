@@ -1,19 +1,20 @@
 <script lang="ts">
-	import { capitalizeFirstLetter, getCellName, getCellNetworkSeed } from '$helpers';
-	import { Copy } from '$icons';
-	import { i18n } from '$services';
-	import { encodeHashToBase64, type CellInfo } from '@holochain/client';
+	import { type CellInfo, encodeHashToBase64 } from '@holochain/client';
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	import { getCellId } from 'appstore-tools';
 
+	import { capitalizeFirstLetter, getCellName, getCellNetworkSeed } from '$helpers';
+	import { Copy } from '$icons';
+	import { i18n } from '$services';
+
 	export let cellInfo: CellInfo;
 
-  const toastStore = getToastStore();
+	const toastStore = getToastStore();
 
 	let showNetworkSeed = false;
 
 	let cellId = getCellId(cellInfo);
-  let networkSeed = getCellNetworkSeed(cellInfo);
+	let networkSeed = getCellNetworkSeed(cellInfo);
 </script>
 
 <div>
@@ -31,13 +32,11 @@
 			{/if}
 			<div class="flex flex-row items-center">
 				<span class="font-semibold">{$i18n.t('networkSeed')}:</span>
-        <span class="flex-1"></span>
+				<span class="flex-1"></span>
 				<span class="mx-2">
-					{showNetworkSeed
-						? networkSeed
-						: '•••••••••••••••••••••••••••••••••••••••••••••'}
+					{showNetworkSeed ? networkSeed : '•••••••••••••••••••••••••••••••••••••••••••••'}
 				</span>
-        <span class="flex-1"></span>
+				<span class="flex-1"></span>
 				{#if showNetworkSeed}
 					<svg
 						tabindex="0"
@@ -88,22 +87,25 @@
 						/>
 					</svg>
 				{/if}
-        <button class="ml-1" on:click={() => {
-          if (networkSeed) {
-            navigator.clipboard.writeText(networkSeed);
-            toastStore.trigger({
+				<button
+					class="ml-1"
+					on:click={() => {
+						if (networkSeed) {
+							navigator.clipboard.writeText(networkSeed);
+							toastStore.trigger({
 								message: $i18n.t('copied'),
 								background: 'variant-filled-success'
 							});
-          } else {
-            toastStore.trigger({
+						} else {
+							toastStore.trigger({
 								message: $i18n.t('nothingToCopy'),
 								background: 'variant-filled-error'
 							});
-          }
-        }}>
-          <Copy />
-        </button>
+						}
+					}}
+				>
+					<Copy />
+				</button>
 			</div>
 		</div>
 	</div>
