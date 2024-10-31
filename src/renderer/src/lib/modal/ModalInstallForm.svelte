@@ -6,7 +6,7 @@
 
 	import { Button, Input } from '$components';
 	import { convertFileToUint8Array } from '$helpers';
-	import { Gear, Info } from '$icons';
+	import { Info } from '$icons';
 	import { i18n, trpc } from '$services';
 	import type { AppInstallFormData } from '$types';
 
@@ -16,7 +16,6 @@
 	const modalStore = getModalStore();
 
 	const installedApps = client.getInstalledApps.createQuery();
-
 
 	export let formData: AppInstallFormData;
 	export let files: FileList | null = null;
@@ -45,7 +44,9 @@
 		}
 	};
 
-	$: duplicateAppId = $installedApps.data?.some(({appInfo}) => appInfo.installed_app_id === formData.appId);
+	$: duplicateAppId = $installedApps.data?.some(
+		({ appInfo }) => appInfo.installed_app_id === formData.appId
+	);
 
 	$: invalidityMsg = duplicateAppId ? $i18n.t('appIdAlreadyExists') : undefined;
 
@@ -74,7 +75,12 @@
 					}}
 				/>
 			{/if}
-			<InputModal bind:value={formData.appId} id="appName" label={$i18n.t('name')} bind:invalidityMsg={invalidityMsg}/>
+			<InputModal
+				bind:value={formData.appId}
+				id="appName"
+				label={$i18n.t('name')}
+				bind:invalidityMsg
+			/>
 			<InputModal
 				bind:value={formData.networkSeed}
 				id="networkSeed"
@@ -102,6 +108,17 @@
 					<div class="arrow bg-primary-900" />
 				</div>
 			</InputModal>
+			<div class="flex flex-row" style="margin-top: -10px; margin-bottom: 10px;">
+				<span class="flex flex-1"></span>
+				<button
+					on:click={(e) => {
+						e.preventDefault(); // otherwise it submits the form
+						showAdvancedInput = !showAdvancedInput;
+					}}
+					class="mr-2 cursor-pointer underline opacity-70 hover:opacity-100"
+					>{showAdvancedInput ? $i18n.t('hideAdvanced') : $i18n.t('showAdvanced')}</button
+				>
+			</div>
 			{#if showAdvancedInput}
 				<InputModal bind:value={formData.pubKey} id="pubKey" label={$i18n.t('pubKey')} />
 			{/if}
@@ -109,12 +126,11 @@
 				<Button
 					props={{
 						type: 'button',
-						onClick: () => (showAdvancedInput = !showAdvancedInput),
+						onClick: () => modalStore.close(),
 						class: 'input-button-style w-1/2 flex items-center justify-center gap-1'
 					}}
 				>
-					<div class="scale-75"><Gear /></div>
-					<span class="pr-2">{$i18n.t('advanced')}</span>
+					<span class="pr-2">{$i18n.t('Cancel')}</span>
 				</Button>
 				<Button
 					props={{
