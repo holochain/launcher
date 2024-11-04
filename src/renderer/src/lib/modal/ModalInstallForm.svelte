@@ -15,7 +15,7 @@
 	const client = trpc();
 	const modalStore = getModalStore();
 
-	const installedApps = client.getInstalledApps.createQuery();
+	const installedApps = client.getInstalledApps.createQuery(true);
 
 	export let formData: AppInstallFormData;
 	export let files: FileList | null = null;
@@ -70,7 +70,7 @@
 					props={{
 						type: 'file',
 						id: 'appFile',
-						accept: '.webhapp',
+						accept: '.webhapp, .happ',
 						class: `input-modal pl-2`
 					}}
 				/>

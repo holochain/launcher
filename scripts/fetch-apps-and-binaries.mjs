@@ -11,7 +11,7 @@ const defaultAppsDir = path.join('resources', 'default-apps');
 
 // Ensure the binaries directory exists
 if (!fs.existsSync(binariesDir)) {
-  mkdirSync(binariesDir, { recursive: true });
+  fs.mkdirSync(binariesDir, { recursive: true });
 }
 
 let targetEnding;

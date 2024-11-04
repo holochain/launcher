@@ -19,6 +19,7 @@
 		"@tanstack/svelte-query": "^5.46.1",
 		"clsx": "^2.1.1",
 		"i18next": "^23.11.5",
+		"js-base64": "3.7.7",
 		"localforage": "^1.10.0",
 		"svelte": "^4.2.18",
 		"svelte-i18next": "^2.2.2",

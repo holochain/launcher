@@ -16,7 +16,7 @@ type CommonInputProps = {
 };
 
 type FileProps = {
-	accept: '.webhapp' | 'image/*';
+	accept: '.webhapp' | 'image/*' | '.happ' | '.webhapp, .happ';
 };
 
 type TextProps = {
