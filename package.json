@@ -1,14 +1,14 @@
 {
   "name": "holochain-launcher-0.3",
-  "version": "0.300.3",
+  "version": "0.301.0",
   "private": true,
   "description": "Holochain Launcher (0.3)",
   "author": "Holochain Foundation <info@holochain.org> (http://holochain.org)",
   "license": "CAL-1.0",
   "main": "./out/main/index.js",
   "binaries": {
-    "holochain": "0.3.1",
-    "lair_keystore": "0.4.4"
+    "holochain": "0.3.5-rc.0",
+    "lair_keystore": "0.4.6"
   },
   "defaultApps": {
     "devhub": "https://drive.switch.ch/index.php/s/CsTltnSv9nVvghb/download",
