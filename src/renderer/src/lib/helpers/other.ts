@@ -251,8 +251,8 @@ export function markdownParseSafeTailwind(input: string): string {
 		.replaceAll('<ul>', '<ul class="list-disc ml-6">')
 		.replaceAll('<ol>', '<ol class="list-decimal ml-6">')
 		.replaceAll('<h1>', '<h1 class="h1">')
-		.replaceAll('<h2>', '<h1 class="h2">')
-		.replaceAll('<h3>', '<h1 class="h3">')
-		.replaceAll('<h4>', '<h1 class="h4">')
-		.replaceAll('<h5>', '<h1 class="h5">')
+		.replaceAll('<h2>', '<h2 class="h2">')
+		.replaceAll('<h3>', '<h3 class="h3">')
+		.replaceAll('<h4>', '<h4 class="h4">')
+		.replaceAll('<h5>', '<h5 class="h5">')
 }

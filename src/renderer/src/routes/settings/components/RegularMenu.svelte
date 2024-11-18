@@ -101,16 +101,14 @@
 		extra: 'NEW'
 	};
 
-
 	launcherUpdateAvailableQuery.subscribe((val) => {
 		console.log(Date.now(), 'LAUNCHER UPDATE AVAILABLE CHANGED: ', val);
-		if (val.isSuccess && val.data) {
-			if (!menuEntries.map((entry) => entry.name).includes($i18n.t(LAUNCHER_UPDATES))) {
-				console.log('pushing menu entry.');
-				const newMenuEntries = menuEntries;
-				newMenuEntries.unshift(launcherUpdateMenuEntry);
-				menuEntries = newMenuEntries;
-			}
+		if (
+			val.isSuccess &&
+			val.data &&
+			!menuEntries.map((entry) => entry.name).includes($i18n.t(LAUNCHER_UPDATES))
+		) {
+			menuEntries = [launcherUpdateMenuEntry, ...menuEntries];
 		}
 	});
 </script>

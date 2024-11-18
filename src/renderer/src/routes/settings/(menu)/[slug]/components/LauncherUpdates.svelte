@@ -6,18 +6,9 @@
 	import { i18n, trpc } from '$services';
 	import { ProgressBar, getToastStore } from '@skeletonlabs/skeleton';
 
-	// import { getModalStore } from '@skeletonlabs/skeleton';
-
 	const client = trpc();
 	const toastStore = getToastStore();
 
-	// 	export interface ProgressInfo {
-	//     total: number;
-	//     delta: number;
-	//     transferred: number;
-	//     percent: number;
-	//     bytesPerSecond: number;
-	// }
 	const launcherUpdateMutation = client.installLauncherUpdate.createMutation();
 	const launcherUpdateAvailableQuery = client.launcherUpdateAvailable.createQuery();
 
