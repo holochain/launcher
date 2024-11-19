@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { getModalStore, getToastStore, SlideToggle } from '@skeletonlabs/skeleton';
+	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 
 	import { Button } from '$components';
+	import { MODAL_ENTER_PASSPHRASE } from '$const';
 	import { createModalParams, showModalError } from '$helpers';
 	import { Copy, Download } from '$icons';
 	import { i18n, trpc } from '$services';
 	import { getErrorMessage } from '$shared/helpers';
 	import { importedKeys } from '$stores';
+	import type { Modals } from '$types';
 
 	import { DashedSection } from '../../../components';
-	import { MODAL_ENTER_PASSPHRASE } from '$const';
-	import type { Modals } from '$types';
 
 	const modalStore = getModalStore();
 	const toastStore = getToastStore();
@@ -47,13 +47,16 @@
 		const target = event.target as HTMLInputElement;
 		const file = target.files?.[0];
 		if (file && file.type === 'application/json') {
-			$deriveAndImportSeedFromJsonFile.mutate({ filePath: file.path }, {
-				onError: handleError,
-				onSuccess: (result) => {
-					$importedKeys = [result, ...$importedKeys];
-					clearFileInput();
+			$deriveAndImportSeedFromJsonFile.mutate(
+				{ filePath: file.path },
+				{
+					onError: handleError,
+					onSuccess: (result) => {
+						$importedKeys = [result, ...$importedKeys];
+						clearFileInput();
+					}
 				}
-			});
+			);
 		}
 	};
 
@@ -95,50 +98,50 @@
 		});
 	};
 </script>
-<div class="py-3">
 
-<DashedSection containerClasses="m-2 p-2.5" title={$i18n.t('importSeedFile')}>
-	<div class="flex flex-col gap-2 overflow-hidden">
-		{#each $importedKeys as key}
-			<div class="flex items-center justify-between">
-				<span class="truncate whitespace-nowrap">
-					<span class="font-semibold">{$i18n.t('importedKey')}:</span>
-					<span class="truncate whitespace-nowrap font-light">{` ${key}`}</span>
-				</span>
+<div class="py-3">
+	<DashedSection containerClasses="m-2 p-2.5" title={$i18n.t('importSeedFile')}>
+		<div class="flex flex-col gap-2 overflow-hidden">
+			{#each $importedKeys as key}
+				<div class="flex items-center justify-between">
+					<span class="truncate whitespace-nowrap">
+						<span class="font-semibold">{$i18n.t('importedKey')}:</span>
+						<span class="truncate whitespace-nowrap font-light">{` ${key}`}</span>
+					</span>
+					<Button
+						props={{
+							class: ' flex',
+							onClick: async () => {
+								await navigator.clipboard.writeText(key);
+								toastStore.trigger({
+									message: $i18n.t('copiedToClipboard')
+								});
+							}
+						}}
+					>
+						<div class="ml-2 mr-1 pt-1"><Copy /></div>
+						{$i18n.t('copy')}
+					</Button>
+				</div>
+			{/each}
+			<input
+				type="file"
+				id="file-input-device-bundle"
+				class="!hidden"
+				accept=".json"
+				on:change={handleFileChange}
+			/>
+			<div class="flex items-center">
 				<Button
 					props={{
-						class: ' flex',
-						onClick: async () => {
-							await navigator.clipboard.writeText(key);
-							toastStore.trigger({
-								message: $i18n.t('copiedToClipboard')
-							});
-						}
+						class: 'btn-install flex',
+						onClick: () => document.getElementById('file-input-device-bundle')?.click()
 					}}
 				>
-					<div class="ml-2 mr-1 pt-1"><Copy /></div>
-					{$i18n.t('copy')}
+					<div class="mr-2"><Download /></div>
+					{$i18n.t($importedKeys.length ? 'importAdditionalSeed' : 'import')}
 				</Button>
-			</div>
-		{/each}
-		<input
-			type="file"
-			id="file-input-device-bundle"
-			class="!hidden"
-			accept=".json"
-			on:change={handleFileChange}
-		/>
-		<div class="flex items-center">
-			<Button
-				props={{
-					class: 'btn-install flex',
-					onClick: () => document.getElementById('file-input-device-bundle')?.click()
-				}}
-			>
-				<div class="mr-2"><Download /></div>
-				{$i18n.t($importedKeys.length ? 'importAdditionalSeed' : 'import')}
-			</Button>
-			<!-- <SlideToggle
+				<!-- <SlideToggle
 				on:click={() => {
 					insecurePassphraseCollection = !insecurePassphraseCollection;
 				}}
@@ -150,7 +153,7 @@
 			>
 				{insecurePassphraseCollection ? 'disable' : 'enable'} less secure passphrase collection
 			</SlideToggle> -->
+			</div>
 		</div>
-	</div>
-</DashedSection>
+	</DashedSection>
 </div>

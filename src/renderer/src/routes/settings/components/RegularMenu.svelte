@@ -8,6 +8,7 @@
 	import { CenterProgressRadial } from '$components';
 	import {
 		KEY_MANAGEMENT,
+		LAUNCHER_UPDATES,
 		NOT_SELECTED_ICON_STYLE,
 		SELECTED_ICON_STYLE,
 		SYSTEM_INFORMATION,
@@ -20,7 +21,7 @@
 		showModalError,
 		validateApp
 	} from '$helpers';
-	import { Gear, Key, MenuInfo } from '$icons';
+	import { Gear, Key, MenuInfo, UpdatesIcon } from '$icons';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
 	import { DISTRIBUTION_TYPE_APPSTORE, SETTINGS_WINDOW } from '$shared/const';
@@ -31,6 +32,7 @@
 	const modalStore = getModalStore();
 
 	const installedApps = client.getInstalledApps.createQuery(true);
+	const launcherUpdateAvailableQuery = client.launcherUpdateAvailable.createQuery();
 
 	const { checkForAppUiUpdatesQuery } = createAppQueries();
 
@@ -61,7 +63,16 @@
 
 	$: view = $page.params.slug || '';
 
-	const menuEntries = [
+	type MenuEntryInfo = {
+		name: string;
+		view: string;
+		icon: any;
+		iconStyle: string;
+		extra?: string;
+		isUpdateAvailable?: boolean;
+	};
+
+	let menuEntries: MenuEntryInfo[] = [
 		{
 			name: $i18n.t(SYSTEM_INFORMATION),
 			view: '',
@@ -81,11 +92,36 @@
 			iconStyle: 'mr-3'
 		}
 	];
+
+	const launcherUpdateMenuEntry = {
+		name: $i18n.t(LAUNCHER_UPDATES),
+		view: LAUNCHER_UPDATES,
+		icon: UpdatesIcon,
+		iconStyle: 'ml-[1.5px] mr-[14px]',
+		extra: 'NEW'
+	};
+
+	launcherUpdateAvailableQuery.subscribe((val) => {
+		console.log(Date.now(), 'LAUNCHER UPDATE AVAILABLE CHANGED: ', val);
+		if (
+			val.isSuccess &&
+			val.data &&
+			!menuEntries.map((entry) => entry.name).includes($i18n.t(LAUNCHER_UPDATES))
+		) {
+			menuEntries = [launcherUpdateMenuEntry, ...menuEntries];
+		}
+	});
 </script>
 
 <span class="pb-2 text-sm">{$i18n.t('launcherSettings')}</span>
-{#each menuEntries as { name, view: entryView, icon: Icon, iconStyle }}
-	<MenuEntry {name} onClick={() => selectView(entryView)} isSelected={view === entryView}>
+{#each menuEntries as { name, view: entryView, icon: Icon, iconStyle, extra, isUpdateAvailable }}
+	<MenuEntry
+		{name}
+		{extra}
+		{isUpdateAvailable}
+		onClick={() => selectView(entryView)}
+		isSelected={view === entryView}
+	>
 		<div slot="leading" class={clsx(iconStyle, view !== entryView)}>
 			<Icon fillColor={view === entryView ? SELECTED_ICON_STYLE : NOT_SELECTED_ICON_STYLE} />
 		</div>

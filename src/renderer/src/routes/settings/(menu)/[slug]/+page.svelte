@@ -6,7 +6,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { AppDetailsPanel, Button } from '$components';
-	import { KEY_MANAGEMENT, MODAL_UNINSTALL_APP_CONFIRMATION } from '$const';
+	import { KEY_MANAGEMENT, LAUNCHER_UPDATES, MODAL_UNINSTALL_APP_CONFIRMATION } from '$const';
 	import {
 		capitalizeFirstLetter,
 		createImageUrl,
@@ -30,6 +30,7 @@
 	import AppSettings from './components/AppSettings.svelte';
 	import CellDetails from './components/CellDetails.svelte';
 	import KeyManagement from './components/KeyManagement.svelte';
+	import LauncherUpdates from './components/LauncherUpdates.svelte';
 	import SystemSettings from './components/SystemSettings.svelte';
 
 	const client = trpc();
@@ -293,6 +294,8 @@
 	{/if}
 {:else if $page.params.slug === KEY_MANAGEMENT}
 	<KeyManagement />
+{:else if $page.params.slug === LAUNCHER_UPDATES}
+	<LauncherUpdates />
 {:else}
 	<SystemSettings />
 {/if}

@@ -17,7 +17,8 @@ export default [
 		},
 		rules: {
 			'simple-import-sort/imports': 'error',
-			'simple-import-sort/exports': 'error'
+			'simple-import-sort/exports': 'error',
+			'svelte/no-at-html-tags': 'allow'
 		},
 		ignores: ['.DS_Store', 'node_modules', '/.svelte-kit']
 	},

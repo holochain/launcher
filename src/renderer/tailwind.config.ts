@@ -16,7 +16,8 @@ export default {
 			colors: {
 				'light-primary': 'rgb(25, 182, 227)',
 				'light-background': 'rgba(0, 102, 255, 0.1)',
-				'transparent-gray': '#dadada12'
+				'transparent-gray': '#dadada12',
+				'dark-background': '#000b1a'
 			},
 			backgroundImage: {
 				'login-background': "url('/images/login-background.png')",
@@ -34,6 +35,9 @@ export default {
 			},
 			boxShadow: {
 				'3xl': '0 35px 60px -15px rgba(0, 0, 0)'
+			},
+			dropShadow: {
+				'dark-xl': '2px 2px 10px #000b1a'
 			}
 		}
 	},

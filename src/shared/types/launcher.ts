@@ -13,6 +13,12 @@ import {
 } from '../const';
 import type { HolochainDataRoot } from './holochain';
 
+export type LauncherUpdate = {
+  version: string;
+  releaseDate: string;
+  releaseNotes?: string;
+};
+
 type UrlAndSha256 = {
   version: string;
   sha256: Sha256;
