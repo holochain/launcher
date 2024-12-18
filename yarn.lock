@@ -3115,7 +3115,7 @@ hasown@^2.0.0:
     function-bind "^1.1.2"
 
 "hc-launcher-rust-utils@file:./rust-utils/dist":
-  version "0.202.1"
+  version "0.300.0"
 
 he@1.2.0:
   version "1.2.0"
