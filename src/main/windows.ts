@@ -3,6 +3,7 @@ import type { AppAuthenticationToken } from '@holochain/client';
 import crypto from 'crypto';
 import { BrowserWindow, nativeImage, net, session } from 'electron';
 import serve from 'electron-serve';
+import fs from 'fs';
 import path from 'path';
 import url from 'url';
 
@@ -121,10 +122,16 @@ export const createHappWindow = (
     // console.log("### Got file request: ", request);
     const uriWithoutProtocol = request.url.slice('webhapp://'.length);
     const filePathComponents = uriWithoutProtocol.split('/').slice(1);
-    const filePath = path.join(...filePathComponents);
-    const response = await net.fetch(
-      url.pathToFileURL(path.join(appUiDir, 'assets', filePath)).toString(),
-    );
+    let filePath = path.join(...filePathComponents);
+    let absolutePath = path.join(appUiDir, 'assets', filePath);
+
+    // Fall back to index.html if the asset does not exist
+    if (!fs.existsSync(absolutePath)) {
+      filePath = 'index.html';
+      absolutePath = path.join(appUiDir, 'assets', 'index.html');
+    }
+
+    const response = await net.fetch(url.pathToFileURL(absolutePath).toString());
 
     const expectedHash = uiHashes[filePath];
     if (!expectedHash) {
@@ -139,7 +146,7 @@ export const createHappWindow = (
     const hasher = crypto.createHash('sha256');
     const arrayBuffer = await response.arrayBuffer();
     const bodyBuffer = Buffer.from(arrayBuffer);
-    hasher.update(bodyBuffer);
+    hasher.update(Uint8Array.from(bodyBuffer));
     const hash = hasher.digest('hex');
     if (hash !== expectedHash) {
       launcherEmitter.emit(LAUNCHER_ERROR, `Failed to load asset '${filePath}': Invalid Hash.`);
