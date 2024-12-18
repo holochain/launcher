@@ -195,8 +195,9 @@ protocol.registerSchemesAsPrivileged([
 const LAUNCHER_FILE_SYSTEM = LauncherFileSystem.connect(app, VALIDATED_CLI_ARGS.profile);
 const LAUNCHER_EMITTER = new LauncherEmitter();
 
+// hard-code to the appstore network seed of the 0.300.x series of launcher.
 const DEFAULT_APPS_NETWORK_SEED = app.isPackaged
-  ? `launcher-${breakingVersion(app.getVersion())}`
+  ? `launcher-0.300.x`
   : `launcher-dev-${breakingVersion(app.getVersion())}`;
 
 setupLogs(LAUNCHER_EMITTER, LAUNCHER_FILE_SYSTEM);
