@@ -374,9 +374,9 @@ export class HolochainManager {
   }) {
     // write [sha256].happ to happs directory
     const happHasher = crypto.createHash('sha256');
-    const happSha256 = happHasher.update(Buffer.from(happBytes)).digest('hex');
+    const happSha256 = happHasher.update(Uint8Array.from(happBytes)).digest('hex');
     const happFilePath = path.join(this.fs.happsDir(this.holochainDataRoot), `${happSha256}.happ`);
-    writeFile(happFilePath, Buffer.from(happBytes));
+    writeFile(happFilePath, Uint8Array.from(happBytes));
 
     const pubKey = await this.adminWebsocket.generateAgentPubKey();
 
@@ -619,9 +619,9 @@ export class HolochainManager {
    */
   storeHapp(happBytes: Array<number>): string {
     const happHasher = crypto.createHash('sha256');
-    const happSha256 = happHasher.update(Buffer.from(happBytes)).digest('hex');
+    const happSha256 = happHasher.update(Uint8Array.from(happBytes)).digest('hex');
     const happFilePath = this.happFilePath(happSha256);
-    writeFile(happFilePath, Buffer.from(happBytes));
+    writeFile(happFilePath, Uint8Array.from(happBytes));
     return happSha256;
   }
 
@@ -631,7 +631,10 @@ export class HolochainManager {
     const hashes: Record<string, string> = {};
     const zip = new AdmZip(Buffer.from(uiBytes));
     zip.getEntries().forEach((entry) => {
-      const hash = crypto.createHash('sha256').update(entry.getData()).digest('hex');
+      const hash = crypto
+        .createHash('sha256')
+        .update(Uint8Array.from(entry.getData()))
+        .digest('hex');
       const relativeFilePath = platform.isWindows
         ? entry.entryName.replaceAll('/', '\\')
         : entry.entryName;
@@ -665,7 +668,7 @@ export class HolochainManager {
       return;
     }
 
-    storeIcon(iconBytes);
+    storeIcon(Uint8Array.from(iconBytes));
   }
 
   /**
@@ -684,7 +687,7 @@ export class HolochainManager {
 
     // compute UI hash
     const uiZipHasher = crypto.createHash('sha256');
-    const uiZipSha256 = uiZipHasher.update(Buffer.from(uiBytes)).digest('hex');
+    const uiZipSha256 = uiZipHasher.update(Uint8Array.from(uiBytes)).digest('hex');
 
     const uiDir = path.join(this.fs.uisDir(this.holochainDataRoot), uiZipSha256);
     const assetsPath = path.join(uiDir, 'assets');
@@ -761,7 +764,7 @@ export class HolochainManager {
     }
     const happBytes = fs.readFileSync(happFilePath);
     const happHasher = crypto.createHash('sha256');
-    const happSha256Actual = happHasher.update(Buffer.from(happBytes)).digest('hex');
+    const happSha256Actual = happHasher.update(Uint8Array.from(happBytes)).digest('hex');
     if (happSha256Actual !== happSha256) {
       this.launcherEmitter.emit(
         'launcher-error',
@@ -794,7 +797,7 @@ export class HolochainManager {
       'icon.png',
     );
 
-    return fs.existsSync(iconPath) ? fs.readFileSync(iconPath) : undefined;
+    return fs.existsSync(iconPath) ? Uint8Array.from(fs.readFileSync(iconPath)) : undefined;
   }
 
   appDistributionInfo(appId: string): DistributionInfoV1 {
