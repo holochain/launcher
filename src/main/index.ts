@@ -615,10 +615,6 @@ const router = t.router({
           ? VALIDATED_CLI_ARGS.holochainVersion.adminPort
           : undefined,
     };
-    console.log(
-      'WINDOW_INFO_MAP[happWindow.webContents.id]: ',
-      WINDOW_INFO_MAP[happWindow.webContents.id],
-    );
     happWindow.on('close', () => {
       delete WINDOW_INFO_MAP[happWindow.webContents.id];
     });
