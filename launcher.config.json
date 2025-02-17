@@ -1,32 +1,32 @@
 {
   "binaries": {
     "holochain": {
-      "version": "0.4.0-rc.0",
+      "version": "0.4.1",
       "sha256": {
-        "x86_64-unknown-linux-gnu": "72afacb5827e98de6d519ebd512a0b8406e93b13bc008cf30f9fc45fcb786eb8",
-        "x86_64-pc-windows-msvc.exe": "16db39df6d87549266196327a8790ee269ba2bde56583e028e49d59f28aed505",
-        "x86_64-apple-darwin": "95ba72ac620468a35ae7f5de000cc0c3736708e2de62dfd70c522d07e007b931",
-        "aarch64-apple-darwin": "7a6da07aa73e457464b0ee4a0ec64f1828b82d1c19242faf20e5487143680b56"
+        "x86_64-unknown-linux-gnu": "ee713408a31d2e17826b18e2eaea0b3e200b42aa0cc8e3562c899b0b5ebcaa0c",
+        "x86_64-pc-windows-msvc.exe": "9aa248f6e500915085ebf3fd093541cbbdad59a994e7f904260cb4ad788bd1e3",
+        "x86_64-apple-darwin": "0ce19dfde7db6521cd96e2fef924c62d319d204e7f79bc0379674a7a6122c74f",
+        "aarch64-apple-darwin": "74dc8d8529a50d24e8338ddd2e9913d6fb34414f6588d11243e6ccb29feda029"
       }
     },
     "lair": {
-      "version": "0.5.2",
+      "version": "0.5.3",
       "sha256": {
-        "x86_64-unknown-linux-gnu": "5fa1b2ece8896208c313c01b531d99d861e156de8f2d2ddc2709a82bc2533550",
-        "x86_64-pc-windows-msvc.exe": "42a4a6eaf3cd1cb52bdc6512b392e874467bc6d7f5763b89a303767a9d979ad9",
-        "x86_64-apple-darwin": "22cadfb73435ce0c97e6581123b4fc3fe9ff0a5ef5b04eed3b4895a84f5cbb79",
-        "aarch64-apple-darwin": "246bb1090e9e875babe056df413f75ad8dd1ba4971f293dd5e94ea05ea364aa0"
+        "x86_64-unknown-linux-gnu": "96a28b9b37c73ef46d8b5c56b9d799d558fd2fe77b41c577e2bcb37685a46396",
+        "x86_64-pc-windows-msvc.exe": "68b6453a19921072aac04dae52a4e94e725e7482005d2f54f907aec680e078de",
+        "x86_64-apple-darwin": "a53bfb8e501431870b99243cbac24f6103d67f8be094930f174829bb249f34c4",
+        "aarch64-apple-darwin": "6b15d977408847ac977c2e060c7aab84a69e6e90c79390098dd40a6b75256e50"
       }
     }
   },
   "defaultApps": {
     "devhub": {
-      "url": "https://drive.switch.ch/index.php/s/ySEacrfffAFKMCH/download",
-      "sha256": "8fde0c6d300702bcea8e7b83ad530605f82ac8698b1018eb443afda5cc3766fd"
+      "url": "https://drive.switch.ch/index.php/s/ORiI4BcDBcQkART/download",
+      "sha256": "459cdf9ec7a8638577e223249fd694b5731a55643dd0edafeef0763f37bd7c6a"
     },
     "appstore": {
-      "url": "https://drive.switch.ch/index.php/s/jEneqHd4AVg76e7/download",
-      "sha256": "c30da52e65dd78a255e7cce5dfcacc260752994e809d8d94cdc687a6b2dc26ed"
+      "url": "https://drive.switch.ch/index.php/s/HUsaZ1A2xxIASNl/download",
+      "sha256": "8ab5a425e28cb12baf63dafe50a720951700a325dec2c36546f1e48c5053c89f"
     }
   },
   "binariesAppendix": "launcher-0.4"
