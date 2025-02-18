@@ -21,11 +21,11 @@
   },
   "defaultApps": {
     "devhub": {
-      "url": "https://drive.switch.ch/index.php/s/ORiI4BcDBcQkART/download",
+      "url": "https://github.com/holochain/devhub-dnas/releases/download/happ-0.1.0-holochain-0.4.1/devhub_0.4.1.happ",
       "sha256": "459cdf9ec7a8638577e223249fd694b5731a55643dd0edafeef0763f37bd7c6a"
     },
     "appstore": {
-      "url": "https://drive.switch.ch/index.php/s/HUsaZ1A2xxIASNl/download",
+      "url": "https://github.com/holochain/app-store-dnas/releases/download/happ-0.1.0-holochain-0.4.1/appstore_0.4.1.happ",
       "sha256": "8ab5a425e28cb12baf63dafe50a720951700a325dec2c36546f1e48c5053c89f"
     }
   },
