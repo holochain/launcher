@@ -7,7 +7,6 @@ import type {
   AppInfo,
   InstallAppRequest,
   InstalledAppId,
-  MembraneProof,
 } from '@holochain/client';
 import { AdminWebsocket, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import AdmZip from 'adm-zip';
@@ -340,7 +339,6 @@ export class HolochainManager {
    * @param appId
    * @param distributionInfo
    * @param networkSeed
-   * @param membrane_proofs
    * @param icon
    */
   async installWebHappFromBytes({
@@ -384,7 +382,6 @@ export class HolochainManager {
     appId: string;
     distributionInfo: DistributionInfoV1;
     networkSeed?: string;
-    membrane_proofs?: { [key: string]: MembraneProof };
     agentPubKey?: AgentPubKeyB64;
   }) {
     // write [sha256].happ to happs directory
