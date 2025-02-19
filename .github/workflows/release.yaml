@@ -83,7 +83,7 @@ jobs:
           key: ${{ matrix.platform }}-rust-utils-${{ needs.extract-versions.outputs.rust_utils_version }}
 
       - name: vcpkg libsodium on Windows
-        if: matrix.platform == 'windows-2019' && steps.cache-rust-utils.outputs.cache-hit != 'true'
+        if: matrix.platform == 'windows-2019'
         uses: johnwason/vcpkg-action@v6
         with:
           triplet: x64-windows-release
