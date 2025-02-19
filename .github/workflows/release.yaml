@@ -2,7 +2,7 @@ name: 'publish'
 on:
   push:
     branches:
-      - release-test
+      - windows-vcpkg
 
 jobs:
   extract-versions:
@@ -33,9 +33,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [windows-2019, macos-13, macos-latest, ubuntu-22.04]
+        # platform: [windows-2019, macos-13, macos-latest, ubuntu-22.04]
         # platform: [ubuntu-22.04, macos-13]
-        # platform: [windows-2019]
+        platform: [windows-2019]
     env:
       MACOSX_DEPLOYMENT_TARGET: 10.13
 
@@ -82,9 +82,21 @@ jobs:
           path: rust-utils/dist
           key: ${{ matrix.platform }}-rust-utils-${{ needs.extract-versions.outputs.rust_utils_version }}
 
+      - name: vcpkg libsodium on Windows
+        if: matrix.platform == 'windows-2019' && steps.cache-rust-utils.outputs.cache-hit != 'true'
+        uses: johnwason/vcpkg-action@v6
+        with:
+          triplet: x64-windows-release
+          token: ${{ github.token }}
+          manifest-dir: ${{ github.workspace }}/.github/manifest
+          github-binarycache: true
+
+
       - name: Conditionally Setup rust-utils
         if: steps.cache-rust-utils.outputs.cache-hit != 'true'
-        run: yarn build:rust-utils
+        run: |
+          $env:SODIUM_LIB_DIR="$(pwd)\vcpkg\packages\libsodium_x64-windows-release\lib"
+          yarn build:rust-utils
 
       - name: build and install libs and dependencies
         run: yarn build:libs
