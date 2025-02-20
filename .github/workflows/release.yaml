@@ -93,7 +93,7 @@ jobs:
 
 
       - name: Conditionally Setup rust-utils
-        if: steps.cache-rust-utils.outputs.cache-hit != 'true'
+        # if: steps.cache-rust-utils.outputs.cache-hit != 'true'
         run: |
           $env:SODIUM_LIB_DIR="$(pwd)\vcpkg\packages\libsodium_x64-windows-release\lib"
           $env:SODIUM_DIST_DIR="$(pwd)\vcpkg\packages\libsodium_x64-windows-release\lib"
