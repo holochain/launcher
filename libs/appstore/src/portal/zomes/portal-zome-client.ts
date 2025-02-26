@@ -135,7 +135,7 @@ export class PortalZomeClient extends ZomeClient {
       pingTimeout,
     );
 
-    console.log('got quickest host: ', encodeHashToBase64(quickestHost));
+    console.log('@tryWithHosts: Got quickest host: ', encodeHashToBase64(quickestHost));
     try {
       // console.log("@tryWithHosts: trying with first responding host: ", encodeHashToBase64(host));
       const result = await fn(quickestHost, statusCallback);
@@ -145,7 +145,8 @@ export class PortalZomeClient extends ZomeClient {
       const errors: Array<string> = [];
       errors.push(e.toString());
 
-      // console.log("@tryWithHosts: Failed with first host: ", JSON.stringify(e));
+      console.log('@tryWithHosts: Failed with quickest host. Error: ', JSON.stringify(e));
+
       // if it fails with the first host, try other hosts
       const pingResult = await this.getVisibleHostsForZomeFunction(dnaZomeFunction, pingTimeout);
 
@@ -153,13 +154,16 @@ export class PortalZomeClient extends ZomeClient {
         (host) => encodeHashToBase64(host) !== encodeHashToBase64(quickestHost),
       );
 
-      // console.log("@tryWithHosts: other available hosts: ", availableHosts.map((hash) => encodeHashToBase64(hash)));
+      console.log(
+        '@tryWithHosts: Other available hosts: ',
+        otherAvailableHosts.map((hash) => encodeHashToBase64(hash)),
+      );
 
       // for each host, try to get stuff and if it succeeded, return,
       // otherwise go to next host
       for (const host of otherAvailableHosts) {
         try {
-          // console.log("@tryWithHosts: retrying with other host: ", encodeHashToBase64(otherHost));
+          console.log('@tryWithHosts: Retrying with next host: ', encodeHashToBase64(host));
           const response = await fn(host, statusCallback);
           return response;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

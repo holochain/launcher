@@ -22,9 +22,31 @@
 
 	$: searchInput = $page.url.searchParams.get(SEARCH_URL_QUERY) || '';
 	$: allowlistKeys = getAllowlistKeys($allowlist?.data);
-	$: filteredApps = filterOutDenylisted($appStoreAllAppsQuery?.data ?? [], $allowlist?.data);
+	$: filteredApps = filterOutDenylisted($appStoreAllAppsQuery?.data ?? [], $allowlist?.data).sort(
+		(a, b) => {
+			const aPublished = a.content.published_at;
+			const bPublished = b.content.published_at;
+			if (aPublished && bPublished) {
+				return aPublished - bPublished;
+			}
+			if (aPublished) return -1;
+			if (bPublished) return 1;
+			return a.content.title.localeCompare(b.content.title);
+		}
+	);
 	$: verifiedApps = filterAppsBySearchAndAllowlist(filteredApps, searchInput, allowlistKeys);
-	$: unverifiedApps = (filteredApps ?? []).filter((app) => !verifiedApps.includes(app));
+	$: unverifiedApps = (filteredApps ?? [])
+		.filter((app) => !verifiedApps.includes(app))
+		.sort((a, b) => {
+			const aPublished = a.content.published_at;
+			const bPublished = b.content.published_at;
+			if (aPublished && bPublished) {
+				return aPublished - bPublished;
+			}
+			if (aPublished) return -1;
+			if (bPublished) return 1;
+			return a.content.title.localeCompare(b.content.title);
+		});
 </script>
 
 <div class="text-token grid w-full gap-4 py-4 md:grid-cols-2">
