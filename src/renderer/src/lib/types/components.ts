@@ -47,6 +47,7 @@ export type ButtonProps = {
 	disabled?: boolean;
 	isLoading?: boolean;
 	type?: 'submit' | 'button' | 'reset';
+	title?: string;
 };
 
 export type AppInstallFormData = {
