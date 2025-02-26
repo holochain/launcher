@@ -3064,8 +3064,7 @@ dependencies = [
 [[package]]
 name = "libsodium-sys-stable"
 version = "1.20.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "780c04d3b39043e609f0ad29bd7a8d7f8ef38deb8291534434633036f0d72ce3"
+source = "git+https://github.com/matthme/libsodium-sys-stable?rev=7c8b65cec6f7df06dd8aee343a859171406adc14#7c8b65cec6f7df06dd8aee343a859171406adc14"
 dependencies = [
  "cc",
  "libc",
@@ -6555,8 +6554,3 @@ dependencies = [
  "crossbeam-utils",
  "flate2",
 ]
-
-[[patch.unused]]
-name = "libsodium-sys-stable"
-version = "1.22.2"
-source = "git+https://github.com/matthme/libsodium-sys-stable?rev=3eea032926e034f0bf191ef827984bbee33e9dce#3eea032926e034f0bf191ef827984bbee33e9dce"
