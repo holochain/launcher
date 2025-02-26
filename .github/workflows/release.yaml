@@ -97,7 +97,7 @@ jobs:
         run: |
           $env:SODIUM_LIB_DIR="$(pwd)\vcpkg\packages\libsodium_x64-windows-release\lib"
           $env:SODIUM_DIST_DIR="$(pwd)\vcpkg\packages\libsodium_x64-windows-release\lib"
-          $env:SODIUM_SHARED=0
+          $env:VCPKGRS_DYNAMIC=1
           yarn build:rust-utils
 
       - name: build and install libs and dependencies
