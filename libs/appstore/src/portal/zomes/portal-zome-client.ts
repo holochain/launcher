@@ -45,7 +45,7 @@ export class PortalZomeClient extends ZomeClient {
       const hosts = await this.getHostsForZomeFunction(input);
 
       console.log(
-        `@getAvailableHostForZomeFunction: Got registered hosts for function ${input.function} in zome ${input.zome} and dna ${input.dna}: ${JSON.stringify(hosts.map((host) => encodeHashToBase64(host.content.author)))}`,
+        `@getAvailableHostForZomeFunction: Got ${hosts.length} registered hosts for function '${input.function}' in zome '${input.zome}' and dna '${encodeHashToBase64(input.dna)}': ${hosts.map((host) => `${encodeHashToBase64(host.content.author)}`)}`,
       );
 
       // 2. ping each of them and take the first one that responds
