@@ -3075,7 +3075,7 @@ dependencies = [
 [[package]]
 name = "libsodium-sys-stable"
 version = "1.20.6"
-source = "git+https://github.com/matthme/libsodium-sys-stable?rev=d6c8ce91a7ccf4e118bdb5f10f4f798e44c625d4#d6c8ce91a7ccf4e118bdb5f10f4f798e44c625d4"
+source = "git+https://github.com/matthme/libsodium-sys-stable?rev=cb24283ed0be020bb8926293a85300eb77152827#cb24283ed0be020bb8926293a85300eb77152827"
 dependencies = [
  "cc",
  "libc",
