@@ -6555,3 +6555,8 @@ dependencies = [
  "crossbeam-utils",
  "flate2",
 ]
+
+[[patch.unused]]
+name = "libsodium-sys-stable"
+version = "1.22.2"
+source = "git+https://github.com/matthme/libsodium-sys-stable?rev=3eea032926e034f0bf191ef827984bbee33e9dce#3eea032926e034f0bf191ef827984bbee33e9dce"

@@ -43,3 +43,6 @@ napi-build = "2.0.1"
 
 [profile.release]
 lto = true
+
+[patch.crates-io]
+libsodium-sys-stable = { git = "https://github.com/matthme/libsodium-sys-stable", rev = "3eea032926e034f0bf191ef827984bbee33e9dce" }
