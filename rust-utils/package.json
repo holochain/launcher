@@ -21,7 +21,7 @@
   },
   "scripts": {
     "artifacts": "napi artifacts",
-    "build": "napi build --platform --release && rimraf dist && mkdir dist && cp package.json dist/ && cp index.js dist/ && cp index.d.ts dist/ && cp hc-launcher-rust-utils* dist/",
+    "build": "napi build --platform --release --cargo-flags \"--verbose\" && rimraf dist && mkdir dist && cp package.json dist/ && cp index.js dist/ && cp index.d.ts dist/ && cp hc-launcher-rust-utils* dist/",
     "build:debug": "napi build --platform",
     "prepublishOnly": "napi prepublish -t npm",
     "test": "ava",
