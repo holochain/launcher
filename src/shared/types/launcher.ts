@@ -64,7 +64,6 @@ export const CommonAppSchema = z.object({
   networkSeed: z.string(),
   icon: z.instanceof(Uint8Array).optional(),
   agentPubKey: z.string().optional(),
-  // TODO add membrane proofs here
 });
 
 export const InstallDefaultAppSchema = CommonAppSchema.extend({

@@ -130,7 +130,7 @@
 
 <TopBar>
 	{#if type !== APPS_VIEW}
-		<IconButton onClick={handleNavigation(APPS_VIEW)}><Rocket /></IconButton>
+		<IconButton onClick={handleNavigation(APPS_VIEW)} title={$i18n.t('launch')}><Rocket /></IconButton>
 	{/if}
 	<div
 		class="app-region-no-drag relative mx-2 max-w-md flex-grow origin-left transition-transform"
@@ -160,11 +160,11 @@
 		</div>
 	</div>
 	{#if type !== APP_STORE}
-		<IconButton onClick={handleNavigation(APP_STORE)} buttonClass="ml-auto group">
+		<IconButton onClick={handleNavigation(APP_STORE)} buttonClass="ml-auto group" title={$i18n.t('appStore')}>
 			<Home />
 		</IconButton>
 	{/if}
-	<IconButton onClick={() => $openSettings.mutate(undefined)}>
+	<IconButton onClick={() => $openSettings.mutate(undefined)} title={$i18n.t('settings')}>
 		<div class="relative">
 			<Gear />
 			{#if Object.values($uiUpdates.data ?? {}).some(Boolean) || $launcherUpdateAvailableQuery.data}

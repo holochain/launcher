@@ -7,7 +7,6 @@ import type {
   AppInfo,
   InstallAppRequest,
   InstalledAppId,
-  MembraneProof,
 } from '@holochain/client';
 import { AdminWebsocket, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import AdmZip from 'adm-zip';
@@ -340,7 +339,6 @@ export class HolochainManager {
    * @param appId
    * @param distributionInfo
    * @param networkSeed
-   * @param membrane_proofs
    * @param icon
    */
   async installWebHappFromBytes({
@@ -348,7 +346,6 @@ export class HolochainManager {
     appId,
     distributionInfo,
     networkSeed,
-    membrane_proofs,
     icon,
     agentPubKey,
   }: {
@@ -356,7 +353,6 @@ export class HolochainManager {
     appId: string;
     distributionInfo: DistributionInfoV1;
     networkSeed?: string;
-    membrane_proofs?: { [key: string]: MembraneProof };
     icon?: Uint8Array;
     agentPubKey?: AgentPubKeyB64;
   }) {
@@ -372,7 +368,6 @@ export class HolochainManager {
       appId,
       distributionInfo,
       networkSeed,
-      membrane_proofs,
     });
   }
 
@@ -381,14 +376,12 @@ export class HolochainManager {
     appId,
     distributionInfo,
     networkSeed,
-    membrane_proofs,
     agentPubKey,
   }: {
     happBytes: Array<number>;
     appId: string;
     distributionInfo: DistributionInfoV1;
     networkSeed?: string;
-    membrane_proofs?: { [key: string]: MembraneProof };
     agentPubKey?: AgentPubKeyB64;
   }) {
     // write [sha256].happ to happs directory
@@ -408,8 +401,6 @@ export class HolochainManager {
     const appInfo = await this.installApp({
       agent_key: pubKey,
       installed_app_id: appId,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      membrane_proofs: membrane_proofs ? membrane_proofs : (null as any),
       path: happFilePath,
       network_seed: networkSeed,
     });
@@ -460,7 +451,6 @@ export class HolochainManager {
     appId,
     distributionInfo,
     networkSeed,
-    membrane_proofs,
     agentPubKey,
   }: {
     happSha256: string;
@@ -468,7 +458,6 @@ export class HolochainManager {
     appId: string;
     distributionInfo: DistributionInfoV1;
     networkSeed?: string;
-    membrane_proofs?: { [key: string]: MembraneProof };
     agentPubKey?: AgentPubKeyB64;
   }): Promise<void> {
     if (!this.isUiAvailable(uiZipSha256)) {
@@ -497,8 +486,6 @@ export class HolochainManager {
     const appInfo = await this.installApp({
       agent_key: pubKey,
       installed_app_id: appId,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      membrane_proofs: membrane_proofs ? membrane_proofs : (null as any),
       path: this.happFilePath(happSha256),
       network_seed: networkSeed,
     });
@@ -551,10 +538,12 @@ export class HolochainManager {
 
   async installApp(payload: InstallAppRequest): Promise<AppInfo> {
     const installedApps = await this.adminWebsocket.listApps({});
-    const duplicatePubkey = installedApps.find(
-      (appInfo) =>
-        encodeHashToBase64(appInfo.agent_pub_key) === encodeHashToBase64(payload.agent_key),
-    );
+    const duplicatePubkey = payload.agent_key
+      ? installedApps.find(
+          (appInfo) =>
+            encodeHashToBase64(appInfo.agent_pub_key) === encodeHashToBase64(payload.agent_key!),
+        )
+      : false;
     if (duplicatePubkey) throw new Error(DUPLICATE_PUBKEY_ERROR_MESSAGE);
 
     const duplicateAppId = installedApps.find(
