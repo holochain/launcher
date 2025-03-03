@@ -3,10 +3,8 @@
 	import { Avatar, getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 	import type { AppVersionEntry, Entity } from 'appstore-tools';
 
-	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { AppDetailsPanel, CenterProgressRadial } from '$components';
-	import { PRESEARCH_URL_QUERY } from '$const';
 	import {
 		capitalizeFirstLetter,
 		createImageUrl,
@@ -17,19 +15,19 @@
 	import { InstallAppFromHashes } from '$modal';
 	import { createAppQueries } from '$queries';
 	import { i18n, trpc } from '$services';
-	import { APPS_VIEW, DISTRIBUTION_TYPE_APPSTORE } from '$shared/const';
+	import { DISTRIBUTION_TYPE_APPSTORE } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
 	import {
 		APP_NAME_EXISTS_ERROR,
 		FAILED_FOR_ALL_AVAILABLE_HOSTS,
 		NO_AVAILABLE_PEER_HOSTS_ERROR,
 		REMOTE_CALL_TIMEOUT_ERROR,
-		UNKNOWN_ERROR
+		UNKNOWN_ERROR,
+		type ExtendedAppInfo
 	} from '$shared/types';
 
 	import InstallButton from './components/InstallButton.svelte';
 	import VersionEntry from './components/VersionEntry.svelte';
-	import { TRPCError } from '@trpc/server';
 
 	const client = trpc();
 
@@ -39,6 +37,7 @@
 	const fetchWebapp = client.fetchWebhapp.createMutation();
 	const installedApps = client.getInstalledApps.createQuery();
 	const installWebhappFromHashes = client.installWebhappFromHashes.createMutation();
+	const openApp = client.openApp.createMutation();
 	client.onDownloadProgressUpdate.createSubscription(undefined, {
 		onData: (data) => {
 			loadingString = data;
@@ -120,11 +119,15 @@
 					{
 						onSuccess: () => {
 							modalStore.close();
-							$installedApps.refetch();
+							$installedApps.refetch().then((apps) => {
+								const newApp = apps.data?.find(
+									(extendedAppInfo) => extendedAppInfo.appInfo.installed_app_id === appId
+								);
+								if (newApp) $openApp.mutate(newApp as ExtendedAppInfo);
+							});
 							toastStore.trigger({
 								message: `${appId} ${$i18n.t('installedSuccessfully')}`
 							});
-							goto(`/${APPS_VIEW}?${PRESEARCH_URL_QUERY}=${appId}`);
 						},
 						onError: (error) => {
 							console.error(error);
