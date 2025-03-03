@@ -49,10 +49,7 @@ export type UiHashes = Record<string, string>;
 
 const DEFAULT_BOOTSTRAP_SERVER = 'https://bootstrap.holo.host';
 const DEFAULT_SIGNALING_SERVER = 'wss://sbd.holo.host';
-const DEFAULT_ICE_SERVERS = [
-  'stun:stun-0.main.infra.holo.host:443',
-  'stun:stun-1.main.infra.holo.host:443',
-];
+const DEFAULT_ICE_SERVERS = undefined; // We let holochain pick the default ICE servers
 const DEFAULT_RUST_LOG =
   'warn,' +
   // this thrashes on startup
