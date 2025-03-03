@@ -70,7 +70,7 @@
 		}
 		if (errorMessage.includes('No available peer host found.')) {
 			errorMessage = NO_AVAILABLE_PEER_HOSTS_ERROR;
-		} else if (errorMessage.includes('Request timed out in 60000 ms: call_zome')) {
+		} else if (errorMessage.includes('Request timed out')) {
 			errorMessage = REMOTE_CALL_TIMEOUT_ERROR;
 		} else if (errorMessage.includes('failed for all available hosts')) {
 			errorMessage = FAILED_FOR_ALL_AVAILABLE_HOSTS;
