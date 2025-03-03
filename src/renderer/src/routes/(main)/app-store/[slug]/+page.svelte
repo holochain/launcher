@@ -19,10 +19,17 @@
 	import { i18n, trpc } from '$services';
 	import { APPS_VIEW, DISTRIBUTION_TYPE_APPSTORE } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
-	import { APP_NAME_EXISTS_ERROR } from '$shared/types';
+	import {
+		APP_NAME_EXISTS_ERROR,
+		FAILED_FOR_ALL_AVAILABLE_HOSTS,
+		NO_AVAILABLE_PEER_HOSTS_ERROR,
+		REMOTE_CALL_TIMEOUT_ERROR,
+		UNKNOWN_ERROR
+	} from '$shared/types';
 
 	import InstallButton from './components/InstallButton.svelte';
 	import VersionEntry from './components/VersionEntry.svelte';
+	import { TRPCError } from '@trpc/server';
 
 	const client = trpc();
 
@@ -55,12 +62,21 @@
 	const handleError = (error: unknown, versionEntity?: Entity<AppVersionEntry>) => {
 		console.error(error);
 		loadingString = '';
-		const errorMessage = getErrorMessage(error);
+		let errorMessage = getErrorMessage(error);
 		if (errorMessage === APP_NAME_EXISTS_ERROR && versionEntity) {
 			toastStore.trigger({
 				message: $i18n.t(errorMessage)
 			});
 			return installLogic(versionEntity);
+		}
+		if (errorMessage.includes('No available peer host found.')) {
+			errorMessage = NO_AVAILABLE_PEER_HOSTS_ERROR;
+		} else if (errorMessage.includes('Request timed out in 60000 ms: call_zome')) {
+			errorMessage = REMOTE_CALL_TIMEOUT_ERROR;
+		} else if (errorMessage.includes('failed for all available hosts')) {
+			errorMessage = FAILED_FOR_ALL_AVAILABLE_HOSTS;
+		} else {
+			errorMessage = UNKNOWN_ERROR;
 		}
 		return showModalError({
 			modalStore,
