@@ -47,8 +47,8 @@ export type AppPort = number;
 
 export type UiHashes = Record<string, string>;
 
-const DEFAULT_BOOTSTRAP_SERVER = 'https://bootstrap-0.infra.holochain.org';
-const DEFAULT_SIGNALING_SERVER = 'wss://sbd-0.main.infra.holo.host';
+const DEFAULT_BOOTSTRAP_SERVER = 'https://bootstrap.holo.host';
+const DEFAULT_SIGNALING_SERVER = 'wss://sbd.holo.host';
 const DEFAULT_ICE_SERVERS = [
   'stun:stun-0.main.infra.holo.host:443',
   'stun:stun-1.main.infra.holo.host:443',
