@@ -5,7 +5,7 @@
 	"checkInitializedKeystoreError": "Error checking initialized keystore",
 	"devHubClientNotInitializedError": "DevHubClient not initialized",
 	"duplicatePubKeyError": "An app with the same public key is already installed. This is not allowed due to security reasons.",
-	"failedForAllAvailableHosts": "Downloading the app failed for all available peers. This typically happens due to none of the online peers having the app available themselves. Retrying again later can resolve this if new peers come online.",
+	"failedForAllAvailableHosts": "Downloading the app from any of the available peers failed. This typically happens because none of the online peers have the app available themselves. Retrying again later can resolve this if new peers come online.",
 	"failedToCreateSymlinkedLairDirectoryError": "Failed to create symlinked lair directory",
 	"fileUndefinedError": "File undefined",
 	"initializeLairKeystoreError": "Error initializing lair keystore",
