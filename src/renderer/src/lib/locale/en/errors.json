@@ -13,7 +13,7 @@
 	"missingBinaries": "There are missing holochain or lair keystore binaries",
 	"noAppPortError": "Can't find app port",
 	"noAppstoreAuthenticationTokenFound": "No authentication token found for appstore",
-	"noAvailablePeerHostsError": "It looks like no peer is online from which you can download this app. Please try again later.",
+	"noAvailablePeerHostsError": "No peer is online from which you can download this app. Please try again later.",
 	"noDevhubAuthenticationTokenFound": "No authentication token found for devhub",
 	"noDpkiDeviceSeedFound": "No DPKI device seed found in keystore",
 	"noPublishersAvailableError": "No publishers available",
