@@ -88,6 +88,8 @@ jobs:
           mkdir libsodium
           curl -L --output ./libsodium/LATEST.tar.gz https://drive.switch.ch/index.php/s/mFjiYO83NfrgePN/download
           curl -L --output ./libsodium/LATEST.tar.gz.minisig https://drive.switch.ch/index.php/s/oCfe15GFtdD8myX/download
+          curl -L --output ./libsodium/libsodium-1.0.19-stable-msvc.zip https://drive.switch.ch/index.php/s/JSgCCXrXYSdI22v/download
+          curl -L --output ./libsodium/libsodium-1.0.19-stable-msvc.zip.minisig https://drive.switch.ch/index.php/s/lpqZ9m5nccrq2HG/download
 
 
       - name: Conditionally Setup rust-utils
