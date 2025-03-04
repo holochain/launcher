@@ -2,6 +2,7 @@ export const APP_STORE_CLIENT_NOT_INITIALIZED_ERROR = 'appStoreClientNotInitiali
 export const APP_NAME_EXISTS_ERROR = 'appNameExistsError';
 export const CHECK_INITIALIZED_KEYSTORE_ERROR = 'checkInitializedKeystoreError';
 export const DUPLICATE_PUBKEY_ERROR = 'duplicatePubKeyError';
+export const FAILED_FOR_ALL_AVAILABLE_HOSTS = 'failedForAllAvailableHosts';
 export const DEV_HUB_CLIENT_NOT_INITIALIZED_ERROR = 'devHubClientNotInitializedError';
 export const FAILED_TO_CREATE_SYMLINKED_LAIR_DIRECTORY_ERROR =
   'failedToCreateSymlinkedLairDirectoryError';
@@ -17,6 +18,7 @@ export const NO_PUBLISHERS_AVAILABLE_ERROR = 'noPublishersAvailableError';
 export const NO_RUNNING_HOLOCHAIN_MANAGER_ERROR = 'noRunningHolochainManagerError';
 export const NO_AVAILABLE_PEER_HOSTS_ERROR = 'noAvailablePeerHostsError';
 export const REMOTE_CALL_TIMEOUT_ERROR = 'remoteCallTimeoutError';
+export const UNKNOWN_ERROR = 'unknownError';
 export const WRONG_INSTALLED_APP_STRUCTURE = 'wrongInstalledAppStructure';
 export const WRONG_PASSWORD = 'wrongPassword';
 

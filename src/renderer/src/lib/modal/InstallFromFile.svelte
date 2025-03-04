@@ -1,10 +1,6 @@
 <script lang="ts">
 	import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
-
-	import { goto } from '$app/navigation';
-	import { PRESEARCH_URL_QUERY } from '$const';
 	import { i18n, trpc } from '$services';
-	import { APPS_VIEW } from '$shared/const';
 	import { getErrorMessage } from '$shared/helpers';
 	import type { AppInstallFormData } from '$types';
 
@@ -22,6 +18,7 @@
 
 	const installedApps = client.getInstalledApps.createQuery();
 	const installHappFromPathMutation = client.installHappFromPath.createMutation();
+	const openApp = client.openApp.createMutation();
 </script>
 
 <ModalInstallForm
@@ -37,15 +34,20 @@
 			},
 			{
 				onSuccess: () => {
-					$installedApps.refetch();
 					const filePath = files ? files[0].path : '';
+					$installedApps.refetch().then((apps) => {
+						// Only open the app if it's an app with UI
+						if (filePath.endsWith('.webhapp')) {
+							const newApp = apps.data?.find(
+								(extendedAppInfo) => extendedAppInfo.appInfo.installed_app_id === formData.appId
+							);
+							if (newApp) $openApp.mutate(newApp);
+						}
+					});
 					toastStore.trigger({
 						message: $i18n.t('appInstalled'),
 						background: 'variant-filled-success'
 					});
-					if (filePath.endsWith('.webhapp')) {
-						goto(`${APPS_VIEW}?${PRESEARCH_URL_QUERY}=${formData.appId}`);
-					}
 					modalStore.close();
 				},
 				onError: (error) => {
