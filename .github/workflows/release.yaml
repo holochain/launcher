@@ -2,7 +2,7 @@ name: 'publish'
 on:
   push:
     branches:
-      - release
+      - sodium-dist-dir
 
 jobs:
   extract-versions:
@@ -75,16 +75,26 @@ jobs:
         with:
           go-version: 'stable'
 
-      - name: Cache rust-utils build
-        id: cache-rust-utils
-        uses: actions/cache@v4
-        with:
-          path: rust-utils/dist
-          key: ${{ matrix.platform }}-rust-utils-${{ needs.extract-versions.outputs.rust_utils_version }}
+      # - name: Cache rust-utils build
+      #   id: cache-rust-utils
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: rust-utils/dist
+      #     key: ${{ matrix.platform }}-rust-utils-${{ needs.extract-versions.outputs.rust_utils_version }}
+
+      - name: Download libsodium
+        if: matrix.platform == 'windows-2019'
+        run: |
+          mkdir libsodium
+          curl -L --output ./libsodium/libsodium-stable.tar.gz https://drive.switch.ch/index.php/s/mFjiYO83NfrgePN/download
+          curl -L --output ./libsodium/libsodium-stable.tar.gz.minisig https://drive.switch.ch/index.php/s/oCfe15GFtdD8myX/download
+
 
       - name: Conditionally Setup rust-utils
-        if: steps.cache-rust-utils.outputs.cache-hit != 'true'
-        run: yarn build:rust-utils
+        # if: steps.cache-rust-utils.outputs.cache-hit != 'true'
+        run: |
+          $env:SODIUM_DIST_DIR="$(pwd)\libsodium"
+          yarn build:rust-utils
 
       - name: build and install libs and dependencies
         run: yarn build:libs
