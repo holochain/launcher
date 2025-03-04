@@ -86,8 +86,8 @@ jobs:
         if: matrix.platform == 'windows-2019'
         run: |
           mkdir libsodium
-          curl -L --output ./libsodium/libsodium-stable.tar.gz https://drive.switch.ch/index.php/s/mFjiYO83NfrgePN/download
-          curl -L --output ./libsodium/libsodium-stable.tar.gz.minisig https://drive.switch.ch/index.php/s/oCfe15GFtdD8myX/download
+          curl -L --output ./libsodium/LATEST.tar.gz https://drive.switch.ch/index.php/s/mFjiYO83NfrgePN/download
+          curl -L --output ./libsodium/LATEST.tar.gz.minisig https://drive.switch.ch/index.php/s/oCfe15GFtdD8myX/download
 
 
       - name: Conditionally Setup rust-utils
