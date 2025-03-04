@@ -82,8 +82,24 @@ jobs:
           path: rust-utils/dist
           key: ${{ matrix.platform }}-rust-utils-${{ needs.extract-versions.outputs.rust_utils_version }}
 
-      - name: Conditionally Setup rust-utils
-        if: steps.cache-rust-utils.outputs.cache-hit != 'true'
+      - name: Download libsodium
+        if: matrix.platform == 'windows-2019'
+        run: |
+          mkdir libsodium
+          curl -L --output ./libsodium/LATEST.tar.gz https://github.com/matthme/holochain-binaries/releases/download/libsodium-releases/LATEST.tar.gz
+          curl -L --output ./libsodium/LATEST.tar.gz.minisig https://github.com/matthme/holochain-binaries/releases/download/libsodium-releases/LATEST.tar.gz.minisig
+          curl -L --output ./libsodium/libsodium-1.0.19-stable-msvc.zip https://github.com/matthme/holochain-binaries/releases/download/libsodium-releases/libsodium-1.0.19-stable-msvc.zip
+          curl -L --output ./libsodium/libsodium-1.0.19-stable-msvc.zip.minisig https://github.com/matthme/holochain-binaries/releases/download/libsodium-releases/libsodium-1.0.19-stable-msvc.zip.minisig
+
+
+      - name: Conditionally Setup rust-utils (Windows)
+        if: steps.cache-rust-utils.outputs.cache-hit != 'true' && matrix.platform == 'windows-2019'
+        run: |
+          $env:SODIUM_DIST_DIR="$(pwd)\libsodium"
+          yarn build:rust-utils
+
+      - name: Conditionally Setup rust-utils (macOS & Linux)
+        if: steps.cache-rust-utils.outputs.cache-hit != 'true' && matrix.platform != 'windows-2019'
         run: yarn build:rust-utils
 
       - name: build and install libs and dependencies
