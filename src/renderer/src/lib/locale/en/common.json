@@ -83,7 +83,7 @@
 	"installingDevHub": "Installing Dev Hub...",
 	"updatedSuccessfully": " updated successfully",
 	"kando": "KanDo",
-	"keepLauncherRunningAfterPublish": "After publishing your app, let launcher running for at least 10-15 minutes to make sure the data has time to propagate to other peers.",
+	"keepLauncherRunningAfterPublish": "After publishing your app, keep launcher running for at least 10-15 minutes to make sure the data has time to propagate to other peers.",
 	"keyManagement": "Key Management",
 	"launch": "Launch",
 	"launcherSettings": "Launcher Settings",
