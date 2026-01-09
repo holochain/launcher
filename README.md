@@ -1,3 +1,10 @@
+> [!WARNING]
+> **This project is not being actively maintained.**
+> 
+> Launcher can continue to be used with Holochain 0.4, but **support for Holochain 0.5+ should not be expected**. For distibuting Holochain apps, we instead recommend using [kangaroo-electron](https://github.com/holochain/kangaroo-electron).
+>
+> See [this issue](https://github.com/holochain/holochain/issues/5546) for more information on the maintenance status of downstream tools.
+
 # Holochain Launcher
 
 Cross-platform Desktop app to run [Holochain](https://www.holochain.org) apps.
